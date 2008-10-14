@@ -1,0 +1,36 @@
+#
+#	I-SIS, 2004
+# 
+#@I-SIS	APP : I-SIS					$Revision: 1.1 $
+#
+#@I-SIS	I-CLES : Agent
+#
+#@I-SIS	Date : 06/09/2006			Auteur : T. Zumbiehl
+#									(BV Associates)
+#	Historique des modifications
+#
+#	-------------------------------------------------------------------
+#	|     Date	|    Auteur   |		 Description					  |
+#	-------------------------------------------------------------------
+#	|			|			  |										  |
+#	-------------------------------------------------------------------
+#
+#@I-SIS	FONCTION : Liste des I-CLES gérés par l'Agent I-SIS
+#
+#@I-SIS	TABLE : AgentICles.def
+#
+#@I-SIS	ENV : 
+#
+#@I-SIS COMMENT : 
+#
+#@I-SIS FORMAT :
+#
+##########################################################################
+
+SEP=":"
+FORMAT="ICleName"
+SIZE="20s"
+KEY="ICleName"
+HEADER="Liste des I-CLES gérés par l'Agent I-SIS %COMPUTERNAME%"
+
+FKEY="[ICleName] on ICles[ICleName]"

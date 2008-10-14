@@ -1,0 +1,5 @@
+
+SEP=";"
+FORMAT="ENVIRON;Description"
+SIZE="20s;20s"
+KEY="ENVIRON"

@@ -1,0 +1,23 @@
+#IObject~Group~Method~Responsabilities~Condition~PreProcessing~Processor~Command~Confirm~PostProcessing~Icon
+#===========================================================================================================
+#Item~~Liste Nodes~expl~~~ExecuteProcedure~IT_LIST_NODES.pl NATPROP~0~~Method
+#Item~~Liste Leaves~expl~~~ExecuteProcedure~IT_LIST_LEAVES.pl NATPROP AFF~0~~Method
+#Item~~Liste Histo~expl~~~ExecuteProcedure~IT_LIST_HISTO.pl NATPROP AFF~0~~Method
+#Item~~Visualiser mytable~expl~~~DisplayTable~mytable~0~~Display
+#Item~~Explorer mytable~expl~~~Explore~mytable~0~~Explore
+
+#Item~~Explorer NATPROP~expl~~~Explore~NATPROP~0~~Explore
+#Item~~Explorer NATPROP_DESC~expl~~~Explore~NATPROP_DESC~0~~Explore
+#Item~~Administrer NATPROP_DESC~expl~~~Administrate~NATPROP_DESC~0~~Configure
+#Item~~Explorer ETAT~expl~~~Explore~ETAT~0~~Expand
+#Item~~Explorer TEST~expl~~~Explore~TEST~0~~Configure
+#Item~~Administrer TEST2~expl~~~Administrate~TEST2~0~~Configure
+#Item~~Administrer AgentICles~expl~~~Administrate~AgentICles~0~~Configure
+
+
+Item~~Environnements~expl~~~Explore~ENVIRON~0~~Expand
+
+Item~Configuration SIP~Modules~adm~~~Administrate~Modules~0~~Configure
+Item~Configuration SIP~Administrer IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
+Item~Configuration SIP~Explorer IKOS~adm~~~Explore~INFO_TABLE~0~~Expand
+Item~Configuration SIP~Appliquer les modifications~adm~~~Administrate~INFO_TABLE~0~~Method

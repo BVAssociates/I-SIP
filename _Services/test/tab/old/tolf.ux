@@ -1,0 +1,11 @@
+for nd in *.nd
+do
+cd $nd
+for lf in *
+do
+   mv -i "$lf" "$lf".lf
+done
+cd ..
+done
+printf "Fin : "
+read OK

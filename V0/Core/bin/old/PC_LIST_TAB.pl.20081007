@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+use strict;
+
+print $ENV{BV_TABPATH};
+
+sub find_bv_tabpath ($) {
+	my $file=shift;
+	
+	my @bv_tabpath=split(";",$ENV{BV_TABPATH});
+	
+	foreach my $path (@bv_tabpath) {
+		return $path."/".$file if -r $path."/".$file ;
+	}
+	return undef
+}
+
+
+my $ENV=shift or die;
+my $table=shift or die;
+
+my $database_name="IKOS_$ENV.sqlite3";
+
+my $database=find_bv_tabpath($database_name);
+
+my @result;
+if (defined $database) {
+	print STDERR "found : $database";
+	@result=`sqlite3 \"$database\" \"select * from $table;\"`;
+	print STDERR $@;
+	print @result;
+} else {
+	die "unable to find $database_name"
+}
+

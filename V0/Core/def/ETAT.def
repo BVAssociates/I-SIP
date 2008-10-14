@@ -1,0 +1,4 @@
+SEP=";"
+FORMAT="ETAT;Description"
+SIZE="20s;20s"
+KEY="ETAT"

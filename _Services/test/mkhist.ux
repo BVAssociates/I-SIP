@@ -1,0 +1,8 @@
+for nd in *.nd
+do
+name=$(printf "%s\n" "$nd" | tr -d '\r' | sed "s/\.nd//")
+printf "name=%s\n" "$name"
+cat $name.nd/* > $name.hst
+done
+printf "Fin : "
+read OK

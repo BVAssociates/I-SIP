@@ -1,0 +1,8 @@
+Name=$(printf "%s\n" $0 | tr -d '\r' | gawk -F'\' '{ print $NF }' | sed "s/.ux//")
+Perl "$Name".pl test.html
+if [[ "$?" == "0" ]];then
+   printf "Fin OK :"
+else
+   printf "Fin KO :"
+fi
+read OK

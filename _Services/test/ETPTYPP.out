@@ -1,0 +1,319 @@
+ENRDDE	Enregistrement	DDE	EXP	ENRDDE		0	0	0		N			HL	1080112	52542	2
+PROPOS	Proposition	DDE	PRO	PRODDE		0	0	0		N			HL	1080112	52542	2	
+ATTRIB	Attribution	DDE	ATR	ATTRIB		0	0	0		N			HL	1080112	52542	4	
+SIGNAT	Signat. contrat (entrée)	DDE	SGN	SGNDDE		0	0	0		N			HL	1080112	52542	3	
+ANNULA	Annulation / Désistement	DDE	ANN	ANNDDE		0	0	0		N			HL	1080112	52542	4	
+ENQUET	Enquête sociale	DDE				0	0	0		N			HL	1080112	52542	2	
+ARCHIV	Archivage	DDE	ARC			0	0	0		N			HL	1080112	52542	2	
+INSCRI	Inscription commission	PRO	INS	INSPRO		0	0	0		N			HL	1080112	52542	3	
+OUVERT	Ouverture	CAL	OUV	OUVCAL		0	0	0		N			HL	1080112	52542	3	
+VERROU	Verrouillage	CAL	VER	VERCAL		0	0	0		N			HL	1080112	52542	4	
+DECISI	Saisie décisions	CAL		DECCAL		0	0	0		N			HL	1080112	52542	4	
+CLOTUR	Clôture	CAL	CLO	CLOCAL		0	0	0		N			HL	1080112	52542	4	
+ENRPRO	Enregistrement	PRO	ENR	ENRPRO		0	0	0		N			HL	1080112	52542	2	
+VALCDE	Validation	CDE	VAL	VALCDE		0	0	0		N			HL	1080112	52542	3	
+VISCDE	Visa	CDE	VIS	VISCDE		0	0	0		N			HL	1080112	52542	2	
+BONCDE	Bon commande définitif	CDE	BON	BONCDE		0	0	0		N			HL	1080112	52542	3	
+DECCDE	Décision Fournisseur	CDE	DEC	DECCDE		0	0	0		N			HL	1080112	52542	2	
+TRXCDE	Exécution	CDE	TRX	TRXCDE		0	0	0		N			HL	1080112	52542	3	
+ENRCDE	Enregistrement	CDE	ENR	ENRCDE		0	0	0		N			HL	1080112	52542	2	
+SLDCDE	Solde	CDE	SLD	SLDCDE		0	0	0		N			HL	1080112	52542	3	
+ANNCDE	Annulation	CDE	ANN	ANNCDE		0	0	0		N			HL	1080112	52542	2	
+RCPCDE	Réception	CDE	RCP	RCPCDE		0	0	0		N			HL	1080112	52542	3	
+ETDDSP	Préparation CAL	PRO		ETDDOS		0	0	0		N			HL	1080112	52542	3	
+ANNCAL	Annulation	CAL	ANN	ANNCAL		0	0	0		N			HL	1080112	52542	4	
+INSDOS	Inscription des dossiers	CAL		INSCAL		0	0	0		N			HL	1080112	52542	2	
+ATTATR	Attente attribution	PRO	ATT	ATTPRO		0	0	0		N			HL	1080112	52542	2	
+AIDSGN	Estimation d'aide	SGN		AIDSGN		0	0	0		N			HL	1080112	52542	3	
+FACSGN	Facturation à l'entrée	SGN		FACSGN		0	0	0		N			HL	1080112	52542	3	
+ECHSGN	Echéancier de règlement	SGN		ECHSGN		0	0	0		N			HL	1080112	52542	3	
+PRSSGN	Prestations à commander	SGN		PRSSGN		0	0	0		N			HL	1080112	52542	3	
+ADCSGN	Adresse correspondance	SGN		ADCSGN		0	0	0		N			HL	1080112	52542	4	
+FOYSGN	Composition du foyer	SGN		FOYSGN		0	0	0		N			HL	1080112	52542	3	
+EXPDDE	Exploitabilité	DDE	EXP			0	0	0		N			HL	1080112	52542	1	
+PRTCA	Partenaires contrat	SGN		PRTCA		0	0	0		N			HL	1080112	52542	1	
+PRTLOT	Partenaires lot princ.	SGN		PRTLOT		0	0	0		N			HL	1080112	52542	2	
+PRTCT1	Partenaires contractant1	SGN		PRTCT1		0	0	0		N			HL	1080112	52542	2	
+PRTCT2	Partenaires contractant2	SGN		PRTCT2		0	0	0		N			HL	1080112	52542	2	
+PRECNT	Edition du contrat	DDE		PCNDDE		0	0	0		N			HL	1080112	52542	2	
+RENOUV	Renouvellement	DDE		RNVDDE		0	0	0		N			HL	1080112	52542	2	
+PRVAFF	Information réservataire	RSV		PRVAFF		0	0	0		N			HL	1080112	52542	1	
+RNDTR	Rendu pour un tour	RSV		RNDTR		0	0	0		N			HL	1080112	52542	1	
+PREDDE	Pré-demande	PDE		PREDDE		0	0	0		N			HL	1080112	52542	1	
+BONPRO	Bon commande Provisoire	CDE				0	0	0		N			HL	1080112	52542	2	
+CREAT	Création	NU		CREAT		0	0	0		N			HL	1080112	52542	1	
+MODIF	Modification	NU		MODIF		0	0	0		N			HL	1080112	52542	1	
+MODID	Modification identité	NU		MODID		0	0	0		N			HL	1080112	52542	1	
+ATBEXT	Attribution externe	NU		ATBEXT		0	0	0		N			HL	1080112	52542	1	
+ANNAFF	Annulation	AFF	ANN	ANNAFF		0	0	0		N			HL	1080112	52542	6	
+CLOAFF	Clôture	AFF	CLO	CLOAFF		0	0	0		N			HL	1080112	52542	7	
+ECSAFF	En cours	AFF	ENC	ECSAFF		0	0	0		N			HL	1080112	52542	3	
+ENGAFF	Engagement	AFF	ENG	ENGAFF		0	0	0		N			HL	1080112	52542	3	
+ENRAFF	Enregistrement	AFF	ENR	ENRAFF		0	0	0		N			HL	1080112	52542	4	
+REJAFF	Rejet	AFF	REJ	REJAFF		0	0	0		N			HL	1080112	52542	3	
+TRTAFF	Traitement	AFF	TRT	TRTAFF		0	0	0		N			HL	1080112	52542	3	
+VISAFF	Visa	AFF	VIS	VISAFF		0	0	0		N			HL	1080112	52542	3	
+DAFENR	Enregistrement demande	DAF	ENR	ENRDAF		0	0	0		N			HL	1080112	52542	2	
+DAFSLD	Solde de la demande	DAF	SLD	SLDDAF		0	0	0		N			HL	1080112	52542	2	
+DAFANN	Annulation de la demande	DAF	ANN	ANNDAF		0	0	0		N			HL	1080112	52542	2	
+DAFACC	Enregistrement accord	DAF	ACC	ACCDAF		0	0	0		N			HL	1080112	52542	2	
+DAFAFF	Affectation accord	DAF	AFF	AFFDAF		0	0	0		N			HL	1080112	52542	2	
+DADENR	Enregistrement demande	DAD	ENR	ENRDAD		0	0	0		N			HL	1080112	52542	2	
+DADACC	Accord DDE	DAD	ACC	ACCDAD		0	0	0		N			HL	1080112	52542	2	
+DADSLD	Solde demande	DAD	SLD	SLDDAD		0	0	0		N			HL	1080112	52542	2	
+DADANN	Annulation demande	DAD	ANN	ANNDAD		0	0	0		N			HL	1080112	52542	2	
+DGAACP	Accord de principe	DGA	ACP	DGAACP		0	0	0		N			HL	1080112	52542	2	
+DGADDL	Demande de délibération	DGA	DDL	DGADDL		0	0	0		N			HL	1080112	52542	2	
+DGAADL	Accord de délibération	DGA	ADL	DGAADL		0	0	0		N			HL	1080112	52542	2	
+DGASLD	Solde de la demande	DGA	SLD	DGASLD		0	0	0		N			HL	1080112	52542	2	
+DGAANN	Annulation de la demande	DGA	ANN	DGAANN		0	0	0		N			HL	1080112	52542	2	
+DGAENR	Enregistrement	DGA	ENR	DGAENR		0	0	0		N			HL	1080112	52542	2	
+DCFENR	Enregistrement demande	DCF	ENR	DCFENR		0	0	0		N			HL	1080112	52542	2	
+DCFCTR	Enregistrement contrat	DCF	CTR	DCFCTR		0	0	0		N			HL	1080112	52542	2	
+DCFANN	Annulation demande	DCF	ANN	DCFANN		0	0	0		N			HL	1080112	52542	2	
+DOSDDE	Dossier DDE	OPE		DOSDDE		0	0	0		N			HL	1080112	52542	2	
+LIVDEF	Livraison définitive	OPE		LIVDEF		0	0	0		N			HL	1080112	52542	2	
+ENRCTR	Enregistrement	CTR	ENR	ENRCTR		0	0	0		N			HL	1080112	52542	2	
+VALCTR	Validation	CTR	VAL	VALCTR		0	0	0		N			HL	1080112	52542	2	
+SLDCTR	Solde	CTR	SLD	SLDCTR		0	0	0		N			HL	1080112	52542	3	
+ANNCTR	Annulation	CTR	ANN	ANNCTR		0	0	0		N			HL	1080112	52542	2	
+DNCCTR	Dénonciation	CTR	DNC	DNCCTR		0	0	0		N			HL	1080112	52542	2	
+RCDCTR	Reconduction	CTR	RCD	RCDCTR		0	0	0		N			HL	1080112	52542	2	
+SUICTR	Suivi prestations	CTR	SUI	SUICTR		0	0	0		N			HL	1080112	52542	2	
+OUVCCL	Ouverture compte client	CCL	OUV	OUVCCL		0	0	0		N			HL	1080112	52542	2	
+FERCCL	Fermeture compte client	CCL	FER	FERCCL		0	0	0		N			HL	1080112	52542	2	
+SGNCTC	Signat. contrat (entrée)	CCL	SGN	SGNCTC		0	0	0		N			HL	1080112	52542	3	
+MDFENT	Modification date entrée	CCL		MDFENT		0	0	0		N			HL	1080112	52542	2	
+ANNENT	Annulation entrée	CCL		ANNENT		0	0	0		N			HL	1080112	52542	3	
+ENRDEP	Enregistrement	DEP	ENR	ENRDEP		0	0	0		N			HL	1080112	52542	4	
+LIQDEP	Liquidation	DEP	LIQ	LIQDEP		0	0	0		N			HL	1080112	52542	2	
+PREVIS	Pré visite	DEP	PRV	PREVIS		0	0	0		N			HL	1080112	52542	2	
+EDLDEP	Etat des lieux	DEP	EDL	EDLDEP		0	0	0		N			HL	1080112	52542	3	
+MDFDEP	Modification du congé	DEP	MDF	MDFDEP		0	0	0		N			HL	1080112	52542	2	
+ANNDEP	Annulation	DEP	ANN	ANNDEP		0	0	0		N			HL	1080112	52542	3	
+HISBUD	Historisation opération	OPE		HISBUD		0	0	0		N			HL	1080112	52542	3	
+LANCPJ	Permis construire/démol.	OPE		LANCPJ		0	0	0		N			T1184	1080409	183914	3	
+LANCOS	Lancement OS	OPE	ENC	LANCOS		0	0	0		N			HL	1080112	52542	3	
+RECPAR	Réception partielle	OPE		RECPAR		0	0	0		N			HL	1080112	52542	2	
+RECDEF	Réception opération	OPE	TNS	RECDEF		0	0	0		N			HL	1080112	52542	4	
+LIVPAR	Livraison partielle	OPE		LIVPAR		0	0	0		N			HL	1080112	52542	2	
+PRDOPE	Prix de revient déf	OPE	PRD	PRDOPE		0	0	0		N			HL	1080112	52542	2	
+CLOOPE	Clôture opération	OPE	SOL	CLOOPE		0	0	0		N			HL	1080112	52542	3	
+ANNOPE	Annulation	OPE	ANN	ANNOPE		0	0	0		N			HL	1080112	52542	3	
+ENRCTF	Enregistrement contrat	CTF				0	0	0		N			HL	1080112	52542	2	
+GESCTF	Gestion contrat	CTF				0	0	0		N			HL	1080112	52542	2	
+ENRDDF	Enreg demande de fonds	DDF				0	0	0		N			HL	1080112	52542	2	
+GESDDF	Gestion demande de fonds	DDF				0	0	0		N			HL	1080112	52542	2	
+DCFSLD	Solde demande de contrat	DCF	SLD	DCFSLD		0	0	0		N			HL	1080112	52542	3	
+ENROPE	Enregistrement opération	OPE	PRE	ENROPE		0	0	0		N			HL	1080112	52542	3	
+VISTEC	Visa technique	OPE		VISTEC		0	0	0		N			HL	1080112	52542	1	
+VISADM	Visa administratif	OPE		VISADM		0	0	0		N			HL	1080112	52542	1	
+PROVIS	Visite lot	PRO		PROVIS		0	0	0		N			HL	1080112	52542	4	
+RELAFF	Relance réservataire	RSV		RELAFF		0	0	0		N			HL	1080112	52542	2	
+HISOPE	Historisation opération	OPE		HISBUD		0	0	0		N			HL	1080112	52542	2	
+VISCRE	Visa de crédit	OPE		VISCRE		0	0	0		N			HL	1080112	52542	1	
+DDECWK	Demande de crédit	OPE		DDECRE		0	0	0		N			HL	1080112	52542	1	
+DESIST	Désistement candidat	DDE	ANN			0	0	0		N			HL	1080112	52542	3	
+REFCOM	Refus Commission	DDE	ANN			0	0	0		N			HL	1080112	52542	2	
+REFPRO	Refus Proposition	PRO				0	0	0		N			HL	1080112	52542	2	
+COMDOS	Complément de dossier	PRO				0	0	0		N			HL	1080112	52542	2	
+RPTDMC	Rupture détail marché	DMC		RPTDMC		0	0	0		N			HL	1080112	52542	2	
+ANNDMC	Annulation détail marché	DMC	ANN	ANNDMC		0	0	0		N			HL	1080112	52542	2	
+ENRDMC	Enregistrement détail	DMC	ENR	ENRDMC		0	0	0		N			HL	1080112	52542	2	
+SLDDMC	Solde détail marché	DMC	SLD	SLDDMC		0	0	0		N			HL	1080112	52542	2	
+VALDMC	Validation détail marché	DMC	VLD	VALDMC		0	0	0		N			HL	1080112	52542	2	
+RPTMRC	Rupture marché	MRC		RPTMRC		0	0	0		N			HL	1080112	52542	2	
+ANNMRC	Annulation marché	MRC	ANN	ANNMRC		0	0	0		N			HL	1080112	52542	2	
+ENRMRC	Enregistrement marché	MRC	ENR	ENRMRC		0	0	0		N			HL	1080112	52542	2	
+SLDMRC	Clôture marché	MRC	SLD	SLDMRC		0	0	0		N			HL	1080112	52542	2	
+ANNMRT	Annulation marché	MRT	ANN	ANNMRT		0	0	0		N			HL	1080112	52542	2	
+ENRMRT	Enregistrement marché	MRT	ENR	ENRMRT		0	0	0		N			HL	1080112	52542	2	
+LRGMRT	Libération de RG	MRT		LRGMRT		0	0	0		N			HL	1080112	52542	2	
+MLCMRT	Mainlevée de caution	MRT		MLCMRT		0	0	0		N			HL	1080112	52542	2	
+RPTMRT	Rupture marché	MRT		RPTMRT		0	0	0		N			HL	1080112	52542	2	
+SLDMRT	Clôture marché	MRT	SLD	SLDMRT		0	0	0		N			HL	1080112	52542	2	
+AMDDMT	Avenant modif délai	DMT		AMDDMT		0	0	0		N			HL	1080112	52542	2	
+DGDDMT	Décompte général déf.	DMT		DGDDMT		0	0	0		N			HL	1080112	52542	2	
+DOSDMT	OS de démarrage	DMT		DOSDMT		0	0	0		N			HL	1080112	52542	2	
+ENRDMT	Enregistrement détail	DMT	ENR	ENRDMT		0	0	0		N			HL	1080112	52542	2	
+LEVRES	Levée de réserves	DMT		LEVRES		0	0	0		N			HL	1080112	52542	2	
+LRGDMT	Libération de RG	DMT		LRGDMT		0	0	0		N			HL	1080112	52542	2	
+RECDMT	Réception travaux	DMT		RECDMT		0	0	0		N			HL	1080112	52542	2	
+RESDMT	Réserves	DMT		RESDMT		0	0	0		N			HL	1080112	52542	2	
+RPTDMT	Rupture détail marché	DMT		RPTDMT		0	0	0		N			HL	1080112	52542	2	
+SLDDMT	Clôture détail marché	DMT	SLD	SLDDMT		0	0	0		N			HL	1080112	52542	2	
+VALDMT	Validation détail marché	DMT	VLD	VALDMT		0	0	0		N			HL	1080112	52542	2	
+ENRFCT	Enregistrement	FCT	ENR	ENRFCT		0	0	0		N			HL	1080112	52542	2	
+VEMFCT	Modif imputation	FCT	VIS	VEMFCT		0	0	0		N			T1184	1080219	94905	5	
+VCPFCT	Visa comptable	FCT	IMP	VCPFCT		0	0	0		N			HL	1080112	52542	2	
+VREFCT	 Non utilisée à ICF	FCT		VREFCT		0	0	0		N			HL	1080213	105839	4	
+RGLFCT	Règlement	FCT	RGL	RGLFCT		0	0	0		N			HL	1080112	52542	2	
+ANNFCT	Annulation facture	FCT	ANN	ANNFCT		0	0	0		N			HL	1080207	143049	3	
+MDPFCT	Mandatement provisoire	FCP	MDP	MDPFCT		0	0	0		N			HL	1080112	52542	2	
+MDTFCT	Mandatement définitif	FCP	CPT	MDTFCT		0	0	0		N			HL	1080112	52542	2	
+CPTFCT	Comptabilisation	FCT	CPT	CPTFCT		0	0	0		N			HL	1080112	52542	2	
+ENRFCP	Enregistrement	FCP	ENR	ENRFCT		0	0	0		N			HL	1080112	52542	2	
+VEMFCP	Visa émetteur	FCP	VIS	VEMFCT		0	0	0		N			HL	1080112	52542	2	
+VCPFCP	Visa comptable	FCP	IMP	VCPFCT		0	0	0		N			HL	1080112	52542	2	
+ANNFCP	Annulation	FCP	ANN	ANNFCT		0	0	0		N			HL	1080112	52542	2	
+MODCDE	Modification commande	CDE	MOD	MODCDE		0	0	0		N			HL	1080112	52542	2	
+EDTNAV	Edt de l'état navette	STX				0	0	0		N			HL	1080112	52542	2	
+EDTAVC	Edt état d'avancement	STX				0	0	0		N			HL	1080112	52542	2	
+EDTDEC	Edt décompte situation	STX				0	0	0		N			HL	1080112	52542	3	
+EDTARP	état d'act/rev prix	STX				0	0	0		N			HL	1080112	52542	2	
+EDTSLD	état d'acompte et solde	STX				0	0	0		N			HL	1080112	52542	3	
+VFOFCT	Visaflow (obligatoire)	FCT		VFLFCT		0	0	0		N			HL	1080112	52542	3	
+VFDFCT	Visaflow (à la demande)	FCT		VFLFCT		0	0	0		N			HL	1080112	52542	3	
+VISLOT	Visite du lot	PRO				0	0	0		N			HL	1080112	52542	1	
+BONFPF	Bon cde, fact pro-format	CDE	BON	BONFPF		0	0	0		N			HL	1080112	52542	1	
+INSSNU	Inscr. commission ss NU	PRO	INS	INSSNU		0	0	0		N			HL	1080112	52542	1	
+DTVAFF	Début intervention	AFF	DTV	DTVAFF		0	0	0		N			HL	1080112	52542	2	
+QUACON	Qualification congé	AFF		QUACON		0	0	0		N			HL	1080112	52542	1	
+TRTAF2	Fin traitement SC PP	AFF	VIS			0	0	0		N			HL	1080112	52542	8	
+TRTAF3	Fin traitement GL	AFF	VIS			0	0	0		N			HL	1080112	52542	4	
+CLOAF3	Clôture GL	AFF				0	0	0		N			HL	1080112	52542	5	
+INFSUP	Infos Dossier	AFF				0	0	0		N			HL	1080112	52542	6	
+RDV1	RDV locataire	AFF				0	0	0		N			HL	1080112	52542	3	
+DEV1	Devis	AFF				0	0	0		N			HL	1080112	52542	2	
+TRF1	Transfert aff(A GENERER)	AFF				0	0	0		N			HL	1080112	52542	3	
+AVG1	Avis gardien	AFF				0	0	0		N			HL	1080112	52542	4	
+AVLO1	Avis locataire	AFF				0	0	0		N			HL	1080112	52542	2	
+TRF2	Transfert de l'affaire	AFF				0	0	0		N			HL	1080112	52542	2	
+FINT1	Fiche Intervention (URG)	AFF				0	0	0		N			HL	1080112	52542	3	
+TRAFSC	Fin de diagnostic SC	AFF	ENC			0	0	0		N			HL	1080112	52542	5	
+TRAFHC	Fin de diagnostic HC	AFF	ENC			0	0	0		N			HL	1080112	52542	5	
+COENSC	Contact Entreprise	AFF				0	0	0		N			HL	1080112	52542	3	
+VIDOSC	Visite domicile locat.	AFF				0	0	0		N			HL	1080112	52542	2	
+RCPSC	Réception	AFF				0	0	0		N			HL	1080112	52542	2	
+TRAFGL	Fin de diagnostic GL	AFF	ENC			0	0	0		N			HL	1080112	52542	4	
+TRAFST	Traitement de l'affaire	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRCPP	Accusé Réception P.P.	AFF				0	0	0		N			HL	1080112	52542	3	
+ACRCPC	Accusé Réception P.C.	AFF				0	0	0		N			HL	1080112	52542	3	
+TRAFCL	Fin de diagnostic CL	AFF	ENC			0	0	0		N			HL	1080112	52542	5	
+DMACAG	Demande accord agence	AFF				0	0	0		N			HL	1080112	52542	2	
+AUENLO	Autorisa° engagement loc	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAF4	Fin traitement CL	AFF	VIS			0	0	0		N			HL	1080112	52542	3	
+VISPLA	Visite sur place	AFF				0	0	0		N			HL	1080112	52542	2	
+AFF	Affichage	AFF				0	0	0		N			HL	1080112	52542	2	
+MESTA1	Action Mes tâches CIN	AFF				0	0	0		N			HL	1080112	52542	3	
+MESTA0	Action Mes Tâches CCL	AFF				0	0	0		N			HL	1080112	52542	2	
+ENTRAP	Entreprise à rappeler	AFF				0	0	0		N			HL	1080112	52542	2	
+ATTBUD	Mise en attente budget	AFF				0	0	0		N			HL	1080112	52542	2	
+ECHENG	Echange engagement Loc.	AFF				0	0	0		N			HL	1080112	52542	2	
+RECTRV	Réception travaux	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTQUI	Fin traitement Quit.	AFF	VIS			0	0	0		N			HL	1080112	52542	3	
+ACRQUI	Accusé Réception Quit.	AFF				0	0	0		N			HL	1080112	52542	2	
+PRIRDV	Prise Rendez-Vous Locat.	AFF				0	0	0		N			HL	1080112	52542	2	
+CRRDVL	Compte-Rendu RDV  Locat.	AFF				0	0	0		N			HL	1080112	52542	2	
+ATTQUI	Attestations	AFF				0	0	0		N			HL	1080112	52542	2	
+REMQUI	Remboursement Locataire	AFF				0	0	0		N			HL	1080112	52542	2	
+REEQUI	Demande Réédition Quit.	AFF				0	0	0		N			HL	1080112	52542	2	
+VISAF1	Visa	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRCHG	Accusé Récep. Locataire	AFF				0	0	0		N			HL	1080112	52542	2	
+VERTRX	Vérification des travaux	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRIMP	Accusé Réception Imp/Aid	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTIMP	Fin traitement Imp/Aides	AFF	VIS			0	0	0		N			HL	1080112	52542	5	
+INFAID	Infos Dossier Aides	AFF				0	0	0		N			HL	1080112	52542	2	
+INFIMP	Infos Dossier Impayés	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRPGA	Accusé Réception Par/Gar	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRFAP	Accusé Réception Fam/Pai	AFF				0	0	0		N			HL	1080112	52542	2	
+AVENAN	Avenant	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRSLS	Accusé Réception SLS	AFF				0	0	0		N			HL	1080112	52542	2	
+MAJSLS	Mise A Jour SLS	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRCLS	Accusé Réception CLS	AFF	ENC			0	0	0		N			HL	1080112	52542	2	
+MODCLS	Modification CLS	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRENT	Accusé Réception Entrant	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRSOR	Accusé Réception Sortant	AFF				0	0	0		N			HL	1080112	52542	2	
+ETJUS	Etude justificatif	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAPL	Fin traitement APL/AL	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRTPAG	Fin traitement PAR/GAR	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRTMOD	Fin traitement FAM/PAIE	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRTSLS	Fin traitement SLS	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRTCLS	Fin traitement CLS	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRTENS	Fin traitement Ent/Sor	AFF	VIS			0	0	0		N			HL	1080112	52542	2	
+TRAAI	Traitement Aides	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAF5	Fin traitement SC PC	AFF	VIS			0	0	0		N			HL	1080112	52542	5	
+AUTENG	Autor.Engagement:ICF/Loc	AFF				0	0	0		N			HL	1080112	52542	2	
+IMPASQ	ASQ (SABLIERE et SEM)	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAF1	Fin traitement	AFF	VIS			0	0	0		N			HL	1080112	52542	4	
+ACRVOI	Accusé Réception Pb Vois	AFF				0	0	0		N			HL	1080112	52542	2	
+AFFACT	Actions procédure	AFF				0	0	0		N			HL	1080112	52542	2	
+TRF3	Transfert Dossier	AFF				0	0	0		N			HL	1080112	52542	2	
+ACRANI	Accusé Réception Animaux	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAF6	Fin traitement épaves	AFF	VIS			0	0	0		N			HL	1080112	52542	3	
+ACREPA	Accusé Réception épave	AFF				0	0	0		N			HL	1080112	52542	2	
+AFFPRO	Procédure enlèvement	AFF				0	0	0		N			HL	1080112	52542	2	
+TRTAF7	Fin traitement HC	AFF	VIS			0	0	0		N			HL	1080112	52542	4	
+PENRET	Pénalités de retard	AFF				0	0	0		N			HL	1080112	52542	2	
+AFFQUE	Envoi Questionnaire Loc.	AFF				0	0	0		N			HL	1080112	52542	2	
+INFSU1	Infos Dossier Presta.	AFF				0	0	0		N			HL	1080112	52542	3	
+TRAFS1	Fin de diagnostic SC	AFF	ENC			0	0	0		N			HL	1080112	52542	2	
+DOSAFF	Transfert de dossier	AFF		DOSAFF		0	0	0		N			HL	1080112	52542	1	
+PRECAL	Préparation CAL	PRO		ETDDOS		0	0	0		N			HL	1080112	52542	2	
+EVAAFF	Avis locataire	AFF		EVAAFF		0	0	0		N			HL	1080112	52542	2	
+APD	Avant Projet Détaillé	OPE				0	0	0		N			HL	1080112	52542	3	
+APRDCE	Approbation DCE	OPE				0	0	0		N			HL	1080112	52542	3	
+APS	Avant Projet Sommaire	OPE				0	0	0		N			HL	1080112	52542	4	
+CAO	Commission Appel Offres	OPE				0	0	0		N			HL	1080112	52542	4	
+COMENG	Comité d'engagement	OPE				0	0	0		N			HL	1080112	52542	3	
+COMOPP	Comité d'opportunité	OPE				0	0	0		N			HL	1080112	52542	3	
+CONENT	Consultation Entreprises	OPE				0	0	0		N			HL	1080112	52542	3	
+CONSAO	Consultation Appel Offre	OPE				0	0	0		N			HL	1080112	52542	3	
+CONSEN	Consultation entpses	OPE				0	0	0		N			HL	1080112	52542	3	
+DAT	Déc Achèvement Travaux	OPE				0	0	0		N			HL	1080112	52542	3	
+DIUO	Gestion fin de chantier	OPE				0	0	0		N			HL	1080112	52542	3	
+DO	Déc Dommage Ouvrage	OPE				0	0	0		N			HL	1080112	52542	3	
+DOC	Déc Ouverture Chantier	OPE				0	0	0		N			HL	1080112	52542	3	
+ESQUIS	Esquisse	OPE				0	0	0		N			HL	1080112	52542	3	
+FONCIE	Foncier	OPE				0	0	0		N			HL	1080112	52542	3	
+INGCON	Ingénierie et contrôle	OPE				0	0	0		N			HL	1080112	52542	3	
+SIGMAR	Signature Marchés	OPE				0	0	0		N			HL	1080112	52542	3	
+CLODDE	Dossier clôture DDE	OPE				0	0	0		N			HL	1080112	52542	3	
+LANCMO	Lancemt maîtrise oeuvre	OPE				0	0	0		N			HL	1080112	52542	3	
+RECTEC	Réception Technique	OPE				0	0	0		N			HL	1080112	52542	3	
+VALAPJ	Validation avant projet	OPE				0	0	0		N			HL	1080112	52542	3	
+INFRES	Infos réservataire SNCF	OPE				0	0	0		N			HL	1080112	52542	4	
+COMVIS	Comité Visa	OPE				0	0	0		N			HL	1080112	52542	3	
+COMINV	Comité interne invest.	OPE				0	0	0		N			HL	1080112	52542	4	
+HISBUV	Histo.budgets Com.Visa	OPE		HISBUD		0	0	0		N			HL	1080112	52542	3	
+HISBUF	Histo.budgets CA Financt	OPE		HISBUD		0	0	0		N			HL	1080112	52542	3	
+MOE	Maitrise d'Oeuvre	OPE				0	0	0		N			HL	1080112	52542	3	
+CONTEC	Contrôle technique	OPE				0	0	0		N			HL	1080112	52542	3	
+SPS	Coordination SPS	OPE				0	0	0		N			HL	1080112	52542	3	
+CAFIN	CA financement	OPE				0	0	0		N			HL	1080112	52542	3	
+DEMTRA	Démarrage contract. TRVX	OPE				0	0	0		N			HL	1080112	52542	3	
+RECDEC	Réception chantier	OPE				0	0	0		N			HL	1080112	52542	3	
+CONEN2	Consultation Cplt Entp	OPE				0	0	0		N			HL	1080112	52542	3	
+CAO2	Commission Cplt AO	OPE				0	0	0		N			HL	1080112	52542	3	
+RECPAC	Récept partielle chantie	OPE				0	0	0		N			HL	1080112	52542	3	
+SUSPRO	Suspension projet	OPE				0	0	0		N			HL	1080112	52542	3	
+DOSCE	Dossier consultation Etp	OPE				0	0	0		N			HL	1080112	52542	4	
+FAISAB	Faisabilité	OPE				0	0	0		N			HL	1080112	52542	3	
+TVADEF	Gestion de la TVA	OPE				0	0	0		N			T1184	1080409	181500	4	
+AGRCNV	Déc. Agrément & Décision	OPE				0	0	0		N			T1184	1080409	155952	4	
+INFAUT	Infos réservataire Autre	OPE				0	0	0		N			HL	1080112	52542	3	
+INTDEM	Intention de démolir	OPE				0	0	0		N			HL	1080112	52542	3	
+DECPRF	Décision préfecture	OPE				0	0	0		N			HL	1080112	52542	3	
+ACQUIS	Acquisition	OPE				0	0	0		N			HL	1080112	52542	3	
+ENQSOC	Enquête sociale	OPE				0	0	0		N			HL	1080112	52542	3	
+ETUDIA	Etude de diagnostic	OPE				0	0	0		N			HL	1080112	52542	3	
+DECTRA	Déclaration travaux	OPE				0	0	0		N			HL	1080112	52542	3	
+PREETU	Pré-étude	OPE				0	0	0		N			HL	1080112	52542	3	
+MODELH	Envoi modèle H	OPE				0	0	0		N			HL	1080112	52542	3	
+CONRES	Contrat de réservation	OPE				0	0	0		N			HL	1080112	52542	3	
+RECTRA	Réception travaux	OPE				0	0	0		N			HL	1080112	52542	3	
+COMAPP	Comité interne approbat.	OPE				0	0	0		N			HL	1080112	52542	3	
+COMVAL	Comité interne validat.	OPE				0	0	0		N			HL	1080112	52542	3	
+PCPD	Déclaration travaux/PC	OPE				0	0	0		N			HL	1080112	52542	3	
+DE2TRA	Démarrage travaux	OPE				0	0	0		N			HL	1080112	52542	3	
+VISCOM	Visa administratif	OPE				0	0	0		N			HL	1080112	52542	3	
+COMVI2	Comité visa révision	OPE				0	0	0		N			HL	1080112	52542	3	
+CAFIN2	CA financement cplt	OPE				0	0	0		N			HL	1080112	52542	3	
+COMIMP	Comité d'imputation	OPE				0	0	0		N			HL	1080112	52542	3	
+AVG2	Avis Gardien (à la dmd)	AFF				0	0	0		N			HL	1080112	52542	3	
+TRTAF8	Fin Trait. (à la dmd)	AFF	VIS			0	0	0		N			HL	1080112	52542	4	
+CMRENR	Enregistrement caution	CMR				0	0	0		N			HL	1080112	52542	2	
+CMRGES	Gestion caution	CMR				0	0	0		N			HL	1080112	52542	2	
+ALODEP	Actualisation d'un lot	DEP		ALODEP		0	0	0		N			HL	1070903	91236	1	
+CVTENT	Convention entreprise	PRO		CVTENT	0	0	0	0		N			HL	1070903	91236	1	
+DDIAFF	Demande infos affaire	AFF		DDIAFF		0	0	0		N			HLJACQUIER	1071210	0	0	

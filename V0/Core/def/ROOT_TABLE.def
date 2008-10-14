@@ -1,0 +1,6 @@
+COMMAND="Select -s from DB2_TABLE where RACINE=y"
+SEP=":"
+FORMAT="TABLE_NAME:MODULE"
+SIZE="20s:20s"
+KEY="TABLE_NAME"
+FKEY="[MODULE] on Modules[MODULE]"

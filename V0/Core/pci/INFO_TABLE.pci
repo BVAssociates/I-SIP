@@ -1,0 +1,10 @@
+# Commandes d'Exploitation : Droit expl
+#Item~~Configurer~expl~~~Administrate~Modules_CODE~0~~Configure
+#~Insert~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Insert~PostAction~~~~ExecuteProcedure~coucou~0~~
+#~Remove~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Remove~PostAction~~~~ExecuteProcedure~coucou~0~~
+#~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
+
+Item~~Creer SQL~expl~~~ExecuteProcedure~PC_INIT_TABLE.pl %TABLE_NAME%~0~~Expand
