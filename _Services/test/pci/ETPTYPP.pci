@@ -1,0 +1,9 @@
+# Commandes d'Exploitation : Droit expl
+Item~~Editer~expl~~~Administrate~ETPTYPP_CODE~0~~Configure
+#~Insert~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Insert~PostAction~~~~ExecuteProcedure~coucou~0~~
+#~Remove~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Remove~PostAction~~~~ExecuteProcedure~coucou~0~~
+#~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
+#~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
+Item~~Champs~expl~~GSL_FILE=ETPTYPP~Explore~FIELD~0~~Expand
