@@ -20,4 +20,4 @@ Item~~Environnements~expl~~~Explore~ENVIRON~0~~Expand
 Item~Configuration SIP~Modules~adm~~~Administrate~Modules~0~~Configure
 Item~Configuration SIP~Administrer IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
 Item~Configuration SIP~Explorer IKOS~adm~~~Explore~INFO_TABLE~0~~Expand
-Item~Configuration SIP~Appliquer les modifications~adm~~~Administrate~INFO_TABLE~0~~Method
+Item~Configuration SIP~Appliquer les modifications~adm~~~ExecuteProcedure~PC_GENERATE_DEF.pl TEST~0~~Method
