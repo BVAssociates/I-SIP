@@ -24,12 +24,33 @@ sub new() {
 
 
 # change this methods to configure Database Access
+sub exist_local_table() {
+	my $self = shift;
+	
+	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
+	
+	my $return_value=0;
+	
+	# verification on sqlite_master
+	my $master_table=Sqlite->open("IKOS_".$self->{environnement} , 'sqlite_master', @_);
+	$master_table->query_condition("type='table' AND name='$table_name'");
+	
+	if ($master_table->fetch_row_array) {
+		$return_value=1;
+	}
+	$master_table->close();
+	
+	return $return_value;
+}
+
 sub open_local_table() {
 	my $self = shift;
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
-	return Sqlite->open("IKOS_".$self->{environnement} , $table_name, @_);
+	my $tmp_return = eval {Sqlite->open("IKOS_".$self->{environnement} , $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	return $tmp_return;
 }
 
 sub open_local_from_histo_table() {
