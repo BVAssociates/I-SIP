@@ -181,7 +181,9 @@ sub _find_file() {
 	
 	my $path_list = shift;
 	my $filename = shift;
-	my $env_separator = ($ENV{OS} =~ /Windows/)? ';' : ':';
+	
+	use Config;
+	my $env_separator = $Config{path_sep};
 	
 	my $filepath;
 	foreach my $path (split ($env_separator,$path_list)) {
