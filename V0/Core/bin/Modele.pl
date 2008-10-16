@@ -19,45 +19,23 @@ PC_LIST_FIELD_HISTO - Liste les champs d'une table dans un environnement
 
 Liste les champs d'une table dans un environnement à la date courante
 
-=head2 ENVIRONNEMENT
+=head1 ENVIRONNEMENT
 
-=over 4
+=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
-=item ITOOLS
+=head1 OPTIONS
 
-L'environnement du service de l'ICles IKOS doit être chargé
+=item -h : Affiche l'aide en ligne
 
-=back
+=item -v : Mode verbeux
 
-=head2 OPTIONS
+=head1 ARGUMENTS
 
-=over 4
+=item * environnement à utiliser
 
-=item -h
+=item * table a décrire
 
-Affiche l'aide en ligne
-
-=item -v
-
-Mode verbeux
-
-=back
-
-=head2 ARGUMENTS 
-
-=over 4
-
-=item *
-
-environnement à utiliser
-
-=item *
-
-table a décrire
-
-=back
-
-=head2 AUTHOR
+=head1 AUTHOR
 
 BV Associates, 16/10/2008
 
