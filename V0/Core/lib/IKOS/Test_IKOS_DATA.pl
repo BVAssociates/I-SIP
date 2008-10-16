@@ -104,7 +104,7 @@ is(join(',',@histo_last_row), join(',',@sqlite_last_row), "Sqlite and Histo have
 # IKOS::ODBC
 ################################################
 
-use IKOS::DATA::ODBC_TXT;
+use IKOS::DATA::ODBC;
 
 undef $base;
 $base = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 0});

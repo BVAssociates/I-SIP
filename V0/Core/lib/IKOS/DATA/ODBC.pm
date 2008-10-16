@@ -1,4 +1,18 @@
+# Special Class for the Text ODBC Driver
 package ODBC_TXT;
+@ISA = ("ODBC");
+
+# get table name depending the driver
+sub _set_tablename() {
+	my $self = shift;
+
+	$self->_debug("$self->{table_name} -> $self->{table_name}.txt");
+	$self->{table_name}=$self->{table_name}.".txt";
+}
+
+1;
+
+package ODBC;
 
 require IKOS::DATA::DBI::DBI_interface;
 @ISA = ("DBI_interface");
@@ -41,6 +55,9 @@ sub open() {
 	# quick test
 	croak "Error openning sqlite database : $self->{database_path}" unless $self->{database_handle}->ping();
 	
+	# set the table name depending the ODBC Driver
+	$self->_set_tablename();
+	
 	# put fields list in memory
 	$self->_debug("Get info for table : ",$self->{table_name});
 	$self->_set_columns_info();
@@ -60,6 +77,13 @@ sub open() {
     return $self;
 }
 
+# get table name depending the driver
+sub _set_tablename() {
+	my $self = shift;
+
+	# keep name 
+}
+
 # Get information from database
 # Need "$self->{database_handle}" to be connected !
 sub _set_columns_info() {
@@ -67,9 +91,14 @@ sub _set_columns_info() {
 	
 	croak("$self->{database_name} need to be opened before execute _set_columns_info") if not defined $self->{database_handle};
 	
-	my $table_info=$self->{database_handle}->prepare("SELECT * from syscolumns_".$self->{table_name}.".txt");
+	my $table_info;
+	
+	eval { $table_info=$self->{database_handle}->prepare("SELECT * from syscolumns_".$self->{table_name}) };
+	confess  "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
+	
 	$self->_debug("Get column info for $self->{table_name}");
-	$table_info->execute();
+	eval {  $table_info->execute() };
+	confess  "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
 	
 	while (my @col=$table_info->fetchrow_array) {
 		#print Dumper @col;
@@ -110,9 +139,12 @@ sub get_query()
 	
 	# construct SQL from "query_*" members
 	my $query;
-	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->table_name().".txt";
+	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->table_name();
 	$query = $query." WHERE ".join(' AND ',$self->query_condition()) if $self->query_condition() != 0;
 	$query = $query." ORDER BY ".join(', ',$self->query_sort()) if $self->query_sort() != 0;
 	
 	return $query;
 }
+
+1;
+

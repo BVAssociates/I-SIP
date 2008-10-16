@@ -197,10 +197,11 @@ sub _execute_select_query() {
 	# prepare query
 	$self->_debug('Prepare SQL : ',$self->get_query);
 	eval { $self->{database_statement}=$self->{database_handle}->prepare( $self->get_query() ) };
-	croak "Error in : ".$self->get_query() if $@;
+	confess  "Error in prepare : ".$self->get_query() if $@;
 		
 	# execute query
-	$self->{database_statement}->execute();
+	eval { $self->{database_statement}->execute() };
+	confess  "Error in execute : ".$self->get_query() if $@;
 }
 
 sub _begin_work() {
@@ -267,7 +268,7 @@ sub close() {
 	
 	# force close the database
 	if (defined $self->{database_handle}) {
-		$self->_debug("Close database",$self->{database_path});
+		$self->_debug("Close database",$self->{database_name});
 		$self->{database_handle}->disconnect();
 	}
 	undef $self->{database_handle};
