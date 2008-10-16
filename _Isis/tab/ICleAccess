@@ -1,6 +1,4 @@
 #IsisUser:ServiceName:ServiceType:Role
 #=====================================
 
-bird\fg:myservice:Core.V0:ALL
-bird\fg:myserviceII:Core.V0:ALL
 voisins\vb:test:Core.V0:ALL
