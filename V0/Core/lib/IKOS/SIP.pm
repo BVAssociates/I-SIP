@@ -2,7 +2,7 @@ package SIP;
 
 use strict;
 
-use IKOS::DATA::ODBC_TXT;
+use IKOS::DATA::ODBC;
 use IKOS::DATA::Sqlite;
 use IKOS::DATA::ITools;
 use IKOS::DATA::Histo;
