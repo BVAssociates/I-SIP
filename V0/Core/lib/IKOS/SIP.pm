@@ -20,8 +20,25 @@ sub new() {
 	return bless($self, $class);
 }
 
+#found the table primary key
+sub get_table_key() {
+	my $self = shift;
+	my $tablename = shift or croak "get_table_key() wait args : 'tablename'";
+	my $debug_level = 0;
+	my $key_found;
+	
+	# some different way to get the infos :
+	#   - from INFO_TABLE, 
+	#   - from local table
+	#   - from ITools definition file
+	
+	my $table=ITools->open("INFO_TABLE", {debug => $debug_level});
+	$table->query_condition("TABLE_NAME = '$tablename'");
+	$table->query_field("PRIMARY_KEY");
 
-
+	($key_found) = $table->fetch_row_array();
+	return $key_found;
+}
 
 # change this methods to configure Database Access
 sub exist_local_table() {
