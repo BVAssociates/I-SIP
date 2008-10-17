@@ -24,7 +24,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 
 my $pci_template='Item~~Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
 ';
-my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
+my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';
 
 ##### END TEMPLATES ##### 
@@ -119,7 +119,7 @@ while (my %info = $list_table->fetch_row() ) {
 	print DEFFILE $pci_string."\n";
 	close DEFFILE;
 }
-
+=begin comment
 # PCI racine
 my $pci_string_module;
 my @fkey_list;

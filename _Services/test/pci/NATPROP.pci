@@ -1,4 +1,4 @@
 Item~~Champs~expl~~GSL_FILE=NATPROP~Explore~FIELD~0~~Expand
-Item~~PROTYPP~expl~~~Explore~PROTYPP~0~~Expand
-Item~~ETPTYPP~expl~~~Explore~ETPTYPP~0~~Expand
+Item~Tables liées~PROTYPP~expl~~~Explore~PROTYPP~0~~Expand
+Item~Tables liées~ETPTYPP~expl~~~Explore~ETPTYPP~0~~Expand
 
