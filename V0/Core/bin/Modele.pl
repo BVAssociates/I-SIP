@@ -25,15 +25,15 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 OPTIONS
 
-=item -h : Affiche l'aide en ligne
+=head2 -h : Affiche l'aide en ligne
 
-=item -v : Mode verbeux
+=head2 -v : Mode verbeux
 
 =head1 ARGUMENTS
 
-=item * environnement à utiliser
+=head2 * environnement à utiliser
 
-=item * table a décrire
+=head2 * table a décrire
 
 =head1 AUTHOR
 
