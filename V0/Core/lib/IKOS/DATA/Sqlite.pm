@@ -201,6 +201,8 @@ sub _open_database() {
 	
 	croak '$self->{database_path} not defined' if not defined $self->{database_path};
 	
+	return if defined $self->{database_handle};
+	
 	$self->_debug("Open database file : ",$self->{database_path});
 	# use RaiseError exception to stop the script at first error
 	$self->{database_handle} = DBI->connect("dbi:SQLite:dbname=$self->{database_path}","","",{ RaiseError => 1});

@@ -45,6 +45,7 @@ sub open() {
 	# internal DB descriptor
 	$self->{database_handle}  = undef;
 	$self->{database_statement}  = undef;
+	$self->{_active_transaction} = 0;
 	
 	# other internal members
 	$self->{debugging} = 0;
@@ -162,6 +163,12 @@ sub debugging {
     return $self->{debugging};
 }
 
+sub active_transaction {
+    my $self = shift;
+    if (@_) { croak("'active_transaction' member is read-only") }
+    return $self->{_active_transaction};
+}
+
 ##############################################
 ##  private methods        ##
 ##############################################
@@ -172,17 +179,20 @@ sub _debug() {
 	print STDERR "DEBUG:DBI:".$self->{database_name}.'.'.$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
 }
 
-# 
+# open if needed
+## don't open if already opened
 sub _open_database() {
 	my $self = shift;
 	
 	croak '$self->_open_database not implemented';
 }
 
+# close if needed
+## Don't close if active transaction running
 sub _close_database() {
 	my $self = shift;
 	
-	$self->close();
+	$self->close() if not $self->{_active_transaction};
 	
 	return 1;
 }
@@ -190,10 +200,7 @@ sub _close_database() {
 
 sub _execute_select_query() {
 	my $self = shift;
-	
-	# open database
-	$self->_open_database() if not defined $self->{database_handle};
-	
+		
 	# prepare query
 	$self->_debug('Prepare SQL : ',$self->get_query);
 	eval { $self->{database_statement}=$self->{database_handle}->prepare( $self->get_query() ) };
@@ -204,21 +211,28 @@ sub _execute_select_query() {
 	confess  "Error in execute : ".$self->get_query() if $@;
 }
 
-sub _begin_work() {
-	my $self=shift;
-	
-	$self->{database_statement}->begin_work();
-}
-
-sub _commit() {
-	my $self=shift;
-	
-	$self->{database_statement}->commit();
-}
-
 ##############################################
 ##  public methods        ##
 ##############################################
+
+# 
+sub begin_transaction() {
+	my $self=shift;
+	
+	$self->_debug("BEGIN transaction");
+	$self->{_active_transaction} = 1;
+	$self->_open_database();
+	$self->{database_handle}->begin_work();
+}
+
+sub commit_transaction() {
+	my $self=shift;
+	
+	$self->_debug("COMMIT transaction");
+	$self->{_active_transaction} = 0;
+	$self->{database_handle}->commit();
+	$self->_close_database();
+}
 
 # set custom SQL query
 sub custom_select_query()
@@ -248,7 +262,7 @@ sub get_query()
 	return $query;
 }
 
-# reset the current statement
+# explicitly reset the current statement
 sub finish() {
 	my $self = shift;
 	# finish current statement if any
@@ -279,6 +293,9 @@ sub fetch_row_array()
 {
 	my $self = shift;
 
+	# open database if needed
+	$self->_open_database() if not defined $self->{database_handle};
+	
 	# connect to database and execute the query
 	$self->_execute_select_query() if not defined $self->{database_statement};
 	
@@ -286,7 +303,9 @@ sub fetch_row_array()
 	my @return_line = $self->{database_statement}->fetchrow_array();
 	map { $_='' if not defined $_ } @return_line;
 	
+	# close database if needed
 	$self->_close_database() if not @return_line;
+	
 	return @return_line;
 }
 
@@ -353,7 +372,7 @@ sub insert_row_array() {
 sub insert_row() {
 	my $self = shift;
 	
-	my %row = @_;
+	my (%row) = @_;
 	
 	my @error_field;
 	foreach my $not_null_field ($self->not_null) {
