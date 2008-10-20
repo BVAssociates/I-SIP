@@ -18,7 +18,7 @@ sub open() {
 	
 	# mandatory parameter
 	if (@_ < 1) {
-		croak ('\'new\' take 2 mandatory argument: ${class}->open("tablename" [, {debug => $num}] )')
+		croak ('\'new\' take 1 mandatory argument: ${class}->open("tablename" [, {debug => $num}] )')
 	}
 	$self->{table_name} = shift;
 	$options=shift;
