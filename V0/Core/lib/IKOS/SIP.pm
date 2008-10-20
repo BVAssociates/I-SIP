@@ -75,7 +75,12 @@ sub open_local_from_histo_table() {
 	
 	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
 	
-	return Histo->open("IKOS_".$self->{environnement} , $table_name, @_);
+	my $table_histo = Histo->open("IKOS_".$self->{environnement} , $table_name, @_);
+	
+	# we modify a private member
+	$table_histo->key($self->get_table_key($table_name));
+
+	return $table_histo
 }
 
 sub open_ikos_table() {
