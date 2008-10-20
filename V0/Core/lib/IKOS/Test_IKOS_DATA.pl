@@ -14,27 +14,27 @@ use IKOS::DATA::Sqlite;
 
 # Open
 ############
-my $base = Sqlite->open("IKOS_TEST","TEST", { debug => 0, timeout => 10000});
+my $table_sqlite = Sqlite->open("IKOS_TEST","TEST", { debug => 0, timeout => 10000});
 
 # Table infos
 ############
-ok(defined($base),			'Sqlite->open() is defined');
-is($base->field, $base->query_field,'Sqlite->field() Sqlite->and query_field() are identical');
-is(join('@@',$base->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_field()');
-is(join('@@',$base->query_sort('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_sort()');
-is(join('@@',$base->query_condition("AANOSQCPST < 10")), "AANOSQCPST < 10", 'Sqlite->query_condition()');
+ok(defined($table_sqlite),			'Sqlite->open() is defined');
+is($table_sqlite->field, $table_sqlite->query_field,'Sqlite->field() Sqlite->and query_field() are identical');
+is(join('@@',$table_sqlite->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_field()');
+is(join('@@',$table_sqlite->query_sort('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_sort()');
+is(join('@@',$table_sqlite->query_condition("AANOSQCPST < 10")), "AANOSQCPST < 10", 'Sqlite->query_condition()');
 
 # Table data Select
 ############
-eval { $base->fetch_row_array() };
+eval { $table_sqlite->fetch_row_array() };
 ok(! $@, 'Sqlite->fetch_row_array()');
 
-ok($base->finish, 'Sqlite->finish()');
-is($base->query_condition(undef), 0, 'Sqlite->query_condition() : reset to undef');
-is(join('@@',$base->query_field('AAPTYCOD','AANPRCOD')), 'AAPTYCOD@@AANPRCOD', 'Sqlite->query_field() : redefine to another field');
+ok($table_sqlite->finish, 'Sqlite->finish()');
+is($table_sqlite->query_condition(undef), 0, 'Sqlite->query_condition() : reset to undef');
+is(join('@@',$table_sqlite->query_field('AAPTYCOD','AANPRCOD')), 'AAPTYCOD@@AANPRCOD', 'Sqlite->query_field() : redefine to another field');
 my $sqlite_count=0;
 my @sqlite_last_row;
-while (my @row=$base->fetch_row_array()) {
+while (my @row=$table_sqlite->fetch_row_array()) {
 	$sqlite_count++;
 	@sqlite_last_row=@row;
 }
@@ -42,12 +42,12 @@ ok(! $@, 'Sqlite->fetch_row_array() after reading all rows');
 # same thing with hashes
 my $sqlite_count_hash=0;
 my %sqlite_last_hash;
-while (my %row=$base->fetch_row()) {
+while (my %row=$table_sqlite->fetch_row()) {
 	$sqlite_count_hash++;
 	%sqlite_last_hash=%row;
 }
 is($sqlite_count_hash , $sqlite_count, "Sqlite->fetch_row and Sqlite->fetch_row_array return same number of rows");
-ok($base->finish, 'Sqlite->finish() again');
+ok($table_sqlite->finish, 'Sqlite->finish() again');
 
 
 # Table Data Insert/Select/delete
@@ -55,17 +55,17 @@ ok($base->finish, 'Sqlite->finish() again');
 
 my $last_id;
 # insert data
-$last_id=$base->insert_row( AAPTYCOD => "TEST1", AAPTYLIB=> "TEST2", AANPRCOD=> "TEST3", AAUTILCPST=> "TEST", AADTECPST=> "TEST");
+$last_id=$table_sqlite->insert_row( AAPTYCOD => "TEST1", AAPTYLIB=> "TEST2", AANPRCOD=> "TEST3", AAUTILCPST=> "TEST", AADTECPST=> "TEST");
 ok($last_id > 0, 'Sqlite->insert_row()');
 ok($last_id, 'insert_row() return last_id='.$last_id);
 # query inserted data
-is(join('@@',$base->query_condition("ROWID = $last_id")), "ROWID = $last_id", 'Sqlite->query_condition()');
-my @last_inserted=$base->fetch_row_array();
-$base->_debug("LINE=",join(',',@last_inserted));
+is(join('@@',$table_sqlite->query_condition("ROWID = $last_id")), "ROWID = $last_id", 'Sqlite->query_condition()');
+my @last_inserted=$table_sqlite->fetch_row_array();
+$table_sqlite->_debug("LINE=",join(',',@last_inserted));
 is(join('@@',@last_inserted), 'TEST1@@TEST3', 'Sqlite->fetch_row_array() return last inserted data');
 # delete inserted data
-ok($base->execute("DELETE from TEST where ROWID = $last_id;"), 'Sqlite->execute("DELETE ...") on last ROWID');
-is(undef $base, undef, 'Destroy object');
+ok($table_sqlite->execute("DELETE from TEST where ROWID = $last_id;"), 'Sqlite->execute("DELETE ...") on last ROWID');
+is(undef $table_sqlite, undef, 'Destroy object');
 
 
 ################################################
@@ -116,10 +116,12 @@ is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
 
 
 ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
+
 ##TODO
-# $base->update(...)
+# $table_sqlite->update(...)
 # $Histo->update(...)
-# verify same number of data
+
+
 
 ################################################
 # IKOS::ODBC
@@ -127,30 +129,30 @@ ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
 
 use IKOS::DATA::ODBC;
 
-undef $base;
-$base = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 0});
+my $table_odbc;
+$table_odbc = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 0});
 
-ok(defined($base),			'ODBC_TXT->open() is defined');
+ok(defined($table_odbc),			'ODBC_TXT->open() is defined');
 
 
 # Table infos
 ############
 
-is($base->field, $base->query_field,'ODBC_TXT->field() and ODBC_TXT->query_field() are identical');
-is(join('@@',$base->query_field('AIPTYCOD','AICDDECORG')), 'AIPTYCOD@@AICDDECORG', 'ODBC_TXT->query_field()');
-is(join('@@',$base->query_sort('AIPTYCOD','AICDETTYP')), 'AIPTYCOD@@AICDETTYP', 'ODBC_TXT->query_sort()');
-is(join('@@',$base->query_condition("AIUTILCPST = 'T281'")), "AIUTILCPST = 'T281'", 'ODBC_TXT->query_condition()');
+is($table_odbc->field, $table_odbc->query_field,'ODBC_TXT->field() and ODBC_TXT->query_field() are identical');
+is(join('@@',$table_odbc->query_field('AIPTYCOD','AICDDECORG')), 'AIPTYCOD@@AICDDECORG', 'ODBC_TXT->query_field()');
+is(join('@@',$table_odbc->query_sort('AIPTYCOD','AICDETTYP')), 'AIPTYCOD@@AICDETTYP', 'ODBC_TXT->query_sort()');
+is(join('@@',$table_odbc->query_condition("AIUTILCPST = 'T281'")), "AIUTILCPST = 'T281'", 'ODBC_TXT->query_condition()');
 
 
 # Table data Select
 ############
 
-eval { $base->fetch_row_array() };
+eval { $table_odbc->fetch_row_array() };
 ok(! $@, 'ODBC_TXT->fetch_row_array()');
 
-ok($base->finish, 'ODBC_TXT->finish()');
+ok($table_odbc->finish, 'ODBC_TXT->finish()');
 
-eval { $base->fetch_row_array()};
+eval { $table_odbc->fetch_row_array()};
 ok(! $@, 'ODBC_TXT->fetch_row_array() after ODBC_TXT->finish()');
 
 
@@ -194,6 +196,4 @@ while (my %line=$test_table->fetch_row()) {
 	}
 }
 ok(@test_array > 0, "ITools->fetch_row() return something");
-
-
 
