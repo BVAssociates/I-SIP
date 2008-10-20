@@ -31,6 +31,8 @@ sub get_table_key() {
 	#   - from INFO_TABLE, 
 	#   - from local table
 	#   - from ITools definition file
+	#
+	# For now, we'll use INFO_TABLE
 	
 	my $table=ITools->open("INFO_TABLE", {debug => $debug_level});
 	$table->query_condition("TABLE_NAME = '$tablename'");
@@ -38,6 +40,23 @@ sub get_table_key() {
 
 	($key_found) = $table->fetch_row_array();
 	return $key_found;
+}
+
+sub get_table_field() {
+	my $self = shift;
+	my $tablename = shift or croak "get_table_field() wait args : 'tablename'";
+	my $debug_level = 0;
+	my $key_found;
+	
+	# some different way to get the infos :
+	#   - from INFO_TABLE, 
+	#   - from local table
+	#   - from ITools definition file
+	#
+	# For now, we'll use ITools definition
+	
+	my $table=ITools->open($tablename, {debug => $debug_level});
+	return $table->field;
 }
 
 # change this methods to configure Database Access
@@ -77,7 +96,7 @@ sub open_local_from_histo_table() {
 	
 	my $table_histo = Histo->open("IKOS_".$self->{environnement} , $table_name, @_);
 	
-	# we modify a private member
+	# we must set the primary key manually
 	$table_histo->key($self->get_table_key($table_name));
 
 	return $table_histo
@@ -91,6 +110,8 @@ sub open_ikos_table() {
 	return ODBC_TXT->open("IKOS_DEV" , $table_name, @_);
 }
 
+=begin comment : may be confusing
+
 sub open_histo_table() {
 	my $self = shift;
 	
@@ -99,6 +120,9 @@ sub open_histo_table() {
 	return Sqlite->open("IKOS_".$self->{environnement} , $table_name."_HISTO", @_);
 }
 
+=end
+
+=cut
 
 sub get_histo_line () {
 	my $self = shift;
@@ -142,7 +166,7 @@ sub SQL_create() {
 	}
 
 	# spécials columns
-	push @create_statements, "TIMESTAMP_COLLECTE VARCHAR(20) DEFAULT CURRENT_TIMESTAMP";
+	#push @create_statements, "TIMESTAMP_COLLECTE VARCHAR(20) DEFAULT CURRENT_TIMESTAMP";
 
 	my $create_query="CREATE TABLE $tablename (\n";
 	$create_query .= join(",\n",@create_statements);
@@ -158,5 +182,6 @@ sub SQL_drop() {
 	
 	return "DROP $tablename;";
 }
+
 
 1;
