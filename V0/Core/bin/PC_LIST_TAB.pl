@@ -25,15 +25,23 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over4
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
+
+=item -v : Mode verbeux
+
+=back
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=over4
 
-=head2 * table a ouvrir
+=item environnement : environnement à utiliser
+
+=item tablename : table a ouvrir
+
+=back
 
 =head1 AUTHOR
 
@@ -80,7 +88,7 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2) {
+if ( @ARGV < 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -94,7 +102,10 @@ my $bv_severite=0;
 use IKOS::SIP;
 
 my $sip=SIP->new($environ);
-my $table=$sip->open_local_table($table_name, {debug => 0 });
+my $table=$sip->open_local_from_histo_table($table_name, {debug => 0 });
+
+my @query_field=$sip->get_table_field($table_name);
+$table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
