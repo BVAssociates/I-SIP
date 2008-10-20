@@ -110,9 +110,10 @@ sub _set_columns_info_histo() {
 ##################################################
 
 # modifying primary key is now avaibable
+# query_sort always by key
 sub key {
     my $self = shift;
-    if (@_) { @{ $self->{key} } = @_ }
+    if (@_) { @{ $self->{key} } = @_ ; @{ $self->{query_sort} } = @_ }
     return @{ $self->{key} };
 }
 
@@ -120,6 +121,12 @@ sub query_date {
     my $self = shift;
     if (@_) { $self->{query_date} = shift }
     return $self->{query_date} ;
+}
+
+sub query_sort {
+    my $self = shift;
+    if (@_) { croak("query_sort is read-only"); }
+    return $self->{query_sort} ;
 }
 
 # set custom SQL query
