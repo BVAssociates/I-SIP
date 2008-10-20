@@ -183,5 +183,71 @@ sub SQL_drop() {
 	return "DROP $tablename;";
 }
 
+sub compare_table() {
+	my $self=shift;
+	
+	my ($table1, $table2) = @_;
+	my @key;
+	my %result;
+	
+	if ( join(',',sort $table1->key()) ne  join(',',sort $table1->key())) {
+		croak("The 2 tables have not the same keys");
+	}
+	
+	if ( $table1->table_name() ne $table2->table_name() ) {
+		croak("The 2 tables have not the same name");
+	}
+	
+	@key=$self->get_table_key($table1->table_name());
+	
+	if ( join(',',sort $table1->field()) ne  join(',',sort $table1->field())) {
+		croak("The 2 tables have not the same fields");
+	}
+	
+	$table1->query_sort(@key);
+	
+	#first pass to get primary keys which are on one table
+	## after 2 loops :
+	##	$seen_keys{keys} = 1 if only one table have it
+	##	$seen_keys{keys} = 2 if the two tables have it
+	##	my %seen_keys;
+	##	my @row;
+	##	$table1->query_field(@key);
+	##	$table2->query_field(@key);
+	##	while (@row=$table1->fetch_row_array()) {
+	##		$seen_keys{join(',',@row)}++
+	##	}
+	##	while (@row=$table2->fetch_row_array()) {
+	##		$seen_keys{join(',',@row)}++
+	##	}
+	
+	my %row_table1=$table1->fetch_row;
+	my %row_table2=$table2->fetch_row;
+	while (%row_table1 or %row_table2) {
+	
+		# New lines
+		## TODO
+		## %result = (%result,%row_table1) if not %row_table1 or $seen_keys{join(',',@row} = ;
+		## %result = (%result,%row_table2) if not %row_table2;
+		die "table1 and table2 have different row number" if not %row_table1 or not %row_table2;
+		
+		##if ( $row_table1{join(',',@row)} ne $row_table1{join(',',@row)} ) {
+		##	if ($seen{join(',',@row})
+		##}
+		my @key_values1=@row_table1{@key};
+		my @key_values2=@row_table2{@key};
+		die "table1 and table2 have different primary keys" if join(',',@key_values1) ne join(',',@key_values1);
+		foreach my $field1 (keys %row_table1) {
+			if ($row_table1{$field1} ne $row_table2{$field1}) {
+				print STDERR "Found update : Key (".join(',',@key_values1).") $field1=$row_table1{$field1}\n";
+				$result{join(',',@key_values1)}{$field1}=$row_table1{$field1};
+			}
+		}
+		%row_table1=$table1->fetch_row;
+		%row_table2=$table2->fetch_row;
+	}
+	
+	return %result;
+}
 
 1;
