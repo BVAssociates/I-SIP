@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 49;
+use Test::More tests => 53;
 use Data::Dumper;
 
 use strict;
@@ -39,7 +39,16 @@ while (my @row=$base->fetch_row_array()) {
 	@sqlite_last_row=@row;
 }
 ok(! $@, 'Sqlite->fetch_row_array() after reading all rows');
+# same thing with hashes
+my $sqlite_count_hash=0;
+my %sqlite_last_hash;
+while (my %row=$base->fetch_row()) {
+	$sqlite_count_hash++;
+	%sqlite_last_hash=%row;
+}
+is($sqlite_count_hash , $sqlite_count, "Sqlite->fetch_row and Sqlite->fetch_row_array return same number of rows");
 ok($base->finish, 'Sqlite->finish() again');
+
 
 # Table Data Insert/Select/delete
 ############
@@ -68,7 +77,7 @@ use IKOS::DATA::Histo;
 # Open
 ############
 my $histo_table= Histo->open("IKOS_TEST","TEST", { debug => 0, timeout => 10000});
-
+ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table TEST");
 # Table infos
 ############
 ok(defined($histo_table), 'Histo->open() is defined');
@@ -88,13 +97,25 @@ while (my @row=$histo_table->fetch_row_array()) {
 	$histo_count++;
 	@histo_last_row=@row;
 }
-ok($histo_count, 'Histo->fetch_row_array() : reading all rows');
-ok($histo_table->finish, 'Histo->finish() again');
+ok($histo_count, 'Histo->fetch_row_array() : reading all rows as arrays');
 
 # The More Important Test
 is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
 is(join(',',@histo_last_row), join(',',@sqlite_last_row), "Sqlite and Histo have same last row");
 
+
+# same as above with Hash instead of Array
+my $histo_count_hash=0;
+my %histo_last_hash;
+while (my %row=$histo_table->fetch_row()) {
+	$histo_count_hash++;
+	%histo_last_hash=%row;
+}
+is($histo_count, $histo_count_hash, 'Histo->fetch_row_array() and Histo->fetch_row() return same number of rows');
+is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
+
+
+ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
 ##TODO
 # $base->update(...)
 # $Histo->update(...)

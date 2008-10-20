@@ -34,6 +34,7 @@ sub open() {
 	# real informations (Aggregation)
 	$self->{table_name_histo} = $self->{table_name}."_HISTO";
 	$self->{database_name} = $database_name;
+	
 	## We suppose TABLE and TABLE_HISTO are in the same database  /!\
 	$self->{table_histo} = Sqlite->open($self->{database_name}, $self->{table_name_histo}, $options);
 	
@@ -108,6 +109,7 @@ sub _set_columns_info_histo() {
 ##  public methods  ##
 ##################################################
 
+# modifying primary key is now avaibable
 sub key {
     my $self = shift;
     if (@_) { @{ $self->{key} } = @_ }
@@ -129,7 +131,7 @@ sub custom_select_query()
 
 }
 
-# Create an SQL query
+# Construct SQL query to get last inserted value for each field
 sub get_query()
 {
 	my $self = shift;
@@ -189,19 +191,19 @@ sub fetch_row() {
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
-	$self->{table_histo}->query_field(split(/\s*,\s*/,"ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE"));
+	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE");
 	
 	#return every row until TABLE_KEY change
 	# ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE
 	while (%field_line = $self->{table_histo}->fetch_row ) {
-		
+
 		$current_key = $field_line{TABLE_KEY} if not defined $current_key;
 		
 		# add the FIELD_VALUE to the return hash
 		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
 		
 		# if TABLE_KEY changed, we save the current line and exit
-		if ( $current_key and $current_key ne $field_line{TABLE_KEY}) {
+		if ( defined $current_key and $current_key ne $field_line{TABLE_KEY}) {
 			$self->{temp_next_row} = { %field_line };
 			last;
 		}	
@@ -230,48 +232,45 @@ sub fetch_row_array() {
 	return @return_line;
 }
 
-# Insesrt hash  as a row
+# Insert hash  as a rows (one rows per field)
 sub insert_row() {
 	my $self = shift;
+		
+	my (%row) = @_;
+	my $transaction_running=0;
 	
-	croak "insert_row() not implemented";
+	use POSIX qw(strftime);
+	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	
-	my %row = @_;
-	
-	my @error_field;
-	foreach my $not_null_field ($self->not_null) {
-		if (not defined $row{$not_null_field}) {
-			push @error_field, $not_null_field;
-		}
+	# active transaction mode if not already done
+	if ( $self->{table_histo}->active_transaction() > 0 ) {
+		$transaction_running = 1 ;
+	} else {
+		$self->{table_histo}->begin_transaction();
 	}
-	croak join(',',@error_field)." cannot be undef" if @error_field;
-	
-	# open base
-	$self->_open_database;
-	
-	$self->_begin_work();
 	
 	# quote the fields with the apropriate 
-	foreach my $key (keys %row) {
-		$row{$key} = $self->{database_handle}->quote($row{$key});
-	}
-	my $insert_query = sprintf("INSERT INTO %s (%s) VALUES (%s);",$self->{table_name},join(',',keys %row),join(',', values %row));
-	
-	# prepare query
-	$self->_debug('Prepare SQL : ',$insert_query);
-	$self->{database_statement}=$self->{database_handle}->prepare( $insert_query );
+	foreach my $field (keys %row) {
 		
-	# execute query
-	$self->_debug('Execute SQL');
-	$self->{database_statement}->execute();
 	
-	$self->_commit();
+		my $last_id=$self->{table_histo}->insert_row(
+				"DATE_HISTO" => $date_current,
+				"TABLE_NAME" => $self->table_name,
+				"TABLE_KEY" => $row{join(',',$self->key())},
+				"FIELD_NAME" => $field,
+				"FIELD_VALUE" => $row{$field}
+		);
+		
+		$self->_debug("Insert : $field ");
+
+		
+	}
 	
-	my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name});
+	# commit this rows if no transaction was running before
+	$self->{table_histo}->commit_transaction() if not $transaction_running;
+	#$self->{table_histo}->{database_handle}->rollback();
 	
-	$self->_close_database();
-	
-	return $last_id;
+	#return $last_id;
 }
 
 sub finish() {
