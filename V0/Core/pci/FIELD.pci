@@ -11,5 +11,5 @@
 #Item~~Voir Historique~expl~~~DisplayTable~PROTYPP_HISTO~0~~Display
 #Item~~Editer Historique~expl~~~Administrate~PROTYPP_HISTO~0~~Configure
 #Item~~Editer~expl~~~Administrate~PROTYPP_CODE~0~~Configure
-Item~~Historique~expl~~~DisplayTable~FIELD_HISTO@DATE_HISTO,HEURE_HISTO,FIELD,VALUE,TYPE,STATUS~0~~Display
+Item~~Historique~expl~~~DisplayTable~FIELD_HISTO~0~~Display
 Item~~Admin courant~expl~~~Administrate~FIELD_HISTO~0~~Display

@@ -95,7 +95,7 @@ print STDERR "KEY_VAL=$table_key_value\n";
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_histo_table($tablename);
-$table_histo->query_field("DATE_HISTO","TIME_HISTO","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT");
+#$table_histo->query_field("DATE_HISTO","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT");
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
 while (my @line=$table_histo->fetch_row_array() ) {
