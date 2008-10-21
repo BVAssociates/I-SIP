@@ -82,7 +82,7 @@ ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table TEST");
 ############
 ok(defined($histo_table), 'Histo->open() is defined');
 is($histo_table->field, $histo_table->query_field,'Histo->field() and Histo->query_field() are identical');
-is(join('@@',$histo_table->query_sort('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Histo->query_sort()');
+is(join('@@',$histo_table->query_sort()), join('@@',$histo_table->key()), 'Histo->query_sort() equal to Histo->key()');
 #is(join('@@',$histo_table->query_condition("ENVIRONNEMENT = 'TEST'")), "ENVIRONNEMENT = 'TEST'", 'Histo->query_condition()');
 
 # Table data Select
