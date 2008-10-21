@@ -62,11 +62,11 @@ $list_table->finish();
 # CREATE DEF
 while (my %info = $list_table->fetch_row() ) {
 	if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
-		print STDERR "$info{TABLE_NAME} don't exist in local tables\n";
-		next;
+		warn "$info{TABLE_NAME} don't exist in local tables\n";
+		#next;
 	}
 	# open DATA table
-	my $ikos_data = $sip->open_local_table($info{TABLE_NAME}, { debug => $bv_debug });
+	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
 	my $ikos_data_field = join($separator,$ikos_data->field() );
 	my $ikos_data_size = join($separator,('20s') x $ikos_data->field() ) ;
 	
