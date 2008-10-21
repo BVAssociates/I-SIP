@@ -1,3 +1,5 @@
 #NodeId;Icon;Label
 mytable.Item;I_ps;
 mytable.Table;T_Oracle_process;
+ROOT_TABLE.Item;I_ps;Table IKOS
+ROOT_TABLE.Table;T_Oracle_process;
