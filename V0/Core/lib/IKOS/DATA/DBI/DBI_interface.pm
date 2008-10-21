@@ -407,26 +407,82 @@ sub insert_row() {
 	return $last_id;
 }
 
-=begin comment 
+# update a row on a primary key
+sub update_row_array() {
+	my $self = shift;
+	
+	my @row = @_;
+	croak "Wrong number of fields (has: ".@row.", expected: ".$self->field().")" if @row != $self->field() ;
+	
+	# convert array into hash
+	my %row_hash;
+	foreach my $field ($self->field()) {
+		$row_hash{$field} = shift @row ;
+	}
+	
+	$self->update_row(%row_hash);
+}
 
-  $dbh->{AutoCommit} = 0;  # enable transactions, if possible
-  $dbh->{RaiseError} = 1;
-  eval {
-      foo(...)        # do lots of work here
-      bar(...)        # including inserts
-      baz(...)        # and updates
-      $dbh->commit;   # commit the changes if we get this far
-  };
-  if ($@) {
-      warn "Transaction aborted because $@";
-      # now rollback to undo the incomplete changes
-      # but do it in an eval{} as it may also fail
-      eval { $dbh->rollback };
-      # add other application on-error-clean-up code here
-  }
-  
-=end comment
-=cut
+# update a row on a primary key
+sub update_row() {
+	my $self = shift;
+	
+	my (%row) = @_;
+	
+	# check if fields exist
+	my @error_field;
+	my @fields=$self->field();
+	foreach my $field (keys %row) {
+		if (not grep(/^$field$/, @fields)) {
+			push @error_field, $field;
+		}
+	}
+	croak join(',',@error_field)." don't exist in fields" if @error_field;
+	
+	# check if primary key is valued
+	croak "primary key not defined for ".$self->table_name if not $self->key;
+	@error_field=();
+	foreach my $key_field ($self->key) {
+		print "check $key_field\n";
+		if (not defined $row{$key_field}) {
+			push @error_field, $key_field;
+		}
+	}
+	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
+	
+	# open base
+	$self->_open_database;
+	
+	# don't update primary keys
+	# 
+	my @primary_keys=$self->key();
+	my @updated_fields;
+	my @conditions;
+	foreach my $field (keys %row) {
+		if ( grep(/^$field$/,@primary_keys) ) {
+			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
+		} else {
+			push @updated_fields,$field."=".$self->{database_handle}->quote($row{$field});
+		}
+	}
+	my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(',', @conditions));
+	
+	# prepare query
+	$self->_debug('Prepare SQL : ',$insert_query);
+	eval { $self->{database_statement}=$self->{database_handle}->prepare( $insert_query ) };
+	croak "Error in : ".$insert_query if $@;	
+	# execute query
+	$self->_debug('Execute SQL');
+	eval { $self->{database_statement}->execute() };
+	croak "Error while : ".$insert_query if $@;
+	
+	my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name}, "ID");
+	
+	$self->_close_database();
+	
+	return $last_id;
+}
+
 
 
 
