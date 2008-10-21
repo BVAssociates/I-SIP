@@ -126,7 +126,7 @@ sub query_date {
 sub query_sort {
     my $self = shift;
     if (@_) { croak("query_sort is read-only"); }
-    return $self->{query_sort} ;
+    return @{ $self->{query_sort} };
 }
 
 # set custom SQL query
