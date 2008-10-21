@@ -1,4 +1,4 @@
 SEP=";"
-FORMAT="TYPE;Description"
+FORMAT="Name;Description"
 SIZE="20s;20s"
-KEY="TYPE"
+KEY="Name"
