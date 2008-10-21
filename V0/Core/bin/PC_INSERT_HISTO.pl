@@ -23,8 +23,8 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $table_name=$db2_table_line{TABLE_NAME};
 	
 	#open IKOS table for DATA
-	my $current_table=$env_sip->open_ikos_table($table_name);
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name);
+	my $current_table=$env_sip->open_ikos_table($table_name, {debug => 1});
+	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1});
 	my $table_key= $db2_table_line{PRIMARY_KEY} ;
 	
 	if (not $table_key) {
@@ -32,14 +32,14 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 		next;
 	}
 	
-	#$current_table->debugging(1);
-	#$histo_table->debugging(1);
 
 	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	my @field_list=$current_table->query_field();
 	my @row_list;
+	$histo_table->begin_transaction();
 	while (my %data_line=$current_table->fetch_row() ) {
 		$histo_table->insert_row(%data_line);
 	}
+	$histo_table->commit_transaction();
 		
 }

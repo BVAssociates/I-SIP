@@ -55,7 +55,9 @@ sub open() {
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
 	# instance temp values
 	$self->{temp_next_row} = {};
-	$self->{statement_running} = 0;
+	
+	# flag for end of fetch_row
+	$self->{end_of_data} = 0;
 	
 
 	
@@ -101,7 +103,7 @@ sub _set_columns_info_histo() {
 	#$self->{table_histo}->finish();
 	
 	if (not $self->field()) {
-		croak("Error reading information of table : $self->{table_name}");
+		warn "This table contains 0 field"
 	}
 }
 
@@ -181,13 +183,11 @@ sub fetch_row() {
 	my $current_key;
 	
 	# if last fetch was end of DATA, return empty line 
-	if ( not $self->{statement_running} and %{ $self->{temp_next_row} } ) {
+	if ($self->{end_of_data}) {
 		$self->{temp_next_row} = {};
+		$self->{end_of_data} = 0;
 		return ();
 	}
-	
-	# FLAG  statement_running to 1
-	$self->{statement_running} = 1;
 	
 	$self->{table_histo}->custom_select_query ($self->get_query() );
 
@@ -216,8 +216,7 @@ sub fetch_row() {
 		}	
 	}
 	
-	# FLAG the statement_running to 0 if end of table_histo
-	$self->{statement_running} = 0 if not %field_line;
+	$self->{end_of_data} = 1 if not %field_line;
 	
 	return %return_line;
 }
@@ -237,6 +236,18 @@ sub fetch_row_array() {
 	}
 	
 	return @return_line;
+}
+
+sub begin_transaction() {
+	my $self=shift;
+	
+	$self->{table_histo}->begin_transaction();
+}
+
+sub commit_transaction() {
+	my $self=shift;
+	
+	$self->{table_histo}->commit_transaction();
 }
 
 # Insert hash  as a rows (one rows per field)
@@ -285,7 +296,7 @@ sub finish() {
 	
 	# finish virtual statement
 	$self->{temp_next_row} = {};
-	$self->{statement_running} = 0;
+	$self->{end_of_data} = 0;
 	
 	# finish real statement
 	$self->{table_histo}->finish();
