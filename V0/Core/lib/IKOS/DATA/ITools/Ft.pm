@@ -6,7 +6,7 @@ package Ft;
 
 =head1 NAME
 
-IKOS::DATA::ITools::Ft is a wrapper class to ITools::Table::Legacy
+IKOS::DATA::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
 
 =head1 SYNOPSIS
 
