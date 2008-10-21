@@ -13,6 +13,7 @@ goto endofperl
 #!perl -w
 #line 15
 $0 =~ s|\.bat||i;
+$0 .= '.pl';
 unless (-f $0) {
     $0 =~ s|.*[/\\]||;
     for (".", split ';', $ENV{PATH}) {
@@ -21,7 +22,8 @@ unless (-f $0) {
     }
     die "`$0' not found.\n";
 }
-doit: exec "perl", "-x", $0, @ARGV;
+doit: system("perl", "-x", '"'.$0.'"', @ARGV);
+exit $? >> 8 if $?;
 die "Failed to exec `$0': $!";
 __END__
 
