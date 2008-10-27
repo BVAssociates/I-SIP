@@ -10,6 +10,20 @@ sub _set_tablename() {
 	$self->{table_name}=$self->{table_name}.".txt";
 }
 
+sub table_name {
+    my $self = shift;
+    if (@_) { croak("'table_name' member is read-only") }
+	my $temp_name=$self->{table_name};
+	$temp_name =~ s/\.txt$//;
+    return $temp_name;
+}
+
+sub key {
+    my $self = shift;
+    if (@_) { @{ $self->{key} } = @_ ; @{ $self->{query_sort} } = @_ }
+    return @{ $self->{key} };
+}
+
 1;
 
 package ODBC;
@@ -139,7 +153,7 @@ sub get_query()
 	
 	# construct SQL from "query_*" members
 	my $query;
-	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->table_name();
+	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->{table_name};
 	$query = $query." WHERE ".join(' AND ',$self->query_condition()) if $self->query_condition() != 0;
 	$query = $query." ORDER BY ".join(', ',$self->query_sort()) if $self->query_sort() != 0;
 	
