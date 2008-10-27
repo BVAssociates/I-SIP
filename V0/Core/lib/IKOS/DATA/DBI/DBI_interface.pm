@@ -249,7 +249,6 @@ sub update_row() {
 	croak "primary key not defined for ".$self->table_name if not $self->key;
 	@error_field=();
 	foreach my $key_field ($self->key) {
-		print "check $key_field\n";
 		if (not defined $row{$key_field}) {
 			push @error_field, $key_field;
 		}
@@ -301,6 +300,16 @@ sub has_fields() {
 		push (@field_found, grep {uc($field) eq uc($_)} $self->field) ;
 	}
 	return @field_found;
+}
+
+# use transaction
+# call update_from() from super class
+sub update_from() {
+	my $self = shift;
+	
+	$self->begin_transaction();
+	$self->SUPER::update_from(@_);
+	$self->commit_transaction();
 }
 
 

@@ -361,7 +361,7 @@ sub compare_from() {
 		
 		# New lines
 		if ($empty_table) {
-			print join ',',@row_table1{@key};
+			print join (',',@row_table1{@key});
 			die "no more data to read from me";
 			last;
 		}
@@ -396,7 +396,25 @@ sub compare_from() {
 	return %result;
 }
 
-
+sub update_from() {
+	my $self = shift;
+	
+	my $table = shift;
+	
+	my @table_key=sort $self->key();
+	my %differences = $self->compare_from($table);
+	
+	foreach my $key (keys %differences) {
+		# get tables keys
+		my @table_key_value=split(/,/,$key);
+		# add tables keys to rows needed for update
+		foreach (@table_key) {
+			$differences{$key}{$_} = shift @table_key_value;
+		}
+		
+		$self->update_row(%{ $differences{$key} });
+	}
+}
 
 ##############################################
 ## Destructor        ##
