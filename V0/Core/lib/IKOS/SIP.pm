@@ -39,6 +39,7 @@ sub get_table_key() {
 	$table->query_field("PRIMARY_KEY");
 
 	($key_found) = $table->fetch_row_array();
+	$table->finish;
 	return $key_found;
 }
 
@@ -97,7 +98,7 @@ sub open_local_from_histo_table() {
 	my $table_histo = Histo->open("IKOS_".$self->{environnement} , $table_name, @_);
 	
 	# we must set the primary key manually
-	$table_histo->key($self->get_table_key($table_name));
+	$table_histo->key(split(/,/,$self->get_table_key($table_name)));
 
 	return $table_histo
 }
@@ -109,7 +110,7 @@ sub open_ikos_table() {
 	
 	my $table_ikos=ODBC_TXT->open("IKOS_DEV" , $table_name, @_);
 	# we must set the primary key manually
-	$table_ikos->key($self->get_table_key($table_name));
+	$table_ikos->key(split(/,/,$self->get_table_key($table_name)));
 	
 	return $table_ikos;
 }
@@ -128,14 +129,6 @@ sub open_histo_table() {
 
 =cut
 
-sub get_histo_line () {
-	my $self = shift;
-	
-	my $key = shift;
-	my $date = shift;
-	
-	croak "not implemented";
-}
 
 sub SQL_create() {
 	my $self=shift;
@@ -185,83 +178,6 @@ sub SQL_drop() {
 	my $tablename=shift or die;
 	
 	return "DROP $tablename;";
-}
-
-# compare 2 tables
-sub compare_table() {
-	my $self=shift;
-	
-	my ($table1, $table2) = @_;
-	my @key;
-	my %result;
-	
-	if ( join(',',sort $table1->key()) ne  join(',',sort $table1->key())) {
-		croak("The 2 tables have not the same keys");
-	}
-	
-	if ( $table1->table_name() ne $table2->table_name() ) {
-		croak("The 2 tables have not the same name");
-	}
-	
-	@key=$self->get_table_key($table1->table_name());
-	
-	if ( join(',',sort $table1->field()) ne  join(',',sort $table1->field())) {
-		croak("The 2 tables have not the same fields");
-	}
-	
-	$table1->query_sort(@key);
-	
-	#first pass to get primary keys which are on one table
-	## after 2 loops :
-	##	$seen_keys{keys} = 1 if only one table have it
-	##	$seen_keys{keys} = 2 if the two tables have it
-	##	my %seen_keys;
-	##	my @row;
-	##	$table1->query_field(@key);
-	##	$table2->query_field(@key);
-	##	while (@row=$table1->fetch_row_array()) {
-	##		$seen_keys{join(',',@row)}++
-	##	}
-	##	while (@row=$table2->fetch_row_array()) {
-	##		$seen_keys{join(',',@row)}++
-	##	}
-	
-	my %row_table1;
-	my %row_table2;
-	my $empty_table2=0;
-	# main loop
-	# We supprose here that the 2 tables are ordered by their Primary Keys
-	while (%row_table1=$table1->fetch_row) {
-		%row_table2=$table2->fetch_row if not $empty_table2;
-		$empty_table2=1 if not %row_table2;
-		
-		# New lines
-		if ($empty_table2) {
-			die "no more data to read from table2";
-			last;
-		}
-		## TODO
-		## %result = (%result,%row_table1) if not %row_table1 or $seen_keys{join(',',@row} = ;
-		## %result = (%result,%row_table2) if not %row_table2;
-		die "table1 and table2 have different number of fields" if not %row_table1 or not %row_table2;
-		
-		##if ( $row_table1{join(',',@row)} ne $row_table1{join(',',@row)} ) {
-		##	if ($seen{join(',',@row})
-		##}
-		my @key_values1=sort @row_table1{@key};
-		my @key_values2=sort @row_table2{@key};
-		die "table1 and table2 have different primary keys" if join(',',@key_values1) ne join(',',@key_values1);
-		
-		foreach my $field1 (keys %row_table1) {
-			if ($row_table1{$field1} ne $row_table2{$field1}) {
-				print STDERR "Found update : Key (".join(',',@key_values1).") $field1 : $row_table2{$field1} => $row_table1{$field1}\n";
-				$result{join(',',@key_values1)}{$field1}=$row_table1{$field1};
-			}
-		}
-		
-	}
-	
-	return %result;
 }
 
 1;
