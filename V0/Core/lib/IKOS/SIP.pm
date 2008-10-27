@@ -107,7 +107,11 @@ sub open_ikos_table() {
 	
 	my $table_name=shift or croak "open_ikos_table() wait args : 'tablename'";
 	
-	return ODBC_TXT->open("IKOS_DEV" , $table_name, @_);
+	my $table_ikos=ODBC_TXT->open("IKOS_DEV" , $table_name, @_);
+	# we must set the primary key manually
+	$table_ikos->key($self->get_table_key($table_name));
+	
+	return $table_ikos;
 }
 
 =begin comment : may be confusing
@@ -183,6 +187,7 @@ sub SQL_drop() {
 	return "DROP $tablename;";
 }
 
+# compare 2 tables
 sub compare_table() {
 	my $self=shift;
 	
@@ -221,30 +226,39 @@ sub compare_table() {
 	##		$seen_keys{join(',',@row)}++
 	##	}
 	
-	my %row_table1=$table1->fetch_row;
-	my %row_table2=$table2->fetch_row;
-	while (%row_table1 or %row_table2) {
-	
+	my %row_table1;
+	my %row_table2;
+	my $empty_table2=0;
+	# main loop
+	# We supprose here that the 2 tables are ordered by their Primary Keys
+	while (%row_table1=$table1->fetch_row) {
+		%row_table2=$table2->fetch_row if not $empty_table2;
+		$empty_table2=1 if not %row_table2;
+		
 		# New lines
+		if ($empty_table2) {
+			die "no more data to read from table2";
+			last;
+		}
 		## TODO
 		## %result = (%result,%row_table1) if not %row_table1 or $seen_keys{join(',',@row} = ;
 		## %result = (%result,%row_table2) if not %row_table2;
-		die "table1 and table2 have different row number" if not %row_table1 or not %row_table2;
+		die "table1 and table2 have different number of fields" if not %row_table1 or not %row_table2;
 		
 		##if ( $row_table1{join(',',@row)} ne $row_table1{join(',',@row)} ) {
 		##	if ($seen{join(',',@row})
 		##}
-		my @key_values1=@row_table1{@key};
-		my @key_values2=@row_table2{@key};
+		my @key_values1=sort @row_table1{@key};
+		my @key_values2=sort @row_table2{@key};
 		die "table1 and table2 have different primary keys" if join(',',@key_values1) ne join(',',@key_values1);
+		
 		foreach my $field1 (keys %row_table1) {
 			if ($row_table1{$field1} ne $row_table2{$field1}) {
-				print STDERR "Found update : Key (".join(',',@key_values1).") $field1=$row_table1{$field1}\n";
+				print STDERR "Found update : Key (".join(',',@key_values1).") $field1 : $row_table2{$field1} => $row_table1{$field1}\n";
 				$result{join(',',@key_values1)}{$field1}=$row_table1{$field1};
 			}
 		}
-		%row_table1=$table1->fetch_row;
-		%row_table2=$table2->fetch_row;
+		
 	}
 	
 	return %result;
