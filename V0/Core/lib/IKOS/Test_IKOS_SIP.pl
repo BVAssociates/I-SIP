@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::Simple tests => 9;
+use Test::Simple tests => 11;
 use Data::Dumper;
 
 use strict;
@@ -29,6 +29,8 @@ ok($table_histo = $sip->open_local_from_histo_table("TEST", {debug => 0} ), "SIP
 ok($table_ikos = $sip->open_ikos_table("TEST", {debug => 0} ), "SIP->open_ikos_table()");
 
 my %differences;
-ok( %differences = $table_ikos->compare_from($table_histo),"SIP ->compare_from() bitween IKOS and Histo" );
-ok( ! $table_ikos->compare_from($table_sqlite),"SIP ->compare_from() bitween IKOS and Sqlite return nothing" );
+ok( %differences = $table_histo->compare_from($table_ikos),"SIP ->compare_from() between IKOS and Histo" );
+ok( $table_sqlite->compare_from($table_ikos),"SIP ->compare_from() bitween IKOS and Sqlite return nothing" );
+ok($table_sqlite->update_from($table_ikos),"SIP ->update_from() between IKOS and Sqlite" );
+ok($table_histo->update_from($table_ikos),"SIP ->update_from() between IKOS and Histo" );
 #print Dumper(%differences);

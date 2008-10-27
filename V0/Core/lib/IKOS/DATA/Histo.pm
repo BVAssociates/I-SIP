@@ -278,14 +278,19 @@ sub insert_row() {
 		$self->{table_histo}->begin_transaction();
 	}
 	
+	# concat key values
+	my @key_value;
+	foreach (sort $self->key()) {
+		push @key_value, $row{$_};
+	}
+	
 	# quote the fields with the apropriate 
 	foreach my $field (keys %row) {
 		
-	
 		my $last_id=$self->{table_histo}->insert_row(
 				"DATE_HISTO" => $date_current,
 				"TABLE_NAME" => $self->table_name,
-				"TABLE_KEY" => $row{join(',',$self->key())},
+				"TABLE_KEY" => join(',',@key_value),
 				"FIELD_NAME" => $field,
 				"FIELD_VALUE" => $row{$field}
 		);
@@ -300,6 +305,72 @@ sub insert_row() {
 	#$self->{table_histo}->{database_handle}->rollback();
 	
 	#return $last_id;
+}
+
+# update a row on a primary key
+## very similar to insert_row()
+sub update_row() {
+	my $self = shift;
+	
+	my (%row) = @_;
+	
+	# check if fields exist
+	my @error_field;
+	my @fields=$self->field();
+	foreach my $field (keys %row) {
+		if (not grep(/^$field$/, @fields)) {
+			push @error_field, $field;
+		}
+	}
+	carp join(',',@error_field)." don't exist in fields" if @error_field;
+	
+	# check if primary key is valued
+	croak "primary key not defined for ".$self->table_name if not $self->key;
+	@error_field=();
+	foreach my $key_field ($self->key) {
+		if (not defined $row{$key_field}) {
+			push @error_field, $key_field;
+		}
+	}
+	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
+	
+	
+	my $transaction_running=0;
+	
+	use POSIX qw(strftime);
+	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
+	
+	# active transaction mode if not already done
+	if ( $self->{table_histo}->active_transaction() > 0 ) {
+		$transaction_running = 1 ;
+	} else {
+		# $self->{table_histo}->begin_transaction();
+	}
+	
+	# concat key values
+	my @key_value;
+	foreach (sort $self->key()) {
+		push @key_value, $row{$_};
+		delete $row{$_};
+	}
+	# quote the fields with the apropriate 
+	foreach my $field (keys %row) {
+		
+		my $last_id=$self->{table_histo}->insert_row(
+				"DATE_HISTO" => $date_current,
+				"TABLE_NAME" => $self->table_name,
+				"TABLE_KEY" => join(',',@key_value),
+				"FIELD_NAME" => $field,
+				"FIELD_VALUE" => $row{$field}
+		);
+		
+		$self->_debug("Insert : $field ");
+
+		
+	}
+	
+	# commit this rows if no transaction was running before
+	#$self->{table_histo}->commit_transaction() if not $transaction_running;
 }
 
 sub finish() {
