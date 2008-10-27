@@ -29,6 +29,6 @@ ok($table_histo = $sip->open_local_from_histo_table("TEST", {debug => 0} ), "SIP
 ok($table_ikos = $sip->open_ikos_table("TEST", {debug => 0} ), "SIP->open_ikos_table()");
 
 my %differences;
-ok( %differences = $table_ikos->compare_table($table_histo),"SIP ->compare_table() bitween IKOS and Histo" );
-ok( %differences = $table_ikos->compare_table($table_sqlite),"SIP ->compare_table() bitween IKOS and Sqlite" );
-print Dumper(%differences);
+ok( %differences = $table_ikos->compare_from($table_histo),"SIP ->compare_from() bitween IKOS and Histo" );
+ok( ! $table_ikos->compare_from($table_sqlite),"SIP ->compare_from() bitween IKOS and Sqlite return nothing" );
+#print Dumper(%differences);

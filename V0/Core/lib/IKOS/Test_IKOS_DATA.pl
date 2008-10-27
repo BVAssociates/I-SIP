@@ -31,7 +31,7 @@ ok(! $@, 'Sqlite->fetch_row_array()');
 
 ok($table_sqlite->finish, 'Sqlite->finish()');
 is($table_sqlite->query_condition(undef), 0, 'Sqlite->query_condition() : reset to undef');
-is(join('@@',$table_sqlite->query_field('AAPTYCOD','AANPRCOD')), 'AAPTYCOD@@AANPRCOD', 'Sqlite->query_field() : redefine to another field');
+is(join('@@',$table_sqlite->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_field() : redefine to another field');
 my $sqlite_count=0;
 my @sqlite_last_row;
 while (my @row=$table_sqlite->fetch_row_array()) {
@@ -62,7 +62,7 @@ ok($last_id, 'insert_row() return last_id='.$last_id);
 is(join('@@',$table_sqlite->query_condition("ROWID = $last_id")), "ROWID = $last_id", 'Sqlite->query_condition()');
 my @last_inserted=$table_sqlite->fetch_row_array();
 $table_sqlite->_debug("LINE=",join(',',@last_inserted));
-is(join('@@',@last_inserted), 'TEST1@@TEST3', 'Sqlite->fetch_row_array() return last inserted data');
+is(join('@@',@last_inserted), 'TEST1@@TEST2', 'Sqlite->fetch_row_array() return last inserted data');
 # delete inserted data
 ok($table_sqlite->execute("DELETE from TEST where ROWID = $last_id;"), 'Sqlite->execute("DELETE ...") on last ROWID');
 is(undef $table_sqlite, undef, 'Destroy object');
@@ -90,7 +90,7 @@ is(join('@@',$histo_table->query_sort()), join('@@',$histo_table->key()), 'Histo
 ok($histo_table->fetch_row_array(),'Histo->fetch_row_array()');
 ok($histo_table->finish, 'Histo->finish()');
 
-is(join('@@',$histo_table->query_field('AAPTYCOD','AANPRCOD')), 'AAPTYCOD@@AANPRCOD', 'Histo->query_field()');
+is(join('@@',$histo_table->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Histo->query_field()');
 my $histo_count=0;
 my @histo_last_row;
 while (my @row=$histo_table->fetch_row_array()) {
