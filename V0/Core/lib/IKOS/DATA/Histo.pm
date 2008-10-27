@@ -115,7 +115,11 @@ sub _set_columns_info_histo() {
 # query_sort always by key
 sub key {
     my $self = shift;
-    if (@_) { @{ $self->{key} } = @_ ; @{ $self->{query_sort} } = @_ }
+    if (@_) { 
+		@{ $self->{key} } = @_ ;
+		@{ $self->{query_sort} } = @_ ;
+		$self->_debug("New Virtual Keys : ", join("|",@{$self->{key}}));
+	}
     return @{ $self->{key} };
 }
 

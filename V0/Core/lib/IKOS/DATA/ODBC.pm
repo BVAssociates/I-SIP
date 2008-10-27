@@ -20,7 +20,10 @@ sub table_name {
 
 sub key {
     my $self = shift;
-    if (@_) { @{ $self->{key} } = @_ ; @{ $self->{query_sort} } = @_ }
+    if (@_) { 
+		@{ $self->{key} } = @_ ;
+		$self->_debug("New Keys : ", join("|",@{$self->{key}}));
+	}
     return @{ $self->{key} };
 }
 
