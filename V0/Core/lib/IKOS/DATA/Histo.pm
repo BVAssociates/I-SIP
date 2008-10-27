@@ -129,9 +129,16 @@ sub query_date {
     return $self->{query_date} ;
 }
 
+# can only sort by table primary keys
 sub query_sort {
     my $self = shift;
-    if (@_) { croak("query_sort is read-only"); }
+    if (@_) { 
+		if (join(',',@_) eq join(',',$self->key)) {
+			@{ $self->{query_sort} } = @_;
+		} else {
+			croak("unable to set query_sort to ".join(',',@_)); 
+		}
+	}
     return @{ $self->{query_sort} };
 }
 
