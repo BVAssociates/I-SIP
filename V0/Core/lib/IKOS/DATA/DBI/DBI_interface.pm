@@ -498,8 +498,8 @@ sub has_fields() {
 }
 
 
-# compare 2 tables
-sub compare_table() {
+# return $result{key_value}{field1}="field_value"
+sub compare_from() {
 	my $self=shift;
 	
 	my $table2 = shift;
@@ -521,6 +521,7 @@ sub compare_table() {
 	
 	@key=$self->key();
 	$self->query_sort(@key);
+	$table2->query_sort(@key);
 	
 	#first pass to get primary keys which are on one table
 	## after 2 loops :
