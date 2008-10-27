@@ -122,7 +122,8 @@ sub query_field {
 sub query_condition {
     my $self = shift;
     if (@_) { @{ $self->{query_condition} } = @_ }
-    return @{ $self->{query_condition} };
+	
+    return grep {defined $_ } @{ $self->{query_condition} };
 }
 
 sub query_sort {
@@ -131,7 +132,7 @@ sub query_sort {
 	my @fields=@_;
 	if (@fields) {
 	if ( $self->has_fields(@fields) != @fields) {
-			croak("error whith sort fields <@fields>");
+			croak("error with sort fields <@fields>");
 		} else {
 			@{ $self->{query_sort} } =  @fields;
 		}
@@ -191,7 +192,8 @@ sub get_query()
 	return $query;
 }
 
-# force the current statement to stop
+
+# explicitly reset the current statement
 sub finish() {
 	my $self = shift;
 	
@@ -247,9 +249,10 @@ sub describe()
 	my $self = shift;
 	
 	croak("describe() not implemented");
+	return undef;
 }
 
-# Insesrt list  as a row
+# Insert list  as a row
 sub insert_row_array() {
 	my $self = shift;
 	
@@ -265,11 +268,33 @@ sub insert_row_array() {
 	$self->insert_row(%row_hash);
 }
 
-# Insesrt hash  as a row
+# Insert hash  as a row
 sub insert_row() {
 	my $self = shift;
 	
 	croak("insert_row() not implemented");
+}
+
+# update a row on a primary key
+sub update_row_array() {
+	my $self = shift;
+	
+	my @row = @_;
+	croak "Wrong number of fields (has: ".@row.", expected: ".$self->field().")" if @row != $self->field() ;
+	
+	# convert array into hash
+	my %row_hash;
+	foreach my $field ($self->field()) {
+		$row_hash{$field} = shift @row ;
+	}
+	
+	$self->update_row(%row_hash);
+}
+# update a row on a primary key
+sub update_row() {
+	my $self = shift;
+	
+	croak("update_row() not implemented");
 }
 
 sub has_fields() {
