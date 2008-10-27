@@ -308,30 +308,32 @@ sub has_fields() {
 	return @field_found;
 }
 
+# compare a table to $self
+# return : new values, updated values
 # return $result{key_value}{field1}="field_value"
 sub compare_from() {
 	my $self=shift;
 	
-	my $table2 = shift;
+	my $table_from = shift;
 	my @key;
 	my %result;
 	
-	if ( join(',',sort $self->key()) ne  join(',',sort $table2->key())) {
-		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table2->key()));
+	if ( join(',',sort $self->key()) ne  join(',',sort $table_from->key())) {
+		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table_from->key()));
 	}
 	
-	if ( $self->table_name() ne $table2->table_name() ) {
-		croak("The 2 tables have not the same name : ".$self->table_name()." => ".$table2->table_name());
+	if ( $self->table_name() ne $table_from->table_name() ) {
+		croak("The 2 tables have not the same name : ".$self->table_name()." => ".$table_from->table_name());
 	}
 	
 	
-	if ( join(',',sort $self->field()) ne  join(',',sort $table2->field())) {
+	if ( join(',',sort $self->field()) ne  join(',',sort $table_from->field())) {
 		#croak("The 2 tables have not the same fields");
 	}
 	
 	@key=$self->key();
 	$self->query_sort(@key);
-	$table2->query_sort(@key);
+	$table_from->query_sort(@key);
 	
 	#first pass to get primary keys which are on one table
 	## after 2 loops :
@@ -340,26 +342,27 @@ sub compare_from() {
 	##	my %seen_keys;
 	##	my @row;
 	##	$self->query_field(@key);
-	##	$table2->query_field(@key);
+	##	$table_from->query_field(@key);
 	##	while (@row=$self->fetch_row_array()) {
 	##		$seen_keys{join(',',@row)}++
 	##	}
-	##	while (@row=$table2->fetch_row_array()) {
+	##	while (@row=$table_from->fetch_row_array()) {
 	##		$seen_keys{join(',',@row)}++
 	##	}
 	
 	my %row_table1;
 	my %row_table2;
-	my $empty_table2=0;
+	my $empty_table=0;
 	# main loop
 	# We supprose here that the 2 tables are ordered by their Primary Keys
-	while (%row_table1=$self->fetch_row) {
-		%row_table2=$table2->fetch_row if not $empty_table2;
-		$empty_table2=1 if not %row_table2;
+	while (%row_table1=$table_from->fetch_row) {
+		%row_table2=$self->fetch_row if not $empty_table;
+		$empty_table=1 if not %row_table2;
 		
 		# New lines
-		if ($empty_table2) {
-			die "no more data to read from table2";
+		if ($empty_table) {
+			print join ',',@row_table1{@key};
+			die "no more data to read from me";
 			last;
 		}
 		## TODO
@@ -387,9 +390,13 @@ sub compare_from() {
 		}
 		
 	}
+	$self->finish;
+	$table_from->finish;
 	
 	return %result;
 }
+
+
 
 ##############################################
 ## Destructor        ##
