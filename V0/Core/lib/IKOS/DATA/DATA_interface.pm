@@ -367,8 +367,8 @@ sub compare_from() {
 		$seen_keys{join(',',@row)}--
 	}
 	
-	use Data::Dumper;
-	print Dumper(\%seen_keys);
+	#use Data::Dumper;
+	#print Dumper(\%seen_keys);
 	
 	$self->query_field($self->field);
 	$table_from->query_field($table_from->field);
@@ -382,7 +382,7 @@ sub compare_from() {
 		my $new_keys = $seen_keys{$current_keys};
 		# this key does not exist anymore
 		if ($new_keys < 0) {
-			print STDERR "Found new line : Key (".$current_keys.")\n";
+			$self->_debug("Found new line : Key (".$current_keys.")");
 			%row_table1=$table_from->fetch_row;
 			
 			# something wrong appens !
@@ -394,7 +394,7 @@ sub compare_from() {
 		}
 		# this key are new in the table
 		elsif ($new_keys > 0) {
-			print STDERR "Found deleted line : Key (".$current_keys.")\n";
+			$self->_debug("Found deleted line : Key (".$current_keys.")");
 			%row_table2=$self->fetch_row;
 			
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $new_keys)" if join(',',@row_table2{@key}) ne $current_keys;
@@ -409,20 +409,16 @@ sub compare_from() {
 			%row_table1=$table_from->fetch_row;
 			%row_table2=$self->fetch_row;
 			
-			use Data::Dumper;
-			#print Dumper(%row_table1);
-			print Dumper(%row_table2);
-			
 			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (intended : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
 			
 			foreach my $field1 (keys %row_table1) {
 				if (not exists $row_table2{$field1}) {
-					print STDERR "Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}\n";
+					$self->_debug("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
-					print STDERR "Found update : Key (".$current_keys.") $field1 : $row_table2{$field1} => $row_table1{$field1}\n";
+					$self->_debug("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," => ",$row_table1{$field1} );
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				}
@@ -466,6 +462,8 @@ sub update_from() {
 		
 		$self->update_row(%{ $self->{diff_update}{$key_update} });
 	}
+	
+	return $differences;
 }
 
 ##############################################
