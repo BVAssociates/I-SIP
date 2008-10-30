@@ -384,6 +384,13 @@ sub finish() {
 	$self->{table_histo}->finish();
 }
 
+
+# simple debug method
+sub _debug() {
+	my $self = shift;
+	print STDERR "DEBUG:HISTO.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
+}
+
 =head1 NAME
 
  IKOS::DATA::Histo - Computed IKOS::DATA::DATA_interface
