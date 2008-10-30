@@ -39,6 +39,11 @@ sub open() {
 	$self->{query_sort}  = [];
 	#$self->{output_separator}  = '|';
 	$self->{custom_select_query} = undef;
+	
+	# comparison variables
+	$self->{diff_update} = {};
+	$self->{diff_new} = {};
+	$self->{diff_delete} = {};
 
 	# other internal members
 	$self->{debugging} = 0;
@@ -308,15 +313,26 @@ sub has_fields() {
 	return @field_found;
 }
 
+sub reset_compare() {
+	my $self=shift;
+	
+	$self->{diff_update} = {};
+	$self->{diff_new} = {};
+	$self->{diff_delete} = {};
+}
+
 # compare a table to $self
-# return : new values, updated values
-# return $result{key_value}{field1}="field_value"
+#  $self->{diff_update}{key_value}{field1}="field_value"
+#  $$self->{diff_new}{key_value}{field1}="field_value"
+#  $self->{diff_delete}{key_value}{field1}="field_value"
+# return the number of differences found
 sub compare_from() {
 	my $self=shift;
 	
 	my $table_from = shift;
 	my @key;
-	my %result;
+	my $differences=0;
+	$self->reset_compare();
 	
 	if ( join(',',sort $self->key()) ne  join(',',sort $table_from->key())) {
 		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table_from->key()));
@@ -337,63 +353,86 @@ sub compare_from() {
 	
 	#first pass to get primary keys which are on one table
 	## after 2 loops :
-	##	$seen_keys{keys} = 1 if only one table have it
-	##	$seen_keys{keys} = 2 if the two tables have it
-	##	my %seen_keys;
-	##	my @row;
-	##	$self->query_field(@key);
-	##	$table_from->query_field(@key);
-	##	while (@row=$self->fetch_row_array()) {
-	##		$seen_keys{join(',',@row)}++
-	##	}
-	##	while (@row=$table_from->fetch_row_array()) {
-	##		$seen_keys{join(',',@row)}++
-	##	}
+	##	$seen_keys{keys} = 1 if only me have it
+	##	$seen_keys{keys} = 0 if the two table have it
+	##	$seen_keys{keys} = -1 if only $table_from have it
+	my %seen_keys;
+	my @row;
+	$self->query_field(@key);
+	$table_from->query_field(@key);
+	while (@row=$self->fetch_row_array()) {
+		$seen_keys{join(',',@row)}++
+	}
+	while (@row=$table_from->fetch_row_array()) {
+		$seen_keys{join(',',@row)}--
+	}
+	
+	use Data::Dumper;
+	print Dumper(\%seen_keys);
+	
+	$self->query_field($self->field);
+	$table_from->query_field($table_from->field);
 	
 	my %row_table1;
 	my %row_table2;
-	my $empty_table=0;
+	
 	# main loop
 	# We supprose here that the 2 tables are ordered by their Primary Keys
-	while (%row_table1=$table_from->fetch_row) {
-		%row_table2=$self->fetch_row if not $empty_table;
-		$empty_table=1 if not %row_table2;
-		
-		# New lines
-		if ($empty_table) {
-			print join (',',@row_table1{@key});
-			die "no more data to read from me";
-			last;
+	foreach my $current_keys (sort keys %seen_keys) {
+		my $new_keys = $seen_keys{$current_keys};
+		# this key does not exist anymore
+		if ($new_keys < 0) {
+			print STDERR "Found new line : Key (".$current_keys.")\n";
+			%row_table1=$table_from->fetch_row;
+			
+			# something wrong appens !
+			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (intended : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
+			
+			%{ $self->{diff_new}{$current_keys} }  =  %row_table1;
+			$differences += keys %row_table1;
+			next;
 		}
-		## TODO
-		## %result = (%result,%row_table1) if not %row_table1 or $seen_keys{join(',',@row} = ;
-		## %result = (%result,%row_table2) if not %row_table2;
-		
-		#die "table1 and table2 have different number of fields" if not %row_table1 or not %row_table2;
-		
-		##if ( $row_table1{join(',',@row)} ne $row_table1{join(',',@row)} ) {
-		##	if ($seen{join(',',@row})
-		##}
-		my @key_values1=sort @row_table1{@key};
-		my @key_values2=sort @row_table2{@key};
-		die "table1 and table2 have different primary keys" if join(',',@key_values1) ne join(',',@key_values1);
-		
-		foreach my $field1 (keys %row_table1) {
-
-			if (not exists $row_table2{$field1}) {
-				print STDERR "Found new column : Key (".join(',',@key_values1).") $field1 : $row_table1{$field1}\n";
-				$result{join(',',@key_values1)}{$field1}=$row_table1{$field1};
-			} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
-				print STDERR "Found update : Key (".join(',',@key_values1).") $field1 : $row_table2{$field1} => $row_table1{$field1}\n";
-				$result{join(',',@key_values1)}{$field1}=$row_table1{$field1};
+		# this key are new in the table
+		elsif ($new_keys > 0) {
+			print STDERR "Found deleted line : Key (".$current_keys.")\n";
+			%row_table2=$self->fetch_row;
+			
+			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $new_keys)" if join(',',@row_table2{@key}) ne $current_keys;
+			
+			%{ $self->{diff_delete}{$current_keys} }  =  %row_table2;
+			$differences += keys %row_table2;
+			next;
+		}
+		# this key exist in the 2 tables
+		# find the differences
+		else {
+			%row_table1=$table_from->fetch_row;
+			%row_table2=$self->fetch_row;
+			
+			use Data::Dumper;
+			#print Dumper(%row_table1);
+			print Dumper(%row_table2);
+			
+			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (intended : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
+			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
+			
+			foreach my $field1 (keys %row_table1) {
+				if (not exists $row_table2{$field1}) {
+					print STDERR "Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}\n";
+					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
+					$differences++;
+				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
+					print STDERR "Found update : Key (".$current_keys.") $field1 : $row_table2{$field1} => $row_table1{$field1}\n";
+					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
+					$differences++;
+				}
 			}
 		}
-		
 	}
 	$self->finish;
 	$table_from->finish;
 	
-	return %result;
+	return $differences;
 }
 
 sub update_from() {
@@ -401,18 +440,31 @@ sub update_from() {
 	
 	my $table = shift;
 	
-	my @table_key=sort $self->key();
-	my %differences = $self->compare_from($table);
+	my $differences = $self->compare_from($table);
 	
-	foreach my $key (keys %differences) {
+	# insert new lines
+	foreach my $key_new (keys %{ $self->{diff_new} } ) {
+		$self->insert_row(%{ $self->{diff_new}{$key_new} });
+	}
+	
+	# delete removed lines
+	foreach my $key_delete (keys %{ $self->{diff_delete} }) {
+		#$self->delete_row(%{ $self->{diff_delete}{$key_delete} });
+	}
+	
+	# update modified lines
+	my @table_key=sort $self->key();
+	foreach my $key_update (keys %{ $self->{diff_update} } ) {
 		# get tables keys
-		my @table_key_value=split(/,/,$key);
+		my @table_key_value=split(/,/,$key_update);
+		
 		# add tables keys to rows needed for update
+		# update_row need the keys to be defined
 		foreach (@table_key) {
-			$differences{$key}{$_} = shift @table_key_value;
+			$self->{diff_update}{$key_update}{$_} = shift @table_key_value;
 		}
 		
-		$self->update_row(%{ $differences{$key} });
+		$self->update_row(%{ $self->{diff_update}{$key_update} });
 	}
 }
 
