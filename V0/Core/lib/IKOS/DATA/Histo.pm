@@ -217,14 +217,14 @@ sub fetch_row() {
 
 		$current_key = $field_line{TABLE_KEY} if not defined $current_key;
 		
-		# add the FIELD_VALUE to the return hash
-		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
-		
 		# if TABLE_KEY changed, we save the current line and exit
 		if ( defined $current_key and $current_key ne $field_line{TABLE_KEY}) {
 			$self->{temp_next_row} = { %field_line };
 			last;
 		}	
+		
+		# add the FIELD_VALUE to the return hash
+		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
 	}
 	
 	$self->{end_of_data} = 1 if not %field_line;
