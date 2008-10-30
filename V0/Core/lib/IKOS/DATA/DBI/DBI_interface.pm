@@ -32,6 +32,7 @@ sub open() {
 	$self->{database_name} = $database_name;
 	$self->{database_handle}  = undef;
 	$self->{database_statement}  = undef;
+	$self->{_active_select} = 0;
 	$self->{_active_transaction} = 0;
 	
 	
@@ -86,6 +87,8 @@ sub _open_database() {
 sub _close_database() {
 	my $self = shift;
 	
+	$self->finish();
+	
 	$self->close() if not $self->{_active_transaction};
 	
 	return 1;
@@ -103,6 +106,8 @@ sub _execute_select_query() {
 	# execute query
 	eval { $self->{database_statement}->execute() };
 	confess  "Error in execute : ".$self->get_query() if $@;
+	
+	$self->{_active_select} = 1;
 }
 
 ##############################################
@@ -137,7 +142,8 @@ sub finish() {
 		$self->_debug("Finish current statement for ",$self->{table_name});
 		$self->{database_statement}->finish() ;
 	}
-	undef $self->{database_statement};
+	#undef $self->{database_statement};
+	$self->{_active_select}=0;
 	
 	return 1;
 }
@@ -146,6 +152,7 @@ sub finish() {
 sub close() {
 	my $self = shift;
 	$self->finish();
+	undef $self->{database_statement};
 	
 	# force close the database
 	if (defined $self->{database_handle}) {
@@ -164,7 +171,7 @@ sub fetch_row_array()
 	$self->_open_database() if not defined $self->{database_handle};
 	
 	# connect to database and execute the query
-	$self->_execute_select_query() if not defined $self->{database_statement};
+	$self->_execute_select_query() if not defined $self->{database_statement} or not $self->{_active_select};
 	
 	#return one row
 	my @return_line = $self->{database_statement}->fetchrow_array();
@@ -308,8 +315,10 @@ sub update_from() {
 	my $self = shift;
 	
 	$self->begin_transaction();
-	$self->SUPER::update_from(@_);
+	my $update_number = $self->SUPER::update_from(@_);
 	$self->commit_transaction();
+	
+	return $update_number;
 }
 
 
