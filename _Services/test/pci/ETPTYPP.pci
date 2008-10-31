@@ -1,3 +1,4 @@
+Item~~Afficher Ligne~expl~~GSL_FILE=ETPTYPP~DisplayTable~FIELD~0~~Expand
 Item~~Editer ligne~expl~~GSL_FILE=ETPTYPP~Administrate~FIELD~0~~Expand
-Item~~Historique Editions~expl~~GSL_FILE=~Administrate~FIELD~0~~Expand
+Item~~Explore Champs~expl~~GSL_FILE=ETPTYPP~Explore~FIELD~0~~Expand
 

@@ -1,5 +1,6 @@
+Item~~Afficher Ligne~expl~~GSL_FILE=NATPROP~DisplayTable~FIELD~0~~Expand
 Item~~Editer ligne~expl~~GSL_FILE=NATPROP~Administrate~FIELD~0~~Expand
-Item~~Historique Editions~expl~~GSL_FILE=~Administrate~FIELD~0~~Expand
+Item~~Explore Champs~expl~~GSL_FILE=NATPROP~Explore~FIELD~0~~Expand
 Item~Tables liées~PROTYPP~expl~~~Explore~PROTYPP~0~~Expand
 Item~Tables liées~ETPTYPP~expl~~~Explore~ETPTYPP~0~~Expand
 
