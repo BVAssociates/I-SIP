@@ -69,18 +69,7 @@ while (my %info = $list_table->fetch_row() ) {
 	}
 	# open DATA table
 	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
-	
-	my %field_txt = $ikos_data->field_txt();
-	my @temp_field;
-	foreach ($ikos_data->field) {
-		push @temp_field,$field_txt{$_};
-	}
-	my $ikos_data_field = join($separator,@temp_field);
-	# remove non-valid chars
-	$ikos_data_field =~ s/\s+/_/g;
-	# sorry...
-	$ikos_data_field =~ tr/ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöùúûüýÿ/AAAAAACEEEEIIIINOOOOOUUUUYaaaaaaceeeeiiiinooooouuuuyy/;
-	
+	my $ikos_data_field = join($separator,$ikos_data->field() );
 	my $ikos_data_size = join($separator,('20s') x $ikos_data->field() ) ;
 	
 	my $def_string = sprintf ($def_template,
@@ -88,7 +77,7 @@ while (my %info = $list_table->fetch_row() ) {
 			$separator,
 			$ikos_data_field,
 			$ikos_data_size, 
-			$field_txt{$info{PRIMARY_KEY}} );
+			$info{PRIMARY_KEY});
 			
 	if ($info{F_KEY} and $info{F_TABLE}) {
 		$def_string .= sprintf($fkey_def_template,
