@@ -9,11 +9,11 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_HISTO - Liste les champs d'une table dans un environnement
+PC_UPDATE_HISTO - Met à jour les champs d'une table Historique depuis la référence
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_HISTO.pl environnement tablename
+ PC_UPDATE_HISTO.pl environnement tablename
  
 =head1 DESCRIPTION
 
@@ -80,7 +80,7 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV != 2 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
