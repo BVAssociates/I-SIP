@@ -23,6 +23,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 ';
 
 my $pci_template='Item~~Editer ligne~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
+Item~~Afficher ligne~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
 Item~~Historique Editions~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
 ';
 my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
@@ -103,7 +104,7 @@ while (my %info = $list_table->fetch_row() ) {
 	my $ikos_data_size = join($separator,('20s') x $ikos_data->field() ) ;
 	
 	my $pci_string = sprintf ($pci_template,
-			$info{TABLE_NAME});
+			($info{TABLE_NAME}) x 3);
 	
 	# get all table having current table as F_KEY
 	my @fkey_list;
