@@ -14,7 +14,7 @@ use IKOS::DATA::Sqlite;
 
 # Open
 ############
-my $table_sqlite = Sqlite->open("IKOS_TEST","TEST", { debug => 0, timeout => 10000});
+my $table_sqlite = Sqlite->open("IKOS_TEST","TEST", { debug => 0, timeout => 1000});
 
 # Table infos
 ############
@@ -130,7 +130,7 @@ ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
 use IKOS::DATA::ODBC;
 
 my $table_odbc;
-$table_odbc = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 0});
+$table_odbc = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 1});
 
 ok(defined($table_odbc),			'ODBC_TXT->open() is defined');
 

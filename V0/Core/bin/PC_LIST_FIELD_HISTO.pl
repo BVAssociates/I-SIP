@@ -65,7 +65,7 @@ my $bv_severite=0;
 
 # verification du nom du champ demandé
 my $field_table=ITools->open("FIELD", {debug => $debug_level});
-$field_table->query_condition("FIELD = '$field'");
+$field_table->query_condition("FIELD_NAME = '$field'");
 
 if (not $field_table->fetch_row_array() ) {
 	log_erreur("$field n'est pas un champ valide pour $tablename");

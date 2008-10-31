@@ -22,9 +22,9 @@ KEY="%s"
 my $fkey_def_template='FKEY="[%s] on %s[%s]"
 ';
 
-my $pci_template='Item~~Editer ligne~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
-Item~~Afficher ligne~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
-Item~~Historique Editions~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
+my $pci_template='Item~~Afficher Ligne~expl~~GSL_FILE=%s~DisplayTable~FIELD~0~~Expand
+Item~~Editer ligne~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
+Item~~Explore Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
 ';
 my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';
