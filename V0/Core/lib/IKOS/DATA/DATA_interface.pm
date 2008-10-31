@@ -30,6 +30,8 @@ sub open() {
 	# internal description
 	$self->{key} = [];
 	$self->{field}= [];
+	$self->{field_txt}= {};
+	$self->{field_desc}= {};
 	$self->{size}= {};
 	$self->{not_null}= [];
 	
@@ -74,6 +76,18 @@ sub field {
     my $self = shift;
     if (@_) { croak("'field' member is read-only") }
     return @{ $self->{field} };
+}
+
+sub field_txt {
+    my $self = shift;
+    if (@_) { croak("'field_txt' member is read-only") }
+    return %{ $self->{field_txt} };
+}
+
+sub field_desc {
+    my $self = shift;
+    if (@_) { croak("'field_desc' member is read-only") }
+    return %{ $self->{field_desc} };
 }
 
 sub key {

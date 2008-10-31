@@ -80,9 +80,11 @@ sub open() {
 	$self->_set_columns_info();
 	
 	$self->_debug("Fields : ", join("|",$self->field()));
+	my %temp_hash=$self->field_txt();
+	$self->_debug("Fields TXT: ", join("|",values %temp_hash));
 	$self->_debug("Keys : ", join("|",$self->key()));
 	$self->_debug("Not NULL : ", join("|",$self->not_null()));
-	my %temp_hash=$self->size();
+	%temp_hash=$self->size();
 	$self->_debug("Size : ", join("|",values %temp_hash ));
 	
 	# set defaut for query_field
@@ -124,6 +126,9 @@ sub _set_columns_info() {
 		$size="INTEGER($col[5])"     if $col[4] eq "NUMERIC";
 		$size="DECIMAL($col[5])"        if $col[4] eq "DECIMAL";
 		$self->{size}->{$col[0]}=       $size;
+		
+		$col[21] =~ s/\s+/_/g;
+		$self->{field_txt}->{$col[0]}=       $col[21];
 		
 		push (@{$self->{not_null}},     $col[0]) if $col[7] eq 'Y';
 		push (@{$self->{key}},          $col[0]) if $col[27] eq 'Y';
