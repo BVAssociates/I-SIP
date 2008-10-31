@@ -127,7 +127,7 @@ sub _set_columns_info() {
 		$size="DECIMAL($col[5])"        if $col[4] eq "DECIMAL";
 		$self->{size}->{$col[0]}=       $size;
 		
-		$col[21] =~ s/\s+/_/g;
+		#$col[21] =~ s/\s+/_/g;
 		$self->{field_txt}->{$col[0]}=       $col[21];
 		
 		push (@{$self->{not_null}},     $col[0]) if $col[7] eq 'Y';
