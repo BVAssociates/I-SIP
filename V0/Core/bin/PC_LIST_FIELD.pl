@@ -102,21 +102,57 @@ if ( @ARGV != 2) {
 my $environnement=shift;
 my $tablename=shift;
 
+# quirk to test
+$ENV{ENVIRON}=$environnement;
+$ENV{GSL_FILE}=$tablename;
+#$ENV{AAPTYCOD}='HCPC';
+
 #  Corps du script
 ###########################################################
-
+use IKOS::DATA::ITools;
 use IKOS::SIP;
 
 my $bv_severite=0;
 
+# New SIP Object instance
+my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
 
-my $ikos_sip = SIP->new($environnement);
-my $table = $ikos_sip->open_local_table($tablename, {debug => 0 });
+# recuperation de la clef primaine de la table
+my $table_key = $ikos_sip->get_table_key($tablename);
 
-if (not defined $table) {
-	die "error opening $tablename in env $environnement";
+if (not $table_key) {
+	log_erreur("pas de clef primaine pour la table $tablename");
+	sortie(202);
 }
 
-print join("\n",$table->field)."\n";
+my $table_key_value = $ENV{$table_key} if exists $ENV{$table_key};
+if (not $table_key_value) {
+	log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
+	sortie(202);
+}
 
-sortie($bv_severite);
+print STDERR "KEY= $table_key\n";
+print STDERR "KEY_VAL=$table_key_value\n";
+
+# fetch selected row from histo table
+my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => 1});
+
+my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, TYPE, STATUS
+	FROM
+	$tablename\_HISTO INNER JOIN (
+		SELECT
+		TABLE_KEY as TABLE_KEY_2,
+		FIELD_NAME as FIELD_NAME_2,
+		max(DATE_HISTO) AS DATE_MAX
+		FROM
+		$tablename\_HISTO
+		WHERE TABLE_KEY = '$table_key_value'
+		GROUP BY FIELD_NAME_2, TABLE_KEY_2)
+	ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
+	ORDER BY TABLE_KEY;";
+	
+$table_histo->custom_select_query($select_histo);
+
+while (my @line=$table_histo->fetch_row_array() ) {
+	print join(',',@line)."\n";
+}

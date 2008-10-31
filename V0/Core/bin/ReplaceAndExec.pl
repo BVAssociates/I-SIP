@@ -146,11 +146,11 @@ log_erreur("ENVIRON n'est pas defini dans l'environnement" ) if not exists $ENV{
 ###########################################################
 my $bv_severite=0;
 
-# if we administrate a table other than FIELD_HISTO, we use the original script
-if ($table_name ne "FIELD_HISTO") {
+# if we administrate a table other than FIELD_*, we use the original script
+if ($table_name !~ /^FIELD/) {
 	log_info("$table_name : exec official script");
 	# routine to find the next ReplaceAndExec in Path
-	use File::Spec::Functions qw/:ALL/;
+	use File::Spec::Functions qw/path splitpath catfile/;
 	my (undef,undef,$current_script)=splitpath($0);
 	my $count=1;
 	my $next_script;
