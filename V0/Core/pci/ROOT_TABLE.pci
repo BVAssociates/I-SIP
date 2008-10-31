@@ -9,3 +9,4 @@
 
 #Item~~Explore~expl~~~Explore~~0~~Expand
 Item~~Explore~expl~~~Explore~%TABLE_NAME%~0~~Expand
+Item~~Mettre à jour~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl %ENVIRON% %TABLE_NAME%~0~~Release
