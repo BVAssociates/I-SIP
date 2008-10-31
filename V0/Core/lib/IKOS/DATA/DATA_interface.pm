@@ -37,7 +37,7 @@ sub open() {
 	$self->{query_field}  = [];
 	$self->{query_condition} = [];
 	$self->{query_sort}  = [];
-	#$self->{output_separator}  = '|';
+	$self->{output_separator}  = ',';
 	$self->{custom_select_query} = undef;
 	
 	# comparison variables
