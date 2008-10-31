@@ -271,8 +271,7 @@ sub describe()
 	return undef;
 }
 
-# Insert list  as a row
-sub insert_row_array() {
+sub array_to_hash() {
 	my $self = shift;
 	
 	my @row = @_;
@@ -283,6 +282,15 @@ sub insert_row_array() {
 	foreach my $field ($self->field()) {
 		$row_hash{$field} = shift @row ;
 	}
+	
+	return %row_hash;
+}
+
+# Insert list  as a row
+sub insert_row_array() {
+	my $self = shift;
+
+	my %row_hash = $self->array_to_hash(@_);
 	
 	$self->insert_row(%row_hash);
 }
