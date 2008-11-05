@@ -181,3 +181,10 @@ sub SQL_drop() {
 }
 
 1;
+
+
+=head1 NAME
+
+ IKOS::SIP - Class to access data from IKOS SIP 
+
+=head1 SYNOPSIS
