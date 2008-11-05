@@ -1,5 +1,7 @@
 package ITools_interface;
-@ISA=(DATA_interface);
+
+require IKOS::DATA::abstract::DATA_interface;
+@ISA=("DATA_interface");
 
 use IKOS::DATA::ITools::Define;
 
