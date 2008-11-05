@@ -1,7 +1,7 @@
 package Histo;
 
 
-require IKOS::DATA::DATA_interface;
+require IKOS::DATA::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
 use IKOS::DATA::Sqlite;

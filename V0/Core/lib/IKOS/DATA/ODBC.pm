@@ -31,7 +31,7 @@ sub key {
 
 package ODBC;
 
-require IKOS::DATA::DBI::DBI_interface;
+require IKOS::DATA::abstract::DBI_interface;
 @ISA = ("DBI_interface");
 
 use Carp qw(carp cluck confess croak );

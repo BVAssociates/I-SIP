@@ -16,7 +16,7 @@ IKOS::DATA::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
  
  
 package Legacy;
-require IKOS::DATA::ITools::ITools_interface;
+require IKOS::DATA::abstract::ITools_interface;
 @ISA = ("ITools_interface");
 
 use IKOS::DATA::ITools::Define;
