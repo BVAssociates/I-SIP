@@ -60,7 +60,7 @@ sub get_query()
 	my $self = shift;
 	
 	my $query;
-	$query = "Select -s ".join(', ',$self->query_field())." FROM ".$self->name();
+	$query = "Select -s ".join(', ',$self->query_field())." FROM ".$self->table_name();
 	$query = $query." WHERE ".join(' AND ',$self->query_condition()) if $self->query_condition()	!= 0;
 	$query = $query." ORDER_BY ".join(', ',$self->query_sort()) if $self->query_sort()	!= 0;
 	

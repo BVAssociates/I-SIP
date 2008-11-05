@@ -246,7 +246,7 @@ sub fetch_row()
 	return () if @row == 0;
 	
 	# internal test
-	die "fetch_row_array did return wrong number of values" if  @row != @fields;
+	die "fetch_row_array returned wrong number of values (got ".@row." instead of ".@fields.")" if  @row != @fields;
 
 	for (my $i=0; $i < @fields; $i++) {
 		$row_object{$fields[$i]}=$row[$i];

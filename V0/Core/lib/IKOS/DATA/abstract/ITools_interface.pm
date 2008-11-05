@@ -1,4 +1,5 @@
 package ITools_interface;
+@ISA=(DATA_interface);
 
 use IKOS::DATA::ITools::Define;
 
@@ -13,14 +14,16 @@ use strict;
 sub open() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    my $self  = {};
-
+    
 	# mandatory parameter
 	if (@_ < 1) {
 		croak ("'new' take 1 argument: new(\$define_obj)")
 	}
-    $self->{define} = shift;
-	my $option = shift;
+    my $define_ref = shift;
+	my $options = shift;
+	my $self  = $class->SUPER::open($define_ref->name(), $options);
+	
+	$self->{define} = $define_ref;
 
 	# internal description overiding "define" members
 	$self->{key} = [ $self->{define}->key ];
@@ -31,16 +34,8 @@ sub open() {
 	# user query
 	## anon array reference of 
 	$self->{query_field}  = [ @{ $self->{field} } ];
-	$self->{query_condition} = [];
-	$self->{query_sort}  = [];
 
-	# computed values from "define" members
-	$self->{output_separator}  = $self->{define}->separator;
-	
-	# debug
-	$self->{debugging}=0;
-	$self->{debugging}=$option->{debug} if exists $option->{debug};
-	
+
     bless($self, $class);
 		
     return $self;
@@ -52,11 +47,6 @@ sub open() {
 
 ##Read Only Values
 
-sub name {
-    my $self = shift;
-    if (@_) { croak("'name' member is read-only") }
-    return $self->{define}->{name};
-}
 
 sub type {
     my $self = shift;
@@ -64,29 +54,10 @@ sub type {
     return $self->{define}->{type};
 }
 
-sub field {
-    my $self = shift;
-    if (@_) { croak("'field' member is read-only") }
-    return @{ $self->{field} };
-}
 
-sub key {
-    my $self = shift;
-    if (@_) { croak("'key' member is read-only") }
-    return @{ $self->{key} };
-}
 
-sub sort {
-    my $self = shift;
-    if (@_) { @{ $self->{sort} } = @_ }
-    return @{ $self->{sort} };
-}
 
-sub size {
-    my $self = shift;
-    if (@_) { @{ $self->{size} } = @_ }
-    return %{ $self->{size} };
-}
+
 
 sub row {
     my $self = shift;
@@ -108,41 +79,8 @@ sub output_separator {
     return $self->{output_separator};
 }
 
-sub query_field {
-    my $self = shift;
 
-	my @fields=@_;
-	if (@fields) {
-	if ( $self->has_fields(@fields) != @fields) {
-			croak("error querying fields <@fields>");
-		} else {
-			$self->{query_field} =  [ @fields ];
-		}
-	}
-	
-	return @{ $self->{query_field} }
-}
 
-sub query_condition {
-    my $self = shift;
-    if (@_) { @{ $self->{query_condition} } = @_ }
-    return @{ $self->{query_condition} };
-}
-
-sub query_sort {
-    my $self = shift;
-	
-	my @fields=@_;
-	if (@fields) {
-	if ( $self->has_fields(@fields) != @fields) {
-			croak("error whith sort fields <@fields>");
-		} else {
-			@{ $self->{query_sort} } =  @fields;
-		}
-	}
-	
-    return @{ $self->{query_sort} };
-}
 
 # return the Define object
 sub define {
@@ -151,48 +89,15 @@ sub define {
     return $self->{define};
 }
 
-sub debugging {
-    my $self = shift;
-    if (@_) { $self->{debugging} = shift }
-    return $self->{debugging};
-}
+
 
 ##############################################
 ## Virtual methods provided by Interface       ##
 ##############################################
 
-# get row  by one based on query
-sub fetch_row_array()
-{
-	my $self = shift;
-
-	croak("fetch_row_array() not implemented");
-	return undef;
-}
 
 
-# get row on by one based on query
-#return object
-sub fetch_row()
-{
-	my $self = shift;
-	
-	my %row_object;
-	my @row=$self->fetch_row_array();
-	my @fields=$self->query_field();
-	
-	return () if @row == 0;
-	
-	# internal test
-	die "fetch_row_array returned wrong number of values (got ".@row." instead of ".@fields.")" if  @row != @fields;
 
-	for (my $i=0; $i < @fields; $i++) {
-		$row_object{$fields[$i]}=$row[$i];
-	}
-	
-	
-	return %row_object;
-}
 
 # get information on Table's definition
 sub describe()
@@ -206,16 +111,6 @@ sub describe()
 ## methods to access Table data        ##
 ##############################################
 
-sub has_fields() {
-	my $self = shift;
-	my @fields_requested = @_;
-	my @field_found;
-	
-	foreach my $field (@fields_requested) {
-		push (@field_found, grep {$field eq $_} $self->field) ;
-	}
-	return @field_found;
-}
 
 
 #SEP='§'@@FORMAT='Uid§Pid§PPid§Cpu§STime§Tty§Time§Command'@@ROW='$Uid§$Pid§$PPid§$Cpu§$STime§$Tty§$Time§$Command'@@SIZE='10s§7n§7n§4n§9s§7s§9s§40s'@@HEADER='Processus - ps -ef - de dyson.voisins.bvassociates.fr'@@KEY='Pid'
