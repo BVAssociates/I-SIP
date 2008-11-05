@@ -503,65 +503,117 @@ sub update_from() {
 
 =head1 NAME
 
- IKOS::DBI_Interface - Interface to access data of IKOS SIP 
+ IKOS::DATA::DATA_Interface - Abstract Interface to access data of IKOS SIP 
 
 =head1 SYNOPSIS
 
- use IKOS::Sqlite;
- use IKOS::ODBC;
+This Class cannnot be instancied as is.
+You must use one of the derived Class which implement the open() method and some
+method to access data like fetch_row() or insert_row().
+
+As Class sample, you can study the IKOS::DATA::Sqlite or IKOS::DATA::ODBC Classes.
+
+ use IKOS::DATA::Sqlite;
+ use IKOS::DATA::ODBC;
 
  #################
  # class methods #
  #################
  
- $obj = Sqlite->open("databasename","tablename"[ ,{ debug => $num, timeout => $sec } ]);
- $obj = ODBC->open("databasename","tablename"[ {  debug => $num } ]);
+ $obj = Sqlite->open($database_specification, "tablename"[ ,{ debug => $num, timeout => $sec } ]);
 
  #######################
  # object data methods #
  #######################
 
  # data from table
- @field = $obj->field();
- @key = $obj->key();
+ my @field = $obj->field();
+ my @key = $obj->key();
+ my %size = $obj->size();
+ my @not_null = $obj->not_null();
  
- # query the table
+ # set the query
  $obj->query_field("field1","field2");
  $obj->query_sort("field1","field2");
- $obj->query_condition("condition1","condition2");
+ $obj->query_condition("field1 = 'VALUE'","field2 = 'VALUE'");
  
- # get the results in arrays
- while (my @line=$obj->fetch_row_array()) {
-	print $line[0];
- }
+ # get one line from the results as an array
+ my @line=$obj->fetch_row_array();
  
- #reinitialize the query
+ #reinitialize the result of the query
  $obj->finish();
 
- # get the results in objects
+ # get all the results as objects
  while (my %line=$obj->fetch_row()) {
 	print $line{field1};
  }
 
- ########################
- # other object methods #
- ########################
+ # insert row as object
+ $obj->insert_row(field1 => "VALUE2", field2 => "VALUE2");
+ 
+ # insert row as array
+ $obj->insert_row("VALUE2", "VALUE2");
 
- $obj->get_query();
+=head1 DERIVED CLASSES
+
+=over 4
+
+=item IKOS::DATA::Sqlite
+
+Access Data from a Sqlite database.
+
+ $obj = Sqlite->open($database_name, $table_name);
+
+=item IKOS::DATA::ODBC
+
+Access Data from an ODBC database.
+
+ $obj = ODBC->open($DSN, $table_name);
+
+=item IKOS::DATA::ODBC_TXT
+
+Access Data from a database using the ODBC Text Driver.
+
+ $obj = ODBC_TXT->open($DSN, $table_name);
+ 
+=item IKOS::DATA::ITools
+
+Access Data from an ITools table.
+The table name must be in $BV_TABPATH.
+
+ $obj = ITools->open($table_name);
+
+=item IKOS::DATA::Histo
+
+Access Data from a special Sqlite database.
+
+In this special table, the fields are versionned and commented.
+
+ $obj = Histo->open($table_name);
+
+=back 
 
 =head1 DESCRIPTION
 
-The IKOS::Sqlite class is a simplified interface to DBD::Sqlite.
- 
-However, please note the following behaviors :
+Please note the following behaviors :
+
+=over 4
+
 =item *
+
 The class opens the database at object creation to get information about columns, and close it immediatly after this.
+
 =item *
+
 The class opens the database at the first call of a "fetch_row*()" method.
+
 =item *
+
 The class closes the database after the last line of query is retrieved.
+
 =item *
+
 The class closes the database with the "finish()" method.
- 
- 
+
+=back
  
