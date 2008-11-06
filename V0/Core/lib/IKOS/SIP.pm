@@ -15,16 +15,24 @@ sub new() {
 	my $self= {};
 	
 	$self->{environnement} = shift or die;
-	$self->{options} = {};
+	$self->{options} = shift;
+	
+	$self->{options}->{debug} = 0 if not exists $self->{options}->{debug};
 	
 	return bless($self, $class);
+}
+
+sub get_histo_field() {
+	my $self = shift;
+	
+	return ("ID","DATE_HISTO","DATE_UPDATE","USER_UPDATE","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT","TYPE","STATUS");
 }
 
 #found the table primary key
 sub get_table_key() {
 	my $self = shift;
 	my $tablename = shift or croak "get_table_key() wait args : 'tablename'";
-	my $debug_level = 0;
+	my $debug_level = $self->{options}->{debug};
 	my $key_found;
 	
 	# some different way to get the infos :
