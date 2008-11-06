@@ -12,4 +12,4 @@
 #Item~~Editer Historique~expl~~~Administrate~PROTYPP_HISTO~0~~Configure
 #Item~~Editer~expl~~~Administrate~PROTYPP_CODE~0~~Configure
 
-Item~~Historique~expl~~~Administrate~FIELD_HISTO~0~~Display
+Item~~Historique~expl~~GSL_FILE=%TABLE_NAME%~DisplayTable~FIELD_HISTO~0~~Display
