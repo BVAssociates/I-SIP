@@ -279,7 +279,7 @@ sub array_to_hash() {
 	
 	# convert array into hash
 	my %row_hash;
-	foreach my $field ($self->field()) {
+	foreach my $field ($self->query_field()) {
 		$row_hash{$field} = shift @row ;
 	}
 	
