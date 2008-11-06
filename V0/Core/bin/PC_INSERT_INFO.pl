@@ -123,8 +123,9 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	foreach my $field ( $current_table->field() ) {
 	
 		my %info_line;
-		$info_line{NAME} = $field;
-		$info_line{DATE_UPDATE} = $date_current;
+		$info_line{FIELD_NAME} = $field;
+		
+		#$info_line{DATE_UPDATE} = $date_current;
 
 		if ($size{$field} =~ /^(\w+)\((\d+)\)$/) {
 			$info_line{DATA_TYPE} = $1;

@@ -176,7 +176,7 @@ my $env_sip=SIP->new($ENV{ENVIRON });
 my $local_table;
 my %row;
 
-if ($table_name eq "FIELD_HISTO") {
+if ($table_name eq "FIELD") {
 	$local_table=$env_sip->open_local_table($ENV{GSL_FILE}."_HISTO", {timeout => 100, debug => 0});
 
 	$local_table->query_field("ID","DATE_HISTO", "DATE_UPDATE", "USER_UPDATE", "TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE", "COMMENT", "TYPE", "STATUS");
@@ -184,11 +184,14 @@ if ($table_name eq "FIELD_HISTO") {
 
 }
 elsif ($table_name eq "FIELD_INFO") {
-	$local_table=$env_sip->open_local_table($ENV{GSL_FILE}."_INFO", {timeout => 100, debug => 0});
+	$local_table=$env_sip->open_local_table($ENV{GSL_FILE}."_INFO", {timeout => 100, debug => 1});
 
 	$local_table->query_field(@field);
 	%row=$local_table->array_to_hash(split(/\s*,\s*/, $values, -1));
 
+}
+else {
+	die "type de table $table_name non gerée";
 }
 
 use POSIX qw(strftime);
