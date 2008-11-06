@@ -99,7 +99,7 @@ use POSIX qw(strftime);
 
 my $env_sip = SIP->new($environnement);
 
-my $db2_table = ITools->open("INFO_TABLE");
+my $db2_table = ITools->open("INFO_TABLE" ,{debug => 1});
 
 $db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
 
@@ -108,12 +108,13 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $table_name=$db2_table_line{TABLE_NAME};
 	
 	#open IKOS table for DATA
-	my $current_table=$env_sip->open_ikos_table($table_name, {debug => 0});
+	my $current_table=$env_sip->open_local_table($table_name, {debug => 0});
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1});
 	
+	$histo_table->compare_exclude("DATE_COLLECTE");
 	#$histo_table->compare_from($current_table),
 	$histo_table->update_from($current_table),
-		
+
 }
 
 sortie($bv_severite);

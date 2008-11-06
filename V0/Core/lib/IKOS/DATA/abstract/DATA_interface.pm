@@ -46,6 +46,7 @@ sub open() {
 	$self->{diff_update} = {};
 	$self->{diff_new} = {};
 	$self->{diff_delete} = {};
+	$self->{diff_exclude} = [];
 
 	# other internal members
 	$self->{debugging} = 0;
@@ -343,6 +344,21 @@ sub reset_compare() {
 	$self->{diff_delete} = {};
 }
 
+# add field list not to compare
+sub compare_exclude() {
+    my $self = shift;
+
+	my @fields=@_;
+	if (@fields) {
+		if ( $self->has_fields(@fields) != @fields) {
+			carp("compare_exclude : field not found <@fields>");
+		}
+		@{ $self->{diff_exclude} } =  @fields;
+	}
+
+	return @{ $self->{diff_exclude} }
+}
+
 # compare a table to $self
 #  $self->{diff_update}{key_value}{field1}="field_value"
 #  $$self->{diff_new}{key_value}{field1}="field_value"
@@ -410,7 +426,14 @@ sub compare_from() {
 			# something wrong appens !
 			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (intended : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
 			
+			#put whole row
 			%{ $self->{diff_new}{$current_keys} }  =  %row_table1;
+			
+			# remove excluded fields
+			foreach my $field ( $self->compare_exclude ) {
+				delete $self->{diff_new}{$current_keys}{$field};
+			}
+			
 			$differences += keys %row_table1;
 			next;
 		}
@@ -422,6 +445,12 @@ sub compare_from() {
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $new_keys)" if join(',',@row_table2{@key}) ne $current_keys;
 			
 			%{ $self->{diff_delete}{$current_keys} }  =  %row_table2;
+			
+			# remove excluded fields
+			foreach my $field ($self->compare_exclude) {
+				delete $self->{diff_delete}{$current_keys}{$field};
+			}
+			
 			$differences += keys %row_table2;
 			next;
 		}
@@ -435,6 +464,9 @@ sub compare_from() {
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
 			
 			foreach my $field1 (keys %row_table1) {
+			
+				next if grep(/^$field1$/, $self->compare_exclude);
+			
 				if (not exists $row_table2{$field1}) {
 					$self->_debug("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
