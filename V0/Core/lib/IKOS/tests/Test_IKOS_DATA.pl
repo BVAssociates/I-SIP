@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 53;
+use Test::More tests => 54;
 use Data::Dumper;
 
 use strict;
@@ -175,6 +175,7 @@ is ($test_table->get_query() , 'Select -s Name, Pid FROM ps WHERE Owner = VOISIN
 
 
 ok(my @process=$test_table->fetch_row_array(), 'ITools->fetch_row_array() fetch one row and stop');
+is(@process,2, 'ITools->fetch_row_array() return 2 fields');
 #print "the more little process number owned by VOISINS\\vb is : $process[1] (Name: $process[0])\n";
 ok($test_table->finish(), 'ITools->finish() finish the current request');
 is($test_table->{select_descriptor}, undef,'undef after ITools->finish()');
