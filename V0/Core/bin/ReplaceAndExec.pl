@@ -168,8 +168,19 @@ use IKOS::SIP;
 
 my $env_sip=SIP->new($ENV{ENVIRON });
 
-my $local_table=$env_sip->open_local_table($ENV{GSL_FILE}."_HISTO");
+my $local_table=$env_sip->open_local_table($ENV{GSL_FILE}."_HISTO", {timeout => 100, debug => 0});
 
-$local_table->update_row_array( split(/\s*,\s*/, $values));
+$local_table->query_field("ID","DATE_HISTO", "DATE_UPDATE", "USER_UPDATE", "TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE", "COMMENT", "TYPE", "STATUS");
+my %row=$local_table->array_to_hash(split(/\s*,\s*/, $values, -1));
+
+use Data::Dumper;
+print Dumper(%row);
+
+
+use POSIX qw(strftime);
+$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};
+$row{USER_UPDATE} = $ENV{ISIS_USER} if exists $row{USER_UPDATE};
+
+$local_table->update_row( %row );
 
 sortie($bv_severite);

@@ -137,7 +137,7 @@ print STDERR "KEY_VAL=$table_key_value\n";
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => 1});
 
-my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, TYPE, STATUS
+my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, TYPE, STATUS
 	FROM
 	$tablename\_HISTO INNER JOIN (
 		SELECT
