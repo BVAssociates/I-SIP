@@ -56,22 +56,16 @@ my $field=shift;
 $ENV{ENVIRON}=$environnement;
 $ENV{GSL_FILE}=$tablename;
 
+##for debug
+#$ENV{AAPTYCOD}='AFFEXT';
+
+
 #  Corps du script
 ###########################################################
 use IKOS::DATA::ITools;
 use IKOS::SIP;
 
 my $bv_severite=0;
-
-# verification du nom du champ demandé
-my $field_table=ITools->open("FIELD", {debug => $debug_level});
-$field_table->query_condition("FIELD_NAME = '$field'");
-
-if (not $field_table->fetch_row_array() ) {
-	log_erreur("$field n'est pas un champ valide pour $tablename");
-	sortie 202;
-}
-undef $field_table;
 
 # New SIP Object instance
 my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
@@ -94,8 +88,8 @@ print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";
 
 # fetch selected row from histo table
-my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO");
-#$table_histo->query_field("DATE_HISTO","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT");
+my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+$table_histo->query_field($ikos_sip->get_histo_field());
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
 while (my @line=$table_histo->fetch_row_array() ) {
