@@ -148,7 +148,7 @@ my $bv_severite=0;
 
 # if we administrate a table other than FIELD_*, we use the original script
 if ($table_name !~ /^FIELD/) {
-	log_info("$table_name : exec official script");
+	
 	# routine to find the next ReplaceAndExec in Path
 	use File::Spec::Functions qw/path splitpath catfile/;
 	my (undef,undef,$current_script)=splitpath($0);
@@ -158,6 +158,7 @@ if ($table_name !~ /^FIELD/) {
 		$next_script=catfile($dir,$current_script);
 		if (-r $next_script) {
 			if ($count-- <= 0) {
+				log_info("$table_name : exec official script : $next_script ");
 				exec "perl",'"'.$next_script.'"',@argv_save;
 			}
 		}
