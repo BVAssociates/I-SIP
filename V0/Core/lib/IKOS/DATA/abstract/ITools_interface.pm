@@ -32,6 +32,7 @@ sub open() {
 	$self->{field}= [ $self->{define}->field ];
 	$self->{size}= { $self->{define}->size };
 	$self->{not_null}= [ $self->{define}->not_null ];
+	$self->{output_separator}= $self->{define}->separator;
 	
 	# user query
 	## anon array reference of 
