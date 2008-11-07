@@ -229,6 +229,19 @@ sub fetch_row() {
 	
 	$self->{end_of_data} = 1 if not %field_line;
 	
+	foreach ($self->key() ) {
+		if (not exists $return_line{$_}) {
+			$self->_debug("field $_ cannot be null (should be $field_line{TABLE_KEY})");
+			confess "Possible data corruption : NULL PRIMARY KEY";
+		}
+	}
+	
+	foreach ($self->not_null() ) {
+		if (not exists $return_line{$_}) {
+			$self->_debug("field $_ should not be null)");
+		}
+	}
+	
 	return %return_line;
 }
 
