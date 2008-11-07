@@ -405,8 +405,6 @@ sub compare_from() {
 		$seen_keys{join(',',@row)}--
 	}
 	
-	#use Data::Dumper;
-	#print Dumper(\%seen_keys);
 	
 	$self->query_field($self->field);
 	$table_from->query_field($table_from->field);
@@ -481,6 +479,14 @@ sub compare_from() {
 	}
 	$self->finish;
 	$table_from->finish;
+
+	my $delete_key_nb=grep { $_ > 0 } values %seen_keys;
+	$self->_debug("$delete_key_nb row deleted");
+	
+	my $new_key_nb=grep { $_ < 0 } values %seen_keys;
+	$self->_debug("$new_key_nb row added");
+	
+	$self->_debug(scalar keys %{ $self->{diff_update} } ," row updated");
 	
 	return $differences;
 }
