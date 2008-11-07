@@ -34,6 +34,7 @@ sub open() {
 	$self->{field_desc}= {};
 	$self->{size}= {};
 	$self->{not_null}= [];
+	$self->{virtual_field} = [];
 	
 	# user query
 	$self->{query_field}  = [];
@@ -77,6 +78,12 @@ sub field {
     my $self = shift;
     if (@_) { croak("'field' member is read-only") }
     return @{ $self->{field} };
+}
+
+sub virtual_field {
+    my $self = shift;
+    if (@_) { @{ $self->{virtual_field} } = @_ };
+    return @{ $self->{virtual_field} };
 }
 
 sub field_txt {
