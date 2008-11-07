@@ -159,8 +159,8 @@ sub get_query()
 	my $select_histo;
 	my @select_conditions;
 	
-	
-	push @select_conditions, "DATE_HISTO = '".$self->query_date()."'" if $self->query_date();
+	my $date_format = "%Y/%m/%d %Hh%M";
+	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	#push @select_conditions, "FIELD_NAME = '".$self->query_field()."'" if $self->query_field() == $self->field();
 	
 	# SQL join to get last inserted KEY/NAME/VALUE

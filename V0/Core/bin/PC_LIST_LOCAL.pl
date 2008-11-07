@@ -9,11 +9,11 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_LIST_TAB - Liste le contenu d'une table dans un environnement
+PC_LIST_LOCAL - Liste le contenu d'une table locale
 
 =head1 SYNOPSIS
 
- PC_LIST_TAB.pl [-h][-v] environnement tablename [date [heure]]
+ PC_LIST_LOCAL.pl [-h][-v] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -40,10 +40,6 @@ Liste les champs d'une table dans un environnement à la date courante
 =item environnement : environnement à utiliser
 
 =item tablename : table a ouvrir
-
-=item date : date
-
-=item time : heure
 
 =back
 
@@ -99,11 +95,6 @@ if ( @ARGV < 2) {
 }
 my $environ=shift;
 my $table_name=shift;
-my $query_date=shift;
-my $query_time=shift;
-
-$query_time = "00h00" if not $query_time;
-$query_date = $query_date ." ". $query_time if $query_date;
 
 #  Corps du script
 ###########################################################
@@ -111,9 +102,7 @@ my $bv_severite=0;
 use IKOS::SIP;
 
 my $sip=SIP->new($environ);
-my $table=$sip->open_local_from_histo_table($table_name, {debug => 0 });
-
-$table->query_date("$query_date") if $query_date and $query_date !~ /^%/;
+my $table=$sip->open_local_table($table_name, {debug => 0 });
 
 my @query_field=$sip->get_table_field($table_name);
 $table->query_field(@query_field);
