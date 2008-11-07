@@ -13,7 +13,7 @@ my $bv_debug=0;
 #####  BEGIN TEMPLATES ##### 
 my $separator=',';
 
-my $def_template = 'COMMAND="PC_LIST_TAB.pl %%ENVIRON%% %s %%DATE%%"
+my $def_template = 'COMMAND="PC_LIST_TAB.pl %%ENVIRON%% %s %%DATE_HISTO%%"
 SEP="%s"
 FORMAT="%s"
 SIZE="%s"
