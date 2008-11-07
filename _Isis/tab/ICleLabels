@@ -1,5 +1,10 @@
 #NodeId;Icon;Label
-mytable.Item;I_ps;
-mytable.Table;T_Oracle_process;
-ROOT_TABLE.Item;I_ps;Table IKOS
-ROOT_TABLE.Table;T_Oracle_process;
+
+ENVIRON.Table;T_Group;Liste des environnements
+ENVIRON.Item;I_Group;Environnement %[ENVIRON]
+
+Modules.Table;I_AgentICles;Liste des Modules
+Modules.Item;T_AgentICles;Modules %[MODULE]
+
+ROOT_TABLE.Table;I_Configs;Liste des Modules
+ROOT_TABLE.Item;T_Configs;Modules %[MODULE]
