@@ -442,7 +442,7 @@ sub compare_from() {
 			$self->_debug("Found deleted line : Key (".$current_keys.")");
 			%row_table2=$self->fetch_row;
 			
-			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $new_keys)" if join(',',@row_table2{@key}) ne $current_keys;
+			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
 			
 			%{ $self->{diff_delete}{$current_keys} }  =  %row_table2;
 			
