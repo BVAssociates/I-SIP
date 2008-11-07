@@ -335,7 +335,7 @@ sub update_row() {
 			push @error_field, $field;
 		}
 	}
-	carp join(',',@error_field)." don't exist in fields" if @error_field;
+	croak join(',',@error_field)." don't exist in fields" if @error_field;
 	
 	# check if primary key is valued
 	croak "primary key not defined for ".$self->table_name if not $self->key;
@@ -348,17 +348,8 @@ sub update_row() {
 	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
 	
 	
-	my $transaction_running=0;
-	
 	use POSIX qw(strftime);
 	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
-	
-	# active transaction mode if not already done
-	if ( $self->{table_histo}->active_transaction() > 0 ) {
-		$transaction_running = 1 ;
-	} else {
-		# $self->{table_histo}->begin_transaction();
-	}
 	
 	# concat key values
 	my @key_value;
@@ -378,12 +369,20 @@ sub update_row() {
 		);
 		
 		$self->_debug("Insert : $field ");
-
-		
 	}
+}
+
+# add new field
+sub add_field() {
+	my $self = shift;
 	
-	# commit this rows if no transaction was running before
-	#$self->{table_histo}->commit_transaction() if not $transaction_running;
+	my $field_name = shift or croak ('add_field take 1 argument : field_name');
+	
+	$self->_debug("Add field $field_name");
+	
+	# just add field name in field member
+	push ( @{$self->{field}} , $field_name);
+	push ( @{$self->{query_field}} , $field_name);
 }
 
 sub finish() {

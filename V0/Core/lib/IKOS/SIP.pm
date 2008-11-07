@@ -73,6 +73,9 @@ sub get_local_database_name() {
 	
 	my $table_name=shift or croak "get_local_database() wait args : 'tablename'";
 	
+	# table suffixed with _* are in the same database
+	$table_name =~ s/_\w+$//;
+	
 	return "IKOS_".$self->{environnement}."_".$table_name;
 }
 

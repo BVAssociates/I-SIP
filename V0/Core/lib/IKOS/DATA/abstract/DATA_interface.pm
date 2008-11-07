@@ -47,6 +47,8 @@ sub open() {
 	$self->{diff_update} = {};
 	$self->{diff_new} = {};
 	$self->{diff_delete} = {};
+	$self->{diff_new_field} = [];
+	#$self->{diff_delete_field} = {};
 	$self->{diff_exclude} = [];
 
 	# other internal members
@@ -186,6 +188,12 @@ sub _debug() {
 	print STDERR "DEBUG:".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
 }
 
+# simple print method
+sub _info() {
+	my $self = shift;
+	print "INFO:".$self->{table_name}.":".join(' ',@_)."\n";
+}
+
 
 ##############################################
 ##  public methods        ##
@@ -275,7 +283,7 @@ sub describe()
 {
 	my $self = shift;
 	
-	croak("describe() not implemented");
+	croak("describe() not implemented in ".ref($self));
 	return undef;
 }
 
@@ -307,7 +315,14 @@ sub insert_row_array() {
 sub insert_row() {
 	my $self = shift;
 	
-	croak("insert_row() not implemented");
+	croak("insert_row() not implemented in ".ref($self));
+}
+
+# add new field
+sub add_field() {
+	my $self = shift;
+	
+	croak("add_field() not implemented in ".ref($self));
 }
 
 # update a row on a primary key
@@ -329,7 +344,7 @@ sub update_row_array() {
 sub update_row() {
 	my $self = shift;
 	
-	croak("update_row() not implemented");
+	croak("update_row() not implemented in ".ref($self));
 }
 
 sub has_fields() {
@@ -425,7 +440,7 @@ sub compare_from() {
 		my $new_keys = $seen_keys{$current_keys};
 		# this key does not exist anymore
 		if ($new_keys < 0) {
-			$self->_debug("Found new line : Key (".$current_keys.")");
+			$self->_info("Found new line : Key (".$current_keys.")");
 			%row_table1=$table_from->fetch_row;
 			
 			# something wrong appens !
@@ -444,7 +459,7 @@ sub compare_from() {
 		}
 		# this key are new in the table
 		elsif ($new_keys > 0) {
-			$self->_debug("Found deleted line : Key (".$current_keys.")");
+			$self->_info("Found deleted line : Key (".$current_keys.")");
 			%row_table2=$self->fetch_row;
 			
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
@@ -471,13 +486,14 @@ sub compare_from() {
 			foreach my $field1 (keys %row_table1) {
 			
 				next if grep(/^$field1$/, $self->compare_exclude);
-			
+				
 				if (not exists $row_table2{$field1}) {
-					$self->_debug("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
+					$self->_info("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
+					push (@{$self->{diff_new_field}},$field1) if not grep(/^$field1$/,@{$self->{diff_new_field}});
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
-					$self->_debug("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," => ",$row_table1{$field1} );
+					$self->_info("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," => ",$row_table1{$field1} );
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				}
@@ -487,13 +503,18 @@ sub compare_from() {
 	$self->finish;
 	$table_from->finish;
 
+	# reporting information
+	
 	my $delete_key_nb=grep { $_ > 0 } values %seen_keys;
-	$self->_debug("$delete_key_nb row deleted");
+	$self->_info("$delete_key_nb row deleted");
 	
 	my $new_key_nb=grep { $_ < 0 } values %seen_keys;
-	$self->_debug("$new_key_nb row added");
+	$self->_info("$new_key_nb row added");
+
+	$self->_info(scalar @{ $self->{diff_new_field} } ," field added");
 	
-	$self->_debug(scalar keys %{ $self->{diff_update} } ," row updated");
+	$self->_info(scalar keys %{ $self->{diff_update} } ," row updated");
+	
 	
 	return $differences;
 }
@@ -505,6 +526,8 @@ sub update_from() {
 	
 	my $differences = $self->compare_from($table);
 	
+	$self->begin_transaction();
+	
 	# insert new lines
 	foreach my $key_new (keys %{ $self->{diff_new} } ) {
 		$self->insert_row(%{ $self->{diff_new}{$key_new} });
@@ -515,9 +538,18 @@ sub update_from() {
 		#$self->delete_row(%{ $self->{diff_delete}{$key_delete} });
 	}
 	
+	# add new field
+	foreach my $new_field (@{ $self->{diff_new_field} }) {
+		$self->add_field($new_field);
+	}
+	
 	# update modified lines
 	my @table_key=sort $self->key();
 	foreach my $key_update (keys %{ $self->{diff_update} } ) {
+	
+		#Check new fields
+		my @update_field=keys %{ $self->{diff_update}{$key_update} };
+			
 		# get tables keys
 		my @table_key_value=split(/,/,$key_update);
 		
@@ -529,6 +561,7 @@ sub update_from() {
 		
 		$self->update_row(%{ $self->{diff_update}{$key_update} });
 	}
+	$self->commit_transaction();
 	
 	return $differences;
 }
