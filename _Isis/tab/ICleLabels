@@ -12,3 +12,4 @@ ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
 FIELD.Table;T_Configs;Champs de %[TABLE_NAME]
 FIELD.Item;field_%[STATUS];%[FIELD_NAME]
 
+TEST.Item;line_%[STATUS];%[KEY]

@@ -211,7 +211,13 @@ sub fetch_row() {
 	# if a temp_next_row exist from previous call, we add the FIELD_VALUE to the return hash
 	if ( %{ $self->{temp_next_row} } ) {
 		my %temp_next_row= %{ $self->{temp_next_row} };
+		
+		# add the FIELD_VALUE to the return hash
 		$return_line{$temp_next_row{FIELD_NAME}}=$temp_next_row{FIELD_VALUE};
+		
+		# line is modified if one field have no status
+		$line_has_new += 1 if not $field_line{STATUS};
+		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
@@ -219,10 +225,7 @@ sub fetch_row() {
 	# ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE
 	while (%field_line = $self->{table_histo}->fetch_row ) {
 		
-		# line is modified if one field have no status
-		$line_has_new += 1 if not $field_line{STATUS};
-		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
-		
+			
 		# if no current key, it's a new row
 		$current_key = $field_line{TABLE_KEY} if not defined $current_key;
 		
@@ -230,10 +233,14 @@ sub fetch_row() {
 		if ( defined $current_key and $current_key ne $field_line{TABLE_KEY}) {
 			$self->{temp_next_row} = { %field_line };
 			last;
-		}	
+		}
 		
 		# add the FIELD_VALUE to the return hash
 		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
+		
+		# line is modified if one field have no status
+		$line_has_new += 1 if not $field_line{STATUS};
+		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
 	}
 	
 	$self->{end_of_data} = 1 if not %field_line;
@@ -262,10 +269,10 @@ sub fetch_row() {
 		}
 		else
 		{
-			$return_line{STATUS}='';
+			$return_line{STATUS}='VALIDE';
 		}
 	}
-		$return_line{STATUS}=$line_has_new.'/'.$line_not_valid;
+	
 	return %return_line;
 }
 
