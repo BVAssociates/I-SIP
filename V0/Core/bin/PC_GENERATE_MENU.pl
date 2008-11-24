@@ -1,11 +1,99 @@
 #!/usr/bin/perl
 
+# Inclusions obligatoires
 use strict;
+use Pod::Usage;
+use Getopt::Std;
+
+#  Documentation
+###########################################################
+=head1 NAME
+
+PC_GENERATE_MENU - les champs les champs d'une table Historique depuis la référence
+
+=head1 SYNOPSIS
+
+ PC_GENERATE_MENU.pl environnement tablename
+ 
+=head1 DESCRIPTION
+
+Créer les PCI et DEF nécéssaires à la declaration d'une table dans SIP IKOS
+
+=head1 ENVIRONNEMENT
+
+=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=head1 OPTIONS
+
+=head2 -h : Affiche l'aide en ligne
+
+=head2 -v : Mode verbeux
+
+=head1 ARGUMENTS
+
+=head2 * environnement à utiliser
+
+=head2 * table a décrire
+
+=head1 AUTHOR
+
+BV Associates, 16/10/2008
+
+=cut
+
+
+#  Fonctions
+###########################################################
+
+sub sortie ($) {
+	exit shift;
+}
+
+sub usage($) {
+	my $verbosity=shift;
+	pod2usage(-verbose => $verbosity, -noperldoc => 1);
+	sortie(202); 
+}
+
+sub log_erreur {
+	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	sortie(202);
+}
+
+sub log_info {
+	print STDERR "INFO: ".join(" ",@_)."\n"; 
+}
+
+
+#  Traitement des Options
+###########################################################
+
+
+my %opts;
+getopts('hv', \%opts);
+
+my $debug_level = 0;
+$debug_level = 1 if $opts{v};
+
+usage($debug_level+1) if $opts{h};
+
+#  Traitement des arguments
+###########################################################
+
+if ( @ARGV < 1 ) {
+	log_info("Nombre d'argument incorrect (".@ARGV.")");
+	usage($debug_level);
+	sortie(202);
+}
+my $environnement=shift;
+my $table_name=shift;
+
+#  Corps du script
+###########################################################
 
 use IKOS::SIP;
 use IKOS::DATA::ITools;
 
-my $environnement=shift or die "ARG1: ENV";
 
 my $bv_debug=0;
 
@@ -32,6 +120,8 @@ Item~~Explore Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
 my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';
 
+my $label_template='%s.Item;line_%%[STATUS];';
+
 ##### END TEMPLATES ##### 
 
 # ENV info
@@ -47,8 +137,14 @@ die "$pci_path not writable" if not -w $pci_path;
 die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 
 my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
+
+my @condition;
+push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
 # only table with defined primary key
-$list_table->query_condition("PRIMARY_KEY != ''");
+push @condition,"PRIMARY_KEY != ''";
+
+$list_table->query_condition(join(' AND ',@condition));
+
 my $sip = SIP->new($environnement);
 
 if (not defined $list_table) {
@@ -58,20 +154,23 @@ if (not defined $list_table) {
 # mise en mémoire des primary key
 my %table_key;
 my %table_fkey;
-while (my %info = $list_table->fetch_row() ) {
-	$table_key {$info{TABLE_NAME}} = $info{PRIMARY_KEY};
-	$table_fkey {$info{TABLE_NAME}} = $info{F_TABLE};
+while (my %info_key = $list_table->fetch_row() ) {
+	$table_key {$info_key{TABLE_NAME}} = $info_key{PRIMARY_KEY};
+	$table_fkey {$info_key{TABLE_NAME}} = $info_key{F_TABLE};
 }
 $list_table->finish();
 
-# CREATE DEF
+
 while (my %info = $list_table->fetch_row() ) {
-	if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
-		warn "$info{TABLE_NAME} don't exist in local tables\n";
-		next;
-	}
+
+	# CREATE DEF
+
+	#if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
+	#	warn "$info{TABLE_NAME} don't exist in local tables\n";
+	#	next;
+	#}
 	# open DATA table
-	my $ikos_data = $sip->open_local_table($info{TABLE_NAME}, { debug => $bv_debug });
+	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
 	my @field_list=(@virtual_field,$ikos_data->field() );
 	my $ikos_data_field = join($separator, @field_list);
 	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
@@ -94,18 +193,9 @@ while (my %info = $list_table->fetch_row() ) {
 	open (DEFFILE,">$def_path/$info{TABLE_NAME}.def") or die "error opening $def_path\\$info{TABLE_NAME}.def : $!";
 	print DEFFILE $def_string."\n";
 	close DEFFILE;
-}
 
-# CREATE PCI
-while (my %info = $list_table->fetch_row() ) {
-	if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
-		print STDERR "$info{TABLE_NAME} don't exist in local tables\n";
-		next;
-	}
-	# open DATA table
-	my $ikos_data = $sip->open_local_table($info{TABLE_NAME}, { debug => $bv_debug });
-	my $ikos_data_field = join($separator,$ikos_data->field() );
-	my $ikos_data_size = join($separator,('20s') x $ikos_data->field() ) ;
+
+	# CREATE PCI
 	
 	my $pci_string = sprintf ($pci_template,
 			($info{TABLE_NAME}) x 3);
@@ -124,7 +214,16 @@ while (my %info = $list_table->fetch_row() ) {
 	open (DEFFILE,">$pci_path/$info{TABLE_NAME}.pci") or die "error opening $pci_path\\$info{TABLE_NAME}.def : $!";
 	print DEFFILE $pci_string."\n";
 	close DEFFILE;
+	
+	# CREATE Label
+	my $label_string = sprintf($label_template,$info{TABLE_NAME});
+	print "Insert $info{TABLE_NAME} into ICleLabels\n";
+	system('Insert -f into ICleLabels values',$label_string);
 }
+
+system('AgentCollect -s AgentICleLabels ICleLabels');
+
+
 =begin comment
 # PCI racine
 my $pci_string_module;

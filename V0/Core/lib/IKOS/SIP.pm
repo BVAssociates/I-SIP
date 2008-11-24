@@ -149,7 +149,9 @@ sub open_ikos_table() {
 	
 	my $table_name=shift or croak "open_ikos_table() wait args : 'tablename'";
 	
-	my $table_ikos=ODBC_TXT->open("IKOS_DEV" , $table_name, @_);
+	my $table_ikos = eval { ODBC_TXT->open("IKOS_DEV" , $table_name, @_); };
+	croak "Error opening $table_name : $@" if $@;
+
 	# we must set the primary key manually
 	$table_ikos->key(split(/,/,$self->get_table_key($table_name)));
 	
