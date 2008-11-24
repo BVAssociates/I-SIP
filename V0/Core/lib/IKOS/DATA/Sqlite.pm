@@ -21,7 +21,7 @@ sub open() {
 	
 	my $self  = $class->SUPER::open(@_, $options);
 	
-	$self->{database_path} = undef;
+	$self->{database_path} = $self->database_name;
 	$self->{timeout}=10000;
 	
 	############
@@ -34,16 +34,6 @@ sub open() {
 	# Opening Database
 	############
 	
-	if (not exists $ENV{BV_TABPATH}) {
-		croak('Environnament variable "BV_TABPATH" does not exist');
-	}
-	
-	# look for the database name in BV_TABPATH
-	$self->{database_path} = $self->_find_file($ENV{BV_TABPATH},$self->{database_name}.".sqlite3");
-	
-	if (not defined $self->{database_path}) {
-		croak("Error opening sqlite database : $self->{database_name}");
-	}
 	$self->_open_database();
 
 	############

@@ -22,5 +22,5 @@ Item~Configuration SIP~Administrer Tables IKOS~adm~~~Administrate~INFO_TABLE~0~~
 Item~Configuration SIP~Explorer Tables IKOS~adm~~~Explore~INFO_TABLE~0~~Expand
 Item~Configuration SIP~Administrer Types~adm~~~Administrate~TYPE~0~~Configure
 Item~Configuration SIP~Administrer Etats~adm~~~Administrate~ETAT~0~~Configure
-Item~Configuration SIP~Administrer Etats~adm~~~Administrate~RESPONSABLE~0~~Configure
+Item~Configuration SIP~Administrer Responsablités~adm~~~Administrate~RESPONSABLE~0~~Configure
 Item~Configuration SIP~Appliquer les modifications~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl TEST~0~~Method

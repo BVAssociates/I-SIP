@@ -50,6 +50,7 @@ sub open() {
 	
 	# user query
 	$self->{query_field}  = [ $self->field() ];
+	$self->{dynamic_field}  = [ "STATUS" ];
 	# add query option
 	$self->{query_date} = $options->{date};
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
@@ -165,8 +166,7 @@ sub get_query()
 	
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
-	$select_histo= "SELECT ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE
-		FROM
+	$select_histo= "SELECT ".join(',',$self->{table_histo}->query_field)." FROM
 		$self->{table_name_histo} INNER JOIN (
 			SELECT
 			TABLE_KEY as TABLE_KEY_2,
@@ -199,9 +199,15 @@ sub fetch_row() {
 		$self->{end_of_data} = 0;
 		return ();
 	}
+
+	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS");
 	
 	$self->{table_histo}->custom_select_query ($self->get_query() );
 
+	# store the higher field status
+	my $line_has_new=0;
+	my $line_not_valid=0;
+	
 	# if a temp_next_row exist from previous call, we add the FIELD_VALUE to the return hash
 	if ( %{ $self->{temp_next_row} } ) {
 		my %temp_next_row= %{ $self->{temp_next_row} };
@@ -209,12 +215,15 @@ sub fetch_row() {
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
-	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE");
-	
 	#return every row until TABLE_KEY change
 	# ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE
 	while (%field_line = $self->{table_histo}->fetch_row ) {
-
+		
+		# line is modified if one field have no status
+		$line_has_new += 1 if not $field_line{STATUS};
+		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
+		
+		# if no current key, it's a new row
 		$current_key = $field_line{TABLE_KEY} if not defined $current_key;
 		
 		# if TABLE_KEY changed, we save the current line and exit
@@ -242,6 +251,21 @@ sub fetch_row() {
 		}
 	}
 	
+	# add dynamic field if requested
+	if (grep (/^STATUS$/, $self->query_field() )) {
+		if ($line_has_new > 0) {
+			$return_line{STATUS}='NEW';
+		}
+		elsif ($line_not_valid)
+		{
+			$return_line{STATUS}='EDIT';
+		}
+		else
+		{
+			$return_line{STATUS}='';
+		}
+	}
+		$return_line{STATUS}=$line_has_new.'/'.$line_not_valid;
 	return %return_line;
 }
 
@@ -280,6 +304,11 @@ sub insert_row() {
 		
 	my (%row) = @_;
 	my $transaction_running=0;
+	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
 	
 	use POSIX qw(strftime);
 	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
@@ -327,6 +356,11 @@ sub update_row() {
 	
 	my (%row) = @_;
 	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
+	
 	# check if fields exist
 	my @error_field;
 	my @fields=$self->field();
@@ -370,6 +404,12 @@ sub update_row() {
 		
 		$self->_debug("Insert : $field ");
 	}
+}
+
+sub validate_row() {
+	my $self = shift;
+
+	# update line STATUS to VALIDE
 }
 
 # add new field

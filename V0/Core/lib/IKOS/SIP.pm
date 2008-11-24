@@ -68,15 +68,32 @@ sub get_table_field() {
 	return $table->field;
 }
 
-sub get_local_database_name() {
+sub get_sqlite_path() {
 	my $self = shift;
 	
 	my $table_name=shift or croak "get_local_database() wait args : 'tablename'";
 	
+	my $filename;
+	my $database_path;
+	
 	# table suffixed with _* are in the same database
 	$table_name =~ s/_\w+$//;
+	$filename = "IKOS_".$self->{environnement}."_".$table_name.".sqlite";
 	
-	return "IKOS_".$self->{environnement}."_".$table_name;
+	if (not exists $ENV{BV_TABPATH}) {
+		croak('Environnement variable "BV_TABPATH" does not exist');
+	}
+	
+	use Config;
+	my $env_separator = $Config{path_sep};
+	
+	my $filepath;
+	foreach my $path (split ($env_separator,$ENV{BV_TABPATH})) {
+		return $path."/".$filename if -r $path."/".$filename;
+	}
+	
+	#not found
+	return undef;
 }
 
 # change this methods to configure Database Access
@@ -85,12 +102,15 @@ sub exist_local_table() {
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
-	my $return_value=0;
+	
+	my $database_path=$self->get_sqlite_path($table_name);
+	return 0 if not $database_path;
 	
 	# verification on sqlite_master
-	my $master_table=Sqlite->open($self->get_local_database_name($table_name), 'sqlite_master', @_);
+	my $master_table=Sqlite->open($database_path, 'sqlite_master', @_);
 	$master_table->query_condition("type='table' AND name='$table_name'");
 	
+	my $return_value=0;
 	if ($master_table->fetch_row_array) {
 		$return_value=1;
 	}
@@ -104,7 +124,7 @@ sub open_local_table() {
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
-	my $tmp_return = eval {Sqlite->open($self->get_local_database_name($table_name), $table_name, @_)};
+	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name), $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
 	return $tmp_return;
 }
@@ -114,7 +134,9 @@ sub open_local_from_histo_table() {
 	
 	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
 	
-	my $table_histo = Histo->open($self->get_local_database_name($table_name), $table_name, @_);
+	croak "No database found for table $table_name in ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+	
+	my $table_histo = Histo->open($self->get_sqlite_path($table_name), $table_name, @_);
 	
 	# we must set the primary key manually
 	$table_histo->key(split(/,/,$self->get_table_key($table_name)));

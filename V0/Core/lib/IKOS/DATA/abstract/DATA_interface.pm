@@ -34,7 +34,7 @@ sub open() {
 	$self->{field_desc}= {};
 	$self->{size}= {};
 	$self->{not_null}= [];
-	$self->{virtual_field} = [];
+	$self->{dynamic_field} = [];
 	
 	# user query
 	$self->{query_field}  = [];
@@ -82,10 +82,10 @@ sub field {
     return @{ $self->{field} };
 }
 
-sub virtual_field {
+sub dynamic_field {
     my $self = shift;
-    if (@_) { @{ $self->{virtual_field} } = @_ };
-    return @{ $self->{virtual_field} };
+    if (@_) { @{ $self->{dynamic_field} } = @_ };
+    return @{ $self->{dynamic_field} };
 }
 
 sub field_txt {
@@ -352,8 +352,10 @@ sub has_fields() {
 	my @fields_requested = @_;
 	my @field_found;
 	
+	my @field_avaiable=($self->field, $self->dynamic_field);
+		
 	foreach my $field (@fields_requested) {
-		push (@field_found, grep {$field eq $_} $self->field) ;
+		push (@field_found, grep {$field eq $_} @field_avaiable) ;
 	}
 	return @field_found;
 }

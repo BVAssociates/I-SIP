@@ -300,7 +300,7 @@ sub update_row() {
 
 
 
-sub has_fields() {
+sub has_fields_old() {
 	my $self = shift;
 	my @fields_requested = @_;
 	my @field_found;

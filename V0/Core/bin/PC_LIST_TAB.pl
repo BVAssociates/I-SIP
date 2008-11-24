@@ -120,6 +120,6 @@ $table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
-while (my @line=$table->fetch_row_array()) {
-	print join(',',@line)."\n";
+while (my %line=$table->fetch_row()) {
+	print join(',',@line{@query_field})."\n";
 }

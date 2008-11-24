@@ -1,10 +1,14 @@
 #NodeId;Icon;Label
 
 ENVIRON.Table;T_Group;Liste des environnements
-ENVIRON.Item;I_Group;Environnement %[ENVIRON]
+ENVIRON.Item;I_Group;%[ENVIRON] (%[Description])
 
 Modules.Table;I_AgentICles;Liste des Modules
-Modules.Item;T_AgentICles;Modules %[MODULE]
+Modules.Item;T_AgentICles;%[MODULE] (%[Description])
 
-ROOT_TABLE.Table;I_Configs;Liste des Modules
-ROOT_TABLE.Item;T_Configs;Modules %[MODULE]
+ROOT_TABLE.Table;I_Configs;Liste des Tables de %[MODULE]
+ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
+
+FIELD.Table;T_Configs;Champs de %[TABLE_NAME]
+FIELD.Item;field_%[STATUS];%[FIELD_NAME]
+
