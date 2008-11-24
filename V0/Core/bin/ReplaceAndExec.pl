@@ -159,7 +159,8 @@ if ($table_name !~ /^FIELD/) {
 		if (-r $next_script) {
 			if ($count-- <= 0) {
 				log_info("$table_name : exec official script : $next_script ");
-				exec "perl",'"'.$next_script.'"',@argv_save;
+				system "perl",($next_script,@argv_save);
+				exit;
 			}
 		}
 	}
