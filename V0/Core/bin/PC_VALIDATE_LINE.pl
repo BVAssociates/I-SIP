@@ -52,11 +52,11 @@ my $environnement=shift;
 my $tablename=shift;
 
 # quirk to test
-$ENV{ENVIRON}=$environnement;
-$ENV{GSL_FILE}=$tablename;
+#$ENV{ENVIRON}=$environnement;
+#$ENV{GSL_FILE}=$tablename;
 
 ##for debug
-$ENV{AAPTYCOD}='AFFEXT';
+##$ENV{AAPTYCOD}='AFFEXT';
 
 
 #  Corps du script
@@ -89,7 +89,7 @@ print STDERR "KEY_VAL=$table_key_value\n";
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_from_histo_table($tablename, {debug => $debug_level});
 
-$table_histo->validate_row($table_key_value);
+$table_histo->validate_row_by_key($table_key_value);
 
 # update all field for key
 
@@ -101,7 +101,7 @@ PC_VALIDATE_LINE
 
 =head1 SYNOPSIS
 
- PC_VALIDATE_LINE.pl environnement table clef
+ PC_VALIDATE_LINE.pl environnement table
  
 =head1 DESCRIPTION
 

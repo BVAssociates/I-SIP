@@ -7,7 +7,7 @@
 #~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
 #~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
 
-Item~~Affiche Table~expl~~~DisplayTable~%TABLE_NAME%~0~~Expand
+Item~~Explore Table~expl~~~Explore~%TABLE_NAME%~0~~Expand
+#Item~~Affiche Table~expl~~~DisplayTable~%TABLE_NAME%~0~~Expand
 Item~Administration~Modifier la table~adm~~GSL_FILE=%TABLE_NAME%~Administrate~FIELD_INFO~0~~Configure
-Item~~Explore Clefs~expl~~~Explore~%TABLE_NAME%~0~~Expand
-Item~~Mettre à jour les données~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl %ENVIRON% %TABLE_NAME%~0~~Release
+Item~Administration~Mettre à jour les données~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl %ENVIRON% %TABLE_NAME%~0~~Release

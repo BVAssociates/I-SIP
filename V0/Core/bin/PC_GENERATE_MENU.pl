@@ -113,9 +113,10 @@ KEY="%s"
 my $fkey_def_template='FKEY="[%s] on %s[%s]"
 ';
 
-my $pci_template='Item~~Afficher Ligne~expl~~GSL_FILE=%s~DisplayTable~FIELD~0~~Expand
+my $pci_template='Item~~Explore Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
+#Item~~Afficher Ligne~expl~~GSL_FILE=%s~DisplayTable~FIELD~0~~Expand
 Item~~Editer ligne~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
-Item~~Explore Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
+Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%ENVIRON%% %%TableName%%~1~~Run
 ';
 my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';

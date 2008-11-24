@@ -400,7 +400,7 @@ sub update_row() {
 		push @key_value, $row{$_};
 		delete $row{$_};
 	}
-	# quote the fields with the apropriate 
+	
 	foreach my $field (keys %row) {
 		
 		my $last_id=$self->{table_histo}->insert_row(
@@ -415,7 +415,8 @@ sub update_row() {
 	}
 }
 
-sub validate_row() {
+# update internal field to set whole row to VALIDE
+sub validate_row_by_key() {
 	my $self = shift;
 
 	my $key=shift or croak ('validate_row take 1 argument : key');
@@ -425,8 +426,10 @@ sub validate_row() {
 	$self->{table_histo}->_open_database;
 	$key=$self->{table_histo}->{database_handle}->quote($key);
 	my $updated_value=$self->{table_histo}->{database_handle}->quote("Valide");
+	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%d %H:%M:%S", localtime);
+	my $user_update = $self->{table_histo}->{database_handle}->quote($ENV{ISIS_USER});
 	
-	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=".$updated_value." where TABLE_KEY=".$key;
+	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=$updated_value, USER_UPDATE=$user_update, DATE_UPDATE=$date_update where TABLE_KEY=$key";
 	$self->{table_histo}->execute($update_sql);
 }
 
