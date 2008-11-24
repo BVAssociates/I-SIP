@@ -216,8 +216,8 @@ sub fetch_row() {
 		$return_line{$temp_next_row{FIELD_NAME}}=$temp_next_row{FIELD_VALUE};
 		
 		# line is modified if one field have no status
-		$line_has_new += 1 if not $field_line{STATUS};
-		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
+		$line_has_new += 1 if not $temp_next_row{STATUS};
+		$line_not_valid += 1 if uc($temp_next_row{STATUS}) ne 'VALIDE';
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
@@ -273,6 +273,8 @@ sub fetch_row() {
 		}
 	}
 	
+	#debug
+	##$return_line{STATUS}=$line_has_new."/".$line_not_valid;
 	return %return_line;
 }
 
@@ -416,7 +418,16 @@ sub update_row() {
 sub validate_row() {
 	my $self = shift;
 
+	my $key=shift or croak ('validate_row take 1 argument : key');
 	# update line STATUS to VALIDE
+	
+	# need to open to get a valid database_handle
+	$self->{table_histo}->_open_database;
+	$key=$self->{table_histo}->{database_handle}->quote($key);
+	my $updated_value=$self->{table_histo}->{database_handle}->quote("Valide");
+	
+	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=".$updated_value." where TABLE_KEY=".$key;
+	$self->{table_histo}->execute($update_sql);
 }
 
 # add new field

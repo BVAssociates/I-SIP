@@ -42,7 +42,7 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 3) {
+if ( @ARGV != 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -50,14 +50,13 @@ if ( @ARGV != 3) {
 
 my $environnement=shift;
 my $tablename=shift;
-my $field=shift;
 
 # quirk to test
 $ENV{ENVIRON}=$environnement;
 $ENV{GSL_FILE}=$tablename;
 
 ##for debug
-#$ENV{AAPTYCOD}='AFFEXT';
+$ENV{AAPTYCOD}='AFFEXT';
 
 
 #  Corps du script
@@ -88,8 +87,9 @@ print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";
 
 # fetch selected row from histo table
-my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+my $table_histo = $ikos_sip->open_local_from_histo_table($tablename, {debug => $debug_level});
 
+$table_histo->validate_row($table_key_value);
 
 # update all field for key
 
