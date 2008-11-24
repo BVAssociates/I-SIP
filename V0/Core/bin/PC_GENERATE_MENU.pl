@@ -215,10 +215,16 @@ while (my %info = $list_table->fetch_row() ) {
 	print DEFFILE $pci_string."\n";
 	close DEFFILE;
 	
-	# CREATE Label
+	# CREATE/update Label
 	my $label_string = sprintf($label_template,$info{TABLE_NAME});
 	print "Insert $info{TABLE_NAME} into ICleLabels\n";
 	system('Insert -f into ICleLabels values',$label_string);
+	
+	# CREATE/update table INFO
+	##TODO
+
+	# CREATE/update table HISTO
+	##TODO
 }
 
 system('AgentCollect -s AgentICleLabels ICleLabels');
