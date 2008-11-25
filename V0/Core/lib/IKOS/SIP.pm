@@ -147,7 +147,7 @@ sub open_local_from_histo_table() {
 	
 	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
 	
-	croak "No database found for table $table_name in ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 	
 	my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
@@ -186,11 +186,13 @@ sub open_histo_table() {
 
 =cut
 
-
-sub SQL_create() {
+sub initialize_database() {
 	my $self=shift;
 	
-	my $tablename=shift or die;
+	my $tablename=shift or die "bad arguments";
+	
+	my $options=shift;
+	die "bad arguments" if $options and ref($options) ne "HASH";
 
 	# Get infos from IKOS tables via ODBC
 	my $table = $self->open_ikos_table($tablename, {debug => 0 });
@@ -198,35 +200,78 @@ sub SQL_create() {
 		die "error opening $table in IKOS";
 	}
 
-	my $table_def=ITools->open("INFO_TABLE",{debug => 0 });
+	my $table_def=ITools->open("INFO_TABLE",$options);
 	$table_def->query_condition("TABLE_NAME = '$tablename'");
 	my %defined_table=$table_def->fetch_row();
 	$table_def->finish;
+	
+	# compute path of database file
+	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/".$ENV{ServiceName}."/tab/IKOS_".$self->{environnement}."_".$tablename.".sqlite";
+	
+	die "file <$database_path> already exist" if -e $database_path;
+	
+	print "Creating empty file : $database_path\n";
+	#create empty file
+	open DATABASEFILE,">$database_path" or die "unable to create file : $!";
+	close DATABASEFILE;
+	
+	die "Impossible de retrouver le fichier créé" if not $self->get_sqlite_path($tablename);
+	
+	# opening master table
+	my $master_table=Sqlite->open($database_path, 'sqlite_master', $options);
+	
+	print "Create table $tablename\_HISTO\n";
+	$master_table->execute("CREATE TABLE $tablename\_HISTO (
+	ID INTEGER PRIMARY KEY,
+	DATE_HISTO VARCHAR(30),
+	USER_UPDATE VARCHAR(30),
+	DATE_UPDATE VARCHAR(30),
+	TABLE_NAME VARCHAR(30),
+	TABLE_KEY VARCHAR(30),
+	FIELD_NAME VARCHAR(30),
+	FIELD_VALUE VARCHAR(30),
+	COMMENT VARCHAR(50),
+	TYPE VARCHAR(30),
+	STATUS VARCHAR(30))");
 
+	print "Create table $tablename\_INFO\n";
+	$master_table->execute("CREATE TABLE $tablename\_INFO (
+	FIELD_NAME VARCHAR(30) PRIMARY KEY,
+	DATE_UPDATE VARCHAR(30) ,
+	DATA_TYPE VARCHAR(30) NOT NULL,
+	DATA_LENGTH VARCHAR(30) NOT NULL,
+	TABLE_SCHEMA VARCHAR(30) ,
+	TEXT VARCHAR(30) ,
+	DESCRIPTION VARCHAR(30) ,
+	OWNER VARCHAR(30) ,
+	TYPE VARCHAR(30) )");
+	$master_table->close();
+	
+	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
+	
 	warn "WARNING: $tablename n'a pas de clef primaire définie dans INFO_TABLE" if not $defined_table{PRIMARY_KEY};
-	#$defined_table{F_KEY};
-	#$defined_table{F_TABLE};
 
 	my %size_hash=$table->size();
-	my @create_statements;
+	my %field_txt_hash=$table->field_txt();
+	
+	print "Populate $tablename\_INFO with information from IKOS table\n";
+	
+	$info_table->begin_transaction;
 	foreach my $field ($table->field) {
-		my $temp;
-		$temp.=$field." ".$size_hash{$field};
+		# extract type and size from format "type(size)"
+		my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
 		
-		$temp.=" PRIMARY KEY" if $field eq $defined_table{PRIMARY_KEY};
-		$temp.=" NOT NULL" if grep (/$field/,$table->not_null);
-			
-		push @create_statements,$temp;
+		# construct the line to insert
+		my %row;
+		$row{FIELD_NAME}=$field;
+		$row{DATA_TYPE}=$type;
+		$row{DATA_LENGTH}=$size;
+		$row{TEXT}=$field_txt_hash{$field};
+		
+		$info_table->insert_row(%row);
 	}
+	$info_table->commit_transaction;
 
-	# spécials columns
-	#push @create_statements, "TIMESTAMP_COLLECTE VARCHAR(20) DEFAULT CURRENT_TIMESTAMP";
-
-	my $create_query="CREATE TABLE $tablename (\n";
-	$create_query .= join(",\n",@create_statements);
-	$create_query .= "\n);\n";
-
-	return $create_query;
 }
 
 sub SQL_drop() {

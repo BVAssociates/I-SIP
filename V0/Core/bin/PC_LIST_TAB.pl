@@ -111,7 +111,7 @@ my $bv_severite=0;
 use IKOS::SIP;
 
 my $sip=SIP->new($environ);
-my $table=$sip->open_local_from_histo_table($table_name, {debug => 0 });
+my $table=$sip->open_local_from_histo_table($table_name, {debug => $debug_level });
 
 $table->query_date("$query_date") if $query_date and $query_date !~ /^%/;
 
@@ -120,6 +120,9 @@ $table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
+my $count=0;
 while (my %line=$table->fetch_row()) {
 	print join(',',@line{@query_field})."\n";
+	$count++;
 }
+print "$count records found" if $debug_level;

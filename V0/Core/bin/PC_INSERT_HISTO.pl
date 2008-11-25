@@ -102,18 +102,18 @@ use POSIX qw(strftime);
 
 my $env_sip = SIP->new($environnement);
 
-my $db2_table = ITools->open("INFO_TABLE");
+my $ikos_table = ITools->open("INFO_TABLE");
 
-$db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
+$ikos_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
 
-while (my %db2_table_line = $db2_table->fetch_row() ) {
+while (my %ikos_table_line = $ikos_table->fetch_row() ) {
 
-	my $table_name=$db2_table_line{TABLE_NAME};
+	my $table_name=$ikos_table_line{TABLE_NAME};
 	
 	#open IKOS table for DATA
-	my $current_table=$env_sip->open_ikos_table($table_name, {debug => 1});
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1});
-	my $table_key= $db2_table_line{PRIMARY_KEY} ;
+	my $current_table=$env_sip->open_ikos_table($table_name, {debug => $debug_level});
+	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
+	my $table_key= $ikos_table_line{PRIMARY_KEY} ;
 	
 	if (not $table_key) {
 		warn "No KEY defined for $table_name\n";
