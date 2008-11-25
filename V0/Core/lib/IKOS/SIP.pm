@@ -7,7 +7,7 @@ use IKOS::DATA::Sqlite;
 use IKOS::DATA::ITools;
 use IKOS::DATA::Histo;
 
-use Carp qw(carp cluck confess croak );
+use Carp qw(carp croak );
 
 sub new() {
     my $proto = shift;
@@ -105,6 +105,7 @@ sub get_sqlite_path() {
 	}
 	
 	#not found
+	carp "$filename not found in BV_TABPATH";
 	return undef;
 }
 
@@ -148,7 +149,8 @@ sub open_local_from_histo_table() {
 	
 	croak "No database found for table $table_name in ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 	
-	my $table_histo = Histo->open($self->get_sqlite_path($table_name), $table_name, @_);
+	my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
 	
 	# we must set the primary key manually
 	$table_histo->key(split(/,/,$self->get_table_key($table_name)));

@@ -189,7 +189,7 @@ sub _find_file() {
 sub _open_database() {
 	my $self = shift;
 	
-	croak '$self->{database_path} not defined' if not defined $self->{database_path};
+	croak 'no database_path defined' if not defined $self->{database_path};
 	
 	return if defined $self->{database_handle};
 	
