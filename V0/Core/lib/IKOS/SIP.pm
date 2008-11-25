@@ -14,10 +14,22 @@ sub new() {
     my $class = ref($proto) || $proto;
 	my $self= {};
 	
-	$self->{environnement} = shift or die;
+	# Arguments
+	$self->{environnement} = shift or croak "SIP->new take 1 argument";
 	$self->{options} = shift;
 	
 	$self->{options}->{debug} = 0 if not exists $self->{options}->{debug};
+	
+	my $environ_table=ITools->open("ENVIRON",$self->{options});
+	$environ_table->query_condition("Environnement = $self->{environnement}");
+	
+	my %env_config=$environ_table->fetch_row();
+	croak "Unable to get information of Environnement : $self->{environnement}" if not %env_config;
+	
+	$self->{description}=$env_config{Description};
+	$self->{datasource}=$env_config{Datasource};
+	
+	croak "Datasource field cannot be null" if not $env_config{Datasource};
 	
 	return bless($self, $class);
 }
@@ -149,7 +161,7 @@ sub open_ikos_table() {
 	
 	my $table_name=shift or croak "open_ikos_table() wait args : 'tablename'";
 	
-	my $table_ikos = eval { ODBC_TXT->open("IKOS_DEV" , $table_name, @_); };
+	my $table_ikos = eval { ODBC_TXT->open($self->{datasource} , $table_name, @_); };
 	croak "Error opening $table_name : $@" if $@;
 
 	# we must set the primary key manually

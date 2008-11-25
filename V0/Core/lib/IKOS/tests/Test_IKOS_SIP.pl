@@ -29,8 +29,9 @@ ok($table_histo = $sip->open_local_from_histo_table("TEST", {debug => 0} ), "SIP
 ok($table_ikos = $sip->open_ikos_table("TEST", {debug => 0} ), "SIP->open_ikos_table()");
 
 my $differences;
-ok( $table_sqlite->compare_from($table_ikos),"SIP ->compare_from() bitween IKOS and Sqlite return nothing" );
-ok( $table_histo->compare_from($table_sqlite),"SIP ->compare_from() between Sqlite and Histo" );
-#ok($table_sqlite->update_from($table_ikos),"SIP ->update_from() between IKOS and Sqlite" );
-#ok($table_histo->update_from($table_sqlite),"SIP ->update_from() between Sqlite and Histo" );
+ok($table_histo->compare_exclude("DATE_COLLECTE"),"Histo->compare_exclude");
+ok($table_sqlite->compare_from($table_ikos),"Sqlite->compare_from() bitween IKOS and Sqlite return nothing" );
+ok($table_histo->compare_from($table_sqlite),"Histo->compare_from() between Sqlite and Histo" );
+#ok($table_sqlite->update_from($table_ikos),"Sqlite->update_from() between IKOS and Sqlite" );
+#ok($table_histo->update_from($table_sqlite),"Histo->update_from() between Sqlite and Histo" );
 #print $differences;

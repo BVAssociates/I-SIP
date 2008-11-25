@@ -4,7 +4,7 @@ FORMAT="TABLE_NAME:MODULE:PRIMARY_KEY:F_KEY:F_TABLE:Description"
 SIZE="20s:20s:20s:20s:20s:20s"
 KEY="TABLE_NAME"
 
-FKEY="[MODULE] on Modules[MODULE]"
+FKEY="[MODULE] on MODULE[Module]"
 FKEY="[F_TABLE] on ROOT_TABLE[TABLE_NAME]"
 
 #contrainte implicite

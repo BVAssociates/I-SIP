@@ -134,11 +134,11 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 }
 # DEBUG
 $ENV{GSL_FILE}="TEST";
-$ENV{ENVIRON}="TEST";
+$ENV{Environnement}="TEST";
 
 log_erreur("GSL_FILE n'est pas defini dans l'environnement" ) if not exists $ENV{GSL_FILE};
 
-log_erreur("ENVIRON n'est pas defini dans l'environnement" ) if not exists $ENV{ENVIRON};
+log_erreur("l'environnement n'est pas defini" ) if not exists $ENV{Environnement};
 
 
 
@@ -173,7 +173,7 @@ my @field=$itools_def->field();
 undef $itools_def;
 
 use IKOS::SIP;
-my $env_sip=SIP->new($ENV{ENVIRON });
+my $env_sip=SIP->new($ENV{Environnement});
 my $local_table;
 my %row;
 

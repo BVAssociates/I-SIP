@@ -1,5 +1,6 @@
 
-SEP=";"
-FORMAT="ENVIRON;Description"
-SIZE="20s;20s"
-KEY="ENVIRON"
+SEP=":"
+FORMAT="Environnement:Description:Datasource"
+SIZE="20s:20s:20s"
+NOTNULL="Datasource"
+KEY="Environnement"

@@ -17,7 +17,7 @@
 
 Item~~Environnements~expl~~~Explore~ENVIRON~0~~Expand
 
-Item~Configuration SIP~Administrer Modules~adm~~~Administrate~Modules~0~~Configure
+Item~Configuration SIP~Administrer Modules~adm~~~Administrate~MODULE~0~~Configure
 Item~Configuration SIP~Administrer Tables IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
 Item~Configuration SIP~Administrer Responsablités~adm~~~Administrate~RESPONSABLE~0~~Configure
 Item~Configuration SIP~Appliquer les modifications~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl TEST~0~~Method

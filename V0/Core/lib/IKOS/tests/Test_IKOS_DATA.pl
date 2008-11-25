@@ -14,7 +14,7 @@ use IKOS::DATA::Sqlite;
 
 # Open
 ############
-my $table_sqlite = Sqlite->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\V0\Core\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 1000});
+my $table_sqlite = Sqlite->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\_Services\test\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 1000});
 
 # Table infos
 ############
@@ -76,7 +76,7 @@ use IKOS::DATA::Histo;
 
 # Open
 ############
-my $histo_table= Histo->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\V0\Core\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 10000});
+my $histo_table= Histo->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\_Services\test\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 10000});
 ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table TEST");
 # Table infos
 ############

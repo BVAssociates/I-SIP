@@ -104,7 +104,7 @@ my $separator=',';
 my @virtual_field=("STATUS");
 
 
-my $def_template = 'COMMAND="PC_LIST_TAB.pl %%ENVIRON%% %s %%DATE_HISTO%%"
+my $def_template = 'COMMAND="PC_LIST_TAB.pl %%Environnement%% %s %%DATE_HISTO%%"
 SEP="%s"
 FORMAT="%s"
 SIZE="%s"
@@ -116,7 +116,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $pci_template='Item~~Explore Champs~expl~~GSL_FILE=%s~Explore~FIELD~0~~Expand
 #Item~~Afficher Ligne~expl~~GSL_FILE=%s~DisplayTable~FIELD~0~~Expand
 Item~~Editer ligne~expl~~GSL_FILE=%s~Administrate~FIELD~0~~Expand
-Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%ENVIRON%% %%TableName%%~1~~Run
+Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %%TableName%%~1~~Run
 ';
 my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';
@@ -241,7 +241,7 @@ my @fkey_list;
 foreach (@fkey_list) {
 		$pci_string_module .= sprintf($pci_fkey_template,$_,$_);
 }
-print "writing to $pci_path\\Modules.pci\n";
-open (DEFFILE,">$pci_path/Modules.pci") or die "error opening $pci_path\\Modules.def : $!";
+print "writing to $pci_path\\MODULE.pci\n";
+open (DEFFILE,">$pci_path/MODULE.pci") or die "error opening $pci_path\\MODULE.def : $!";
 print DEFFILE $pci_string_module."\n";
 close DEFFILE;

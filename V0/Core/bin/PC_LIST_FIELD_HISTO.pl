@@ -53,7 +53,7 @@ my $tablename=shift;
 my $field=shift;
 
 # quirk to test
-$ENV{ENVIRON}=$environnement;
+$ENV{Environnement}=$environnement;
 $ENV{GSL_FILE}=$tablename;
 
 ##for debug

@@ -1,2 +1,2 @@
-TEST;Pre-production
-DEV;Developpement
+TEST:Pre-production:IKOS_DEV
+DEV:Developpement:

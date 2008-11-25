@@ -3,12 +3,12 @@
 ETAT.Table;;Etats disponibles
 ETAT.Item;field_%[Name];%[Name] (%[Description])
 ENVIRON.Table;T_Group;Liste des environnements
-ENVIRON.Item;I_Group;%[ENVIRON] (%[Description])
-Modules.Table;I_AgentICles;Liste des Modules
-Modules.Item;T_AgentICles;%[MODULE] (%[Description])
-ROOT_TABLE.Table;I_Configs;Liste des Tables de %[MODULE]
+ENVIRON.Item;I_Group;%[Environnement] (%[Description])
+MODULE.Table;I_AgentICles;Liste des Modules
+MODULE.Item;T_AgentICles;%[Module] (%[Description])
+ROOT_TABLE.Table;I_Configs;Liste des Tables
 ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
-FIELD.Table;T_Configs;Champs de %[TABLE_NAME]
+FIELD.Table;T_Configs;Liste des champs
 FIELD.Item;field_%[STATUS];%[FIELD_NAME]
 TEST.Item;line_%[STATUS];
 CROEXPP.Item;line_%[STATUS];
