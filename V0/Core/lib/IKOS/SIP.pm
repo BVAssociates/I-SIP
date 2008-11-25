@@ -167,7 +167,9 @@ sub open_ikos_table() {
 	croak "Error opening $table_name : $@" if $@;
 
 	# we must set the primary key manually
-	$table_ikos->key(split(/,/,$self->get_table_key($table_name)));
+	my $table_key=$self->get_table_key($table_name);
+	croak "primary key is not set for $table_name" if not $table_key;
+	$table_ikos->key(split(/,/,$table_key));
 	
 	return $table_ikos;
 }
@@ -245,6 +247,9 @@ sub initialize_database() {
 	DESCRIPTION VARCHAR(30) ,
 	OWNER VARCHAR(30) ,
 	TYPE VARCHAR(30) )");
+	
+	$master_table->execute("CREATE INDEX IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
+	$master_table->execute("CREATE INDEX IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
 	$master_table->close();
 	
 	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
