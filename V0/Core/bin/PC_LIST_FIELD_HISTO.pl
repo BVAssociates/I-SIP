@@ -83,14 +83,14 @@ my @table_key_list_value;
 
 
 foreach (@table_key_list) {
-	push @table_key_value, $ENV{$_} if exists $ENV{$_};
+	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
 	if (not $ENV{$_}) {
 		log_erreur("Clef primaine <$ENV{$_}> n'est pas definie dans l'environnement");
 		sortie(202);
 	}
 }
 
-my $table_key_value=join(',',@table_key_value);
+my $table_key_value=join(',',@table_key_list_value);
 
 print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";

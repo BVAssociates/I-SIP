@@ -112,8 +112,8 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1, timeout => 100000});
 	
 	#$histo_table->compare_exclude("DATE_COLLECTE");
-	$histo_table->compare_from($current_table),
-	#$histo_table->update_from($current_table),
+	#$histo_table->compare_from($current_table),
+	$histo_table->update_from($current_table),
 
 }
 

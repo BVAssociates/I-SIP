@@ -9,11 +9,11 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_INSERT_HISTO.pl - Insert toutes les donnes de la table Reference dans la table Historique
+PC_INSERT_HISTO - Insert toutes les donnes de la table Reference dans la table Historique
 
 =head1 SYNOPSIS
 
- PC_INSERT_HISTO.pl.pl environnement tablename
+ PC_INSERT_HISTO.pl [-h] [-v] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -73,12 +73,15 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvc:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $group_commit=1000;
+$group_commit = $opts{c} if $opts{c};
 
 #  Traitement des arguments
 ###########################################################
@@ -126,10 +129,11 @@ while (my %ikos_table_line = $ikos_table->fetch_row() ) {
 	my @row_list;
 	my $count=0;
 	
+	$|=1;
 	$histo_table->begin_transaction();
 	while (my %data_line=$current_table->fetch_row() ) {
-		if (not ($count % 1000)) {
-			print $count;
+		if (not ($count % $group_commit)) {
+			print $count."\n";
 			$histo_table->commit_transaction() ;
 			$histo_table->begin_transaction();
 			
