@@ -64,17 +64,18 @@ sub open() {
 
 =begin comment
 
-# create table on a Sqlite Database and open it
-sub create() {
-    my $proto = shift;
-    my $class = ref($proto) || $proto;
-	my $self = {};
+#static method, don't return object
+# create table on a Sqlite Database
+sub execute() {
+    my $self = shift;
+	
+	croak "Sqlite->Create is a Class method" if not ref($self);
 	
 	my $options= pop @_ if @_ == 4;
 	
 	# mandatory parameter
 	if (@_ < 3) {
-		croak ('\'new\' take 3 mandatory argument: Sqlite->open("databasename","tablename","$create_parameters"[ ,{ timeout => $sec, debug => $num} ])')
+		croak ('\'new\' take 3 mandatory argument: Sqlite->open("database_path","tablename"[ ,{ debug => $num} ])')
 	}
     $self->{database_name} = shift;
 	$self->{table_name} = shift;

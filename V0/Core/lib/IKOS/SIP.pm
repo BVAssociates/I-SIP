@@ -76,7 +76,7 @@ sub get_table_field() {
 	#
 	# For now, we'll use ITools definition
 	
-	my $table=ITools->open($tablename, {debug => $debug_level});
+	my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
 	return $table->field;
 }
 

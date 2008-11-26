@@ -9,15 +9,18 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-ReplaceAndExec - Met à jour une ligne dans un processeur Administrate
+ReplaceAndExec_IKOS_FIELD - Met à jour une ligne dans un processeur Administrate
 
 =head1 SYNOPSIS
 
- InsertAndExec [-h] [-v] INTO <Table> VALUES <-|Values> [WHERE <Condition>]
+ ReplaceAndExec_IKOS_FIELD [-h] [-v] INTO <Table> VALUES <Values>
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Met à jour une ligne dans un processeur Administrate.
+
+Spécifique aux tables du type IKOS_FIELD_*
+
 
 =head1 ENVIRONNEMENT
 
@@ -133,48 +136,35 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 	sortie(202);
 }
 
+log_erreur("Conditions non gérées") if $conditions;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
-use File::Spec::Functions qw/path splitpath catfile/;
-
-my ($current_vol,$current_dir,$current_script)=splitpath($0);
-
-if ($table_name =~ /^IKOS_FIELD/) {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_IKOS_FIELD.pl",@argv_save);
-	if ($? == -1) {
-		die "failed to execute: $!\n";
-	}
-	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_IKOS_FIELD.pl' died with signal %d, %s",($?  >> 8))
-	};
+if (not $table_name =~ /^IKOS_FIELD_(\w+)_(\w+)$/) {
+	log_erreur("Table $table_name non géré par $0");
 }
-else {
-	# otherwise,  we use the original script
-	if ($table_name !~ /^FIELD/) {
-		
-		# routine to find the next ReplaceAndExec in Path
-		my $count=1;
-		my $next_script;
-		foreach my $dir (path()) {
-			$next_script=catfile($dir,$current_script);
-			if (-r $next_script) {
-				if ($count-- <= 0) {
-					log_info("$table_name : exec official script : $next_script ");
-					system "perl",($next_script,@argv_save);
-					if ($? == -1) {
-						die "failed to execute: $!\n";
-				    }
-				    elsif (($? >> 8) != 0) {
-						die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				    };
-				}
-			}
-		}
-	}
-}
+my ($environnement,$table_ikos) = ($1,$2);
 
+use IKOS::DATA::ITools;
+my $itools_table=ITools->open($table_name);
+my $separator=$itools_table->output_separator;
+my @field=$itools_table->field;
+
+use IKOS::SIP;
+my $env_sip=SIP->new($environnement);
+my $local_table;
+my %row;
+
+$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000, debug => 0});
+
+$local_table->query_field(@field);
+%row=$local_table->array_to_hash(split(/\s*$separator\s*/, $values, -1));
+
+use POSIX qw(strftime);
+$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};
+$row{USER_UPDATE} = $ENV{ISIS_USER} if exists $row{USER_UPDATE};
+$local_table->update_row( %row );
 
 sortie($bv_severite);

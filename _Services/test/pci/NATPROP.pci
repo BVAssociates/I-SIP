@@ -1,7 +1,7 @@
-Item~~Explore Champs~expl~~GSL_FILE=NATPROP~Explore~FIELD~0~~Expand
-#Item~~Afficher Ligne~expl~~GSL_FILE=NATPROP~DisplayTable~FIELD~0~~Expand
-Item~~Editer ligne~expl~~GSL_FILE=NATPROP~Administrate~FIELD~0~~Expand
-Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %Environnement% %TableName%~1~~Run
+Item~~Explore Champs~expl~~~Explore~FIELD_TEST_NATPROP~0~~Expand
+#Item~~Afficher Ligne~expl~~~DisplayTable~FIELD_TEST_NATPROP~0~~Expand
+Item~~Editer ligne~expl~~~Administrate~FIELD_TEST_NATPROP~0~~Expand
+Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %Environnement% NATPROP~1~~Run
 Item~Tables liées~PROTYPP~expl~~~Explore~PROTYPP~0~~Expand
 Item~Tables liées~ETPTYPP~expl~~~Explore~ETPTYPP~0~~Expand
 

@@ -8,11 +8,33 @@ MODULE.Table;I_AgentICles;Liste des Modules
 MODULE.Item;T_AgentICles;%[Module] (%[Description])
 ROOT_TABLE.Table;I_Configs;Liste des Tables
 ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
-FIELD.Table;T_Configs;Liste des champs
-FIELD.Item;field_%[STATUS];%[FIELD_NAME]
-TEST.Item;line_%[STATUS];
-CROEXPP.Item;line_%[STATUS];
-ORDEXPP.Item;line_%[STATUS];
-ETPTYPP.Item;line_%[STATUS];
-NATPROP.Item;line_%[STATUS];
-PROTYPP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_CROEXPP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_CROEXPP.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_CROEXPP.Item;field_%[STATUS];
+IKOS_FIELDTEST_CROEXPP.Table;;Liste des champs
+IKOS_TABLE_TEST_ORDEXPP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_ORDEXPP.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_ORDEXPP.Item;field_%[STATUS];
+IKOS_FIELDTEST_ORDEXPP.Table;;Liste des champs
+IKOS_TABLE_TEST_ETPTYPP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_ETPTYPP.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_ETPTYPP.Item;field_%[STATUS];
+IKOS_FIELDTEST_ETPTYPP.Table;;Liste des champs
+IKOS_TABLE_TEST_NATPROP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_NATPROP.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_NATPROP.Item;field_%[STATUS];
+IKOS_FIELDTEST_NATPROP.Table;;Liste des champs
+IKOS_TABLE_TEST_PROTYPP.Item;line_%[STATUS];
+IKOS_TABLE_TEST_PROTYPP.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_PROTYPP.Item;field_%[STATUS];
+IKOS_FIELDTEST_PROTYPP.Table;;Liste des champs
+IKOS_TABLE_TEST_TEST.Item;line_%[STATUS];
+IKOS_TABLE_TEST_TEST.Table;line_%[STATUS];Clefs
+IKOS_FIELD_TEST_TEST.Item;field_%[STATUS];
+IKOS_FIELDTEST_TEST.Table;;Liste des champs
+IKOS_FIELD_TEST_CROEXPP.Table;;Liste des champs
+IKOS_FIELD_TEST_ORDEXPP.Table;;Liste des champs
+IKOS_FIELD_TEST_ETPTYPP.Table;;Liste des champs
+IKOS_FIELD_TEST_NATPROP.Table;;Liste des champs
+IKOS_FIELD_TEST_PROTYPP.Table;;Liste des champs
+IKOS_FIELD_TEST_TEST.Table;;Liste des champs
