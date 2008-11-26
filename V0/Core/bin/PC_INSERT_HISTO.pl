@@ -124,9 +124,18 @@ while (my %ikos_table_line = $ikos_table->fetch_row() ) {
 	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	my @field_list=$current_table->query_field();
 	my @row_list;
+	my $count=0;
+	
 	$histo_table->begin_transaction();
 	while (my %data_line=$current_table->fetch_row() ) {
+		if (not ($count % 1000)) {
+			print $count;
+			$histo_table->commit_transaction() ;
+			$histo_table->begin_transaction();
+			
+		}
 		$histo_table->insert_row(%data_line);
+		$count++
 	}
 	$histo_table->commit_transaction();
 		

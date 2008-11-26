@@ -125,11 +125,19 @@ if (not $table_key) {
 	sortie(202);
 }
 
-my $table_key_value = $ENV{$table_key} if exists $ENV{$table_key};
-if (not $table_key_value) {
-	log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
-	sortie(202);
+my @table_key_list=split(',',$table_key);
+my @table_key_list_value;
+
+
+foreach (@table_key_list) {
+	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
+	if (not $ENV{$_}) {
+		log_erreur("Clef primaine <$ENV{$_}> n'est pas definie dans l'environnement");
+		sortie(202);
+	}
 }
+
+my $table_key_value=join(',',@table_key_list_value);
 
 print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";

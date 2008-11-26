@@ -133,8 +133,8 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 	sortie(202);
 }
 # DEBUG
-$ENV{GSL_FILE}="TEST";
-$ENV{Environnement}="TEST";
+#$ENV{GSL_FILE}="TEST";
+#$ENV{Environnement}="TEST";
 
 log_erreur("GSL_FILE n'est pas defini dans l'environnement" ) if not exists $ENV{GSL_FILE};
 

@@ -248,8 +248,8 @@ sub initialize_database() {
 	OWNER VARCHAR(30) ,
 	TYPE VARCHAR(30) )");
 	
-	$master_table->execute("CREATE INDEX IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
-	$master_table->execute("CREATE INDEX IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
+	#$master_table->execute("CREATE INDEX IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
+	#$master_table->execute("CREATE INDEX IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
 	$master_table->close();
 	
 	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
