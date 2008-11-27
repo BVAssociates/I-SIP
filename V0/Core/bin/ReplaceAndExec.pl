@@ -153,27 +153,27 @@ if ($table_name =~ /^IKOS_FIELD/) {
 }
 else {
 	# otherwise,  we use the original script
-	if ($table_name !~ /^FIELD/) {
-		
-		# routine to find the next ReplaceAndExec in Path
-		my $count=1;
-		my $next_script;
-		foreach my $dir (path()) {
-			$next_script=catfile($dir,$current_script);
-			if (-r $next_script) {
-				if ($count-- <= 0) {
-					log_info("$table_name : exec official script : $next_script ");
-					system "perl",($next_script,@argv_save);
-					if ($? == -1) {
-						die "failed to execute: $!\n";
-				    }
-				    elsif (($? >> 8) != 0) {
-						die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				    };
+
+	# routine to find the next ReplaceAndExec in Path
+	my $count=1;
+	my $next_script;
+	foreach my $dir (path()) {
+		$next_script=catfile($dir,$current_script);
+		if (-r $next_script) {
+			if ($count-- <= 0) {
+				log_info("$table_name : exec official script : $next_script ");
+				system "perl",($next_script,@argv_save);
+				if ($? == -1) {
+					die "failed to execute: $!\n";
 				}
+				elsif (($? >> 8) != 0) {
+					die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
+				};
+				exit 0;
 			}
 		}
 	}
+	die "Unable to find $current_script in PATH";
 }
 
 

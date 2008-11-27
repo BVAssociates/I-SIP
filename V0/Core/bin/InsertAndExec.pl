@@ -121,7 +121,7 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 my $bv_severite=0;
 
 # if we administrate a table other than FIELD_*, we use the original script
-if ($table_name !~ /^FIELD/) {
+if ($table_name !~ /^IKOS_FIELD/) {
 	
 	# routine to find the next ReplaceAndExec in Path
 	use File::Spec::Functions qw/path splitpath catfile/;
@@ -133,12 +133,20 @@ if ($table_name !~ /^FIELD/) {
 		if (-r $next_script) {
 			if ($count-- <= 0) {
 				log_info("$table_name : exec official script : $next_script ");
-				exec "perl",'"'.$next_script.'"',@argv_save;
+				system "perl",($next_script,@argv_save);
+				if ($? == -1) {
+					die "failed to execute: $!\n";
+				}
+				elsif (($? >> 8) != 0) {
+					die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
+				};
+				exit 0;
 			}
 		}
 	}
+	die "Unable to find $current_script in PATH";
 }
 
-log_info("Cannot insert lines in HISTO");
+log_info("Cannot insert lines");
 
 sortie(202);
