@@ -169,6 +169,8 @@ die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 
 # INFO_TABLE verification
 
+# quirk because INFO_TABLE use %Environnement%
+$ENV{Environnement}=$environnement;
 my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
 
 my @condition;
@@ -199,12 +201,12 @@ my $sip = SIP->new($environnement);
 
 if ($table_name) {
 	print "Cleaning old labels for $table_name\n";
-	system('Delete from ICleLabels where NodeId = IKOS_TABLE_$table_name_*');
-	system('Delete from ICleLabels where NodeId = IKOS_FIELD_$table_name_*');
+	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_');
+	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_');
 }
 else {
 	print "Cleaning all old labels\n";
-	system('Delete from ICleLabels where NodeId = IKOS_*');
+	system('Delete from ICleLabels where NodeId ~ IKOS_');
 }
 while (my %info = $list_table->fetch_row() ) {
 
