@@ -60,7 +60,8 @@ sub open() {
 	# flag for end of fetch_row
 	$self->{end_of_data} = 0;
 	
-
+	# context dependant vars
+	$self->{valid_keyword}="Valide";
 	
     return $self;
 }
@@ -217,7 +218,7 @@ sub fetch_row() {
 		
 		# line is modified if one field have no status
 		$line_has_new += 1 if not $temp_next_row{STATUS};
-		$line_not_valid += 1 if uc($temp_next_row{STATUS}) ne 'VALIDE';
+		$line_not_valid += 1 if uc($temp_next_row{STATUS}) ne uc($self->{valid_keyword});
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
@@ -240,7 +241,7 @@ sub fetch_row() {
 		
 		# line is modified if one field have no status
 		$line_has_new += 1 if not $field_line{STATUS};
-		$line_not_valid += 1 if uc($field_line{STATUS}) ne 'VALIDE';
+		$line_not_valid += 1 if uc($field_line{STATUS}) ne uc($self->{valid_keyword});
 	}
 	
 	$self->{end_of_data} = 1 if not %field_line;
@@ -269,7 +270,7 @@ sub fetch_row() {
 		}
 		else
 		{
-			$return_line{STATUS}='VALIDE';
+			$return_line{STATUS}=$self->{valid_keyword};
 		}
 	}
 	
@@ -425,7 +426,7 @@ sub validate_row_by_key() {
 	# need to open to get a valid database_handle
 	$self->{table_histo}->_open_database;
 	$key=$self->{table_histo}->{database_handle}->quote($key);
-	my $updated_value=$self->{table_histo}->{database_handle}->quote("Valide");
+	my $updated_value=$self->{table_histo}->{database_handle}->quote($self->{valid_keyword});
 	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%d %H:%M:%S", localtime);
 	my $user_update = $self->{table_histo}->{database_handle}->quote($ENV{ISIS_USER});
 	

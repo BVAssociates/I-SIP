@@ -1,6 +1,3 @@
 TODO
 
-- Sqlite->open database_full_path, tablename
-	deplacer la recherche dans $BV_TABPATH dans SIP
-	
-- DATA_interface->add_field()
+- validate demande un commentaire

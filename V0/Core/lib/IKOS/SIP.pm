@@ -233,7 +233,6 @@ sub initialize_database() {
 	FIELD_NAME VARCHAR(30),
 	FIELD_VALUE VARCHAR(30),
 	COMMENT VARCHAR(50),
-	TYPE VARCHAR(30),
 	STATUS VARCHAR(30))");
 
 	print "Create table $tablename\_INFO\n";
