@@ -83,12 +83,10 @@ if (not $table_key_value) {
 	sortie(202);
 }
 
-print STDERR "KEY= $table_key\n";
-print STDERR "KEY_VAL=$table_key_value\n";
-
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_from_histo_table($tablename, {debug => $debug_level});
 
+print "Validate all field for key $table_key_value\n"
 $table_histo->validate_row_by_key($table_key_value);
 
 # update all field for key

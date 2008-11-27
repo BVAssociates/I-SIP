@@ -128,11 +128,10 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s"
 SEP="%%"
-FORMAT="ID%%DATE_HISTO%%DATE_UPDATE%%USER_UPDATE%%TABLE_NAME%%TABLE_KEY%%FIELD_NAME%%FIELD_VALUE%%COMMENT%%TYPE%%STATUS"
-SIZE="10n%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s"
+FORMAT="ID%%DATE_HISTO%%DATE_UPDATE%%USER_UPDATE%%TABLE_NAME%%TABLE_KEY%%FIELD_NAME%%FIELD_VALUE%%COMMENT%%STATUS"
+SIZE="10n%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s"
 KEY="FIELD_NAME"
 
-FKEY="[TYPE] on TYPE[Name]"
 FKEY="[STATUS] on ETAT[Name]"
 ';
 
@@ -149,7 +148,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display';
 
 my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];';
-my $label_table_template='IKOS_TABLE_%s.Table;line_%%[STATUS];Clefs';
+my $label_table_template='IKOS_TABLE_%s.Table;line_%%[STATUS];Clefs de %s';
 my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];';
 my $label_field_table_template='IKOS_FIELD_%s.Table;;Liste des champs';
 
@@ -238,7 +237,7 @@ while (my %info = $list_table->fetch_row() ) {
 	if ($info{F_KEY} and $info{F_TABLE}) {
 		$string .= sprintf($fkey_def_template,
 			$info{F_KEY},
-			$info{F_TABLE},
+			"IKOS_TABLE_$environnement\_".$info{F_TABLE},
 			$table_key{$info{F_TABLE}});
 	}
 	
@@ -269,7 +268,7 @@ while (my %info = $list_table->fetch_row() ) {
 	}
 	
 	foreach (@fkey_list) {
-		$string .= sprintf($pci_fkey_template,$_,$_);
+		$string .= sprintf($pci_fkey_template,$_,"IKOS_TABLE_$environnement\_$_");
 	}
 	
 	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
@@ -286,8 +285,11 @@ while (my %info = $list_table->fetch_row() ) {
 	
 ##### CREATE/update Label
 
-	foreach ($label_item_template,$label_table_template,$label_field_item_template,$label_field_table_template) {
-		my $label_string = sprintf($_,$ikos_data_table);
+	foreach ($label_item_template,
+				$label_table_template,
+				$label_field_item_template,
+				$label_field_table_template) {
+		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME});
 		print "Insert $ikos_data_table into ICleLabels\n";
 		system('Insert -f into ICleLabels values',$label_string);
 	}

@@ -105,7 +105,7 @@ sub _set_columns_info_histo() {
 	#$self->{table_histo}->finish();
 	
 	if (not $self->field()) {
-		warn "This table contains 0 field"
+		warn "WARN:This table contains 0 field"
 	}
 }
 

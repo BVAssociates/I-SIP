@@ -9,11 +9,11 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_UPDATE_HISTO - Met à jour les champs d'une table Historique depuis la référence
+PC_VALIDATE_TABLE - Valide une table entiere
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl environnement tablename
+ PC_VALIDATE_TABLE.pl environnement tablename [commentaire]
  
 =head1 DESCRIPTION
 
@@ -33,11 +33,13 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head2 * environnement à utiliser
 
-=head2 * table a décrire
+=head2 * table a valider
+
+=head2 * commentaire à ajouter (par defaut : "validation globale")
 
 =head1 AUTHOR
 
-BV Associates, 16/10/2008
+Vincent BAUCHART, BV Associates, 27/11/2008
 
 =cut
 
@@ -80,43 +82,25 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV < 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift;
 my $table_name=shift;
+my $commentaire=shift or $commentaire="Validation globale";
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
 use IKOS::SIP;
-use IKOS::DATA::ITools;
+$sip = SIP->new($environnement);
 
-use POSIX qw(strftime);
+$histo_table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level);
 
-my $env_sip = SIP->new($environnement);
-
-# quirk because INFO_TABLE use %Environnement%
-$ENV{Environnement}=$environnement;
-my $db2_table = ITools->open("INFO_TABLE" ,{debug => 0});
-
-$db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
-
-while (my %db2_table_line = $db2_table->fetch_row() ) {
-
-	my $table_name=$db2_table_line{TABLE_NAME};
-	
-	#open IKOS table for DATA
-	my $current_table=$env_sip->open_ikos_table($table_name, {debug => 0});
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1, timeout => 100000});
-	
-	#$histo_table->compare_exclude("DATE_COLLECTE");
-	#$histo_table->compare_from($current_table),
-	$histo_table->update_from($current_table),
-
-}
+$histo_table->execute("UPDATE $table_name\_HISTO
+		SET STATUS='".$histo_table->{valid_keyword}."'");
 
 sortie($bv_severite);

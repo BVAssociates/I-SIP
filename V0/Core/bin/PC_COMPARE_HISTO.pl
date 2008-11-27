@@ -99,6 +99,8 @@ use POSIX qw(strftime);
 
 my $env_sip = SIP->new($environnement);
 
+# quirk because INFO_TABLE use %Environnement%
+$ENV{Environnement}=$environnement;
 my $db2_table = ITools->open("INFO_TABLE" ,{debug => 1});
 
 $db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;

@@ -105,6 +105,8 @@ use POSIX qw(strftime);
 
 my $env_sip = SIP->new($environnement);
 
+# quirk because INFO_TABLE use %Environnement%
+$ENV{Environnement}=$environnement;
 my $ikos_table = ITools->open("INFO_TABLE");
 
 $ikos_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
@@ -123,10 +125,6 @@ while (my %ikos_table_line = $ikos_table->fetch_row() ) {
 		next;
 	}
 	
-
-	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
-	my @field_list=$current_table->query_field();
-	my @row_list;
 	my $count=0;
 	
 	$|=1;
@@ -138,6 +136,7 @@ while (my %ikos_table_line = $ikos_table->fetch_row() ) {
 			$histo_table->begin_transaction();
 			
 		}
+		$data_line{STATUS}=$histo_table->{valid_keyword};
 		$histo_table->insert_row(%data_line);
 		$count++
 	}

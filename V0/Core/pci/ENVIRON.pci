@@ -3,4 +3,4 @@
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
 
 Item~Configuration SIP~Administrer Tables IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
-Item~Configuration SIP~Appliquer les modifications~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
+Item~Configuration SIP~Regenerer les menus~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
