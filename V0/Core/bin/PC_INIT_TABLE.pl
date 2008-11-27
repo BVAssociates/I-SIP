@@ -13,7 +13,7 @@ PC_INIT_TABLE - Initalise les tables Historique et Information d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-p [-c nombre]] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] [-i [-c nombre]] environnement tablename
  
 =head1 DESCRIPTION
 
