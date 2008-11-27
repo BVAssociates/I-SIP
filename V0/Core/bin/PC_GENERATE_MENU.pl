@@ -109,7 +109,7 @@ use IKOS::DATA::ITools;
 my $bv_debug=0;
 
 
-my $separator=',';
+my $separator='@';
 
 my @virtual_field=("STATUS");
 
@@ -127,9 +127,9 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s"
-SEP="%%"
-FORMAT="ID%%DATE_HISTO%%DATE_UPDATE%%USER_UPDATE%%TABLE_NAME%%TABLE_KEY%%FIELD_NAME%%FIELD_VALUE%%COMMENT%%STATUS"
-SIZE="10n%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s%%20s"
+SEP="@"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS"
+SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="FIELD_NAME"
 
 FKEY="[STATUS] on ETAT[Name]"

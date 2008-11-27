@@ -153,7 +153,7 @@ sub open_local_from_histo_table() {
 	croak "Error opening $table_name : $@" if $@;
 	
 	# we must set the primary key manually
-	$table_histo->key(split(/,/,$self->get_table_key($table_name)));
+	$table_histo->key(split(/,/,$self->get_table_key($table_name),-1));
 
 	return $table_histo
 }

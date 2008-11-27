@@ -122,7 +122,7 @@ die "unable to open local $table_name in env $environ" if not defined $table;
 
 my $count=0;
 while (my %line=$table->fetch_row()) {
-	print join(',',@line{@query_field})."\n";
+	print join('@',@line{@query_field})."\n";
 	$count++;
 }
 print "$count records found" if $debug_level;

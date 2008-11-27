@@ -162,5 +162,5 @@ my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TA
 $table_histo->custom_select_query($select_histo);
 
 while (my @line=$table_histo->fetch_row_array() ) {
-	print join('%',@line)."\n";
+	print join('@',@line)."\n";
 }
