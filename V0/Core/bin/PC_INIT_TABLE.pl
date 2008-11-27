@@ -149,6 +149,10 @@ if ($populate) {
 	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
 		SET STATUS='".$histo_table->{valid_keyword}."',
 			COMMENT='Initialisation'");
+			
+	print "Create indexes\n";
+	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
+	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
 }
 
 sortie($bv_severite);

@@ -5,6 +5,56 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+
+###########################################################
+=head1 NAME
+
+PC_VALIDATE_LINE
+
+=head1 SYNOPSIS
+
+ PC_VALIDATE_LINE.pl environnement table
+ 
+=head1 DESCRIPTION
+
+Liste les champs d'une table dans un environnement à la date courante
+
+=head2 ENVIRONNEMENT
+
+=over 4
+
+=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
+
+=head2 OPTIONS
+
+=over 4
+
+=item -h : Affiche l'aide en ligne
+
+=item -v : Mode verbeux
+
+=back
+
+=head2 ARGUMENTS 
+
+=over 4
+
+=item * environnement à utiliser
+
+=item * nom de la table a décrire
+
+=item * nom du champ
+
+=back
+
+=head2 AUTHOR
+
+BV Associates, 16/10/2008
+
+=cut
+
 #  Fonctions
 ###########################################################
 
@@ -91,52 +141,3 @@ $table_histo->validate_row_by_key($table_key_value);
 
 # update all field for key
 
-#  Documentation
-###########################################################
-=head1 NAME
-
-PC_VALIDATE_LINE
-
-=head1 SYNOPSIS
-
- PC_VALIDATE_LINE.pl environnement table
- 
-=head1 DESCRIPTION
-
-Liste les champs d'une table dans un environnement à la date courante
-
-=head2 ENVIRONNEMENT
-
-=over 4
-
-=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
-
-=back
-
-=head2 OPTIONS
-
-=over 4
-
-=item -h : Affiche l'aide en ligne
-
-=item -v : Mode verbeux
-
-=back
-
-=head2 ARGUMENTS 
-
-=over 4
-
-=item * environnement à utiliser
-
-=item * nom de la table a décrire
-
-=item * nom du champ
-
-=back
-
-=head2 AUTHOR
-
-BV Associates, 16/10/2008
-
-=cut
