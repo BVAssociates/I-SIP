@@ -1,9 +1,6 @@
 # Commandes d'Exploitation : Droit expl
-#Item~~Configurer~expl~~~Administrate~Environnements_CODE~0~~Configure
-#~Insert~PreAction~~~~ExecuteProcedure~coucou~0~~
-#~Insert~PostAction~~~~ExecuteProcedure~coucou~0~~
-#~Remove~PreAction~~~~ExecuteProcedure~coucou~0~~
-#~Remove~PostAction~~~~ExecuteProcedure~coucou~0~~
-#~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
-#~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
+
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
+
+Item~Configuration SIP~Administrer Tables IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
+Item~Configuration SIP~Appliquer les modifications~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method

@@ -13,7 +13,7 @@ PC_GENERATE_MENU - les champs les champs d'une table Historique depuis la référe
 
 =head1 SYNOPSIS
 
- PC_GENERATE_MENU.pl [-h] [-a | environnement [tablename]]
+ PC_GENERATE_MENU.pl environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -29,11 +29,9 @@ Créer les PCI et DEF nécéssaires à la declaration d'une table dans SIP IKOS
 
 =head2 -v : Mode verbeux
 
-=head2 -a : Genere tous les environnements
-
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser (utiliser -a pour tous)
+=head2 * environnement à utiliser
 
 =head2 * table a décrire
 
@@ -83,7 +81,7 @@ sub write_file($$) {
 
 
 my %opts;
-getopts('hva', \%opts);
+getopts('hv', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -93,12 +91,12 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( (not $opts{a} and @ARGV < 1) or ($opts{a} and @ARGV != 0) ) {
+if ( @ARGV < 1 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement_param=shift;
+my $environnement=shift;
 my $table_name=shift;
 
 #  Corps du script
@@ -169,143 +167,134 @@ die "$pci_path not readable" if not -r $pci_path;
 die "$pci_path not writable" if not -w $pci_path;
 die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 
-# ENVIRON table access
-my $environ_table = ITools->open("ENVIRON", {debug => $bv_debug });
-$environ_table->query_field("Environnement");
-$environ_table->query_condition("Environnement = '$environnement_param'") if $environnement_param;
+# INFO_TABLE verification
 
-if (not defined $environ_table) {
-	die "error opening ENVIRON";
+my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
+
+my @condition;
+push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
+push @condition,"Active = 1";
+# only table with defined primary key
+push @condition,"PRIMARY_KEY != ''";
+$list_table->query_condition(join(' AND ',@condition));
+
+if (not defined $list_table) {
+	die "error opening INFO_TABLE";
 }
 
-# access to SIP
-my $count=0;
-while ( my ($environnement) = $environ_table->fetch_row_array() ) {
-	$count++;
-	my $sip = SIP->new($environnement);
+# mise en mémoire des primary key
+my %table_key;
+my %table_fkey;
+while (my %info_key = $list_table->fetch_row() ) {
+	$table_key {$info_key{TABLE_NAME}} = $info_key{PRIMARY_KEY};
+	$table_fkey {$info_key{TABLE_NAME}} = $info_key{F_TABLE};
+}
+$list_table->finish();
+
+# access to SIP data
+my $sip = SIP->new($environnement);
+
+# we are ready, so begin with cleanup old files
 
 
-	# INFO_TABLE access
-	my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
-
-	my @condition;
-	push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
-	# only table with defined primary key
-	push @condition,"PRIMARY_KEY != ''";
-	$list_table->query_condition(join(' AND ',@condition));
-
-	if (not defined $list_table) {
-		die "error opening INFO_TABLE";
-	}
-
-	# mise en mémoire des primary key
-	my %table_key;
-	my %table_fkey;
-	while (my %info_key = $list_table->fetch_row() ) {
-		$table_key {$info_key{TABLE_NAME}} = $info_key{PRIMARY_KEY};
-		$table_fkey {$info_key{TABLE_NAME}} = $info_key{F_TABLE};
-	}
-	$list_table->finish();
-
-	# we are ready, so begin with cleanup old files
-
-	print "Cleaning old files\n";
-	unlink <$def_path/IKOS_*.def>;
-	unlink <$pci_path/IKOS_*.pci>;
+if ($table_name) {
+	print "Cleaning old labels for $table_name\n";
+	system('Delete from ICleLabels where NodeId = IKOS_TABLE_$table_name_*');
+	system('Delete from ICleLabels where NodeId = IKOS_FIELD_$table_name_*');
+}
+else {
+	print "Cleaning all old labels\n";
 	system('Delete from ICleLabels where NodeId = IKOS_*');
-
-	while (my %info = $list_table->fetch_row() ) {
-
-		#if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
-		#	warn "$info{TABLE_NAME} don't exist in local tables\n";
-		#	next;
-		#}
-		# open DATA table
-		my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
-		my @field_list=(@virtual_field,$ikos_data->field() );
-		my $ikos_data_field = join($separator, @field_list);
-		my $ikos_data_size = join($separator,('20s') x @field_list ) ;
-		
-		my $ikos_data_table=$environnement."_".$info{TABLE_NAME};
-		
-		my $string;	
-		my $filename;
-
-	##### CREATE DEF
-		
-		$string = sprintf ($def_template,
-				$environnement,
-				$info{TABLE_NAME},
-				$separator,
-				$ikos_data_field,
-				$ikos_data_size, 
-				$info{PRIMARY_KEY});
-				
-		if ($info{F_KEY} and $info{F_TABLE}) {
-			$string .= sprintf($fkey_def_template,
-				$info{F_KEY},
-				$info{F_TABLE},
-				$table_key{$info{F_TABLE}});
-		}
-		
-		$filename=sprintf($def_filename,$def_path,$ikos_data_table);
-		
-		write_file($filename,$string);
-
-
-	##### CREATE DEF FIELD
-		
-		$string = sprintf ($def_field_template,$environnement,$info{TABLE_NAME});
-					
-		$filename=sprintf($def_field_filename,$def_path,$ikos_data_table);
-		
-		write_file($filename,$string);
-
-
-	##### CREATE PCI
-		
-		$string = sprintf ($pci_template,
-				($ikos_data_table) x 3,
-				$info{TABLE_NAME});
-		
-		# get all table having current table as F_KEY
-		my @fkey_list;
-		for my $name (keys %table_fkey) {
-			push @fkey_list, $name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
-		}
-		
-		foreach (@fkey_list) {
-			$string .= sprintf($pci_fkey_template,$_,$_);
-		}
-		
-		$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
-		
-		write_file($filename,$string);
-		
-	##### CREATE PCI FIELD
-		
-		$string = sprintf ($pci_field_template,$info{TABLE_NAME});
-		
-		$filename=sprintf($pci_field_filename,$pci_path,$ikos_data_table);
-		
-		write_file($filename,$string);
-		
-	##### CREATE/update Label
-
-		foreach ($label_item_template,$label_table_template,$label_field_item_template,$label_field_table_template) {
-			my $label_string = sprintf($_,$ikos_data_table);
-			print "Insert $ikos_data_table into ICleLabels\n";
-			system('Insert -f into ICleLabels values',$label_string);
-		}
-		# CREATE/update table INFO
-		##TODO
-
-		# CREATE/update table HISTO
-		##TODO
-	}
 }
+while (my %info = $list_table->fetch_row() ) {
 
+	#if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
+	#	warn "$info{TABLE_NAME} don't exist in local tables\n";
+	#	next;
+	#}
+	# open DATA table
+	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
+	my @field_list=(@virtual_field,$ikos_data->field() );
+	my $ikos_data_field = join($separator, @field_list);
+	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
+	
+	my $ikos_data_table=$environnement."_".$info{TABLE_NAME};
+	
+	my $string;	
+	my $filename;
+
+##### CREATE DEF
+	
+	$string = sprintf ($def_template,
+			$environnement,
+			$info{TABLE_NAME},
+			$separator,
+			$ikos_data_field,
+			$ikos_data_size, 
+			$info{PRIMARY_KEY});
+			
+	if ($info{F_KEY} and $info{F_TABLE}) {
+		$string .= sprintf($fkey_def_template,
+			$info{F_KEY},
+			$info{F_TABLE},
+			$table_key{$info{F_TABLE}});
+	}
+	
+	$filename=sprintf($def_filename,$def_path,$ikos_data_table);
+	
+	write_file($filename,$string);
+
+
+##### CREATE DEF FIELD
+	
+	$string = sprintf ($def_field_template,$environnement,$info{TABLE_NAME});
+				
+	$filename=sprintf($def_field_filename,$def_path,$ikos_data_table);
+	
+	write_file($filename,$string);
+
+
+##### CREATE PCI
+	
+	$string = sprintf ($pci_template,
+			($ikos_data_table) x 3,
+			$info{TABLE_NAME});
+	
+	# get all table having current table as F_KEY
+	my @fkey_list;
+	for my $name (keys %table_fkey) {
+		push @fkey_list, $name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
+	}
+	
+	foreach (@fkey_list) {
+		$string .= sprintf($pci_fkey_template,$_,$_);
+	}
+	
+	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
+	
+	write_file($filename,$string);
+	
+##### CREATE PCI FIELD
+	
+	$string = sprintf ($pci_field_template,$info{TABLE_NAME});
+	
+	$filename=sprintf($pci_field_filename,$pci_path,$ikos_data_table);
+	
+	write_file($filename,$string);
+	
+##### CREATE/update Label
+
+	foreach ($label_item_template,$label_table_template,$label_field_item_template,$label_field_table_template) {
+		my $label_string = sprintf($_,$ikos_data_table);
+		print "Insert $ikos_data_table into ICleLabels\n";
+		system('Insert -f into ICleLabels values',$label_string);
+	}
+	# CREATE/update table INFO
+	##TODO
+
+	# CREATE/update table HISTO
+	##TODO
+}
 
 system('AgentCollect -s AgentICleLabels ICleLabels');
 
-print "$count environnements mis à jour\n";
