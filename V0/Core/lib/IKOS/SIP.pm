@@ -54,6 +54,9 @@ sub get_table_key() {
 	#
 	# For now, we'll use INFO_TABLE
 	
+	# quirk because INFO_TABLE use %Environnement%
+	$ENV{Environnement}=$self->{environnement};
+	
 	my $table=ITools->open("INFO_TABLE", {debug => $debug_level});
 	$table->query_condition("TABLE_NAME = '$tablename'");
 	$table->query_field("PRIMARY_KEY");

@@ -1,4 +1,4 @@
-COMMAND="Select -s from INFO_TABLE where F_TABLE = '' AND Active=1"
+COMMAND="Select -s from INFO_TABLE where Active=1"
 SEP=":"
 FORMAT="TABLE_NAME:MODULE:PRIMARY_KEY:F_KEY:F_TABLE:Description:Active"
 SIZE="20s:20s:20s:20s:20s:20s:2b"

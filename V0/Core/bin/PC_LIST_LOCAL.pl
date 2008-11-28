@@ -102,10 +102,10 @@ my $bv_severite=0;
 use IKOS::SIP;
 
 my $sip=SIP->new($environ);
-my $table=$sip->open_local_table($table_name, {debug => 0 });
+my $table=$sip->open_ikos_table($table_name, {debug => 0 });
 
-my @query_field=$sip->get_table_field($table_name);
-$table->query_field(@query_field);
+#my @query_field=$sip->get_table_field($table_name);
+#$table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
