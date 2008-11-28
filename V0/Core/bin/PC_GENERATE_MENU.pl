@@ -148,7 +148,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display';
 
 my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];';
-my $label_table_template='IKOS_TABLE_%s.Table;line_%%[STATUS];Clefs de %s';
+my $label_table_template='IKOS_TABLE_%s.Table;line_%%[STATUS];Clefs de %s (%s)';
 my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];';
 my $label_field_table_template='IKOS_FIELD_%s.Table;;Liste des champs';
 
@@ -289,7 +289,7 @@ while (my %info = $list_table->fetch_row() ) {
 				$label_table_template,
 				$label_field_item_template,
 				$label_field_table_template) {
-		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME});
+		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME},$info{Description});
 		print "Insert $ikos_data_table into ICleLabels\n";
 		system('Insert -f into ICleLabels values',$label_string);
 	}
