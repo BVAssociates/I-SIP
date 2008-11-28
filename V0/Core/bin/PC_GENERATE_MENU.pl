@@ -147,10 +147,10 @@ my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display';
 
-my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];';
-my $label_table_template='IKOS_TABLE_%s.Table;line_%%[STATUS];Clefs de %s (%s)';
+my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s %s';
+my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
+my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
 my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];';
-my $label_field_table_template='IKOS_FIELD_%s.Table;;Liste des champs';
 
 ##### END TEMPLATES ##### 
 
@@ -285,14 +285,24 @@ while (my %info = $list_table->fetch_row() ) {
 	
 ##### CREATE/update Label
 
-	foreach ($label_item_template,
-				$label_table_template,
+	foreach ($label_table_template,
 				$label_field_item_template,
-				$label_field_table_template) {
+				$label_field_table_template)
+	{
+		my $label_desc="";
+		$label_desc= "(".$info{Description}.")" if $info{Description};
 		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME},$info{Description});
 		print "Insert $ikos_data_table into ICleLabels\n";
 		system('Insert -f into ICleLabels values',$label_string);
 	}
+	
+	#specifique
+	my $label_desc=" ";
+	$label_desc= "(%[".$info{LIBELLE_KEY}."])" if $info{LIBELLE_KEY};
+	my $label_string = sprintf($label_item_template,$ikos_data_table,"%[".$info{PRIMARY_KEY}."]",$label_desc);
+	print "Insert $ikos_data_table into ICleLabels\n";
+	system('Insert -f into ICleLabels values',$label_string);
+	
 	# CREATE/update table INFO
 	##TODO
 
