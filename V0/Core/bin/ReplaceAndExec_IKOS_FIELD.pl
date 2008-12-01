@@ -164,7 +164,7 @@ $local_table->query_field(@field);
 
 use POSIX qw(strftime);
 $row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};
-$row{USER_UPDATE} = $ENV{ISIS_USER} if exists $row{USER_UPDATE};
+$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
 $local_table->update_row( %row );
 
 sortie($bv_severite);
