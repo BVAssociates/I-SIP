@@ -153,7 +153,7 @@ if ($populate) {
 	print "Create indexes\n";
 	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
 	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
-	$histo_table->{table_histo}->execute("ANALYSE");
+	$histo_table->{table_histo}->execute("ANALYZE");
 }
 
 sortie($bv_severite);
