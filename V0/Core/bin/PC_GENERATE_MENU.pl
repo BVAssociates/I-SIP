@@ -13,7 +13,7 @@ PC_GENERATE_MENU - les champs les champs d'une table Historique depuis la référe
 
 =head1 SYNOPSIS
 
- PC_GENERATE_MENU.pl environnement [tablename]
+ PC_GENERATE_MENU.pl [-h] [-v] [-c] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -28,6 +28,8 @@ Créer les PCI et DEF nécéssaires à la declaration d'une table dans SIP IKOS
 =head2 -h : Affiche l'aide en ligne
 
 =head2 -v : Mode verbeux
+
+=head2 -c : decrit uniquement les colonnes utiles des tables (key, label)
 
 =head1 ARGUMENTS
 
@@ -81,12 +83,14 @@ sub write_file($$) {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvc', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $only_used_fields = 1 if $opts{c};
 
 #  Traitement des arguments
 ###########################################################
@@ -216,8 +220,6 @@ while (my %info = $list_table->fetch_row() ) {
 	# open DATA table
 	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
 	my @field_list=(@virtual_field,$ikos_data->field() );
-	my $ikos_data_field = join($separator, @field_list);
-	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
 	
 	my $ikos_data_table=$environnement."_".$info{TABLE_NAME};
 	
@@ -226,6 +228,17 @@ while (my %info = $list_table->fetch_row() ) {
 
 ##### CREATE DEF
 	
+	if ($only_used_fields) {
+		# reset field list
+		@field_list=(@virtual_field);
+		#add only used fields
+		push @field_list,split($separator,$info{PRIMARY_KEY});
+		push @field_list,split($separator,$info{LIBELLE_KEY});
+		push @field_list,split($separator,$info{F_KEY});
+	}
+	
+	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
+	my $ikos_data_field = join($separator, @field_list);
 	$string = sprintf ($def_template,
 			$environnement,
 			$info{TABLE_NAME},
