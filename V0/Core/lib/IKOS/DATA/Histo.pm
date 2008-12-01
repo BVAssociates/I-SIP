@@ -163,7 +163,13 @@ sub get_query()
 	
 	my $date_format = "%Y/%m/%d %Hh%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
-	#push @select_conditions, "FIELD_NAME = '".$self->query_field()."'" if $self->query_field() == $self->field();
+	
+	##NO : we must get all field to know the status of whole line!
+	#my @query_conditions;
+	#foreach ($self->query_field()) {
+	#	push @query_conditions, "FIELD_NAME = '".$_."'";
+	#}
+	#push @select_conditions, '('.join(' OR ',@query_conditions).')';
 	
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
@@ -249,7 +255,7 @@ sub fetch_row() {
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
 			$self->_debug("field $_ cannot be null (should be $field_line{TABLE_KEY})");
-			confess "Possible data corruption : NULL PRIMARY KEY";
+			croak "Possible data corruption : NULL PRIMARY KEY";
 		}
 	}
 	
