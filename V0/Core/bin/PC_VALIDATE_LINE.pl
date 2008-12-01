@@ -136,7 +136,7 @@ if (not $table_key_value) {
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_from_histo_table($tablename, {debug => $debug_level});
 
-print "Validate all field for key $table_key_value\n"
+print "Validate all field for key $table_key_value\n";
 $table_histo->validate_row_by_key($table_key_value);
 
 # update all field for key

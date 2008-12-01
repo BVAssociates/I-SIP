@@ -232,9 +232,9 @@ while (my %info = $list_table->fetch_row() ) {
 		# reset field list
 		@field_list=(@virtual_field);
 		#add only used fields
-		push @field_list,split($separator,$info{PRIMARY_KEY});
-		push @field_list,split($separator,$info{LIBELLE_KEY});
-		push @field_list,split($separator,$info{F_KEY});
+		push @field_list,split(',',$info{PRIMARY_KEY});
+		push @field_list,$info{LIBELLE_KEY} if $info{LIBELLE_KEY};
+		push @field_list,split(',',$info{F_KEY});
 	}
 	
 	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
