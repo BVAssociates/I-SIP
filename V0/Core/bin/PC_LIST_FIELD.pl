@@ -128,11 +128,11 @@ if (not $table_key) {
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
 
-
+# recherche de la clef dans l'environnement
 foreach (@table_key_list) {
 	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
 	if (not $ENV{$_}) {
-		log_erreur("Clef primaine <$ENV{$_}> n'est pas definie dans l'environnement");
+		log_erreur("Clef primaine <$_> n'est pas definie dans l'environnement");
 		sortie(202);
 	}
 }
@@ -142,8 +142,21 @@ my $table_key_value=join(',',@table_key_list_value);
 print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";
 
+# recupere à liste de champ à afficher
+my @query_field=$ikos_sip->get_histo_field($tablename);
+
+# fetch info from info table
+my $table_info = $ikos_sip->open_local_table($tablename."_INFO", {debug => $debug_level});
+
+my %field_label;
+my %field_type;
+while (my %info_line = $table_info->fetch_row) {
+	$field_label{$info_line{FIELD_NAME}}=$info_line{TEXT};
+	$field_type{$info_line{FIELD_NAME}}=$info_line{TYPE};
+}
+
 # fetch selected row from histo table
-my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => 1});
+my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
 
 my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, STATUS
 	FROM
@@ -161,6 +174,8 @@ my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TA
 	
 $table_histo->custom_select_query($select_histo);
 
-while (my @line=$table_histo->fetch_row_array() ) {
-	print join('@',@line)."\n";
+while (my %line=$table_histo->fetch_row() ) {
+	$line{TEXT}=$field_label{$line{FIELD_NAME}};
+	$line{TYPE}=$field_type{$line{FIELD_NAME}};
+	print join('@',@line{@query_field})."\n";
 }

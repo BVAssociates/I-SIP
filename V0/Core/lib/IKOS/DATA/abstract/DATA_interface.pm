@@ -291,7 +291,7 @@ sub array_to_hash() {
 	my $self = shift;
 	
 	my @row = @_;
-	croak "Wrong number of fields (has: ".@row.", expected: ".$self->field().")" if @row != $self->field() ;
+	croak "Wrong number of fields (has: ".@row.", expected: ".$self->query_field().")" if @row != $self->query_field() ;
 	
 	# convert array into hash
 	my %row_hash;

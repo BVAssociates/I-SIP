@@ -132,8 +132,8 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s"
 SEP="@"
-FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS"
-SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@TYPE@TEXT"
+SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="FIELD_NAME"
 
 FKEY="[STATUS] on ETAT[Name]"
@@ -142,10 +142,10 @@ FKEY="[STATUS] on ETAT[Name]"
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 #Item~~Afficher Ligne~expl~~~DisplayTable~IKOS_FIELD_%s~0~~Expand
-Item~~Editer ligne~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
+Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
 Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';
-my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
+my $pci_fkey_template='Item~Tables liées~%s (%s)~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
@@ -187,12 +187,14 @@ if (not defined $list_table) {
 	die "error opening INFO_TABLE";
 }
 
-# mise en mémoire des primary key
+# mise en mémoire des primary/foreign key
 my %table_key;
 my %table_fkey;
+my %table_info;
 while (my %info_key = $list_table->fetch_row() ) {
 	$table_key {$info_key{TABLE_NAME}} = $info_key{PRIMARY_KEY};
 	$table_fkey {$info_key{TABLE_NAME}} = $info_key{F_TABLE};
+	$table_info {$info_key{TABLE_NAME}} = $info_key{Description};
 }
 $list_table->finish();
 
@@ -281,7 +283,7 @@ while (my %info = $list_table->fetch_row() ) {
 	}
 	
 	foreach (@fkey_list) {
-		$string .= sprintf($pci_fkey_template,$_,"IKOS_TABLE_$environnement\_$_");
+		$string .= sprintf($pci_fkey_template,$_." (".$table_info {$_}.")","IKOS_TABLE_$environnement\_$_");
 	}
 	
 	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);

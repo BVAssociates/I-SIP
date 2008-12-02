@@ -157,10 +157,17 @@ my $env_sip=SIP->new($environnement);
 my $local_table;
 my %row;
 
-$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000, debug => 0});
+$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000, debug => $debug_level});
 
+# add dynamic field. Needed for array_to_hash()
+$local_table->dynamic_field("TEXT","TYPE");
 $local_table->query_field(@field);
-%row=$local_table->array_to_hash(split(/\s*$separator\s*/, $values, -1));
+%row=$local_table->array_to_hash(split(/$separator/, $values, -1));
+
+#delete dynamic field from line to insert
+foreach ($local_table->dynamic_field()) {
+	delete $row{$_};
+}
 
 use POSIX qw(strftime);
 $row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};

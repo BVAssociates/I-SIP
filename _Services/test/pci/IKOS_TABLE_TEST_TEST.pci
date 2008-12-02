@@ -1,5 +1,5 @@
 Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_TEST_TEST~0~~Expand
 #Item~~Afficher Ligne~expl~~~DisplayTable~IKOS_FIELD_TEST_TEST~0~~Expand
-Item~~Editer ligne~expl~~~Administrate~IKOS_FIELD_TEST_TEST~0~~Expand
+Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_TEST_TEST~0~~Expand
 Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %Environnement% TEST~1~~Run
 

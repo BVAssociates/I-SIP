@@ -8,19 +8,19 @@ MODULE.Table;I_AgentICles;Liste des Modules
 MODULE.Item;T_AgentICles;%[Module] (%[Description])
 ROOT_TABLE.Table;I_Configs;Liste des Tables
 ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
-IKOS_TABLE_TEST_ORDEXPP.Table;key_go;Clefs de ORDEXPP Ordre d'exploitation
+IKOS_TABLE_TEST_ORDEXPP.Table;key_go;Clefs de ORDEXPP (Ordre d'exploitation)
 IKOS_FIELD_TEST_ORDEXPP.Item;field_%[STATUS];
 IKOS_FIELD_TEST_ORDEXPP.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_ORDEXPP.Item;line_%[STATUS];%[FLCDTRAIT,FLTYPTRAIT]  
-IKOS_TABLE_TEST_ETPTYPP.Table;key_go;Clefs de ETPTYPP Etapes Type
+IKOS_TABLE_TEST_ETPTYPP.Table;key_go;Clefs de ETPTYPP (Etapes Type)
 IKOS_FIELD_TEST_ETPTYPP.Item;field_%[STATUS];
 IKOS_FIELD_TEST_ETPTYPP.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_ETPTYPP.Item;line_%[STATUS];%[AECDETTYP] (%[AENPRCOD])
-IKOS_TABLE_TEST_NATPROP.Table;key_go;Clefs de NATPROP Nature des processus
+IKOS_TABLE_TEST_NATPROP.Table;key_go;Clefs de NATPROP (Nature des processus)
 IKOS_FIELD_TEST_NATPROP.Item;field_%[STATUS];
 IKOS_FIELD_TEST_NATPROP.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_NATPROP.Item;line_%[STATUS];%[RDNPRCOD] (%[RDNPRLIB])
-IKOS_TABLE_TEST_PROTYPP.Table;key_go;Clefs de PROTYPP Processus Type
+IKOS_TABLE_TEST_PROTYPP.Table;key_go;Clefs de PROTYPP (Processus Type)
 IKOS_FIELD_TEST_PROTYPP.Item;field_%[STATUS];
 IKOS_FIELD_TEST_PROTYPP.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_PROTYPP.Item;line_%[STATUS];%[AAPTYCOD] (%[AAPTYLIB])
@@ -28,7 +28,7 @@ IKOS_TABLE_TEST_TPROGP.Table;key_go;Clefs de TPROGP ()
 IKOS_FIELD_TEST_TPROGP.Item;field_%[STATUS];
 IKOS_FIELD_TEST_TPROGP.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_TPROGP.Item;line_%[STATUS];%[LKCDTPROG]  
-IKOS_TABLE_TEST_TEST.Table;key_go;Clefs de TEST Table de demo
+IKOS_TABLE_TEST_TEST.Table;key_go;Clefs de TEST (Table de demo)
 IKOS_FIELD_TEST_TEST.Item;field_%[STATUS];
 IKOS_FIELD_TEST_TEST.Table;page_white_key;Liste des champs
 IKOS_TABLE_TEST_TEST.Item;line_%[STATUS];%[AAPTYCOD]  
