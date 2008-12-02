@@ -154,7 +154,7 @@ my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HI
 my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
 my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
 my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
-my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];';
+my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
 
 ##### END TEMPLATES ##### 
 
@@ -283,7 +283,7 @@ while (my %info = $list_table->fetch_row() ) {
 	}
 	
 	foreach (@fkey_list) {
-		$string .= sprintf($pci_fkey_template,$_." (".$table_info {$_}.")","IKOS_TABLE_$environnement\_$_");
+		$string .= sprintf($pci_fkey_template,$_,$table_info {$_},"IKOS_TABLE_$environnement\_$_");
 	}
 	
 	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);

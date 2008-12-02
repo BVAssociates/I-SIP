@@ -9,6 +9,6 @@
 
 Item~~Explore Table~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 #Item~~Affiche Table~expl~~~DisplayTable~%TABLE_NAME%~0~~Expand
-Item~Administration~Modifier la table~adm~~~Administrate~IKOS_INFO~0~~Configure
+Item~Administration~Modifier la table~adm~~~Administrate~FIELD_INFO~0~~Configure
 Item~Administration~Mettre à jour les données~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl %Environnement% %TABLE_NAME%~1~~Release
 Item~Administration~Creer la Table~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl -i %Environnement% %TABLE_NAME%~1~~Save

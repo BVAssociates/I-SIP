@@ -9,15 +9,18 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-ReplaceAndExec - Met à jour une ligne dans un processeur Administrate
+ReplaceAndExec_FIELD_INFO - Met à jour une ligne dans un processeur Administrate
 
 =head1 SYNOPSIS
 
- InsertAndExec [-h] [-v] INTO <Table> VALUES <-|Values> [WHERE <Condition>]
+ ReplaceAndExec_FIELD_INFO [-h] [-v] INTO <Table> VALUES <Values>
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Met à jour une ligne dans un processeur Administrate.
+
+Spécifique à la table FIELD_INFO
+
 
 =head1 ENVIRONNEMENT
 
@@ -133,57 +136,40 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 	sortie(202);
 }
 
+log_erreur("Conditions non gérées") if $conditions;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
-use File::Spec::Functions qw/path splitpath catfile/;
-
-my ($current_vol,$current_dir,$current_script)=splitpath($0);
-
-if ($table_name =~ /^IKOS_FIELD/) {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_IKOS_FIELD.pl",@argv_save);
-	if ($? == -1) {
-		die "failed to execute: $!\n";
-	}
-	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_IKOS_FIELD.pl' died with signal %d, %s",($?  >> 8))
-	};
-}
-elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_$table_name.pl",@argv_save);
-	if ($? == -1) {
-		die "failed to execute: $!\n";
-	}
-	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_IKOS_FIELD.pl' died with signal %d, %s",($?  >> 8))
-	};
-}
-else {
-	# otherwise,  we use the original script
-
-	# routine to find the next ReplaceAndExec in Path
-	my $count=1;
-	my $next_script;
-	foreach my $dir (path()) {
-		$next_script=catfile($dir,$current_script);
-		if (-r $next_script) {
-			if ($count-- <= 0) {
-				log_info("$table_name : exec official script : $next_script ");
-				system "perl",($next_script,@argv_save);
-				if ($? == -1) {
-					die "failed to execute: $!\n";
-				}
-				elsif (($? >> 8) != 0) {
-					die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				};
-				exit 0;
-			}
-		}
-	}
-	die "Unable to find $current_script in PATH";
+if ($table_name ne $table_name) {
+	log_erreur("Table $table_name non géré par $0");
 }
 
+my $environnement=$ENV{Environnement};
+die "Variable <Environnement> not set" if not $environnement;
+
+my $table_ikos=$ENV{TABLE_NAME};
+die "Variable <TABLE_NAME> not set" if not $table_ikos;
+
+use IKOS::DATA::ITools;
+my $itools_table=ITools->open($table_name);
+my $separator=$itools_table->output_separator;
+my @field=$itools_table->field;
+
+use IKOS::SIP;
+my $env_sip=SIP->new($environnement);
+my $local_table;
+my %row;
+
+$local_table=$env_sip->open_local_table($table_ikos."_INFO", {timeout => 10000, debug => $debug_level});
+
+$local_table->query_field(@field);
+%row=$local_table->array_to_hash(split(/$separator/, $values, -1));
+
+use POSIX qw(strftime);
+$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};
+#$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
+$local_table->update_row( %row );
 
 sortie($bv_severite);
