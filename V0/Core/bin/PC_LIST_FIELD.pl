@@ -103,8 +103,8 @@ my $environnement=shift;
 my $tablename=shift;
 
 # quirk to test
-$ENV{Environnement}=$environnement;
-$ENV{GSL_FILE}=$tablename;
+#$ENV{Environnement}=$environnement;
+#$ENV{GSL_FILE}=$tablename;
 #$ENV{AAPTYCOD}='HCPC';
 
 #  Corps du script
@@ -143,7 +143,10 @@ print STDERR "KEY= $table_key\n";
 print STDERR "KEY_VAL=$table_key_value\n";
 
 # recupere à liste de champ à afficher
-my @query_field=$ikos_sip->get_histo_field($tablename);
+use IKOS::DATA::ITools;
+my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$tablename);
+my $separator=$itools_table->output_separator;
+my @query_field=$itools_table->field;
 
 # fetch info from info table
 my $table_info = $ikos_sip->open_local_table($tablename."_INFO", {debug => $debug_level});
@@ -177,5 +180,5 @@ $table_histo->custom_select_query($select_histo);
 while (my %line=$table_histo->fetch_row() ) {
 	$line{TEXT}=$field_label{$line{FIELD_NAME}};
 	$line{TYPE}=$field_type{$line{FIELD_NAME}};
-	print join('@',@line{@query_field})."\n";
+	print join($separator,@line{@query_field})."\n";
 }

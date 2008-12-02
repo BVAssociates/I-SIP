@@ -37,7 +37,7 @@ sub new() {
 sub get_histo_field() {
 	my $self = shift;
 	
-	return ("ID","DATE_HISTO","DATE_UPDATE","USER_UPDATE","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT","STATUS","TYPE","TEXT");
+	return ("ID","DATE_HISTO","DATE_UPDATE","USER_UPDATE","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT","STATUS");
 }
 
 #found the table primary key
