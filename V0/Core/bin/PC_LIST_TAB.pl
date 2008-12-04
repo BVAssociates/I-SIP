@@ -25,7 +25,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 OPTIONS
 
-=over4
+=over 4
 
 =item -h : Affiche l'aide en ligne
 
@@ -35,7 +35,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 ARGUMENTS
 
-=over4
+=over 4
 
 =item environnement : environnement à utiliser
 

@@ -161,7 +161,7 @@ sub get_query()
 	my $select_histo;
 	my @select_conditions;
 	
-	my $date_format = "%Y/%m/%d %Hh%M";
+	my $date_format = "%Y-%m-%d %H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	
 	##NO : we must get all field to know the status of whole line!
@@ -327,7 +327,7 @@ sub insert_row() {
 	}
 	
 	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
+	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
 	
 	# active transaction mode if not already done
 	if ( $self->{table_histo}->active_transaction() > 0 ) {
@@ -399,7 +399,7 @@ sub update_row() {
 	
 	
 	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%d %H:%M:%S", localtime;
+	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
 	
 	# concat key values
 	my @key_value;
@@ -433,7 +433,7 @@ sub validate_row_by_key() {
 	$self->{table_histo}->_open_database;
 	$key=$self->{table_histo}->{database_handle}->quote($key);
 	my $updated_value=$self->{table_histo}->{database_handle}->quote($self->{valid_keyword});
-	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%d %H:%M:%S", localtime);
+	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%d %H:%M", localtime);
 	my $user_update = $self->{table_histo}->{database_handle}->quote($ENV{ISIS_USER});
 	
 	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=$updated_value, USER_UPDATE=$user_update, DATE_UPDATE=$date_update where TABLE_KEY=$key";

@@ -105,7 +105,7 @@ my $sip=SIP->new($environ);
 my $table=$sip->open_local_table($table_name."_HISTO", {debug => 0 });
 
 $table->query_field("DATE_HISTO");
-$table->custom_select_query("select distinct strftime('%Y/%m/%d %Hh00',DATE_HISTO) from $table_name\_HISTO");
+$table->custom_select_query("select distinct DATE_HISTO from $table_name\_HISTO");
 
 
 die "unable to open local $table_name in env $environ" if not defined $table;

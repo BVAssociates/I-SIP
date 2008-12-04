@@ -495,7 +495,7 @@ sub compare_from() {
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
-					$self->_info("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," => ",$row_table1{$field1} );
+					$self->_info("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," -> ",$row_table1{$field1} );
 					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
 					$differences++;
 				}
@@ -564,6 +564,7 @@ sub update_from() {
 		$self->update_row(%{ $self->{diff_update}{$key_update} });
 	}
 	$self->commit_transaction();
+	$self->_info("Les changements ont été appliqués");
 	
 	return $differences;
 }

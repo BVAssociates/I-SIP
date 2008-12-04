@@ -21,7 +21,15 @@ Compare 2 objets de type DATA_interface et affiche le resultat sous forme de tab
 
 =head1 ENVIRONNEMENT
 
+=over 4
+
+=item Environnement : Environnement en cours d'exploration
+
+=item DATE_EXPLORE : Date en cours d'exploration
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
@@ -31,9 +39,9 @@ Compare 2 objets de type DATA_interface et affiche le resultat sous forme de tab
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=head2 * environnement de destination
 
-=head2 * table a décrire
+=head2 * table a comparer
 
 =head1 AUTHOR
 
@@ -85,8 +93,13 @@ if ( @ARGV != 2 ) {
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
+#my $environnement_from=shift;
+my $environnement_to=shift;
 my $table_name=shift;
+
+#recuperation de l'environnement
+my $environnement_from=$ENV{Environnement} or die "Environnement does not exist in env";
+my $date_explore=$ENV{DATE_EXPLORE};
 
 #  Corps du script
 ###########################################################
@@ -97,26 +110,15 @@ use IKOS::DATA::ITools;
 
 use POSIX qw(strftime);
 
-my $env_sip = SIP->new($environnement);
-
-# quirk because INFO_TABLE use %Environnement%
-$ENV{Environnement}=$environnement;
-my $db2_table = ITools->open("INFO_TABLE" ,{debug => 1});
-
-$db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
-
-while (my %db2_table_line = $db2_table->fetch_row() ) {
-
-	my $table_name=$db2_table_line{TABLE_NAME};
+my $env_sip_from = SIP->new($environnement_from);
+my $env_sip_to = SIP->new($environnement_to);
 	
-	#open IKOS table for DATA
-	my $current_table=$env_sip->open_local_table($table_name, {debug => 0});
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => 1});
-	
-	$histo_table->compare_exclude("DATE_COLLECTE");
-	#$histo_table->compare_from($current_table),
-	$histo_table->update_from($current_table),
+#open IKOS table for DATA
+my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
+$table_from->query_date($date_explore) if $date_explore;
 
-}
+my $table_to=$env_sip_to->open_local_from_histo_table($table_name, {debug => $debug_level});
+
+$table_from->compare_from($table_to);
 
 sortie($bv_severite);

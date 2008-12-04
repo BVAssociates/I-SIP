@@ -8,6 +8,32 @@ MODULE.Table;I_AgentICles;Liste des Modules
 MODULE.Item;T_AgentICles;%[Module] (%[Description])
 ROOT_TABLE.Table;I_Configs;Liste des Tables
 ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[Description])
+DATE_HISTO.Table;I_Configs;Liste des Dates de changement
+DATE_HISTO.Item;T_Configs;
+IKOS_TABLE_DEV_ORDEXPP.Table;key_go;Clefs de ORDEXPP (Ordre d'exploitation)
+IKOS_FIELD_DEV_ORDEXPP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_ORDEXPP.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_ORDEXPP.Item;line_%[STATUS];%[FLCDTRAIT,FLTYPTRAIT]  
+IKOS_TABLE_DEV_ETPTYPP.Table;key_go;Clefs de ETPTYPP (Etapes Type)
+IKOS_FIELD_DEV_ETPTYPP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_ETPTYPP.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_ETPTYPP.Item;line_%[STATUS];%[AECDETTYP] (%[AELBLETTY])
+IKOS_TABLE_DEV_NATPROP.Table;key_go;Clefs de NATPROP (Nature des processus)
+IKOS_FIELD_DEV_NATPROP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_NATPROP.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_NATPROP.Item;line_%[STATUS];%[RDNPRCOD] (%[RDNPRLIB])
+IKOS_TABLE_DEV_PROTYPP.Table;key_go;Clefs de PROTYPP (Processus Type)
+IKOS_FIELD_DEV_PROTYPP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_PROTYPP.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_PROTYPP.Item;line_%[STATUS];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_TABLE_DEV_TPROGP.Table;key_go;Clefs de TPROGP ()
+IKOS_FIELD_DEV_TPROGP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_TPROGP.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_TPROGP.Item;line_%[STATUS];%[LKCDTPROG]  
+IKOS_TABLE_DEV_TEST.Table;key_go;Clefs de TEST (Table de demo)
+IKOS_FIELD_DEV_TEST.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_DEV_TEST.Table;page_white_key;Liste des champs
+IKOS_TABLE_DEV_TEST.Item;line_%[STATUS];%[AAPTYCOD]  
 IKOS_TABLE_TEST_ORDEXPP.Table;key_go;Clefs de ORDEXPP (Ordre d'exploitation)
 IKOS_FIELD_TEST_ORDEXPP.Item;field_%[STATUS];%[FIELD_NAME] (%[TEXT])
 IKOS_FIELD_TEST_ORDEXPP.Table;page_white_key;Liste des champs

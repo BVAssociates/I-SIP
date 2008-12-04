@@ -94,13 +94,18 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2) {
+if ( @ARGV < 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift;
 my $tablename=shift;
+my $query_date=shift;
+my $query_time=shift;
+
+$query_time = "00h00" if not $query_time;
+$query_date = $query_date ." ". $query_time if $query_date;
 
 # quirk to test
 #$ENV{Environnement}=$environnement;
@@ -160,6 +165,7 @@ while (my %info_line = $table_info->fetch_row) {
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+my $date_condition="AND strftime('%Y-%m-%d %H:%M',DATE_HISTO) <= '$query_date'" if $query_date and $query_date !~ /^%/;
 
 my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, STATUS
 	FROM
@@ -171,6 +177,7 @@ my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TA
 		FROM
 		$tablename\_HISTO
 		WHERE TABLE_KEY = '$table_key_value'
+		$date_condition
 		GROUP BY FIELD_NAME_2, TABLE_KEY_2)
 	ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
 	ORDER BY TABLE_KEY;";

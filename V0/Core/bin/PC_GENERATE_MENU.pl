@@ -120,7 +120,7 @@ my @virtual_field=("STATUS");
 #####  BEGIN TEMPLATES ##### 
 
 my $def_filename="%s/IKOS_TABLE_%s.def";
-my $def_template = 'COMMAND="PC_LIST_TAB.pl %s %s %%DATE_HISTO%%"
+my $def_template = 'COMMAND="PC_LIST_TAB.pl %s %s %%DATE_EXPLORE%%"
 SEP="%s"
 FORMAT="%s"
 SIZE="%s"
@@ -130,7 +130,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 ';
 
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
-my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s"
+my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s %%DATE_EXPLORE%%"
 SEP="@"
 FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@TYPE@TEXT"
 SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
@@ -206,12 +206,12 @@ my $sip = SIP->new($environnement);
 
 if ($table_name) {
 	print "Cleaning old labels for $table_name\n";
-	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_');
-	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_');
+	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_$environnement');
+	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_$environnement');
 }
 else {
 	print "Cleaning all old labels\n";
-	system('Delete from ICleLabels where NodeId ~ IKOS_');
+	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
 while (my %info = $list_table->fetch_row() ) {
 
