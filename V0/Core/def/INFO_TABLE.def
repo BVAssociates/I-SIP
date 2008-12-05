@@ -1,4 +1,4 @@
-FILE="%CLES_HOME%\%ICleName%\_Services\%ServiceName%\tab\%Environnement%_INFO_TABLE"
+FILE="%ISIP_HOME%\_Services\tab\%Environnement%_INFO_TABLE"
 SEP=":"
 FORMAT="TABLE_NAME:MODULE:LIBELLE_KEY:PRIMARY_KEY:F_KEY:F_TABLE:Description:Active"
 SIZE="20s:20s:20s:20s:20s:20s:20s:2b"
