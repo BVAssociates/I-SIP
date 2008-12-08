@@ -151,10 +151,10 @@ my $pci_fkey_template='Item~Tables liées~%s (%s)~expl~~~Explore~%s~0~~Expand
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display';
 
-my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
-my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
-my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
-my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
+my $label_table_template='.;IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
+my $label_item_template='.;IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
+my $label_field_table_template='.;IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
+my $label_field_item_template='.;IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
 
 ##### END TEMPLATES ##### 
 
