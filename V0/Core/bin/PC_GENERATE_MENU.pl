@@ -145,7 +145,7 @@ my $pci_template='Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
 Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';
-my $pci_fkey_template='Item~Tables liées~%s (%s)~expl~~~Explore~%s~0~~Expand
+my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
@@ -279,12 +279,11 @@ while (my %info = $list_table->fetch_row() ) {
 	# get all table having current table as F_KEY
 	my @fkey_list;
 	for my $name (keys %table_fkey) {
-		push @fkey_list, $name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
+		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
 	}
-	
-	foreach (@fkey_list) {
-		$string .= sprintf($pci_fkey_template,$_,$table_info {$_},"IKOS_TABLE_$environnement\_$_");
-	}
+
+	$string .= sprintf($pci_fkey_template,join(',',@fkey_list));
+
 	
 	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
 	
