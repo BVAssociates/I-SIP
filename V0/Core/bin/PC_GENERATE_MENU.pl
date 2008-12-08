@@ -151,10 +151,10 @@ my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display';
 
-my $label_table_template='.;IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
-my $label_item_template='.;IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
-my $label_field_table_template='.;IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
-my $label_field_item_template='.;IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
+my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
+my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
+my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
+my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
 
 ##### END TEMPLATES ##### 
 
@@ -206,12 +206,12 @@ my $sip = SIP->new($environnement);
 
 if ($table_name) {
 	print "Cleaning old labels for $table_name\n";
-	system('Delete from PortalICleLabels where NodeId ~ IKOS_TABLE_$table_name_$environnement');
-	system('Delete from PortalICleLabels where NodeId ~ IKOS_FIELD_$table_name_$environnement');
+	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_$environnement');
+	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_$environnement');
 }
 else {
 	print "Cleaning all old labels\n";
-	system("Delete from PortalICleLabels where NodeId ~ IKOS_$environnement");
+	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
 while (my %info = $list_table->fetch_row() ) {
 
@@ -306,8 +306,8 @@ while (my %info = $list_table->fetch_row() ) {
 		my $label_desc="";
 		$label_desc= "(".$info{Description}.")" if $info{Description};
 		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME},$info{Description});
-		print "Insert $ikos_data_table into PortalICleLabels\n";
-		system('Insert -f into PortalICleLabels values',$label_string);
+		print "Insert $ikos_data_table into ICleLabels\n";
+		system('Insert -f into ICleLabels values',$label_string);
 		if ($? == -1) {
 			die "failed to execute: $!\n";
 		}
@@ -320,8 +320,8 @@ while (my %info = $list_table->fetch_row() ) {
 	my $label_desc=" ";
 	$label_desc= "(%[".$info{LIBELLE_KEY}."])" if $info{LIBELLE_KEY};
 	my $label_string = sprintf($label_item_template,$ikos_data_table,"%[".$info{PRIMARY_KEY}."]",$label_desc);
-	print "Insert $ikos_data_table into PortalICleLabels\n";
-	system('Insert -f into PortalICleLabels values',$label_string);
+	print "Insert $ikos_data_table into ICleLabels\n";
+	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
 		die "failed to execute: $!\n";
 	}
@@ -336,5 +336,5 @@ while (my %info = $list_table->fetch_row() ) {
 	##TODO
 }
 
-#system('AgentCollect -s PortalPortalICleLabels PortalICleLabels');
-
+system('AgentCollect -s PortalICleLabels ICleLabels');
+        
