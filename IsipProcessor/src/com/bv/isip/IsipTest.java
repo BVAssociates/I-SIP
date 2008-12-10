@@ -26,7 +26,6 @@ import com.bv.isis.console.processor.NonEditableTextArea;
 import com.bv.isis.console.processor.NonEditableTextPane;
 import com.bv.isis.console.processor.ProcessorFrame;
 
-@SuppressWarnings("serial")
 public class IsipTest extends ProcessorFrame {
 
     /**
@@ -80,6 +79,7 @@ public class IsipTest extends ProcessorFrame {
 		super.run(windowInterface, menuItem, postprocessing, postprocessing, postprocessing, selectedNode);
 		setTitle(menuItem.getText());
 		makePanel();
+        pack();
 		display();
 	}
 	
@@ -87,42 +87,10 @@ public class IsipTest extends ProcessorFrame {
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"IsipProcessor", "makePanel");
-		int background = Color.white.getRGB();
-		int foreground = Color.black.getRGB();
-		Color foreground_color = null;
-		Color background_color = null;
 
-		trace_methods.beginningOfMethod();
-		// Le layout manager du panneau est un BorderLayout
-		getContentPane().setLayout(new BorderLayout());
-		// On récupère les données de configuration
-		try
-		{
-			PreferencesAPI preferences = new PreferencesAPI();
-			preferences.useSection("Execution");
-			background = preferences.getInt("Background");
-			foreground = preferences.getInt("Output");
-		}
-		catch(Exception exception)
-		{
-			// On ne fait rien
-		}
-		background_color = new Color(background);
-		// La couleur d'avant plan est l'inverse de la couleur de fond
-		foreground_color = new Color(foreground);
-		// On construit la zone d'affichage du fichier
-		NonEditableTextPane textArea = new NonEditableTextPane(new DefaultStyledDocument());
-		textArea.setCaretPosition(0);
-		textArea.setFont((new NonEditableTextArea()).getFont());
-		textArea.setContentType("text/plain");
-		// On fixe les couleurs
-		textArea.setBackground(background_color);
-		textArea.setForeground(foreground_color);
-		textArea.setSelectedTextColor(background_color);
-		textArea.setSelectionColor(foreground_color);
-		// On place la zone dans un scroll pane
-		JScrollPane output_scroll = new JScrollPane(textArea);
-		getContentPane().add(output_scroll, BorderLayout.CENTER);
+        // Creation du panneau de saisie
+        IsipPanel form = new IsipPanel();
+        getContentPane().add(form, BorderLayout.CENTER);
 		// Maintenant, on va créer le bouton Fermer
 		JButton close_button =
 			new JButton(MessageManager.getMessage("&Events_Close"));
