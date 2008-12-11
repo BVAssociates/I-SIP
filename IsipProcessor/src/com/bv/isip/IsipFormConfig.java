@@ -2,16 +2,18 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.bv.isip;
 
+import com.bv.core.trace.Trace;
+import com.bv.core.trace.TraceAPI;
 import com.bv.isis.console.com.ServiceSessionProxy;
 import com.bv.isis.console.common.IndexedList;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.console.node.TreeNodeFactory;
+import com.bv.isis.corbacom.IsisParameter;
+import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
-import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  *
@@ -22,9 +24,8 @@ import java.util.Iterator;
  * @see IsipProcessor
  *
  */
-public class IsipFormConfig 
+public class IsipFormConfig extends IndexedList
 {
-
 
     /**
      * Constructeur prenant en parametre le noeud selectionné
@@ -32,8 +33,12 @@ public class IsipFormConfig
      * @param selectedNode : noeud de l'arbre en cours d'exploration
      * @param tableName  : nom de la table qui contient la configuration
      */
-    IsipFormConfig(GenericTreeObjectNode selectedNode,String tableName) throws InnerException
+    IsipFormConfig(GenericTreeObjectNode selectedNode, String tableName) throws InnerException
     {
+        super();
+        Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+                "IsipFormConfig", "IsipFormConfig");
+
         // On recupere l'objet ServiceSession
         ServiceSessionInterface service_session = selectedNode.getServiceSession();
         IndexedList context = selectedNode.getContext(true);
@@ -41,18 +46,24 @@ public class IsipFormConfig
         // On recupere le Proxy associé
         ServiceSessionProxy session_proxy = new ServiceSessionProxy(service_session);
         // On va chercher les informations dans la table FORM_CONFIG
-        String[] columns= {""};
+        String[] columns = {""};
         String[] result = session_proxy.getSelectResult(tableName, columns, "", "", context);
 
-        _configurationEntry = new IndexedList();
-        
-        for (int i = 1; i < result.length; i++)
-        {
-            String[] resultArray=result[i].split(",");
-            //on stock
-            _configurationEntry.put(resultArray[0], result[i]);
-            
+        // On calcule la definition à partir du Select
+        IsisTableDefinition form_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, tableName);
+
+        for (int i = 1; i < result.length; i++) {
+            //On tranforme une ligne du Select en IsisParameter
+            IsisParameter[] resultLine = TreeNodeFactory.buildParametersFromSelectResult(result, i, form_definition);
+            //On recupere la valeur de la clef pour une ligne
+            String key = TreeNodeFactory.buildKeyFromSelectResult(resultLine, form_definition);
+
+            //on stock la ligne
+            put(key, resultLine);
+
         }
+
+        trace_methods.endOfMethod();
     }
 
     /**
@@ -61,45 +72,28 @@ public class IsipFormConfig
      * @param Name Nom de l'entrée
      * @return le label correspondant à l'entrée Name
      */
-    public String getLabel(String Name)
+    public String getLabel(String key)
     {
-        return parseEntry(Name)[1];
+        return TreeNodeFactory.getValueOfParameter((IsisParameter[])get(key),"FORM_LABEL");
     }
 
-     /**
+    /**
      * Recupere une configuration pour l'entrée donnée en parametre
      *
      * @param Name Nom de l'entrée
      * @return le type correspondant à l'entrée Name
      */
-    public String getType(String Name)
+    public String getType(String key)
     {
-        return parseEntry(Name)[2];
+        return TreeNodeFactory.getValueOfParameter((IsisParameter[])get(key),"FORM_TYPE");
     }
 
-    /**
-     *  
-     * @return le nombre de champ a configurer
-     */
-    public int getFormSize()
+    /*@Override*/
+    public IsisParameter[] get(String key)
     {
-        return _configurationEntry.size();
+        return (IsisParameter[]) super.get(key);
     }
+    
 
-    /**
-     * Prend un String en entrée et le decoupe en tableau. Chaque element du
-     * tableau renvoyé correspond à une colonne
-     * @param Name
-     * @return Tableau de String
-     */
-    private String[] parseEntry(String Name)
-    {
-        return ((String) _configurationEntry.get(Name)).split(",");
-    }
-
-    /**
-     * Membre stockant les valeurs de la table de configuration
-     */
-    private IndexedList _configurationEntry;
-
+   
 }

@@ -11,8 +11,6 @@
 
 package com.bv.isip;
 
-import java.util.Hashtable;
-
 /**
  *
  * @author BAUCHART
@@ -20,7 +18,7 @@ import java.util.Hashtable;
 public class IsipPanel extends javax.swing.JPanel {
 
     /** Creates new form IsipPanel */
-    public IsipPanel(Hashtable objectList) {
+    public IsipPanel() {
         initComponents();
         
     }

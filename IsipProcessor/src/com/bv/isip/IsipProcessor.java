@@ -21,9 +21,10 @@ import com.bv.isis.console.abs.processor.ProcessorInterface;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.processor.ProcessorFrame;
-import com.sun.jmx.snmp.Enumerated;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
 public class IsipProcessor extends ProcessorFrame {
 
@@ -37,6 +38,8 @@ public class IsipProcessor extends ProcessorFrame {
 		
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"IsipTest", "IsipTest");
+
+        _fieldObject=new Hashtable();
 
        	trace_methods.beginningOfMethod();
 		trace_methods.endOfMethod();
@@ -95,10 +98,53 @@ public class IsipProcessor extends ProcessorFrame {
     */
     protected JPanel makeFormPanel()
     {
-        //JPanel form_panel = new JPanel();
-        //form_panel.setLayout(new BorderLayout(10, 10));
+        JPanel form_panel = new JPanel();
+        
+        form_panel.setLayout(new GridBagLayout());
 
-        return new IsipPanel(_columnObject);
+        int position = 0;
+        for (Enumeration field=_FormConfiguration.keys(); field.hasMoreElements();)
+        {
+            String formId=(String) field.nextElement();
+
+            String formType=_FormConfiguration.getType(formId);
+            String formLabel = _FormConfiguration.getLabel(formId);
+
+            //construction du champ
+            if (formType.equals("Invisible")) {
+                continue;
+            } else if (formType.equals("Label")) {
+                //on increment le compteur de position
+                position++;
+                
+                // on ajoute le label
+                JLabel form_entry = new JLabel(formLabel);
+                GridBagConstraints constraintLabel = new GridBagConstraints();
+                constraintLabel.gridx = 0;
+                constraintLabel.gridy = position;
+                constraintLabel.weightx = 0.9;
+                constraintLabel.anchor = java.awt.GridBagConstraints.WEST;
+                constraintLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                constraintLabel.insets = new java.awt.Insets(10, 10, 10, 10);
+                form_panel.add(form_entry, constraintLabel);
+
+                //on ajoute la valeur
+                JTextField form_value = new JTextField();
+                GridBagConstraints constraintValue = new GridBagConstraints();
+                constraintValue.gridx = 1;
+                constraintValue.gridy = position;
+                constraintValue.weightx = 1.0;
+                constraintValue.anchor = java.awt.GridBagConstraints.WEST;
+                constraintValue.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                constraintValue.insets = new java.awt.Insets(10, 10, 10, 10);
+                form_panel.add(form_value, constraintValue);
+                
+                //on stock le champ qui sera affiché puis modifié
+                _fieldObject.put(formId, form_value);
+            }
+        }
+
+        return form_panel;
     }
 
     /**
@@ -168,13 +214,25 @@ public class IsipProcessor extends ProcessorFrame {
 		// On place ce panneau dans la zone sud
 		getContentPane().add(button_panel, BorderLayout.SOUTH);
 		// On redimensionne la fenêtre
-		setSize(400, 400);
+		setSize(800, 800);
+
+        populateFormPanel();
+
 		trace_methods.endOfMethod();
 	}
 
     private void populateFormPanel()
     {
-        IsisParameter parameter;
+        //recuperation des données du noeud courant
+        IsisParameter[] data=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
+
+        for (int i=0; i < data.length; i++)
+        {
+            if (_fieldObject.containsKey(data[i].name))
+            {
+                ((JTextField) _fieldObject.get(data[i].name)).setText(data[i].value);
+            }
+        }
     }
 
     /**
@@ -191,7 +249,7 @@ public class IsipProcessor extends ProcessorFrame {
 	* Cet référence paramétrée est implémentée sous la forme d'une table de
 	* hash.
 	*/
-	private Hashtable _columnObject;
+	private Hashtable _fieldObject;
 
     private IsipFormConfig _FormConfiguration;
 }
