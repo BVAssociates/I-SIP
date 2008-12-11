@@ -49,7 +49,6 @@ public class IsipPanel extends javax.swing.JPanel {
         jComboBoxStatus = new javax.swing.JComboBox();
         jLabelEnvironnement = new javax.swing.JLabel();
         jTextEnvironnement = new javax.swing.JLabel();
-        jLabelId = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -174,15 +173,6 @@ public class IsipPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(jTextEnvironnement, gridBagConstraints);
-
-        jLabelId.setFont(new java.awt.Font("Tahoma", 0, 18));
-        jLabelId.setText("###");
-        jLabelId.setOpaque(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.ipady = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 16, 3);
-        add(jLabelId, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -192,7 +182,6 @@ public class IsipPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabelDateHisto;
     private javax.swing.JLabel jLabelDateUpdate;
     private javax.swing.JLabel jLabelEnvironnement;
-    private javax.swing.JLabel jLabelId;
     private javax.swing.JLabel jLabelStatus;
     private javax.swing.JLabel jLabelTable;
     private javax.swing.JLabel jLabelTableKey;

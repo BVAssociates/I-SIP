@@ -14,6 +14,9 @@ import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.corbacom.IsisParameter;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.TreeMap;
 
 /**
  *
@@ -24,7 +27,7 @@ import com.bv.isis.corbacom.ServiceSessionInterface;
  * @see IsipProcessor
  *
  */
-public class IsipFormConfig extends IndexedList
+public class IsipFormConfig
 {
 
     /**
@@ -52,6 +55,8 @@ public class IsipFormConfig extends IndexedList
         // On calcule la definition à partir du Select
         IsisTableDefinition form_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, tableName);
 
+        _table = new LinkedHashMap<String, IsisParameter[]>();
+        
         for (int i = 1; i < result.length; i++) {
             //On tranforme une ligne du Select en IsisParameter
             IsisParameter[] resultLine = TreeNodeFactory.buildParametersFromSelectResult(result, i, form_definition);
@@ -59,7 +64,7 @@ public class IsipFormConfig extends IndexedList
             String key = TreeNodeFactory.buildKeyFromSelectResult(resultLine, form_definition);
 
             //on stock la ligne
-            put(key, resultLine);
+            _table.put(key, resultLine);
 
         }
 
@@ -91,9 +96,14 @@ public class IsipFormConfig extends IndexedList
     /*@Override*/
     public IsisParameter[] get(String key)
     {
-        return (IsisParameter[]) super.get(key);
+        return _table.get(key);
     }
-    
 
-   
+    public Iterator keysIterator()
+    {
+        return _table.keySet().iterator();
+    }
+
+    private LinkedHashMap<String, IsisParameter[]> _table;
+
 }

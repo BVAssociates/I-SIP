@@ -23,8 +23,12 @@ import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.processor.ProcessorFrame;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import org.jfree.text.TextBox;
 
 public class IsipProcessor extends ProcessorFrame {
 
@@ -99,46 +103,56 @@ public class IsipProcessor extends ProcessorFrame {
     protected JPanel makeFormPanel()
     {
         JPanel form_panel = new JPanel();
-        
+        JComponent form_value;
+
         form_panel.setLayout(new GridBagLayout());
 
         int position = 0;
-        for (Enumeration field=_FormConfiguration.keys(); field.hasMoreElements();)
-        {
-            String formId=(String) field.nextElement();
+        for (Iterator<String> field = _FormConfiguration.keysIterator(); field.hasNext();) {
+            String formId = field.next();
 
-            String formType=_FormConfiguration.getType(formId);
+            String formType = _FormConfiguration.getType(formId);
             String formLabel = _FormConfiguration.getLabel(formId);
 
             //construction du champ
             if (formType.equals("Invisible")) {
                 continue;
-            } else if (formType.equals("Label")) {
+            } else {
+
+
                 //on increment le compteur de position
                 position++;
-                
+
                 // on ajoute le label
-                JLabel form_entry = new JLabel(formLabel);
+                JLabel form_entry = new JLabel(formLabel,SwingConstants.RIGHT);
                 GridBagConstraints constraintLabel = new GridBagConstraints();
                 constraintLabel.gridx = 0;
                 constraintLabel.gridy = position;
                 constraintLabel.weightx = 0.9;
                 constraintLabel.anchor = java.awt.GridBagConstraints.WEST;
                 constraintLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintLabel.insets = new java.awt.Insets(10, 10, 10, 10);
+                constraintLabel.insets = new java.awt.Insets(5, 5, 5, 5);
                 form_panel.add(form_entry, constraintLabel);
 
-                //on ajoute la valeur
-                JTextField form_value = new JTextField();
+                if (formType.equals("Label")) {
+                    //on ajoute la valeur
+                    form_value = new JLabel();
+                    
+                }
+                else
+                {
+                    form_value = new JTextField("###");
+                }
+                
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
                 constraintValue.gridy = position;
                 constraintValue.weightx = 1.0;
                 constraintValue.anchor = java.awt.GridBagConstraints.WEST;
                 constraintValue.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintValue.insets = new java.awt.Insets(10, 10, 10, 10);
+                constraintValue.insets = new java.awt.Insets(5, 5, 5, 5);
                 form_panel.add(form_value, constraintValue);
-                
+
                 //on stock le champ qui sera affiché puis modifié
                 _fieldObject.put(formId, form_value);
             }
@@ -226,11 +240,14 @@ public class IsipProcessor extends ProcessorFrame {
         //recuperation des données du noeud courant
         IsisParameter[] data=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
 
-        for (int i=0; i < data.length; i++)
-        {
-            if (_fieldObject.containsKey(data[i].name))
-            {
-                ((JTextField) _fieldObject.get(data[i].name)).setText(data[i].value);
+        for (int i = 0; i < data.length; i++) {
+            if (_fieldObject.containsKey(data[i].name)) {
+                JComponent textBox = _fieldObject.get(data[i].name);
+                if (textBox instanceof JTextField) {
+                    ((JTextField) textBox).setText(data[i].value);
+                } else if (textBox instanceof JLabel) {
+                    ((JLabel) textBox).setText(data[i].value);
+                }
             }
         }
     }
@@ -249,7 +266,7 @@ public class IsipProcessor extends ProcessorFrame {
 	* Cet référence paramétrée est implémentée sous la forme d'une table de
 	* hash.
 	*/
-	private Hashtable _fieldObject;
+	private Hashtable<String,JComponent> _fieldObject;
 
     private IsipFormConfig _FormConfiguration;
 }
