@@ -11,6 +11,8 @@
 
 package com.bv.isip;
 
+import java.util.Hashtable;
+
 /**
  *
  * @author BAUCHART
@@ -18,8 +20,9 @@ package com.bv.isip;
 public class IsipPanel extends javax.swing.JPanel {
 
     /** Creates new form IsipPanel */
-    public IsipPanel() {
+    public IsipPanel(Hashtable objectList) {
         initComponents();
+        
     }
 
     /** This method is called from within the constructor to
@@ -174,7 +177,7 @@ public class IsipPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(jTextEnvironnement, gridBagConstraints);
 
-        jLabelId.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabelId.setFont(new java.awt.Font("Tahoma", 0, 18));
         jLabelId.setText("###");
         jLabelId.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
