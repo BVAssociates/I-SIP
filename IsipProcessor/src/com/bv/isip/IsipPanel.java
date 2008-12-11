@@ -49,6 +49,8 @@ public class IsipPanel extends javax.swing.JPanel {
         jComboBoxStatus = new javax.swing.JComboBox();
         jLabelEnvironnement = new javax.swing.JLabel();
         jTextEnvironnement = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -173,6 +175,38 @@ public class IsipPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(jTextEnvironnement, gridBagConstraints);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.getTableHeader().setReorderingAllowed(false);
+        jScrollPane1.setViewportView(jTable1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -186,6 +220,8 @@ public class IsipPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabelTable;
     private javax.swing.JLabel jLabelTableKey;
     private javax.swing.JLabel jLabelUserUpdate;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextComment;
     private javax.swing.JTextField jTextDateHisto;
     private javax.swing.JTextField jTextDateUpdate;
