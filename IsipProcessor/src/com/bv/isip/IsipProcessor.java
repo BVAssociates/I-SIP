@@ -253,7 +253,7 @@ public class IsipProcessor extends ProcessorFrame {
 			{
                 try {
                     // On appelle la méthode de fermeture
-                    populateFormPanel();
+                    populateFormPanel(false);
                 } catch (InnerException ex) {
                     getMainWindowInterface().showPopupForException(
 				"Errur lors de la mise à jour", ex);
@@ -289,20 +289,32 @@ public class IsipProcessor extends ProcessorFrame {
 		// On redimensionne la fenêtre
 		setSize(400, 400);
 
-        populateFormPanel();
+        populateFormPanel(false);
 
 		trace_methods.endOfMethod();
 	}
 
-    private void populateFormPanel()
+    private void populateFormPanel(boolean refresh)
             throws InnerException
     {
-        //recuperation des données du noeud courant
-        IsisParameter[] data=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
+        // Variable qui stockera les valeurs à afficher
+        IsisParameter[] data;
+
+        if (refresh) {
+            //recuperation des données depuis la table
+            String lineID=((IsisParameter)((GenericTreeObjectNode)getSelectedNode()).getContext(true).get("ID")).value;
+            SimpleSelect HistoTable=
+                    new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
+            data=HistoTable.get(lineID);
+        } else {
+            //recuperation des données du noeud courant
+            data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
+        }
 
         boolean foundTableKey=false;
         for (int i = 0; i < data.length; i++) {
             
+            // verification basique
             if (data[i].name.equals("TABLE_KEY"))
             {
                 foundTableKey = true;
@@ -320,7 +332,7 @@ public class IsipProcessor extends ProcessorFrame {
             }
         }
 
-        // Verification des données
+        // verification basique
         if (!foundTableKey)
         {
             throw new InnerException("Execution Impossible sur ce noeud", "TABLE_KEY non defini", null);
@@ -379,14 +391,12 @@ IsisParameter[] data=new IsisParameter[data_from.length];
         try {
             execute(command.toString());
             //on recupere les données
-            //populateFormPanel();
+            populateFormPanel(true);
             
          } catch (InnerException ex) {
-            /*
             getMainWindowInterface().showPopupForException(
-            "Erreur lors de l'execution de la commande", ex);
-             */
-             // parent must have already popup, so we just exit
+                    "Erreur lors de l'execution de la commande", ex);
+            // parent must have already popup, so we just exit
             return;
         }
         finally {
@@ -397,8 +407,8 @@ IsisParameter[] data=new IsisParameter[data_from.length];
         GenericTreeObjectNode node= ((GenericTreeObjectNode) getSelectedNode());
         node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("STATUS")).getSelectedItem());
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
-        //getMainWindowInterface().getTreeInterface().notify();
-        close();
+        
+        //close();
     }
 
     /**
