@@ -18,17 +18,19 @@ import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
 import com.bv.isis.console.abs.gui.MainWindowInterface;
 import com.bv.isis.console.abs.processor.ProcessorInterface;
+import com.bv.isis.console.com.ServiceSessionProxy;
+import com.bv.isis.console.common.IndexedList;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.processor.ProcessorFrame;
-import java.util.Enumeration;
+import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
-import org.jfree.text.TextBox;
 
 public class IsipProcessor extends ProcessorFrame {
 
@@ -94,6 +96,19 @@ public class IsipProcessor extends ProcessorFrame {
 		display();
 	}
 
+
+    /**
+     * Methode makeFormPanel deleguant la génération du JPanel à une classe
+     * externe
+     *
+     * @return le JPanel central à inserer
+     */
+    protected JPanel makeFormPanel2()
+    {
+        return new IsipPanel();
+    }
+
+
     /**
 	* Cette méthode est appelée par le constructeur de la classe afin de
 	* construire le JPanel contenant les champs.
@@ -101,6 +116,7 @@ public class IsipProcessor extends ProcessorFrame {
     * @return JPanel a inserer dans la JFrame
     */
     protected JPanel makeFormPanel()
+            throws InnerException
     {
         JPanel form_panel = new JPanel();
         JComponent form_value;
@@ -139,11 +155,17 @@ public class IsipProcessor extends ProcessorFrame {
                     form_value = new JLabel();
                     
                 }
-                else
+                else if(formType.equals("Edit"))
                 {
                     form_value = new JTextField("###");
                 }
-                
+                else if(formType.equals("List"))
+                {
+                    form_value = new JComboBox(getStatusList());
+                }
+                else
+                    throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
+
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
                 constraintValue.gridy = position;
@@ -215,7 +237,7 @@ public class IsipProcessor extends ProcessorFrame {
 	* Cette méthode est appelée par le constructeur de la classe afin de
 	* construire la boîte de dialogue d'administration.
     */
-	protected void makePanel()
+	protected void makePanel() throws InnerException
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"IsipProcessor", "makePanel");
@@ -228,7 +250,7 @@ public class IsipProcessor extends ProcessorFrame {
 		// On place ce panneau dans la zone sud
 		getContentPane().add(button_panel, BorderLayout.SOUTH);
 		// On redimensionne la fenêtre
-		setSize(800, 800);
+		setSize(400, 400);
 
         populateFormPanel();
 
@@ -247,6 +269,8 @@ public class IsipProcessor extends ProcessorFrame {
                     ((JTextField) textBox).setText(data[i].value);
                 } else if (textBox instanceof JLabel) {
                     ((JLabel) textBox).setText(data[i].value);
+                } else if (textBox instanceof JComboBox) {
+                    ((JComboBox)textBox).setSelectedItem(data[i].value);
                 }
             }
         }
@@ -260,8 +284,32 @@ public class IsipProcessor extends ProcessorFrame {
     }
 
     /**
+     * Interroge la table STATUS et recupère les differents status
+     *
+     * @return Liste de Status
+     */
+    private String[] getStatusList() throws InnerException
+    {
+        // On recupere l'objet ServiceSession
+        GenericTreeObjectNode selectedNode = (GenericTreeObjectNode) getSelectedNode();
+        ServiceSessionInterface service_session = selectedNode.getServiceSession();
+        IndexedList context = selectedNode.getContext(true);
+
+        // On recupere le Proxy associé
+        ServiceSessionProxy session_proxy = new ServiceSessionProxy(service_session);
+        // On va chercher les informations dans la table FORM_CONFIG
+        String[] result = session_proxy.getSelectResult("ETAT", new String[] {"Name"}, "", "", context);
+
+        //Quirk! suppression entete+ajout etat ""
+        result[0]="";
+        
+        return result;
+    }
+
+
+    /**
 	* Cet attribut maintient une référence paramétrée sur un objet
-	* DialogObject correspondant à une zone de saisie pour une colonne. Le
+	* JComponent correspondant à une zone de saisie pour une colonne. Le
 	* paramétrage correspond au nom de la colonne.
 	* Cet référence paramétrée est implémentée sous la forme d'une table de
 	* hash.

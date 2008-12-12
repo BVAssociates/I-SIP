@@ -49,8 +49,7 @@ public class IsipFormConfig
         // On recupere le Proxy associé
         ServiceSessionProxy session_proxy = new ServiceSessionProxy(service_session);
         // On va chercher les informations dans la table FORM_CONFIG
-        String[] columns = {""};
-        String[] result = session_proxy.getSelectResult(tableName, columns, "", "", context);
+        String[] result = session_proxy.getSelectResult(tableName, new String[] {""}, "", "", context);
 
         // On calcule la definition à partir du Select
         IsisTableDefinition form_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, tableName);
