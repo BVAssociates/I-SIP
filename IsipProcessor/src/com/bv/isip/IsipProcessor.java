@@ -39,6 +39,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 public class IsipProcessor extends ProcessorFrame {
@@ -147,6 +148,16 @@ public class IsipProcessor extends ProcessorFrame {
                 //On créé le composant, mais il ne sera pas ajouter au JPanel
                 form_value = new JLabel(formLabel);
 
+            } else if (formType.equals("Separator")) {
+                form_value = new JSeparator();
+                //on increment le compteur de position
+                position++;
+                GridBagConstraints constraint = new GridBagConstraints();
+                constraint.gridx = 0;
+                constraint.gridy = position;
+                constraint.gridwidth = 2;
+                constraint.fill = GridBagConstraints.HORIZONTAL;
+                form_panel.add(form_value,constraint);
             } else {
 
 
@@ -176,8 +187,7 @@ public class IsipProcessor extends ProcessorFrame {
                 else if(formType.equals("List"))
                 {
                     form_value = new JComboBox(getStatusList());
-                }
-                else
+                } else
                     throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
 
                 GridBagConstraints constraintValue = new GridBagConstraints();
