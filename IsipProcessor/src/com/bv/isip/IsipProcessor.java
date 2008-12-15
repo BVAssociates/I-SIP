@@ -100,7 +100,7 @@ public class IsipProcessor extends ProcessorFrame {
     	super.run(windowInterface, menuItem, parameters, preprocessing, postprocessing, selectedNode);
 
 
-        _FormConfiguration = new IsipFormConfig((GenericTreeObjectNode)selectedNode,"FORM_CONFIG");
+        _FormConfiguration = new IsipFormConfig((GenericTreeObjectNode)selectedNode);
         
 		setTitle(menuItem.getText());
 		makePanel();
@@ -115,12 +115,10 @@ public class IsipProcessor extends ProcessorFrame {
      *
      * @return le JPanel central à inserer
      */
-    /*
      protected JPanel makeFormPanel2()
     {
     return new IsipPanel();
     }
-     */
 
 
     /**
@@ -231,7 +229,7 @@ public class IsipProcessor extends ProcessorFrame {
 		GridBagConstraints constraints =
 			new GridBagConstraints(1, 0, 1, 1, 100, 100,
 			GridBagConstraints.CENTER, GridBagConstraints.NONE,
-			new Insets(3, 0, 3, 0), 0, 0);
+			new Insets(10, 10, 10, 10), 0, 0);
 		JPanel button_panel = new JPanel(layout);
 		layout.setConstraints(validate_button, constraints);
 		button_panel.add(validate_button);
@@ -256,7 +254,7 @@ public class IsipProcessor extends ProcessorFrame {
 
         // Maintenant, on va créer le bouton Fermer
 		JButton cancel_button =
-			new JButton("Valeurs initiales");
+			new JButton("Reset");
 		// On ajoute le callback sur le bouton
 		cancel_button.addActionListener(new ActionListener()
 		{
@@ -393,7 +391,7 @@ public class IsipProcessor extends ProcessorFrame {
         String tableName=node.getTableName();
         StringBuffer command = new StringBuffer();
 
-        command.append(replaceCommand+" into "+tableName +" values ");
+        command.append(replaceCommand+" into "+tableName +" values \"");
 
         boolean first=true;
         for (int i = 0; i < data.length; i++) {
@@ -405,6 +403,8 @@ public class IsipProcessor extends ProcessorFrame {
             first = false;
             command.append(data[i].value);
         }
+        command.append("\"");
+
         try {
             execute(command.toString());
             //on recupere à nouveau les données de la table à jour
