@@ -142,14 +142,14 @@ FKEY="[STATUS] on ETAT[Name]"
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 #Item~~Afficher Ligne~expl~~~DisplayTable~IKOS_FIELD_%s~0~~Expand
-Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
-Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
+#Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
+#Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';
 my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
-my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO~0~~Display
+my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_NAME,FIELD_VALUE,COMMENT~0~~Display
 Item~~Editer~expl~~~IsipProcessor~~0~~Configure';
 
 my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
