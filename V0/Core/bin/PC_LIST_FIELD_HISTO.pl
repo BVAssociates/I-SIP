@@ -101,7 +101,7 @@ $table_histo->query_field($ikos_sip->get_histo_field());
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
 while (my @line=$table_histo->fetch_row_array() ) {
-	print join(',',@line)."\n";
+	print join('@',@line)."\n";
 }
 
 
