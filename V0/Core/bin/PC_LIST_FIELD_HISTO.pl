@@ -110,7 +110,7 @@ while (my @line=$table_histo->fetch_row_array() ) {
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_HISTO - Liste les champs d'une table dans un environnement
+PC_LIST_FIELD_HISTO - Liste l'historique d'un champs d'une table dans un environnement
 
 =head1 SYNOPSIS
 
@@ -118,7 +118,7 @@ PC_LIST_FIELD_HISTO - Liste les champs d'une table dans un environnement
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Liste l'historique d'un champs d'une table dans un environnement
 
 =head2 ENVIRONNEMENT
 
