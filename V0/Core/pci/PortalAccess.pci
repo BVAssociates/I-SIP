@@ -9,3 +9,5 @@ Item~Configuration SIP~Administrer Responsablités~adm~~~Administrate~RESPONSABLE
 Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
 Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand
 
+
+Item~Developpement~Affiche Processor~adm~~~IsipProcessor~TYPE~0~~Expand
