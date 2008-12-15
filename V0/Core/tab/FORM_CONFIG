@@ -1,0 +1,18 @@
+# Common configuration Table for IsipSaisie
+#
+# FORM_FIELD,FORM_LABEL,FORM_TYPE
+
+ID,Identifiant unique,Invisible
+TABLE_NAME,Table en cours,Label
+TABLE_KEY,Ligne en cours,Label
+TYPE,Type de champ,Label
+SEP1,,Separator
+FIELD_NAME,Nom du champ,Label
+FIELD_VALUE,Valeur courante,Label
+SEP2,,Separator
+DATE_HISTO,Date Collecte,Label
+DATE_UPDATE,Date commentaire,Label
+USER_UPDATE,User commentaire,Label
+#STATUS,field_%[STATUS],Icon
+STATUS,Etat changement,List
+COMMENT,Commentaire,Edit
