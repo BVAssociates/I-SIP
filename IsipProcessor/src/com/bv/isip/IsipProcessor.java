@@ -28,6 +28,7 @@ import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
 import com.bv.isis.console.node.GenericTreeClassNode;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.console.processor.ProcessorFrame;
 import com.bv.isis.corbacom.IsisNodeLabel;
 import com.bv.isis.corbacom.IsisTableDefinition;
@@ -304,7 +305,7 @@ public class IsipProcessor extends ProcessorFrame {
 		trace_methods.endOfMethod();
 	}
 
-    private void populateFormPanel(boolean refresh)
+    private IsisParameter[] populateFormPanel(boolean refresh)
             throws InnerException
     {
         // Variable qui stockera les valeurs à afficher
@@ -347,12 +348,13 @@ public class IsipProcessor extends ProcessorFrame {
         {
             throw new InnerException("Execution Impossible sur ce noeud", "TABLE_KEY non defini", null);
         }
+        return data;
     }
 
     public IsisParameter[] getFormPanelData()
     {
         IsisParameter[] data_from=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
-IsisParameter[] data=new IsisParameter[data_from.length];
+        IsisParameter[] data=new IsisParameter[data_from.length];
  
         char sep=data_from[0].quoteCharacter;
         for(int i=0; i < data_from.length; i++)
@@ -378,12 +380,17 @@ IsisParameter[] data=new IsisParameter[data_from.length];
     public void validateInput()
     {
         IsisParameter[] data;
-        data = getFormPanelData();
-
+        IsisParameter[] data_node;
+        
         //sablier pendant le traitement
         getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, this);
+        
+        GenericTreeObjectNode node = ((GenericTreeObjectNode) getSelectedNode());
 
-        String tableName=((GenericTreeObjectNode)getSelectedNode()).getTableName();
+        data = getFormPanelData();
+        data_node = node.getObjectParameters();
+
+        String tableName=node.getTableName();
         StringBuffer command = new StringBuffer();
 
         command.append(replaceCommand+" into "+tableName +" values ");
@@ -400,8 +407,8 @@ IsisParameter[] data=new IsisParameter[data_from.length];
         }
         try {
             execute(command.toString());
-            //on recupere les données
-            populateFormPanel(true);
+            //on recupere à nouveau les données de la table à jour
+            data=populateFormPanel(true);
             
          } catch (InnerException ex) {
             getMainWindowInterface().showPopupForException(
@@ -413,8 +420,13 @@ IsisParameter[] data=new IsisParameter[data_from.length];
             getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, this);
         }
 
+        //On met les nouvelles données dans le node
+        for (int i=0; i < data.length; i++)
+        {
+            data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
+        }
+
         // changement dynamique de l'icone en cas de changement
-        GenericTreeObjectNode node= ((GenericTreeObjectNode) getSelectedNode());
         node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("STATUS")).getSelectedItem());
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
         
