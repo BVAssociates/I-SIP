@@ -161,7 +161,7 @@ sub get_query()
 	my $self = shift;
 	
 	# return the user's SQL query
-	return $self->{custom_query} if defined $self->{custom_query};
+	return $self->{custom_select_query} if defined $self->{custom_select_query};
 	
 	# construct SQL from "query_*" members
 	my $query;
