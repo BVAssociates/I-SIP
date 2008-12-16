@@ -144,6 +144,33 @@ sub query_sort {
     return @{ $self->{query_sort} };
 }
 
+# quirk to get only key which contains number (or not)
+# arg :
+# true  (arg>0) : return only keys with numbers
+# false (arg=0) : return only keys without numbers
+sub query_condition_has_numeric() {
+	my $self = shift;
+	
+	my $bool_is_numeric=shift;
+	croak "query_condition_has_numeric take 1 arg : boolean" if not defined $bool_is_numeric;
+	
+	if ($bool_is_numeric) {
+		push @{$self->{query_condition}},"(has_numeric(TABLE_KEY))";
+	} else {
+		push @{$self->{query_condition}},"(NOT has_numeric(TABLE_KEY))";
+	}
+	
+}
+
+sub query_condition() {
+	my $self = shift;
+
+    if (@_) { 
+		croak("Unable to set condition on ".ref($self));
+	}
+    return @{ $self->{query_condition} };
+}
+
 # set custom SQL query
 sub custom_select_query()
 {
@@ -163,7 +190,8 @@ sub get_query()
 	
 	my $date_format = "%Y-%m-%d %H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
-	
+	push @select_conditions, $self->query_condition if $self->query_condition;
+		
 	##NO : we must get all field to know the status of whole line!
 	#my @query_conditions;
 	#foreach ($self->query_field()) {

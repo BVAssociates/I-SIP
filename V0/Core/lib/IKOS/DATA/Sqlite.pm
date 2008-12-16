@@ -200,6 +200,16 @@ sub _open_database() {
 	
 	# set the busy timeout
 	$self->_set_timeout();
+	
+	# register external sqlite function
+	$self->_register_external_function();
+}
+
+sub _register_external_function() {
+	my $self = shift;
+	
+	# register has_numeric(field)
+	$self->{database_handle}->func( 'has_numeric', 1, sub { return shift =~ /\d/; }, 'create_function' );
 }
 
 ##################################################

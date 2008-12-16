@@ -155,6 +155,33 @@ sub _open_database() {
 	$self->{database_handle}->{ChopBlanks}=1;
 }
 
+# quirk to get only key which contains number (or not)
+# arg :
+# true  (arg>0) : return only keys with numbers
+# false (arg=0) : return only keys without numbers
+sub query_condition_has_numeric() {
+	my $self = shift;
+	
+	my $bool_is_numeric=shift;
+	croak "query_condition_has_numeric take 1 arg : boolean" if not defined $bool_is_numeric;
+	
+	my @temp_condition;
+	my $joined_temp_condition;
+	
+	if ($bool_is_numeric) {
+		foreach ($self->key()) {
+			push @temp_condition,"($_ != TRANSLATE($_,'+','0123456789'))";
+		}
+		$joined_temp_condition=join(" OR ",@temp_condition)
+	} else {
+		foreach ($self->key()) {
+			push @temp_condition,"($_ = TRANSLATE($_,'+','0123456789'))";
+		}
+		$joined_temp_condition=join(" AND ",@temp_condition)
+	}
+	push @{$self->{query_condition}}, $joined_temp_condition;
+}
+
 # Create an SQL query with specific ODBC TXT syntax
 sub get_query()
 {
