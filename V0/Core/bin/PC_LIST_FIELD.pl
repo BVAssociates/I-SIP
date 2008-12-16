@@ -165,7 +165,9 @@ while (my %info_line = $table_info->fetch_row) {
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
-my $date_condition="AND strftime('%Y-%m-%d %H:%M',DATE_HISTO) <= '$query_date'" if $query_date and $query_date !~ /^%/;
+
+my $date_condition="";
+$date_condition="AND strftime('%Y-%m-%d %H:%M',DATE_HISTO) <= '$query_date'" if $query_date and $query_date !~ /^%/;
 
 my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, STATUS
 	FROM

@@ -170,7 +170,7 @@ foreach ($local_table->dynamic_field()) {
 }
 
 use POSIX qw(strftime);
-$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M:%S", localtime if exists $row{DATE_UPDATE};
+$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime if exists $row{DATE_UPDATE};
 $row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
 $local_table->update_row( %row );
 
