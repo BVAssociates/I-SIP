@@ -320,7 +320,9 @@ while (my %info = $list_table->fetch_row() ) {
 	#specifique
 	my $label_desc=" ";
 	$label_desc= "(%[".$info{LIBELLE_KEY}."])" if $info{LIBELLE_KEY};
-	my $label_string = sprintf($label_item_template,$ikos_data_table,"%[".$info{PRIMARY_KEY}."]",$label_desc);
+	my @pkey_list=split(',',$info{PRIMARY_KEY});
+	map {$_='%['.$_.']'} @pkey_list;
+	my $label_string = sprintf($label_item_template,$ikos_data_table,join(',',@pkey_list),$label_desc);
 	print "Insert $ikos_data_table into ICleLabels\n";
 	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
