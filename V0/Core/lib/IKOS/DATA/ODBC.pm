@@ -18,14 +18,6 @@ sub table_name {
     return $temp_name;
 }
 
-sub key {
-    my $self = shift;
-    if (@_) { 
-		@{ $self->{key} } = @_ ;
-		$self->_debug("New Keys : ", join("|",@{$self->{key}}));
-	}
-    return @{ $self->{key} };
-}
 
 1;
 
@@ -96,6 +88,16 @@ sub open() {
     return $self;
 }
 
+
+sub key {
+    my $self = shift;
+    if (@_) { 
+		@{ $self->{key} } = @_ ;
+		$self->_debug("New Keys : ", join("|",@{$self->{key}}));
+	}
+    return @{ $self->{key} };
+}
+
 # get table name depending the driver
 sub _set_tablename() {
 	my $self = shift;
@@ -112,8 +114,8 @@ sub _set_columns_info() {
 	
 	my $table_info;
 	
-	eval { $table_info=$self->{database_handle}->prepare("SELECT * from syscolumns_".$self->{table_name}) };
-	confess  "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
+	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
+	confess  "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");
 	eval {  $table_info->execute() };
@@ -122,9 +124,9 @@ sub _set_columns_info() {
 	while (my @col=$table_info->fetchrow_array) {
 		#print Dumper @col;
 		push (@{$self->{field}},       $col[0]);
-		my $size ="VARCHAR($col[5])" if $col[4] eq "CHAR";
-		$size="INTEGER($col[5])"     if $col[4] eq "NUMERIC";
-		$size="DECIMAL($col[5])"        if $col[4] eq "DECIMAL";
+		my $size ="VARCHAR($col[5])" if $col[4] =~ /^CHAR\s*/;
+		$size="INTEGER($col[5])"     if $col[4] =~ /^NUMERIC\s*/;
+		$size="DECIMAL($col[5])"        if $col[4] =~ /^DECIMAL\s*/;
 		$self->{size}->{$col[0]}=       $size;
 		
 		#$col[21] =~ s/\s+/_/g;
@@ -147,8 +149,10 @@ sub _open_database() {
 	
 	$self->_debug("Open database DSN : ",$self->{database_name});
 	# use RaiseError exception to stop the script at first error
-	$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=$self->{database_name}","","",{ RaiseError => 1});
+	$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=$self->{database_name}","TGILLON","TGILLON",{ RaiseError => 1});
 
+	# remove trailing spaces in CHAR fields
+	$self->{database_handle}->{ChopBlanks}=1;
 }
 
 # Create an SQL query with specific ODBC TXT syntax
@@ -166,6 +170,24 @@ sub get_query()
 	$query = $query." ORDER BY ".join(', ',$self->query_sort()) if $self->query_sort() != 0;
 	
 	return $query;
+}
+
+sub execute() {
+	my $self = shift;
+	
+	croak("execute() not implemented in ".ref($self));
+}
+
+sub insert_row() {
+	my $self = shift;
+	
+	croak("insert_row() not implemented in ".ref($self));
+}
+
+sub update_row() {
+	my $self = shift;
+	
+	croak("update_row() not implemented in ".ref($self));
 }
 
 1;
