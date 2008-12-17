@@ -58,7 +58,7 @@ Spécifique aux tables du type IKOS_FIELD_*
 
 =head1 AUTHOR
 
-BV Associates, 16/10/2008
+Copyright (c) 2008 BV Associates. Tous droits réservés.
 
 =cut
 

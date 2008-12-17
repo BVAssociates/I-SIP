@@ -163,3 +163,9 @@ ITools::Table::Legacy - class to use an ITools Table with the standard ITools Ex
 =head1 DESCRIPTION
 
 An Itools Table...
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

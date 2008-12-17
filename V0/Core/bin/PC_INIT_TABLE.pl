@@ -44,7 +44,7 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =head1 AUTHOR
 
-BV Associates, 16/10/2008
+Copyright (c) 2008 BV Associates. Tous droits réservés.
 
 =cut
 

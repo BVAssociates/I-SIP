@@ -53,7 +53,7 @@ Liste le champ avec un ID
 
 =head1 AUTHOR
 
-BV Associates, 16/10/2008
+Copyright (c) 2008 BV Associates. Tous droits réservés.
 
 =cut
 

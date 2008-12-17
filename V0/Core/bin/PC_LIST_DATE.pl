@@ -45,7 +45,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 AUTHOR
 
-BV Associates, 07/11/2008
+Copyright (c) 2008 BV Associates. Tous droits réservés.
 
 =cut
 

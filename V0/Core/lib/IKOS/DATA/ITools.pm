@@ -60,3 +60,9 @@ sub open (){
 =head1 DESCRIPTION
 
 See ITools::Table::Abstract for more information on Table object.
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

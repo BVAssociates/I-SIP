@@ -506,3 +506,9 @@ sub _debug() {
 =head1 SYNOPSIS
 
 Like Sqlite, Histo get lines from a table TABLE, using the last entries from TABLE_HISTO.
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

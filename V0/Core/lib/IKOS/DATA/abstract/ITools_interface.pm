@@ -177,3 +177,9 @@ ITools::Table - class to use an ITools Table
 =head1 DESCRIPTION
 
 An Itools Table...
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

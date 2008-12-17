@@ -141,3 +141,9 @@ sub get_new_field() {
 =head1 SYNOPSIS
 
 Class to store diff between 2 tables.
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

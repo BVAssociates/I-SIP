@@ -222,3 +222,9 @@ sub update_row() {
 
 1;
 
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut
+

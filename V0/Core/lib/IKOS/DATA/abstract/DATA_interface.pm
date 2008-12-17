@@ -831,4 +831,10 @@ The class closes the database after the last line of query is retrieved.
 The class closes the database with the "finish()" method.
 
 =back
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut
  

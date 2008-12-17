@@ -276,3 +276,9 @@ ITools::Define - class to use an ITools Definition file
 =head1 DESCRIPTION
 
 An Itools Definition...
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

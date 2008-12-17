@@ -243,4 +243,8 @@ sub _register_external_function() {
   * The class closes the database with the "finish()" method.
  
  
- 
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

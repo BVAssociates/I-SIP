@@ -5,6 +5,56 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+#  Documentation
+###########################################################
+=head1 NAME
+
+PC_LIST_FIELD_HISTO - Liste l'historique d'un champs d'une table dans un environnement
+
+=head1 SYNOPSIS
+
+ PC_LIST_FIELD_HISTO.pl environnement table champ
+ 
+=head1 DESCRIPTION
+
+Liste l'historique d'un champs d'une table dans un environnement
+
+=head2 ENVIRONNEMENT
+
+=over 4
+
+=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
+
+=head2 OPTIONS
+
+=over 4
+
+=item -h : Affiche l'aide en ligne
+
+=item -v : Mode verbeux
+
+=back
+
+=head2 ARGUMENTS 
+
+=over 4
+
+=item * environnement à utiliser
+
+=item * nom de la table a décrire
+
+=item * nom du champ
+
+=back
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut
+
 #  Fonctions
 ###########################################################
 
@@ -106,52 +156,3 @@ while (my @line=$table_histo->fetch_row_array() ) {
 
 
 
-#  Documentation
-###########################################################
-=head1 NAME
-
-PC_LIST_FIELD_HISTO - Liste l'historique d'un champs d'une table dans un environnement
-
-=head1 SYNOPSIS
-
- PC_LIST_FIELD_HISTO.pl environnement table champ
- 
-=head1 DESCRIPTION
-
-Liste l'historique d'un champs d'une table dans un environnement
-
-=head2 ENVIRONNEMENT
-
-=over 4
-
-=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
-
-=back
-
-=head2 OPTIONS
-
-=over 4
-
-=item -h : Affiche l'aide en ligne
-
-=item -v : Mode verbeux
-
-=back
-
-=head2 ARGUMENTS 
-
-=over 4
-
-=item * environnement à utiliser
-
-=item * nom de la table a décrire
-
-=item * nom du champ
-
-=back
-
-=head2 AUTHOR
-
-BV Associates, 16/10/2008
-
-=cut

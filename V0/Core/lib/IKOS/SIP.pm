@@ -295,3 +295,9 @@ sub SQL_drop() {
  IKOS::SIP - Class to access data from IKOS SIP 
 
 =head1 SYNOPSIS
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut
