@@ -1,8 +1,11 @@
 package DATA_interface;
 
-use Carp qw(carp cluck confess croak );
+# code import
 use strict;
+use Carp qw(carp cluck confess croak );
+use Scalar::Util;
 
+# project import
 use IKOS::DATA::TableDiff;
 
 ##################################################
@@ -640,52 +643,64 @@ sub compare_from() {
 	return $diff_object;
 }
 
+# apply the data in a TableDiff oject in the table
 sub update_from() {
 	my $self = shift;
 	
-	my $table = shift;
+	my $diff_object = shift;
+	croak "update_from take 1 arg : DiffTable".ref($diff_object) if ref($diff_object) ne "TableDiff";
 	
-	my $differences = $self->compare_from($table);
-	
+	my $request_number=0;
 	$self->begin_transaction();
 	
 	# insert new lines
-	foreach my $key_new (keys %{ $self->{diff_new} } ) {
-		$self->insert_row(%{ $self->{diff_new}{$key_new} });
+	my %key_new_hash=$diff_object->get_new();
+	foreach my $key_new (keys %key_new_hash ) {
+		$self->insert_row( %{ $key_new_hash{$key_new} } );
+		$request_number++;
 	}
+	undef %key_new_hash;
 	
 	# delete removed lines
-	foreach my $key_delete (keys %{ $self->{diff_delete} }) {
+	my %key_delete_hash=$diff_object->get_delete();
+	foreach my $key_delete (keys %key_delete_hash) {
 		#$self->delete_row(%{ $self->{diff_delete}{$key_delete} });
+		#$request_number++;
 	}
+	undef %key_delete_hash;
 	
 	# add new field
-	foreach my $new_field (@{ $self->{diff_new_field} }) {
+	my @key_new_field_hash=$diff_object->get_new_field();
+	foreach my $new_field (@key_new_field_hash) {
 		$self->add_field($new_field);
+		$request_number++;
 	}
+	undef @key_new_field_hash;
 	
 	# update modified lines
 	my @table_key=sort $self->key();
-	foreach my $key_update (keys %{ $self->{diff_update} } ) {
+	my %key_update_hash=$diff_object->get_update();
+	foreach my $key_update (keys %key_update_hash ) {
 	
 		#Check new fields
-		my @update_field=keys %{ $self->{diff_update}{$key_update} };
+		my @update_field=keys %{ $key_update_hash{$key_update} };
 			
 		# get tables keys
 		my @table_key_value=split(/,/,$key_update);
 		
-		# add tables keys to rows needed for update
-		# update_row need the keys to be defined
+		# update_row() need the keys to be defined
+		# -> add tables keys to rows needed for update
 		foreach (@table_key) {
-			$self->{diff_update}{$key_update}{$_} = shift @table_key_value;
+			$key_update_hash{$key_update}{$_} = shift @table_key_value;
 		}
 		
-		$self->update_row(%{ $self->{diff_update}{$key_update} });
+		$self->update_row(%{ $key_update_hash{$key_update} });
+		$request_number++;
 	}
 	$self->commit_transaction();
-	$self->_info("Les changements ont été appliqués");
+	$self->_info("Les changements ont été appliqués ($request_number)");
 	
-	return $differences;
+	return $request_number;
 }
 
 ##############################################
