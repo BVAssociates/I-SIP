@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::More tests => 54;
+use Test::More tests => 50;
 use Data::Dumper;
 
 use strict;
@@ -14,15 +14,15 @@ use IKOS::DATA::Sqlite;
 
 # Open
 ############
-my $table_sqlite = Sqlite->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\_Services\test\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 1000});
+my $table_sqlite = Sqlite->open('c:\program files\BV Associates\I-SIS V2.0.2\Portal\ICles\ISIP\_Services\tab\IKOS_PROD_PROTYPP.sqlite',"PROTYPP_HISTO", { debug => 0, timeout => 1000});
 
 # Table infos
 ############
 ok(defined($table_sqlite),			'Sqlite->open() is defined');
 is($table_sqlite->field, $table_sqlite->query_field,'Sqlite->field() Sqlite->and query_field() are identical');
-is(join('@@',$table_sqlite->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_field()');
-is(join('@@',$table_sqlite->query_sort('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_sort()');
-is(join('@@',$table_sqlite->query_condition("AANOSQCPST < 10")), "AANOSQCPST < 10", 'Sqlite->query_condition()');
+is(join('@@',$table_sqlite->query_field('FIELD_NAME','FIELD_VALUE')), 'FIELD_NAME@@FIELD_VALUE', 'Sqlite->query_field()');
+is(join('@@',$table_sqlite->query_sort('TABLE_KEY','STATUS')), 'TABLE_KEY@@STATUS', 'Sqlite->query_sort()');
+is(join('@@',$table_sqlite->query_condition("STATUS is NULL")), "STATUS is NULL", 'Sqlite->query_condition()');
 
 # Table data Select
 ############
@@ -31,7 +31,7 @@ ok(! $@, 'Sqlite->fetch_row_array()');
 
 ok($table_sqlite->finish, 'Sqlite->finish()');
 is($table_sqlite->query_condition(undef), 0, 'Sqlite->query_condition() : reset to undef');
-is(join('@@',$table_sqlite->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'Sqlite->query_field() : redefine to another field');
+is(join('@@',$table_sqlite->query_field('TABLE_KEY','STATUS')), 'TABLE_KEY@@STATUS', 'Sqlite->query_field() : redefine to another field');
 my $sqlite_count=0;
 my @sqlite_last_row;
 while (my @row=$table_sqlite->fetch_row_array()) {
@@ -55,16 +55,16 @@ ok($table_sqlite->finish, 'Sqlite->finish() again');
 
 my $last_id;
 # insert data
-$last_id=$table_sqlite->insert_row( AAPTYCOD => "TEST1", AAPTYLIB=> "TEST2", AANPRCOD=> "TEST3", AAUTILCPST=> "TEST", AADTECPST=> "TEST");
+$last_id=$table_sqlite->insert_row( TABLE_KEY => "TEST1", FIELD_NAME=> "TEST2", STATUS=> "TEST3");
 ok($last_id > 0, 'Sqlite->insert_row()');
 ok($last_id, 'insert_row() return last_id='.$last_id);
 # query inserted data
 is(join('@@',$table_sqlite->query_condition("ROWID = $last_id")), "ROWID = $last_id", 'Sqlite->query_condition()');
 my @last_inserted=$table_sqlite->fetch_row_array();
 $table_sqlite->_debug("LINE=",join(',',@last_inserted));
-is(join('@@',@last_inserted), 'TEST1@@TEST2', 'Sqlite->fetch_row_array() return last inserted data');
+is(join('@@',@last_inserted), 'TEST1@@TEST3', 'Sqlite->fetch_row_array() return last inserted data');
 # delete inserted data
-ok($table_sqlite->execute("DELETE from TEST where ROWID = $last_id;"), 'Sqlite->execute("DELETE ...") on last ROWID');
+ok($table_sqlite->execute("DELETE from PROTYPP_HISTO where ROWID = $last_id;"), 'Sqlite->execute("DELETE ...") on last ROWID');
 is(undef $table_sqlite, undef, 'Destroy object');
 
 
@@ -76,7 +76,7 @@ use IKOS::DATA::Histo;
 
 # Open
 ############
-my $histo_table= Histo->open('c:\program files\BV Associates\I-SIS V2.0.2\Agent\ICles\IKOS\_Services\test\tab\IKOS_TEST_TEST.sqlite',"TEST", { debug => 0, timeout => 10000});
+my $histo_table= Histo->open('c:\program files\BV Associates\I-SIS V2.0.2\Portal\ICles\ISIP\_Services\tab\IKOS_PROD_PROTYPP.sqlite',"PROTYPP", { debug => 0, timeout => 10000});
 ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table TEST");
 # Table infos
 ############
@@ -99,9 +99,10 @@ while (my @row=$histo_table->fetch_row_array()) {
 }
 ok($histo_count, 'Histo->fetch_row_array() : reading all rows as arrays');
 
+# OBSOLETE
 # The More Important Test
-is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
-is(join(',',@histo_last_row), join(',',@sqlite_last_row), "Sqlite and Histo have same last row");
+#is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
+#is(join(',',@histo_last_row), join(',',@sqlite_last_row), "Sqlite and Histo have same last row");
 
 
 # same as above with Hash instead of Array
@@ -112,10 +113,12 @@ while (my %row=$histo_table->fetch_row()) {
 	%histo_last_hash=%row;
 }
 is($histo_count, $histo_count_hash, 'Histo->fetch_row_array() and Histo->fetch_row() return same number of rows');
-is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
+
+#OBSOLETE
+#is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
 
 
-ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
+#ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
 
 ##TODO
 # $table_sqlite->update(...)
@@ -130,30 +133,30 @@ ok($histo_table->insert_row(%histo_last_hash),"Histo->insert_row() work");
 use IKOS::DATA::ODBC;
 
 my $table_odbc;
-$table_odbc = ODBC_TXT->open("IKOS_DEV","ACTCOCP", { debug => 0 });
+$table_odbc = ODBC->open("SCF1_IKGLFIC","ACTCOCP", { debug => 0 });
 
-ok(defined($table_odbc),			'ODBC_TXT->open() is defined');
+ok(defined($table_odbc),'ODBC->open() is defined');
 
 
 # Table infos
 ############
 
-is($table_odbc->field, $table_odbc->query_field,'ODBC_TXT->field() and ODBC_TXT->query_field() are identical');
-is(join('@@',$table_odbc->query_field('AIPTYCOD','AICDDECORG')), 'AIPTYCOD@@AICDDECORG', 'ODBC_TXT->query_field()');
-is(join('@@',$table_odbc->query_sort('AIPTYCOD','AICDETTYP')), 'AIPTYCOD@@AICDETTYP', 'ODBC_TXT->query_sort()');
-is(join('@@',$table_odbc->query_condition("AIUTILCPST = 'T281'")), "AIUTILCPST = 'T281'", 'ODBC_TXT->query_condition()');
+is($table_odbc->field, $table_odbc->query_field,'ODBC->field() and ODBC->query_field() are identical');
+is(join('@@',$table_odbc->query_field('AIPTYCOD','AICDDECORG')), 'AIPTYCOD@@AICDDECORG', 'ODBC->query_field()');
+is(join('@@',$table_odbc->query_sort('AIPTYCOD','AICDETTYP')), 'AIPTYCOD@@AICDETTYP', 'ODBC->query_sort()');
+is(join('@@',$table_odbc->query_condition("AIUTILCPST = 'T281'")), "AIUTILCPST = 'T281'", 'ODBC->query_condition()');
 
 
 # Table data Select
 ############
 
 eval { $table_odbc->fetch_row_array() };
-ok(! $@, 'ODBC_TXT->fetch_row_array()');
+ok(! $@, 'ODBC->fetch_row_array()');
 
-ok($table_odbc->finish, 'ODBC_TXT->finish()');
+ok($table_odbc->finish, 'ODBC->finish()');
 
 eval { $table_odbc->fetch_row_array()};
-ok(! $@, 'ODBC_TXT->fetch_row_array() after ODBC_TXT->finish()');
+ok(! $@, 'ODBC->fetch_row_array() after ODBC->finish()');
 
 
 ################################################
@@ -170,8 +173,8 @@ ok($test_table->finish(), 'ITools->finish() finish the current request');
 is (join("@@",$test_table->define->describe), 'Pid@@Owner@@Name@@PPid@@Pri@@StartDate@@KernelTime@@UserTime@@SizeKb@@ExecutablePath' , 'ITools->define->describe()');
 is (join("@@",$test_table->query_field("Name","Pid")) , 'Name@@Pid' , 'ITools->query_field()');
 is (join("@@",$test_table->query_sort("Pid","Owner")) , 'Pid@@Owner', 'ITools->query_sort()');
-is (join("@@",$test_table->query_condition('Owner = VOISINS\vb')), 'Owner = VOISINS\vb','ITools->query_condition()');
-is ($test_table->get_query() , 'Select -s Name, Pid FROM ps WHERE Owner = VOISINS\vb ORDER_BY Pid, Owner', 'ITools->get_query()');
+is (join("@@",$test_table->query_condition('Owner = AUTORITE NT\SYSTEM')), 'Owner = AUTORITE NT\SYSTEM','ITools->query_condition()');
+is ($test_table->get_query() , 'Select -s Name, Pid FROM ps WHERE Owner = AUTORITE NT\SYSTEM ORDER_BY Pid, Owner', 'ITools->get_query()');
 
 
 ok(my @process=$test_table->fetch_row_array(), 'ITools->fetch_row_array() fetch one row and stop');
