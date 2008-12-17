@@ -70,7 +70,8 @@ sub add_update() {
 	
 	my $key=shift;
 	my $field=shift;
-	my $data=shift or croak("add_update take 2 arg : \$key,\$field,\$data");
+	my $data=shift;
+	croak("add_update take 2 arg : \$key,\$field,\$data") if not defined $data;
 	
 	$self->{diff_nb} ++;
 	$self->{diff_update}{$key}{$field} = $data;
