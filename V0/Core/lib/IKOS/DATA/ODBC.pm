@@ -2,6 +2,8 @@
 package ODBC_TXT;
 @ISA = ("ODBC");
 
+use Carp qw(carp croak );
+
 # get table name depending the driver
 sub _set_tablename() {
 	my $self = shift;
@@ -18,6 +20,39 @@ sub table_name {
     return $temp_name;
 }
 
+sub _set_columns_info() {
+	my $self = shift;
+	
+	croak("$self->{database_name} need to be opened before execute _set_columns_info") if not defined $self->{database_handle};
+	
+	my $table_info;
+	
+	eval { $table_info=$self->{database_handle}->prepare("SELECT \* from SYSCOLUMNS_".$self->{table_name}) };
+	croak "Error in prepare" if $@;
+	
+	$self->_debug("Get column info for $self->{table_name}");
+	eval {  $table_info->execute() };
+	croak "Error in prepare" if $@;
+	
+	while (my @col=$table_info->fetchrow_array) {
+		#print Dumper @col;
+		push (@{$self->{field}},       $col[0]);
+		my $size ="VARCHAR($col[5])" if $col[4] =~ /^CHAR\s*/;
+		$size="INTEGER($col[5])"     if $col[4] =~ /^NUMERIC\s*/;
+		$size="DECIMAL($col[5])"        if $col[4] =~ /^DECIMAL\s*/;
+		$self->{size}->{$col[0]}=       $size;
+		
+		#$col[21] =~ s/\s+/_/g;
+		$self->{field_txt}->{$col[0]}=       $col[21];
+		
+		push (@{$self->{not_null}},     $col[0]) if $col[7] eq 'Y';
+		push (@{$self->{key}},          $col[0]) if $col[27] eq 'Y';
+	}
+	
+	if (not $self->field() or $self->field() == 1) {
+		croak("Error reading information of table : $self->{table_name}");
+	}
+}
 
 1;
 
@@ -26,16 +61,15 @@ package ODBC;
 require IKOS::DATA::abstract::DBI_interface;
 @ISA = ("DBI_interface");
 
-use Carp qw(carp cluck confess croak );
 use strict;
 
-use Data::Dumper;
+use Carp qw(carp croak );
 
 ##################################################
 ##  constructor  ##
 ##################################################
 
-# open($Define_obj)
+# open
 sub open() {
     my $proto = shift;
     my $class = ref($proto) || $proto;	
@@ -56,6 +90,13 @@ sub open() {
 	############
 	
 	$self->_open_database();
+	
+	# Some features of TXT driver differ from others
+	if ($self->{driver_name} eq 'odbcjt32.dll') {
+		$self=bless($self,'ODBC_TXT');
+	} else {
+		$self=bless($self,$class);
+	}
 
 	############
 	# Get Database's infos
@@ -82,9 +123,13 @@ sub open() {
 	# set defaut for query_field
 	$self->{query_field} = [ $self->field() ];
 	
+	# get data base type by its driver
+	$self->{driver_name}="";
+	
 	# free any LOCK
 	$self->_close_database();
 	
+
     return $self;
 }
 
@@ -115,11 +160,11 @@ sub _set_columns_info() {
 	my $table_info;
 	
 	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
-	confess "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
+	croak "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");
 	eval {  $table_info->execute() };
-	confess "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
+	croak "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
 	
 	while (my @col=$table_info->fetchrow_array) {
 		#print Dumper @col;
@@ -154,8 +199,7 @@ sub _open_database() {
 	# remove trailing spaces in CHAR fields
 	$self->{database_handle}->{ChopBlanks}=1;
 	
-	# not used for now
-	my $driver_name=$self->{database_handle}->func(6, 'GetInfo');
+	$self->{driver_name}=$self->{database_handle}->func(6, 'GetInfo');
 }
 
 # quirk to get only key which contains number (or not)
