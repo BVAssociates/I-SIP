@@ -280,6 +280,8 @@ sub fetch_row() {
 	
 	$self->{end_of_data} = 1 if not %field_line;
 	
+	return () if $self->{end_of_data} and not %return_line;
+	
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
 			$self->_debug("field $_ cannot be null (should be $field_line{TABLE_KEY})");
