@@ -94,6 +94,7 @@ my $bv_severite=0;
 
 use IKOS::SIP;
 use IKOS::DATA::ITools;
+use IKOS::DATA::TableDiff;
 
 use POSIX qw(strftime);
 
@@ -113,9 +114,10 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $current_table=$env_sip->open_ikos_table($table_name, {debug => $debug_level});
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level, timeout => 100000});
 	
-	#$histo_table->compare_exclude("DATE_COLLECTE");
-	#$histo_table->compare_from($current_table),
-	$histo_table->update_from($current_table),
+	#$histo_table->query_condition("DATE_COLLECTE");
+	my $diff_object=$histo_table->compare_from_sql_based($current_table);
+	
+	#$histo_table->update_from($current_table);
 
 }
 

@@ -3,6 +3,7 @@ package DATA_interface;
 use Carp qw(carp cluck confess croak );
 use strict;
 
+use IKOS::DATA::TableDiff;
 
 ##################################################
 ##  constructor  ##
@@ -400,18 +401,26 @@ sub compare_exclude() {
 	return @{ $self->{diff_exclude} }
 }
 
+
+##########################
+# Old compare_from() method based on the sorted Primary Key
+# Problem : different ORDER BY behavior between 2 databases type
+# -> cannot be used on 2 different base
+# -> use new compare_from() instead (need more memory)
+##########################
 # compare a table to $self
 #  $self->{diff_update}{key_value}{field1}="field_value"
 #  $$self->{diff_new}{key_value}{field1}="field_value"
 #  $self->{diff_delete}{key_value}{field1}="field_value"
 # return the number of differences found
-sub compare_from() {
+sub compare_from_sql_based() {
 	my $self=shift;
 	
 	my $table_from = shift;
 	my @key;
-	my $differences=0;
-	$self->reset_compare();
+
+	# store the result in a TableDiff object
+	my $diff_object=TableDiff->new();
 	
 	if ( join(',',sort $self->key()) ne  join(',',sort $table_from->key())) {
 		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table_from->key()));
@@ -465,16 +474,13 @@ sub compare_from() {
 			# something wrong appens !
 			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (intended : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
 			
-			#put whole row
-			%{ $self->{diff_new}{$current_keys} }  =  %row_table1;
-			
 			# remove excluded fields
 			foreach my $field ( $self->compare_exclude ) {
 				delete $self->{diff_new}{$current_keys}{$field};
 			}
 			
-			$differences += keys %row_table1;
-			next;
+			#put whole row
+			$diff_object->add_new($current_keys,{ %row_table1});
 		}
 		# this key are new in the table
 		elsif ($new_keys > 0) {
@@ -483,15 +489,13 @@ sub compare_from() {
 			
 			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (intended : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
 			
-			%{ $self->{diff_delete}{$current_keys} }  =  %row_table2;
-			
 			# remove excluded fields
 			foreach my $field ($self->compare_exclude) {
 				delete $self->{diff_delete}{$current_keys}{$field};
 			}
 			
-			$differences += keys %row_table2;
-			next;
+			$diff_object->add_delete($current_keys,{ %row_table2});
+			
 		}
 		# this key exist in the 2 tables
 		# find the differences
@@ -509,47 +513,34 @@ sub compare_from() {
 				if (not exists $row_table2{$field1}) {
 					$self->_info("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					push (@{$self->{diff_new_field}},$field1) if not grep(/^$field1$/,@{$self->{diff_new_field}});
-					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
-					$differences++;
+					$diff_object->add_update($current_keys, $field1, $row_table1{$field1});
+					
 				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
 					$self->_info("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," -> ",$row_table1{$field1} );
-					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
-					$differences++;
+					$diff_object->add_update($current_keys, $field1, $row_table1{$field1});
+					
 				}
 			}
 		}
 	}
 	$self->finish;
 	$table_from->finish;
-
-	# reporting information
 	
-	my $delete_key_nb=grep { $_ > 0 } values %seen_keys;
-	$self->_info("$delete_key_nb row deleted");
-	
-	my $new_key_nb=grep { $_ < 0 } values %seen_keys;
-	$self->_info("$new_key_nb row added");
-
-	$self->_info(scalar @{ $self->{diff_new_field} } ," field added");
-	
-	$self->_info(scalar keys %{ $self->{diff_update} } ," row updated");
-	
-	
-	return $differences;
+	return $diff_object;
 }
 
-# compare a table to $self
-#  $self->{diff_update}{key_value}{field1}="field_value"
-#  $$self->{diff_new}{key_value}{field1}="field_value"
-#  $self->{diff_delete}{key_value}{field1}="field_value"
-# return the number of differences found
-sub compare_from_memory() {
+# compare the table in arg to $self
+#  return a TableDiff object
+# /!\ put the 2 tables in memory
+# use compare_from_sql_based() if table and $self use the same driver/database
+sub compare_from() {
 	my $self=shift;
 	
 	my $table_from = shift;
 	my @key;
-	my $differences=0;
-	$self->reset_compare();
+
+	# store the result in a TableDiff object
+	my $diff_object=TableDiff->new();
 	
 	if ( join(',',sort $self->key()) ne  join(',',sort $table_from->key())) {
 		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table_from->key()));
@@ -559,24 +550,25 @@ sub compare_from_memory() {
 		croak("The 2 tables have not the same name : ".$self->table_name()." => ".$table_from->table_name());
 	}
 	
-	
-	if ( join(',',sort $self->field()) ne  join(',',sort $table_from->field())) {
-		#croak("The 2 tables have not the same fields");
-	}
+	#if ( join(',',sort $self->field()) ne  join(',',sort $table_from->field())) {
+	#	croak("The 2 tables have not the same fields");
+	#}
 	
 	@key=$self->key();
 	$self->query_sort(@key);
 	$table_from->query_sort(@key);
 	
+	# Slurp the tables in memory
 	my %in_memory_table1;
 	my %in_memory_table2;
 	my %row;
-	while (%row=$self->fetch_row()) {
+	while (%row=$table_from->fetch_row()) {
 		$in_memory_table1{join(',',@row{@key})}={ %row };
 	}
-	while (%row=$table_from->fetch_row()) {
+	while (%row=$self->fetch_row()) {
 		$in_memory_table2{join(',',@row{@key})}={ %row };
 	}
+	undef %row;
 	
 
 	#first pass to get primary keys which are on one table
@@ -587,10 +579,10 @@ sub compare_from_memory() {
 	my %seen_keys;
 	
 	foreach (keys %in_memory_table1) {
-		$seen_keys{$_}++;
+		$seen_keys{$_}--;
 	}
 	foreach (keys %in_memory_table2) {
-		$seen_keys{$_}--;
+		$seen_keys{$_}++;
 	}
 
 	# main loop
@@ -600,30 +592,26 @@ sub compare_from_memory() {
 		if ($new_keys < 0) {
 			$self->_info("Found new line : Key (".$current_keys.")");
 			
-			#put whole row
-			$self->{diff_new}{$current_keys} = $in_memory_table1{$current_keys};
-			
 			# remove excluded fields
 			foreach my $field ( $self->compare_exclude ) {
-				delete $self->{diff_new}{$current_keys}{$field};
+				delete $in_memory_table1{$current_keys}{$field};
 			}
 			
-			$differences += keys %in_memory_table1;
-			next;
+			#put whole row
+			$diff_object->add_new($current_keys,$in_memory_table1{$current_keys});
 		}
 		# this key are new in the table
 		elsif ($new_keys > 0) {
 			$self->_info("Found deleted line : Key (".$current_keys.")");
-
-			$self->{diff_delete}{$current_keys} =  $in_memory_table2{$current_keys};
 			
 			# remove excluded fields
 			foreach my $field ($self->compare_exclude) {
 				delete $self->{diff_delete}{$current_keys}{$field};
 			}
-			
-			$differences += keys %in_memory_table2;
-			next;
+
+			#put whole row
+			$diff_object->add_delete($current_keys,$in_memory_table2{$current_keys});
+
 		}
 		# this key exist in the 2 tables
 		# find the differences
@@ -637,32 +625,19 @@ sub compare_from_memory() {
 				
 				if (not exists $row_table2{$field1}) {
 					$self->_info("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
-					push (@{$self->{diff_new_field}},$field1) if not grep(/^$field1$/,@{$self->{diff_new_field}});
-					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
-					$differences++;
+					$diff_object->add_new_field($field1) if not grep(/^$field1$/,@{$self->{diff_new_field}});
+					$diff_object->add_update($current_keys,$field1,$row_table1{$field1});
+					
 				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
 					$self->_info("Found update : Key (".$current_keys.") $field1 : '",$row_table2{$field1},"' -> '",$row_table1{$field1} ,"'");
-					$self->{diff_update}{$current_keys}{$field1}  =  $row_table1{$field1};
-					$differences++;
+					$diff_object->add_update($current_keys,$field1,$row_table1{$field1});
+					
 				}
 			}
 		}
 	}
 	
-	# reporting information
-	
-	my $delete_key_nb=grep { $_ > 0 } values %seen_keys;
-	$self->_info("$delete_key_nb row deleted");
-	
-	my $new_key_nb=grep { $_ < 0 } values %seen_keys;
-	$self->_info("$new_key_nb row added");
-
-	$self->_info(scalar @{ $self->{diff_new_field} } ,"field added");
-	
-	$self->_info(scalar keys %{ $self->{diff_update} } ,"row updated");
-	
-	
-	return $differences;
+	return $diff_object;
 }
 
 sub update_from() {
