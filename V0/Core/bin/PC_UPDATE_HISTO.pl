@@ -29,6 +29,8 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head2 -v : Mode verbeux
 
+=head2 -n : Mode simulation
+
 =head1 ARGUMENTS
 
 =head2 * environnement à utiliser
@@ -70,7 +72,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvn', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -116,8 +118,8 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	
 	#$histo_table->query_condition("DATE_COLLECTE");
 	my $diff_object=$histo_table->compare_from($current_table);
-	
-	$histo_table->update_from($diff_object);
+
+	$histo_table->update_from($diff_object) if not exists $opts{n};
 
 }
 

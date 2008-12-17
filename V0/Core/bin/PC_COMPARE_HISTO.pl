@@ -13,7 +13,7 @@ PC_COMPARE_HISTO - les champs les champs d'une table Historique depuis la référe
 
 =head1 SYNOPSIS
 
- PC_COMPARE_HISTO.pl environnement tablename
+ PC_COMPARE_HISTO.pl [-e environnement_source ] environnement_cible tablename
  
 =head1 DESCRIPTION
 
@@ -27,21 +27,33 @@ Compare 2 objets de type DATA_interface et affiche le resultat sous forme de tab
 
 =item DATE_EXPLORE : Date en cours d'exploration
 
+=item ENVRION : Utilise cette valeur pour environnement_source si non spécifié
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
 =back
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over 4
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
+
+=item -v : Mode verbeux
+
+=item -e environnement : environnement source
+
+=back
 
 =head1 ARGUMENTS
 
-=head2 * environnement de destination
+=over 4
 
-=head2 * table a comparer
+=item * environnement de destination
+
+=item * table a comparer
+
+=back
 
 =head1 AUTHOR
 
@@ -78,7 +90,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hve:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -98,7 +110,9 @@ my $environnement_to=shift;
 my $table_name=shift;
 
 #recuperation de l'environnement
-my $environnement_from=$ENV{Environnement} or die "Environnement does not exist in env";
+my $environnement_from=$ENV{Environnement};
+$environnement_from=$opts{e} if exists $opts{e};
+die "Environnement does not exist in env, please use option -e" if not defined $environnement_from;
 my $date_explore=$ENV{DATE_EXPLORE};
 
 #  Corps du script

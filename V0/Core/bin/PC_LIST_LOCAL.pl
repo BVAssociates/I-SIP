@@ -109,7 +109,7 @@ my $table=$sip->open_ikos_table($table_name, {debug => $debug_level });
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
-#$table->query_sort("AECDETTYP");
+$table->query_sort($table->key());
 #$table->custom_select_query("SELECT AECDETTYP, HEX(AECDETTYP),AELBLETTY, AENPRCOD, AECDETENPC, AECDETPAR, AEDELAIREA, AEDELAIALE, AEDLYFIN, AEDELAIETP, AECDTFNRES, AEINDDELAC, AEINDGSDLA, AEINDETPEX, AEUTILCPST, AEDTECPST, AEHRECPST, AENOSQCPST FROM ETPTYPP ORDER BY AECDETTYP");
 #$table->query_condition("AECDETTYP = TRANSLATE(AECDETTYP,'+','0123456789')");
 
