@@ -24,7 +24,7 @@ sub new() {
 	$self->{diff_update} = {};
 	$self->{diff_new} = {};
 	$self->{diff_delete} = {};
-	$self->{diff_new_field} = [];
+	$self->{diff_new_field} = {};
 	$self->{diff_delete_field} = {};
 	
 	$self->{diff_nb}=0;
@@ -73,7 +73,7 @@ sub add_update() {
 	my $data=shift or croak("add_update take 2 arg : \$key,\$field,\$data");
 	
 	$self->{diff_nb} ++;
-	$self->{diff_update}{$key} = $data;
+	$self->{diff_update}{$key}{$field} = $data;
 }
 
 sub get_update() {
@@ -121,15 +121,14 @@ sub add_new_field() {
 	my $self=shift;
 	
 	my $field=shift;
-	
-	# TODO : a verifier
-	push @{$self->{diff_new_field}}, $field;
+
+	$self->{diff_new_field}->{$field}++;
 }
 
 sub get_new_field() {
 	my $self=shift;
 	
-	return @{ $self->{diff_new_field} };
+	return keys %{$self->{diff_new_field}};
 }
 
 
