@@ -48,11 +48,6 @@ sub open() {
 	$self->{custom_select_query} = undef;
 	
 	# comparison variables
-	$self->{diff_update} = {};
-	$self->{diff_new} = {};
-	$self->{diff_delete} = {};
-	$self->{diff_new_field} = [];
-	#$self->{diff_delete_field} = {};
 	$self->{diff_exclude} = [];
 
 	# other internal members
@@ -545,6 +540,9 @@ sub compare_from() {
 	# store the result in a TableDiff object
 	my $diff_object=TableDiff->new();
 	
+	if (not $self->key()) {
+		croak("No key defined");
+	}
 	if ( join(',',sort $self->key()) ne  join(',',sort $table_from->key())) {
 		croak("The 2 tables have not the same keys : ".join(',',sort $self->key())." => ".join(',',sort $table_from->key()));
 	}

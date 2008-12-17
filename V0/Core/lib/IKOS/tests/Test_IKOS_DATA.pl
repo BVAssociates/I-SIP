@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
-use Test::More tests => 50;
+use Test::More tests => 55;
 use Data::Dumper;
+use Carp;
+$Carp::Verbose=1;
 
 use strict;
 use warnings;
@@ -77,7 +79,7 @@ use IKOS::DATA::Histo;
 # Open
 ############
 my $histo_table= Histo->open('c:\program files\BV Associates\I-SIS V2.0.2\Portal\ICles\ISIP\_Services\tab\IKOS_PROD_PROTYPP.sqlite',"PROTYPP", { debug => 0, timeout => 10000});
-ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table TEST");
+ok($histo_table->key("AAPTYCOD"),"set KEY AAPTYCOD for table");
 # Table infos
 ############
 ok(defined($histo_table), 'Histo->open() is defined');
@@ -114,6 +116,10 @@ while (my %row=$histo_table->fetch_row()) {
 }
 is($histo_count, $histo_count_hash, 'Histo->fetch_row_array() and Histo->fetch_row() return same number of rows');
 
+my $histo_diff;
+ok($histo_diff=$histo_table->compare_from($histo_table),'Histo->compare_from(myself) return ok');
+is($histo_diff->count,0,'Histo->compare_from(myself) return no difference');
+
 #OBSOLETE
 #is($histo_count, $sqlite_count, "Sqlite and Histo have the same rows number");
 
@@ -133,18 +139,18 @@ is($histo_count, $histo_count_hash, 'Histo->fetch_row_array() and Histo->fetch_r
 use IKOS::DATA::ODBC;
 
 my $table_odbc;
-$table_odbc = ODBC->open("SCF1_IKGLFIC","ACTCOCP", { debug => 0 });
+$table_odbc = ODBC->open("SCF1_IKGLFIC","PROTYPP", { debug => 0 });
 
 ok(defined($table_odbc),'ODBC->open() is defined');
-
+is(join('@@',$table_odbc->key($histo_table->key())), join('@@',$histo_table->key()), 'ODBC->key()');
 
 # Table infos
 ############
 
 is($table_odbc->field, $table_odbc->query_field,'ODBC->field() and ODBC->query_field() are identical');
-is(join('@@',$table_odbc->query_field('AIPTYCOD','AICDDECORG')), 'AIPTYCOD@@AICDDECORG', 'ODBC->query_field()');
-is(join('@@',$table_odbc->query_sort('AIPTYCOD','AICDETTYP')), 'AIPTYCOD@@AICDETTYP', 'ODBC->query_sort()');
-is(join('@@',$table_odbc->query_condition("AIUTILCPST = 'T281'")), "AIUTILCPST = 'T281'", 'ODBC->query_condition()');
+is(join('@@',$table_odbc->query_field('AAPTYCOD','AAPTYLIB')), 'AAPTYCOD@@AAPTYLIB', 'ODBC->query_field()');
+is(join('@@',$table_odbc->query_sort('AAPTYLIB','AAPTYCOD')), 'AAPTYLIB@@AAPTYCOD', 'ODBC->query_sort()');
+is(join('@@',$table_odbc->query_condition("AANOSQCPST > 5")), "AANOSQCPST > 5", 'ODBC->query_condition()');
 
 
 # Table data Select
@@ -155,8 +161,16 @@ ok(! $@, 'ODBC->fetch_row_array()');
 
 ok($table_odbc->finish, 'ODBC->finish()');
 
-eval { $table_odbc->fetch_row_array()};
-ok(! $@, 'ODBC->fetch_row_array() after ODBC->finish()');
+is(join('@@',$table_odbc->query_condition(undef)), "", 'ODBC->query_condition()');
+
+
+#eval { $table_odbc->fetch_row_array()};
+#ok(! $@, 'ODBC->fetch_row_array() after ODBC->finish()');
+
+my $odbc_diff;
+$odbc_diff=$histo_table->compare_from($table_odbc);
+ok($odbc_diff,'Histo->compare_from(table_odbc) return something');
+is($odbc_diff->count,0,'Histo->compare_from(table_odbc) return no difference');
 
 
 ################################################

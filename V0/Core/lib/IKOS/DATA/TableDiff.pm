@@ -122,6 +122,7 @@ sub add_new_field() {
 	
 	my $field=shift;
 
+	$self->{diff_nb}++;
 	$self->{diff_new_field}->{$field}++;
 }
 
@@ -131,6 +132,11 @@ sub get_new_field() {
 	return keys %{$self->{diff_new_field}};
 }
 
+sub count() {
+	my $self=shift;
+	
+	return $self->{diff_nb};
+}
 
 1;
 
