@@ -310,7 +310,14 @@ sub fetch_row() {
 	
 	#debug
 	##$return_line{STATUS}=$line_has_new."/".$line_not_valid;
-	return %return_line;
+	
+	# now the status has been computed, we remove unwanted field
+	my %return_query_line;
+	foreach ($self->query_field()) {
+		$return_query_line{$_}=$return_line{$_};
+	}
+	
+	return %return_query_line;
 }
 
 sub fetch_row_array() {
@@ -321,13 +328,9 @@ sub fetch_row_array() {
 	
 	my %hash_line = $self->fetch_row;
 	
+	
 	return () if not %hash_line;
-	
-	foreach my $field_name ($self->query_field() ) {
-		push @return_line, $hash_line{$field_name};
-	}
-	
-	return @return_line;
+	return @hash_line{$self->query_field()};
 }
 
 sub begin_transaction() {
