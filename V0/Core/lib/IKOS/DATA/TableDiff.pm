@@ -104,11 +104,13 @@ sub add_delete() {
 	my $self=shift;
 	
 	my $key=shift;
-	my $data=shift or croak("add_delete take 2 arg : $key,\%data");
-	croak("add_update take 2 arg : $key,\%data") if ref($data) ne "HASH";
+	my $data=shift or croak("add_delete take 2 arg : $key,{\%data}");
+	croak("2nd arg must be a ref on HASH") if ref($data) ne "HASH";
 	
 	$self->{diff_nb} += scalar(keys %{$data});
-	$self->{diff_delete}{$key} = $data;
+	
+	$self->{diff_nb} ++;
+	$self->{diff_delete}{$key} = $data
 }
 
 sub get_delete() {

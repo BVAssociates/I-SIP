@@ -215,6 +215,7 @@ sub get_query()
 	# GROUP BY
 	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2)
 		ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
+		WHERE FIELD_VALUE != '__delete'
 		ORDER BY TABLE_KEY;";
 
 	return $select_histo;
@@ -438,6 +439,8 @@ sub update_row() {
 	my @key_value;
 	foreach (sort $self->key()) {
 		push @key_value, $row{$_};
+		
+		# don't update key
 		delete $row{$_};
 	}
 	
@@ -452,6 +455,62 @@ sub update_row() {
 		);
 		
 		$self->_debug("Insert : $field ");
+	}
+}
+
+# delete a row on a primary key
+# ->in fact, only add "_delete" tag
+sub delete_row() {
+	my $self = shift;
+	
+	my (%row) = @_;
+	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
+	
+	# check if fields exist
+	my @error_field;
+	my @fields=$self->field();
+	foreach my $field (keys %row) {
+		if (not grep(/^$field$/, @fields)) {
+			push @error_field, $field;
+		}
+	}
+	croak join(',',@error_field)." don't exist in fields" if @error_field;
+	
+	# check if primary key is valued
+	croak "primary key not defined for ".$self->table_name if not $self->key;
+	@error_field=();
+	foreach my $key_field ($self->key) {
+		if (not defined $row{$key_field}) {
+			push @error_field, $key_field;
+		}
+	}
+	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
+	
+	
+	use POSIX qw(strftime);
+	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
+	
+	# concat key values
+	my @key_value;
+	foreach (sort $self->key()) {
+		push @key_value, $row{$_};
+	}
+	
+	foreach my $field (keys %row) {
+		
+		my $last_id=$self->{table_histo}->insert_row(
+				"DATE_HISTO" => $date_current,
+				"TABLE_NAME" => $self->table_name,
+				"TABLE_KEY" => join(',',@key_value),
+				"FIELD_NAME" => $field,
+				"FIELD_VALUE" => "__delete"
+		);
+		
+		$self->_debug("Insert deleted : $field ");
 	}
 }
 

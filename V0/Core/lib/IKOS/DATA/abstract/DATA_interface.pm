@@ -363,6 +363,13 @@ sub update_row() {
 	croak("update_row() not implemented in ".ref($self));
 }
 
+# update a row on a primary key
+sub delete_row() {
+	my $self = shift;
+	
+	croak("delete_row() not implemented in ".ref($self));
+}
+
 sub has_fields() {
 	my $self = shift;
 	my @fields_requested = @_;
@@ -662,8 +669,8 @@ sub update_from() {
 	# delete removed lines
 	my %key_delete_hash=$diff_object->get_delete();
 	foreach my $key_delete (keys %key_delete_hash) {
-		#$self->delete_row(%{ $self->{diff_delete}{$key_delete} });
-		#$request_number++;
+		$self->delete_row( %{ $key_delete_hash{$key_delete} } );
+		$request_number++;
 	}
 	undef %key_delete_hash;
 	
