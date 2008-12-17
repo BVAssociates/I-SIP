@@ -115,11 +115,11 @@ sub _set_columns_info() {
 	my $table_info;
 	
 	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
-	confess  "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
+	confess "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");
 	eval {  $table_info->execute() };
-	confess  "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
+	confess "Error in prepare : SELECT * from syscolumns_".$self->{table_name} if $@;
 	
 	while (my @col=$table_info->fetchrow_array) {
 		#print Dumper @col;
@@ -153,6 +153,9 @@ sub _open_database() {
 
 	# remove trailing spaces in CHAR fields
 	$self->{database_handle}->{ChopBlanks}=1;
+	
+	# not used for now
+	my $driver_name=$self->{database_handle}->func(6, 'GetInfo');
 }
 
 # quirk to get only key which contains number (or not)

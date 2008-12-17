@@ -115,9 +115,9 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level, timeout => 100000});
 	
 	#$histo_table->query_condition("DATE_COLLECTE");
-	my $diff_object=$histo_table->compare_from_sql_based($current_table);
+	my $diff_object=$histo_table->compare_from($current_table);
 	
-	#$histo_table->update_from($current_table);
+	$histo_table->update_from($diff_object);
 
 }
 

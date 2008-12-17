@@ -149,7 +149,7 @@ my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
-my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_NAME,FIELD_VALUE,COMMENT~0~~Display
+my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
 Item~~Editer~expl~~~IsipProcessor~~0~~Configure';
 
 my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';

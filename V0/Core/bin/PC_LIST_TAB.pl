@@ -120,9 +120,13 @@ $table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
+# test
+#$table->query_condition_has_numeric(1);
+
 my $count=0;
 while (my %line=$table->fetch_row()) {
 	print join('@',@line{@query_field})."\n";
 	$count++;
 }
 print "$count records found" if $debug_level;
+

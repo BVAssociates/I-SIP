@@ -102,12 +102,19 @@ my $bv_severite=0;
 use IKOS::SIP;
 
 my $sip=SIP->new($environ);
-my $table=$sip->open_ikos_table($table_name, {debug => 0 });
+my $table=$sip->open_ikos_table($table_name, {debug => $debug_level });
 
 #my @query_field=$sip->get_table_field($table_name);
 #$table->query_field(@query_field);
 
 die "unable to open local $table_name in env $environ" if not defined $table;
+
+#$table->query_sort("AECDETTYP");
+#$table->custom_select_query("SELECT AECDETTYP, HEX(AECDETTYP),AELBLETTY, AENPRCOD, AECDETENPC, AECDETPAR, AEDELAIREA, AEDELAIALE, AEDLYFIN, AEDELAIETP, AECDTFNRES, AEINDDELAC, AEINDGSDLA, AEINDETPEX, AEUTILCPST, AEDTECPST, AEHRECPST, AENOSQCPST FROM ETPTYPP ORDER BY AECDETTYP");
+#$table->query_condition("AECDETTYP = TRANSLATE(AECDETTYP,'+','0123456789')");
+
+# test
+#$table->query_condition_has_numeric(1);
 
 while (my @line=$table->fetch_row_array()) {
 	print join(',',@line)."\n";
