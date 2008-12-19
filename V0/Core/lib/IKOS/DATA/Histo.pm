@@ -35,7 +35,7 @@ sub open() {
 	$self->{table_name_histo} = $self->{table_name}."_HISTO";
 	$self->{database_name} = $database_name;
 	
-	## We suppose TABLE and TABLE_HISTO are in the same database  /!\
+	## We suppose TABLE_INFO and TABLE_HISTO are in the same database  /!\
 	$self->{table_histo} = Sqlite->open($self->{database_name}, $self->{table_name_histo}, $options);
 	
 	bless ($self, $class);
