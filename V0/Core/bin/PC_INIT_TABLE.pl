@@ -130,25 +130,29 @@ if ($populate) {
 
 	print "Populate $table_name\_HISTO with data from IKOS table\n";
 	$|=1;
-	$histo_table->begin_transaction();
-	while (my %data_line=$current_table->fetch_row() ) {
-		if (not ($count % $group_commit)) {
-			print "Commit $count lines\n" if $count;
-			$histo_table->commit_transaction() ;
-			$histo_table->begin_transaction();
-			
-		}
-		$histo_table->insert_row(%data_line);
-		$count++
-	}
-	print "$count lines inserted\n";
-	$histo_table->commit_transaction();
+	
+	my $diff=$histo_table->compare_from($current_table);
+	$histo_table->update_from($diff);
+	#$histo_table->begin_transaction();
+	#while (my %data_line=$current_table->fetch_row() ) {
+	#	if (not ($count % $group_commit)) {
+	#		print "Commit $count lines\n" if $count;
+	#		$histo_table->commit_transaction() ;
+	#		$histo_table->begin_transaction();
+	#		
+	#	}
+	#	$histo_table->insert_row(%data_line);
+	#	$count++
+	#}
+	
+	#print "$count lines inserted\n";
+	#$histo_table->commit_transaction();
 	
 	# execute special query on table backend
 	print "Set STATUS to Valide\n";
 	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
 		SET STATUS='".$histo_table->{valid_keyword}."',
-			COMMENT='Initialisation'");
+			COMMENT='Creation'");
 			
 	print "Create indexes\n";
 	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
