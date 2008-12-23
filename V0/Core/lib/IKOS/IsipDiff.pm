@@ -44,7 +44,7 @@ sub new() {
 # simple debug method
 sub _debug() {
 	my $self = shift;
-	print STDERR "DEBUG:HISTO.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
+	print STDERR "DEBUG:DIFF.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
 }
 
 ##################################################

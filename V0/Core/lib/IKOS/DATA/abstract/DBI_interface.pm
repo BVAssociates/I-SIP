@@ -198,6 +198,11 @@ sub insert_row() {
 	
 	my (%row) = @_;
 	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
+	
 	my @error_field;
 	foreach my $not_null_field ($self->not_null) {
 		if (not defined $row{$not_null_field}) {
@@ -237,6 +242,11 @@ sub update_row() {
 	my $self = shift;
 	
 	my (%row) = @_;
+	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
 	
 	# check if fields exist
 	my @error_field;

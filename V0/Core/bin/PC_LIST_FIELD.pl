@@ -110,7 +110,7 @@ $query_date = $query_date ." ". $query_time if $query_date;
 # quirk to test
 #$ENV{Environnement}=$environnement;
 #$ENV{GSL_FILE}=$tablename;
-#$ENV{AAPTYCOD}='HCPC';
+$ENV{AAPTYCOD}='HCPC';
 
 #  Corps du script
 ###########################################################
@@ -157,7 +157,8 @@ my @query_field=$itools_table->field;
 my $type_rules = IsipRules->new($ikos_sip->get_sqlite_path($tablename),$tablename, {debug => $debug_level});
 
 # fetch selected row from histo table
-my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+#my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+my $table_histo = $ikos_sip->open_histo_field_table($tablename, {debug => $debug_level});
 
 my $date_condition="";
 $date_condition="AND strftime('%Y-%m-%d %H:%M',DATE_HISTO) <= '$query_date'" if $query_date and $query_date !~ /^%/;
@@ -178,10 +179,14 @@ my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TA
 	WHERE FIELD_VALUE != '__delete'
 	ORDER BY TABLE_KEY;";
 	
-$table_histo->custom_select_query($select_histo);
+#$table_histo->custom_select_query($select_histo);
+
+$table_histo->query_date($query_date);
+$table_histo->query_key_value($table_key_value);
 
 while (my %line=$table_histo->fetch_row() ) {
-	$line{TEXT}=$type_rules->get_description($line{FIELD_NAME});
-	$line{TYPE}=$type_rules->get_type($line{FIELD_NAME});
+#while (my %line=$table_histo->fetch_field_row($table_key_value) ) {
+	$line{TEXT}=$type_rules->get_field_description($line{FIELD_NAME});
+	$line{TYPE}=$type_rules->get_field_type($line{FIELD_NAME});
 	print join($separator,@line{@query_field})."\n";
 }

@@ -25,14 +25,13 @@ BV Associates, 2008
 ##################################################
 
 
-# open an existing table on a Sqlite Database
+#create a new IsipRules object
 sub new() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
 	my $self={};
 	
 	# member initializations
-	$self->{table_name};
 	$self->{current_type}={};
 	$self->{current_owner}={};
 	$self->{current_description}={};
@@ -44,6 +43,9 @@ sub new() {
 	$self->{type} = ["fonctionnel","technique","manuel","administratif","securite"];
 	$self->{field_status} = ["","aquite","test","valide","inconnu"];
 	$self->{line_status} = ["nouveau","en_cours","valide","supprime"];
+	
+	$self->{line_diff_status} = {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"};
+
 
 	# Amen
 	bless ($self, $class);
@@ -92,7 +94,7 @@ sub debugging {
 # simple debug method
 sub _debug() {
 	my $self = shift;
-	print STDERR "DEBUG:Rules.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
+	print STDERR "DEBUG:RULES.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
 }
 
 ##################################################
@@ -143,7 +145,7 @@ sub load_table_info () {
 ##  methods to compute status from a Histo line ##
 ##################################################
 
-sub get_type() {
+sub get_field_type() {
 	my $self=shift;
 	
 	my $col_name=shift or croak("usage get_type(col_name)");
@@ -151,7 +153,7 @@ sub get_type() {
 	return $self->{current_type}->{$col_name};
 }
 
-sub get_description() {
+sub get_field_description() {
 	my $self=shift;
 	
 	my $col_name=shift or croak("usage get_type(col_name)");

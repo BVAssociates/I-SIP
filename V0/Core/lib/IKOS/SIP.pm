@@ -6,6 +6,7 @@ use IKOS::DATA::ODBC;
 use IKOS::DATA::Sqlite;
 use IKOS::DATA::ITools;
 use IKOS::DATA::Histo;
+use IKOS::DATA::HistoField;
 
 use Carp qw(carp croak );
 
@@ -159,6 +160,19 @@ sub open_local_from_histo_table() {
 	$table_histo->key(split(/,/,$self->get_table_key($table_name),-1));
 
 	return $table_histo
+}
+
+sub open_histo_field_table() {
+	my $self = shift;
+	
+	my $table_name=shift or croak "open_histo_field_table() wait args : 'tablename'";
+	
+	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+	
+	my $table_histo = eval {HistoField->open($self->get_sqlite_path($table_name), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	
+		return $table_histo
 }
 
 sub open_ikos_table() {

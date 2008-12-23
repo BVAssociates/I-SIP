@@ -20,7 +20,7 @@ sub open() {
     my $proto = shift;
     my $class = ref($proto) || $proto;	
 	
-		# mandatory parameter
+	# mandatory parameter
 	if (@_ < 2) {
 		croak ('\'new\' take 2 mandatory argument: ${class}->open("databasename","tablename"[ ,{ timeout => $sec, debug => $num} ])')
 	}
@@ -54,9 +54,11 @@ sub open() {
 	# add query option
 	$self->{query_date} = $options->{date};
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
+	
+	## internal members
+	
 	# instance temp values
 	$self->{temp_next_row} = {};
-	
 	# flag for end of fetch_row
 	$self->{end_of_data} = 0;
 	
@@ -192,7 +194,7 @@ sub get_query()
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, $self->query_condition if $self->query_condition;
 		
-	##NO : we must get all field to know the status of whole line!
+	## TO DISCUSS: we must get all field to know the status of whole line!
 	#my @query_conditions;
 	#foreach ($self->query_field()) {
 	#	push @query_conditions, "FIELD_NAME = '".$_."'";
@@ -221,7 +223,21 @@ sub get_query()
 	return $select_histo;
 }
 
-# get row  by one based on query
+# access field information of one row
+sub fetch_field_row () {
+	my $self = shift;
+	
+	my $key=shift or croak("fetch_field_row take 1 arg : \$key");
+	
+	#TO BE OPTIMIZED (should be called only once)
+	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_NAME","TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","COMMENT");
+	push @{$self->{query_condition}},"TABLE_KEY = '$key'";
+	$self->{table_histo}->custom_select_query ($self->get_query() );
+	
+	return $self->{table_histo}->fetch_row;
+}
+
+# get row one by one based on query
 sub fetch_row() {
 	my $self = shift;
 	
@@ -236,8 +252,8 @@ sub fetch_row() {
 		return ();
 	}
 
+	#TO BE OPTIMIZED (should be called only once)
 	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS");
-	
 	$self->{table_histo}->custom_select_query ($self->get_query() );
 
 	# store the higher field status

@@ -117,6 +117,12 @@ sub size {
 ##  public methods  ##
 ##################################################
 
+# return the IsipDiff that store the diff
+sub get_diff_object() {
+	my $self=shift;
+
+	return $self->{diff};
+}
 
 # can only sort by table primary keys
 sub query_sort {
@@ -464,6 +470,7 @@ sub compare() {
 		}
 	}
 	
+	return $self->{diff};
 }
 
 # apply the data in a IsipDiff oject in the table

@@ -59,7 +59,7 @@ sub open() {
 	# free any LOCK
 	$self->_close_database();
 	
-    return $self;
+    return bless($self,$class);
 }
 
 =begin comment
