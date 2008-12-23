@@ -82,6 +82,9 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
+# quirk! because Windows leave "%VAR%" when VAR empty in args
+map {s/%\w+%//g} @ARGV;
+@ARGV=grep $_,@ARGV;
 
 my %opts;
 getopts('hv', \%opts);
@@ -110,7 +113,7 @@ $query_date = $query_date ." ". $query_time if $query_date;
 # quirk to test
 #$ENV{Environnement}=$environnement;
 #$ENV{GSL_FILE}=$tablename;
-$ENV{AAPTYCOD}='HCPC';
+#$ENV{AAPTYCOD}='HCPC';
 
 #  Corps du script
 ###########################################################
@@ -160,32 +163,10 @@ my $type_rules = IsipRules->new($ikos_sip->get_sqlite_path($tablename),$tablenam
 #my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
 my $table_histo = $ikos_sip->open_histo_field_table($tablename, {debug => $debug_level});
 
-my $date_condition="";
-$date_condition="AND strftime('%Y-%m-%d %H:%M',DATE_HISTO) <= '$query_date'" if $query_date and $query_date !~ /^%/;
-
-my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TABLE_KEY, FIELD_NAME, FIELD_VALUE, COMMENT, STATUS
-	FROM
-	$tablename\_HISTO INNER JOIN (
-		SELECT
-		TABLE_KEY as TABLE_KEY_2,
-		FIELD_NAME as FIELD_NAME_2,
-		max(DATE_HISTO) AS DATE_MAX
-		FROM
-		$tablename\_HISTO
-		WHERE TABLE_KEY = '$table_key_value'
-		$date_condition
-		GROUP BY FIELD_NAME_2, TABLE_KEY_2)
-	ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
-	WHERE FIELD_VALUE != '__delete'
-	ORDER BY TABLE_KEY;";
-	
-#$table_histo->custom_select_query($select_histo);
-
 $table_histo->query_date($query_date);
 $table_histo->query_key_value($table_key_value);
 
 while (my %line=$table_histo->fetch_row() ) {
-#while (my %line=$table_histo->fetch_field_row($table_key_value) ) {
 	$line{TEXT}=$type_rules->get_field_description($line{FIELD_NAME});
 	$line{TYPE}=$type_rules->get_field_type($line{FIELD_NAME});
 	print join($separator,@line{@query_field})."\n";

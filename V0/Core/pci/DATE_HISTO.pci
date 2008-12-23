@@ -10,6 +10,5 @@
 Item~~Explore Table~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 #Item~Comparaison~Comparaison Dernière collecte~expl~~~ExecuteProcedure~PC_COMPARE_HISTO.pl %Environnement% %TABLE_NAME%~0~~Expand
 Item~Comparaison~Explore comparaison Dernière collecte~expl~~ENV_COMPARE=%Environnement%~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-Item~Comparaison~Explore comparaison Dernière collecte~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 Item~Comparaison~Comparaison autre environnement~expl~~EN_COMPARE=getValue("Nom de l'environnement")~ExecuteProcedure~PC_COMPARE_HISTO.pl %EN_COMPARE% %TABLE_NAME%~0~~Expand
 #Item~~Affiche Table~expl~~~DisplayTable~%TABLE_NAME%~0~~Expand

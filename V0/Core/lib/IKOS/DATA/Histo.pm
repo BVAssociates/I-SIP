@@ -223,20 +223,6 @@ sub get_query()
 	return $select_histo;
 }
 
-# access field information of one row
-sub fetch_field_row () {
-	my $self = shift;
-	
-	my $key=shift or croak("fetch_field_row take 1 arg : \$key");
-	
-	#TO BE OPTIMIZED (should be called only once)
-	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_NAME","TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","COMMENT");
-	push @{$self->{query_condition}},"TABLE_KEY = '$key'";
-	$self->{table_histo}->custom_select_query ($self->get_query() );
-	
-	return $self->{table_histo}->fetch_row;
-}
-
 # get row one by one based on query
 sub fetch_row() {
 	my $self = shift;
