@@ -160,6 +160,7 @@ use IKOS::DATA::DataDiff;
 use POSIX qw(strftime);
 
 
+
 my $table_status;
 
 if ($explore_mode eq "compare") {
@@ -176,7 +177,9 @@ if ($explore_mode eq "compare") {
 	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
 
 	$table_status->compare();
-	$table_status->query_field("STATUS",$table_to->field());
+	
+	my @query_field=$env_sip_to->get_table_field($table_name);
+	$table_status->query_field(@query_field);
 
 }
 elsif ($explore_mode eq "explore") {
@@ -185,8 +188,8 @@ elsif ($explore_mode eq "explore") {
 	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_status->query_date($date_explore) if $date_explore;
 	
-	#to test
-	$table_status->query_field("STATUS",$table_status->field());
+	my @query_field=$env_sip->get_table_field($table_name);
+	$table_status->query_field(@query_field);
 }
 
 $table_status->output_separator('@');
