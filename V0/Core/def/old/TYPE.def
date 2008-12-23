@@ -1,4 +1,0 @@
-SEP=";"
-FORMAT="TYPE;Description"
-SIZE="20s;20s"
-KEY="TYPE"

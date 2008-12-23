@@ -1,5 +1,0 @@
-COMMAND="IT_LIST_LEAVES.pl Modules"
-SEP=";"
-FORMAT="MODULE;Description"
-SIZE="20s;20s"
-KEY="MODULE"

@@ -1,6 +1,0 @@
-SEP=";"
-FORMAT="TEST;ETAT1;Description"
-SIZE="20s;20s;20s"
-KEY="TEST"
-
-FKEY="[ETAT1] on TEST1[ICleName]"
