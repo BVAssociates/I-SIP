@@ -46,7 +46,7 @@ sub open() {
 	$self->{table_2}=$data_ref2;
 	
 	# this object will store differences
-	$self->{diff};
+	$self->{diff}={};
 	
 	# static value
 	$self->{current_source_only_key}=[];
@@ -417,7 +417,7 @@ sub compare() {
 		my $new_keys = $seen_keys{$current_keys};
 		# this key does not exist on the target
 		if ($new_keys < 0) {
-			$self->_debug("Line only in source table : Key (".$current_keys.")");
+			$self->_info("Line only in source table : Key (".$current_keys.")");
 			
 			# remove excluded fields
 			foreach my $field ( $self->compare_exclude ) {
@@ -429,7 +429,7 @@ sub compare() {
 		}
 		# this key are new in the table table
 		elsif ($new_keys > 0) {
-			$self->_debug("line only in target table : Key (".$current_keys.")");
+			$self->_info("Line only in target table : Key (".$current_keys.")");
 			
 			# remove excluded fields
 			foreach my $field ($self->compare_exclude) {
@@ -451,12 +451,12 @@ sub compare() {
 				next if grep(/^$field1$/, $self->compare_exclude);
 				
 				if (not exists $row_table2{$field1}) {
-					$self->_debug("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
+					$self->_info("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff}->add_source_only_field2($field1);
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 					
 				} elsif ($row_table2{$field1} ne $row_table1{$field1}) {
-					$self->_debug("Field modified in target table : Key (".$current_keys.") $field1 : '",$row_table1{$field1},"' -> '",$row_table2{$field1} ,"'");
+					$self->_info("Field modified in target table : Key (".$current_keys.") $field1 : '",$row_table1{$field1},"' -> '",$row_table2{$field1} ,"'");
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 					
 				}

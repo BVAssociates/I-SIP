@@ -187,7 +187,7 @@ sub _debug() {
 # simple print method
 sub _info() {
 	my $self = shift;
-	print "INFO:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
+	print STDERR "INFO:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
 }
 
 

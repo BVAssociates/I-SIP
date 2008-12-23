@@ -51,7 +51,7 @@ sub _debug() {
 ##  public methods  ##
 ##################################################
 
-sub report_info() {
+sub report_diff() {
 	my $self=shift;
 	
 	die "TODO";
