@@ -136,10 +136,6 @@ sub get_header() {
 ## Private methods         ##
 ##############################################
 
-sub _debug() {
-	my $self = shift;
-	print STDERR "DEBUG:ITools.".$self->{define}->name().":".join(' ',@_)."\n" if $self->debugging();
-}
 
 1;  # so the require or use succeeds
 

@@ -105,6 +105,7 @@ my $table_name=shift;
 my $bv_severite=0;
 
 use IKOS::SIP;
+use IKOS::DATA::DataDiff;
 
 
 my $env_sip = SIP->new($environnement);
@@ -131,8 +132,9 @@ if ($populate) {
 	print "Populate $table_name\_HISTO with data from IKOS table\n";
 	$|=1;
 	
-	my $diff=$histo_table->compare_from($current_table);
-	$histo_table->update_from($diff);
+	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
+	$diff->compare();
+	$diff->update_compare_target();
 	#$histo_table->begin_transaction();
 	#while (my %data_line=$current_table->fetch_row() ) {
 	#	if (not ($count % $group_commit)) {

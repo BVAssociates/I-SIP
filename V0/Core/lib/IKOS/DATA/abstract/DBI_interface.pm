@@ -70,12 +70,6 @@ sub active_transaction {
 ##  private methods        ##
 ##############################################
 
-# simple debug method
-sub _debug() {
-	my $self = shift;
-	print STDERR "DEBUG:DBI:".$self->{database_name}.'.'.$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
-}
-
 # open if needed
 ## don't open if already opened
 sub _open_database() {
@@ -309,18 +303,6 @@ sub has_fields_old() {
 		push (@field_found, grep {uc($field) eq uc($_)} $self->field) ;
 	}
 	return @field_found;
-}
-
-# use transaction
-# call update_from() from super class
-sub update_from() {
-	my $self = shift;
-	
-	$self->begin_transaction();
-	my $update_number = $self->SUPER::update_from(@_);
-	$self->commit_transaction();
-	
-	return $update_number;
 }
 
 

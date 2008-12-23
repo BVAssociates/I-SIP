@@ -13,7 +13,7 @@ PC_COMPARE_HISTO - les champs les champs d'une table Historique depuis la référe
 
 =head1 SYNOPSIS
 
- PC_COMPARE_HISTO.pl [-e environnement_source ] environnement_cible tablename
+ PC_COMPARE_HISTO.pl [-e environnement_source ] [-d date_source] environnement_cible tablename
  
 =head1 DESCRIPTION
 
@@ -42,6 +42,8 @@ Compare 2 objets de type DATA_interface et affiche le resultat sous forme de tab
 =item -v : Mode verbeux
 
 =item -e environnement : environnement source
+
+=item -d date_source : date source
 
 =back
 
@@ -90,7 +92,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hve:', \%opts);
+getopts('hve:d:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -114,6 +116,7 @@ my $environnement_from=$ENV{Environnement};
 $environnement_from=$opts{e} if exists $opts{e};
 die "Environnement does not exist in env, please use option -e" if not defined $environnement_from;
 my $date_explore=$ENV{DATE_EXPLORE};
+$date_explore=$opts{d} if exists $opts{d};
 
 #  Corps du script
 ###########################################################
@@ -121,6 +124,7 @@ my $bv_severite=0;
 
 use IKOS::SIP;
 use IKOS::DATA::ITools;
+use IKOS::DATA::DataDiff;
 
 use POSIX qw(strftime);
 
@@ -133,6 +137,14 @@ $table_from->query_date($date_explore) if $date_explore;
 
 my $table_to=$env_sip_to->open_local_from_histo_table($table_name, {debug => $debug_level});
 
-$table_from->compare_from($table_to);
+my $table_diff=DataDiff->open($table_from, $table_to, {debug => $debug_level});
+
+$table_diff->compare();
+$table_diff->query_field("STATUS",$table_to->field());
+
+
+while (my @row=$table_diff->fetch_row_array) {
+	print join($table_diff->output_separator,@row)."\n";
+}
 
 sortie($bv_severite);

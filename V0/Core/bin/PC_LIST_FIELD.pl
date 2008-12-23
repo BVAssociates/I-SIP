@@ -116,6 +116,7 @@ $query_date = $query_date ." ". $query_time if $query_date;
 ###########################################################
 use IKOS::DATA::ITools;
 use IKOS::SIP;
+use IKOS::IsipRules;
 
 my $bv_severite=0;
 
@@ -153,15 +154,7 @@ my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$tablename);
 my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
 
-# fetch info from info table
-my $table_info = $ikos_sip->open_local_table($tablename."_INFO", {debug => $debug_level});
-
-my %field_label;
-my %field_type;
-while (my %info_line = $table_info->fetch_row) {
-	$field_label{$info_line{FIELD_NAME}}=$info_line{TEXT};
-	$field_type{$info_line{FIELD_NAME}}=$info_line{TYPE};
-}
+my $type_rules = IsipRules->new($ikos_sip->get_sqlite_path($tablename),$tablename, {debug => $debug_level});
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
@@ -182,12 +175,13 @@ my $select_histo= "SELECT ID,DATE_HISTO, DATE_UPDATE,USER_UPDATE, TABLE_NAME, TA
 		$date_condition
 		GROUP BY FIELD_NAME_2, TABLE_KEY_2)
 	ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
+	WHERE FIELD_VALUE != '__delete'
 	ORDER BY TABLE_KEY;";
 	
 $table_histo->custom_select_query($select_histo);
 
 while (my %line=$table_histo->fetch_row() ) {
-	$line{TEXT}=$field_label{$line{FIELD_NAME}};
-	$line{TYPE}=$field_type{$line{FIELD_NAME}};
+	$line{TEXT}=$type_rules->get_description($line{FIELD_NAME});
+	$line{TYPE}=$type_rules->get_type($line{FIELD_NAME});
 	print join($separator,@line{@query_field})."\n";
 }
