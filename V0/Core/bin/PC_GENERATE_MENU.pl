@@ -120,7 +120,7 @@ my @virtual_field=("STATUS");
 #####  BEGIN TEMPLATES ##### 
 
 my $def_filename="%s/IKOS_TABLE_%s.def";
-my $def_template = 'COMMAND="PC_LIST_TAB.pl %s %s %%DATE_EXPLORE%%"
+my $def_template = 'COMMAND="PC_LIST_STATUS.pl -c %%ENV_COMPARE%%@%%DATE_COMPARE%% %s %s %%DATE_EXPLORE%%"
 SEP="%s"
 FORMAT="%s"
 SIZE="%s"
