@@ -7,7 +7,9 @@ use Carp qw(carp cluck confess croak );
 use strict;
 
 use IKOS::IsipRules;
+use Scalar::Util qw(blessed);
 #use Data::Dumper;
+
 
 ##################################################
 ##  constructor  ##
@@ -66,11 +68,14 @@ sub fetch_row_array() {
 		
 		# put line into hash
 		%temp_line=$self->array_to_hash(@return_line, ("") x scalar @used_dynamic_fields);
-		$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
-		$temp_line{STATUS}=$self->{isip_rules}->get_field_status($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{STATUS};
-		
-		$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
-		
+
+		# now handle rules if defined
+		if (blessed $self->{isip_rules}) {
+			$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
+			$temp_line{STATUS}=$self->{isip_rules}->get_field_status($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{STATUS};
+			
+			$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
+		}
 		# restore query_field
 		$self->query_field(@query_field_save);
 		
