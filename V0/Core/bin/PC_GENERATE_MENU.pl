@@ -130,7 +130,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 ';
 
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
-my $def_field_template = 'COMMAND="PC_LIST_FIELD.pl %s %s %%DATE_EXPLORE%%"
+my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl %s %s %%DATE_EXPLORE%%"
 SEP="@"
 FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@TYPE@TEXT"
 SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
@@ -177,13 +177,6 @@ die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 $ENV{Environnement}=$environnement;
 my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
 
-my @condition;
-push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
-push @condition,"Active = 1";
-# only table with defined primary key
-push @condition,"PRIMARY_KEY != ''";
-$list_table->query_condition(join(' AND ',@condition));
-
 if (not defined $list_table) {
 	die "error opening INFO_TABLE";
 }
@@ -214,6 +207,14 @@ else {
 	print "Cleaning all old labels\n";
 	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
+
+my @condition;
+push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
+push @condition,"Active = 1";
+# only table with defined primary key
+push @condition,"PRIMARY_KEY != ''";
+$list_table->query_condition(join(' AND ',@condition));
+
 while (my %info = $list_table->fetch_row() ) {
 
 	#if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
@@ -249,7 +250,7 @@ while (my %info = $list_table->fetch_row() ) {
 			$ikos_data_field,
 			$ikos_data_size, 
 			$info{PRIMARY_KEY});
-			
+		
 	if ($info{F_KEY} and $info{F_TABLE}) {
 		$string .= sprintf($fkey_def_template,
 			$info{F_KEY},
