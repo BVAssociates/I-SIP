@@ -30,7 +30,7 @@ sub new() {
 	$self->{diff_nb}=0;
 	
 	# Constants
-	$self->{avaiable_status} = {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"};
+	$self->{avaiable_status} = {NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime"};
 
 	bless ($self, $class);
 	

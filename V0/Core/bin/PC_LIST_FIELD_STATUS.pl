@@ -211,7 +211,7 @@ if ($explore_mode eq "compare") {
 	$table_to->query_date($date_explore) if $date_explore;
 	
 	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
-
+	$table_status->query_field($table_to->field,"ICON");
 	$table_status->compare();
 	
 	

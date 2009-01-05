@@ -7,6 +7,7 @@ require IKOS::DATA::abstract::DATA_interface;
 use IKOS::DATA::Sqlite;
 
 use Carp qw(carp cluck confess croak );
+use Scalar::Util qw(blessed);
 use strict;
 
 #use Data::Dumper;
@@ -62,8 +63,8 @@ sub open() {
 	# flag for end of fetch_row
 	$self->{end_of_data} = 0;
 	
-	# context dependant vars
-	$self->{valid_keyword}="Valide";
+	# rules applied to dynamic fields
+	$self->{isip_rules}= {};
 	
     return $self;
 }
@@ -173,6 +174,13 @@ sub query_condition() {
     return @{ $self->{query_condition} };
 }
 
+sub isip_rules() {
+	my $self = shift;
+	
+	if (@_) { $self->{isip_rules} = shift }
+    return $self->{isip_rules} ;
+}
+
 # set custom SQL query
 sub custom_select_query()
 {
@@ -230,6 +238,7 @@ sub fetch_row() {
 	my %field_line;
 	my %return_line;
 	my $current_key;
+	my @field_icon;
 	
 	# if last fetch was end of DATA, return empty line 
 	if ($self->{end_of_data}) {
@@ -243,8 +252,8 @@ sub fetch_row() {
 	$self->{table_histo}->custom_select_query ($self->get_query() );
 
 	# store the higher field status
-	my $line_has_new=0;
-	my $line_not_valid=0;
+	#my $line_has_new=0;
+	#my $line_not_valid=0;
 	
 	# if a temp_next_row exist from previous call, we add the FIELD_VALUE to the return hash
 	if ( %{ $self->{temp_next_row} } ) {
@@ -254,8 +263,9 @@ sub fetch_row() {
 		$return_line{$temp_next_row{FIELD_NAME}}=$temp_next_row{FIELD_VALUE};
 		
 		# line is modified if one field have no status
-		$line_has_new += 1 if not $temp_next_row{STATUS};
-		$line_not_valid += 1 if uc($temp_next_row{STATUS}) ne uc($self->{valid_keyword});
+		push @field_icon,$self->{isip_rules}->get_field_status($temp_next_row{FIELD_NAME},$temp_next_row{STATUS},$temp_next_row{COMMENT}) if blessed $self->{isip_rules};;
+		
+		
 		$current_key=$temp_next_row{TABLE_KEY};
 	}
 	
@@ -277,8 +287,8 @@ sub fetch_row() {
 		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
 		
 		# line is modified if one field have no status
-		$line_has_new += 1 if not $field_line{STATUS};
-		$line_not_valid += 1 if uc($field_line{STATUS}) ne uc($self->{valid_keyword});
+		push @field_icon,$self->{isip_rules}->get_field_status($field_line{FIELD_NAME},$field_line{STATUS},$field_line{COMMENT}) if blessed $self->{isip_rules};
+		
 	}
 	
 	$self->{end_of_data} = 1 if not %field_line;
@@ -301,17 +311,7 @@ sub fetch_row() {
 	# add dynamic field if requested
 	#TODO : use IsipRules
 	if (grep (/^ICON$/, $self->query_field() )) {
-		if ($line_has_new > 0) {
-			$return_line{ICON}='NEW';
-		}
-		elsif ($line_not_valid)
-		{
-			$return_line{ICON}='EDIT';
-		}
-		else
-		{
-			$return_line{ICON}=$self->{valid_keyword};
-		}
+		$return_line{ICON}=$self->{isip_rules}->get_line_status(@field_icon) if blessed $self->{isip_rules};
 	}
 	
 	#debug

@@ -123,25 +123,26 @@ sub enum_type () {
 sub enum_field_status () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
+	#return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu");
 }
 
 sub enum_line_status () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu");
+	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu");
 }
 
 sub enum_field_diff_status() {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
+	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
 }
 
 sub enum_line_diff_status() {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
+	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
 }
 
 ##################################################
@@ -176,6 +177,7 @@ sub get_field_status () {
 	my $status=lc shift;
 	my $comment=shift;
 	
+	$self->_debug("get type of ",$name);
 	my $type=$self->get_field_type($name);
 	
 	my %status_by_name= reverse %{$self->{field_status}};
@@ -213,8 +215,26 @@ sub get_line_status () {
 	my $self=shift;
 	
 	my @status_list=@_;
-	
 	my $return_status;
+	
+	if (grep ($_ eq $self->{field_status}{EMPTY},@status_list)) {
+		$return_status=$self->{line_status}{NEW};
+	}
+	elsif (grep ($_ eq $self->{field_status}{UNKNOWN},@status_list)) {
+		$return_status=$self->{line_status}{UNKNOWN};
+	}
+	elsif (grep ($_ eq $self->{field_status}{TEST},@status_list)) {
+		$return_status=$self->{line_status}{SEEN};
+	}
+	elsif (grep ($_ eq $self->{field_status}{SEEN},@status_list)) {
+		$return_status=$self->{line_status}{SEEN};
+	}
+	elsif (grep ($_ eq $self->{field_status}{OK},@status_list)) {
+		$return_status=$self->{line_status}{OK};
+	}
+	else {
+		$return_status="ERROR";
+	}
 		
 	return $return_status;
 }

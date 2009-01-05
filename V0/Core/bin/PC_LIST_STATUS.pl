@@ -188,6 +188,9 @@ elsif ($explore_mode eq "explore") {
 	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_status->query_date($date_explore) if $date_explore;
 	
+	my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
+	$table_status->isip_rules($type_rules);
+	
 	my @query_field=$env_sip->get_table_field($table_name);
 	$table_status->query_field(@query_field);
 }
