@@ -123,13 +123,13 @@ sub enum_type () {
 sub enum_field_status () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "acquite", UNKNOWN => "inconnu", HIDDEN => "cache");
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
 }
 
 sub enum_line_status () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "acquite", UNKNOWN => "inconnu");
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu");
 }
 
 sub enum_field_diff_status() {

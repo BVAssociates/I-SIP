@@ -9,7 +9,7 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne de Status
+PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne de ICON
 
 =head1 SYNOPSIS
 
@@ -17,11 +17,11 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne de
  
 =head1 DESCRIPTION
 
-Affiche les champs d'une ligne et y ajoute une colonne STATUS.
+Affiche les champs d'une ligne et y ajoute une colonne ICON.
 
-Par défaut, la colonne STATUS contient l'état du commentaire.
+Par défaut, la colonne ICON contient l'état du commentaire.
 
-Avec l'option -c, STATUS contient 
+Avec l'option -c, ICON contient 
 la différence avec un autre environnement ou une autre date.
 
 =head1 ENVIRONNEMENT
@@ -144,7 +144,7 @@ if (exists $opts{c}) {
 
 $env_compare=$environnement if $date_compare and not $env_compare;
 
-# deduction du contenu de la colonne STATUS
+# deduction du contenu de la colonne ICON
 #  explore par defaut
 #  compare si une source est trouvée
 my $explore_mode="explore";

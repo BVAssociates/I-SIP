@@ -50,7 +50,7 @@ sub open() {
 	
 	# user query
 	$self->{query_field}  = [ $self->field() ];
-	$self->{dynamic_field}  = [ "STATUS" ];
+	$self->{dynamic_field}  = [ "ICON" ];
 	# add query option
 	$self->{query_date} = $options->{date};
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
@@ -300,22 +300,22 @@ sub fetch_row() {
 	
 	# add dynamic field if requested
 	#TODO : use IsipRules
-	if (grep (/^STATUS$/, $self->query_field() )) {
+	if (grep (/^ICON$/, $self->query_field() )) {
 		if ($line_has_new > 0) {
-			$return_line{STATUS}='NEW';
+			$return_line{ICON}='NEW';
 		}
 		elsif ($line_not_valid)
 		{
-			$return_line{STATUS}='EDIT';
+			$return_line{ICON}='EDIT';
 		}
 		else
 		{
-			$return_line{STATUS}=$self->{valid_keyword};
+			$return_line{ICON}=$self->{valid_keyword};
 		}
 	}
 	
 	#debug
-	##$return_line{STATUS}=$line_has_new."/".$line_not_valid;
+	##$return_line{ICON}=$line_has_new."/".$line_not_valid;
 	
 	# now the status has been computed, we remove unwanted field
 	my %return_query_line;

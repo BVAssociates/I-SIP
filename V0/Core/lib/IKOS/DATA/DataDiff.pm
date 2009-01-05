@@ -57,7 +57,7 @@ sub open() {
 	
 	# user query
 	$self->{query_field}  = [ $self->field() ];
-	$self->{dynamic_field}  = [ "STATUS" ];
+	$self->{dynamic_field}  = [ "ICON" ];
 	
 	$self->_debug("initialisation");
 	
@@ -194,9 +194,8 @@ sub fetch_row() {
 	
 	my $key=join(',',sort @current_row{$self->{table_2}->key()});
 	
-	if (grep ('^STATUS$', $self->query_field()) ) {
-		#$current_row{STATUS}=$self->{diff}->get_row_status($key);
-		$current_row{STATUS}="TODO";
+	if (grep ('^ICON$', $self->query_field()) ) {
+		$current_row{ICON}=$self->{diff}->get_row_status($key);
 	}
 	
 	return %current_row;

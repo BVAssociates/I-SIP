@@ -115,7 +115,7 @@ my $bv_debug=0;
 
 my $separator='@';
 
-my @virtual_field=("STATUS");
+my @virtual_field=("ICON");
 
 #####  BEGIN TEMPLATES ##### 
 
@@ -132,8 +132,8 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl %s %s %%DATE_EXPLORE%%"
 SEP="@"
-FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@TYPE@TEXT"
-SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT"
+SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="FIELD_NAME"
 
 FKEY="[STATUS] on ETAT[Name]"
@@ -153,9 +153,9 @@ my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HI
 Item~~Editer~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE}"~~IsipProcessor~~0~~Configure';
 
 my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
-my $label_item_template='IKOS_TABLE_%s.Item;line_%%[STATUS];%s %s';
+my $label_item_template='IKOS_TABLE_%s.Item;line_%%[ICON];%s %s';
 my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
-my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[STATUS];%%[FIELD_NAME] (%%[TEXT])';
+my $label_field_item_template='IKOS_FIELD_%s.Item;field_%%[ICON];%%[FIELD_NAME] (%%[TEXT])';
 
 ##### END TEMPLATES ##### 
 
