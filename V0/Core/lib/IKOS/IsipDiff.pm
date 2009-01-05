@@ -86,6 +86,8 @@ sub get_source_update() {
 	return %{ $self->{diff_source_update} };
 }
 
+# calcul l'etat d'une ligne en fonction de l'etat de ses champs
+
 sub get_row_status() {
 	my $self=shift;
 	

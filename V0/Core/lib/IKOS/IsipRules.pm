@@ -40,11 +40,12 @@ sub new() {
 	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
-	$self->{type} = ["fonctionnel","technique","manuel","administratif","securite"];
-	$self->{field_status} = ["","aquite","test","valide","inconnu"];
-	$self->{line_status} = ["nouveau","en_cours","valide","supprime"];
+	%{ $self->{type} } = $class->enum_type;
+	%{ $self->{field_status} } = $class->enum_field_status;
+	%{ $self->{line_status} } = $class->enum_line_status;
 	
-	$self->{line_diff_status} = {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"};
+	%{ $self->{field_diff_status} } = $class->enum_field_diff_status;
+	%{ $self->{line_diff_status} } = $class->enum_line_diff_status;
 
 
 	# Amen
@@ -68,7 +69,7 @@ sub new() {
 
 
 	# load informations
-	$self->_init();
+	$self->_init_info();
 
     return $self;
 }
@@ -79,10 +80,21 @@ sub new() {
 ##  pivate methods  ##
 ##################################################
 
-sub _init() {
+# load the table TABLE_INFO and get type of each column
+sub _init_info() {
 	my $self=shift;
 	
-	$self->load_table_info();
+	my $table_info=Sqlite->open($self->{database_name},$self->{table_info_name}, { debug => $self->debugging() } );
+	
+	# narrow query if needed
+	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
+	
+	
+	while(my %row=$table_info->fetch_row()) {
+		$self->{current_type}->{$row{FIELD_NAME}}=$row{TYPE};
+		$self->{current_owner}->{$row{FIELD_NAME}}=$row{OWNER};
+		$self->{current_description}->{$row{FIELD_NAME}}=$row{TEXT};
+	}
 }
 
 sub debugging {
@@ -98,47 +110,38 @@ sub _debug() {
 }
 
 ##################################################
-##  methods to get constants enumeration ##
+##  static methods to get constants enumeration ##
 ##################################################
 
 sub enum_type () {
 	my $self=shift;
-
-	return @{$self->{type}};
+	
+	return ("fonctionnel","technique","manuel","administratif","exclus");
 }
 
 
 sub enum_field_status () {
 	my $self=shift;
-
-	return @{$self->{field_status}};
+	
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "acquite", UNKNOWN => "inconnu", HIDDEN => "cache");
 }
 
 sub enum_line_status () {
 	my $self=shift;
-
-	return @{$self->{line_status}};
+	
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "acquite", UNKNOWN => "inconnu");
 }
 
-##################################################
-##  methods to get information of current state ##
-##################################################
-
-# load the table TABLE_INFO and get type of each column
-sub load_table_info () {
+sub enum_field_diff_status() {
 	my $self=shift;
 	
-	my $table_info=Sqlite->open($self->{database_name},$self->{table_info_name}, { debug => $self->debugging() } );
+	return {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"}
+}
+
+sub enum_line_diff_status() {
+	my $self=shift;
 	
-	# narrow query if needed
-	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
-	
-	
-	while(my %row=$table_info->fetch_row()) {
-		$self->{current_type}->{$row{FIELD_NAME}}=$row{TYPE};
-		$self->{current_owner}->{$row{FIELD_NAME}}=$row{OWNER};
-		$self->{current_description}->{$row{FIELD_NAME}}=$row{TEXT};
-	}
+	return {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"}
 }
 
 ##################################################
@@ -161,10 +164,7 @@ sub get_field_description() {
 	return $self->{current_description}->{$col_name};
 }
 
-# return the computed status of a field
-#  - if set_diff has been called before, it will
-# use it to return the "diff" status
-#  - if no set_diff, return status  
+# compute the validation status of a field
 # param type : type of the field
 # param status : current status from histo
 # param comment : current comment from histo
@@ -172,12 +172,33 @@ sub get_field_description() {
 sub get_field_status () {
 	my $self=shift;
 	
-	my $type=shift;
-	my $status=shift;
+	my $name=shift;
+	my $status=lc shift;
 	my $comment=shift;
 	
-	# compute new status
+	my $type=$self->get_field_type($name);
+	
+	my %status_by_name= reverse %{$self->{field_status}};
+	
+	# new status
 	my $return_status;
+	
+	if ($type eq "Administratif") {
+	# "Administratif always OK
+		$return_status=$self->{field_status}{OK};
+		#$return_status=$self->{field_status}{HIDDEN};
+	}
+	elsif ($type eq "exclus") {
+		$return_status=$self->{field_status}{HIDDEN};
+	}
+	elsif ($status eq "") {
+		$return_status=$self->{field_status}{EMPTY};
+	}
+	else {
+	# other are returned as is
+		$return_status=$self->{field_status}{$status_by_name{$status}};
+		$return_status="ERROR" if not exists $status_by_name{$status};
+	}
 	
 	return $return_status;
 }

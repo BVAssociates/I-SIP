@@ -2,7 +2,7 @@
 
 PortalAccess.Item;I_Home;Portail (%[Role])
 ETAT.Table;;Etats disponibles
-ETAT.Item;field_%[Name];%[Name] (%[Description])
+ETAT.Item;field_%[Name];%[Name]
 ENVIRON.Table;T_Group;Liste des environnements
 ENVIRON.Item;I_Group;%[Environnement] (%[Description])
 MODULE.Table;I_AgentICles;Liste des Modules

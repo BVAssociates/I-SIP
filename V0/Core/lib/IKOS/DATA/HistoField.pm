@@ -43,31 +43,38 @@ sub open() {
 sub fetch_row_array() {
 	my $self = shift;
 	
-	my @return_line=$self->SUPER::fetch_row_array();
+	my %temp_line;
 	
-	# nothing to return, exit
-	return () if not @return_line;
-	
-	# save query_field
-	my @query_field_save=$self->query_field();
-	
-	# move dynamic field to the end
-	my @used_dynamic_fields;
-	foreach my $field (@query_field_save) {
-		if (grep ($_ eq $field, $self->dynamic_field) ) {
-			push @used_dynamic_fields, $field ;
+	# loop if hidden fields
+	do {
+		my @return_line=$self->SUPER::fetch_row_array();
+		
+		# nothing to return, exit
+		return () if not @return_line;
+		
+		# save query_field
+		my @query_field_save=$self->query_field();
+		
+		# move dynamic field to the end
+		my @used_dynamic_fields;
+		foreach my $field (@query_field_save) {
+			if (grep ($_ eq $field, $self->dynamic_field) ) {
+				push @used_dynamic_fields, $field ;
+			}
 		}
-	}
-	$self->query_field($self->field,@used_dynamic_fields);
-	
-	# put line into hash
-	my %temp_line=$self->array_to_hash(@return_line, ("") x scalar @used_dynamic_fields);
-	$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
-	$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
-	$temp_line{STATUS}=$self->{isip_rules}->get_field_status($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{STATUS};
-	
-	# restore query_field
-	$self->query_field(@query_field_save);
+		$self->query_field($self->field,@used_dynamic_fields);
+		
+		# put line into hash
+		%temp_line=$self->array_to_hash(@return_line, ("") x scalar @used_dynamic_fields);
+		$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
+		$temp_line{STATUS}=$self->{isip_rules}->get_field_status($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{STATUS};
+		
+		$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
+		
+		# restore query_field
+		$self->query_field(@query_field_save);
+		
+	} while  ($temp_line{STATUS} eq "cache");
 	
 	
 	return $self->hash_to_array(%temp_line);

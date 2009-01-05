@@ -1,5 +1,6 @@
+COMMAND="PC_LIST_ETAT.pl"
 SEP=";"
-FORMAT="Name;Description"
-SIZE="20s;20s"
+FORMAT="Name"
+SIZE="20s"
 KEY="Name"
 
