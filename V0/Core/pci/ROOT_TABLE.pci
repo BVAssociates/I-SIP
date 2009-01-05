@@ -7,10 +7,10 @@
 #~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
 #~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
 
-Item~~Explore Table~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-Item~Comparaison~Exploration Temporelle~expl~~~Explore~DATE_HISTO~0~~Expand
-#Item~Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getValue("Nom de l'environnement")~ExecuteProcedure~PC_COMPARE_HISTO.pl %EN_COMPARE% %TABLE_NAME%~0~~Expand
-Item~Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getValue("Nom de l'environnement")~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
+Item~~Mode Validation~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
+Item~Mode Comparaison~Exploration Temporelle~expl~~~Explore~DATE_HISTO~0~~Expand
+#Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getValue("Nom de l'environnement")~ExecuteProcedure~PC_COMPARE_HISTO.pl %EN_COMPARE% %TABLE_NAME%~0~~Expand
+Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getValue("Nom de l'environnement")~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 Item~Administration~Modifier la table~adm~~~Administrate~FIELD_INFO~0~~Configure
 Item~Administration~Mettre à jour les données~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl %Environnement% %TABLE_NAME%~1~~Release
 Item~Administration~Creer la Table~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl -i %Environnement% %TABLE_NAME%~1~~Save

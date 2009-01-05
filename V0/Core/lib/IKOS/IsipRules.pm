@@ -40,7 +40,7 @@ sub new() {
 	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
-	%{ $self->{type} } = $class->enum_type;
+	@{ $self->{type} } = $class->enum_type;
 	%{ $self->{field_status} } = $class->enum_field_status;
 	%{ $self->{line_status} } = $class->enum_line_status;
 	
@@ -135,13 +135,13 @@ sub enum_line_status () {
 sub enum_field_diff_status() {
 	my $self=shift;
 	
-	return {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"}
+	return (NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
 }
 
 sub enum_line_diff_status() {
 	my $self=shift;
 	
-	return {NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime"}
+	return (NEW => "nouveau", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
 }
 
 ##################################################

@@ -161,51 +161,65 @@ use IKOS::DATA::DataDiff;
 
 use POSIX qw(strftime);
 
+# New SIP Object instance
+my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
 
+# recuperation de la clef primaine de la table
+my $table_key = $ikos_sip->get_table_key($table_name);
+
+if (not $table_key) {
+	log_erreur("pas de clef primaine pour la table $table_name");
+	sortie(202);
+}
+
+## DEBUG ONLY
+#$ENV{AAPTYCOD}='HCPC'; $bv_severite=202;
+## DEBUG ONLY
+
+my @table_key_list=split(',',$table_key);
+my @table_key_list_value;
+
+# recherche de la clef dans l'environnement
+foreach (@table_key_list) {
+	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
+	if (not $ENV{$_}) {
+		log_erreur("Clef primaine <$_> n'est pas definie dans l'environnement");
+		sortie(202);
+	}
+}
+
+my $table_key_value=join(',',@table_key_list_value);
+
+## DEBUG
+#print STDERR "KEY= $table_key\n";
+#print STDERR "KEY_VAL=$table_key_value\n";
+## DEBUG
 
 my $table_status;
 
 if ($explore_mode eq "compare") {
 	my $env_sip_from = SIP->new($env_compare);
-	my $env_sip_to = SIP->new($environnement);
-		
-	die "not implemented";
+	my $env_sip_to = $ikos_sip;
 	
+	# fetch selected row from histo table
+	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
+	$table_from->query_key_value($table_key_value);
+	$table_from->query_date($date_explore) if $date_explore;
+	
+	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
+	$table_to->query_key_value($table_key_value);
+	$table_to->query_date($date_explore) if $date_explore;
+	
+	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
 
+	$table_status->compare();
+	
+	
 }
 elsif ($explore_mode eq "explore") {
-	# New SIP Object instance
-	my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
 
-	# recuperation de la clef primaine de la table
-	my $table_key = $ikos_sip->get_table_key($table_name);
-
-	if (not $table_key) {
-		log_erreur("pas de clef primaine pour la table $table_name");
-		sortie(202);
-	}
 	
-	## DEBUG ONLY
-	#$ENV{AAPTYCOD}='HCPC';
-	## DEBUG ONLY
-
-	my @table_key_list=split(',',$table_key);
-	my @table_key_list_value;
-
-	# recherche de la clef dans l'environnement
-	foreach (@table_key_list) {
-		push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
-		if (not $ENV{$_}) {
-			log_erreur("Clef primaine <$_> n'est pas definie dans l'environnement");
-			sortie(202);
-		}
-	}
-
-	my $table_key_value=join(',',@table_key_list_value);
-
-	print STDERR "KEY= $table_key\n";
-	print STDERR "KEY_VAL=$table_key_value\n";
-
+	
 	# recupere à liste de champ à afficher
 	use IKOS::DATA::ITools;
 	my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
@@ -218,7 +232,7 @@ elsif ($explore_mode eq "explore") {
 	$table_status = $ikos_sip->open_histo_field_table($table_name, {debug => $debug_level});
 	
 	$table_status->isip_rules($type_rules);
-	$table_status->query_date($date_explore);
+	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
 	$table_status->query_field(@query_field);
 }

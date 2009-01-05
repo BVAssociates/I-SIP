@@ -119,7 +119,10 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $table_diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
 	$table_diff->compare();
 
-	$table_diff->update_compare_target() if not exists $opts{n};
+	if (not exists $opts{n}) {
+		$table_diff->update_compare_target();
+		$table_diff->_info("Les changements ont ete appliqués");
+	}
 
 }
 

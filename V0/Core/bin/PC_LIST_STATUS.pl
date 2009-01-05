@@ -13,7 +13,7 @@ PC_LIST_STATUS - Affiche une table et y ajoute une colonne de Status
 
 =head1 SYNOPSIS
 
- PC_LIST_STATUS.pl [-c environnement_source@date_source] environnement_cible@date_cible table
+ PC_LIST_STATUS.pl [-c environnement_source@date_source] environnement_cible date_cible table
  
 =head1 DESCRIPTION
 
@@ -48,7 +48,7 @@ la différence avec un autre environnement ou une autre date.
 
 =item -v : Mode verbeux
 
-=item -c environnement_source@date_source : force le mode DIFFERENCE
+=item -c environnement_source@date_source : force le mode COMPARE
 
 =back
 

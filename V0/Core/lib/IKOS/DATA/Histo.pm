@@ -299,6 +299,7 @@ sub fetch_row() {
 	}
 	
 	# add dynamic field if requested
+	#TODO : use IsipRules
 	if (grep (/^STATUS$/, $self->query_field() )) {
 		if ($line_has_new > 0) {
 			$return_line{STATUS}='NEW';

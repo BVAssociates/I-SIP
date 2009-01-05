@@ -195,7 +195,8 @@ sub fetch_row() {
 	my $key=join(',',sort @current_row{$self->{table_2}->key()});
 	
 	if (grep ('^STATUS$', $self->query_field()) ) {
-		$current_row{STATUS}=$self->{diff}->get_row_status($key);
+		#$current_row{STATUS}=$self->{diff}->get_row_status($key);
+		$current_row{STATUS}="TODO";
 	}
 	
 	return %current_row;
