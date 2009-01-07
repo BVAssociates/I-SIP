@@ -169,10 +169,10 @@ if ($explore_mode eq "compare") {
 		
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
-	$table_from->query_date($date_explore) if $date_explore;
+	$table_from->query_date($date_compare) if $date_compare;
 
 	my $table_to=$env_sip_to->open_local_from_histo_table($table_name, {debug => $debug_level});
-	$table_from->query_date($date_compare) if $date_compare;
+	$table_to->query_date($date_explore) if $date_explore;
 
 	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
 

@@ -204,7 +204,7 @@ if ($explore_mode eq "compare") {
 	# fetch selected row from histo table
 	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
 	$table_from->query_key_value($table_key_value);
-	$table_from->query_date($date_explore) if $date_explore;
+	$table_from->query_date($date_compare) if $date_compare;
 	
 	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
 	$table_to->query_key_value($table_key_value);
