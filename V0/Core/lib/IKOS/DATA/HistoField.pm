@@ -72,7 +72,7 @@ sub fetch_row_array() {
 		# now handle rules if defined
 		if (blessed $self->{isip_rules}) {
 			$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
-			$temp_line{ICON}=$self->{isip_rules}->get_field_status($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{ICON};
+			$temp_line{ICON}=$self->{isip_rules}->get_field_icon($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{ICON};
 			
 			$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
 		}

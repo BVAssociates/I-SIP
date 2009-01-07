@@ -275,7 +275,7 @@ public class IsipProcessor extends ProcessorFrame {
                     populateFormPanel(true);
                 } catch (InnerException ex) {
                     getMainWindowInterface().showPopupForException(
-				"Errur lors de la mise à jour", ex);
+				"Erreur lors de la mise à jour", ex);
                 } finally {
                     getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
                 }
@@ -310,7 +310,7 @@ public class IsipProcessor extends ProcessorFrame {
 		// On redimensionne la fenêtre
 		setPreferredSize(new Dimension(400, 400));
 
-        populateFormPanel(false);
+        populateFormPanel(true);
 
 		trace_methods.endOfMethod();
 	}
@@ -323,9 +323,11 @@ public class IsipProcessor extends ProcessorFrame {
 
         if (refresh) {
             //recuperation des données depuis la table
-            String lineID=((IsisParameter)((GenericTreeObjectNode)getSelectedNode()).getContext(true).get("ID")).value;
+            GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
+            String lineID=((IsisParameter)node.getContext(true).get("ID")).value;
             SimpleSelect HistoTable=
-                    new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
+                    //new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
+                    new SimpleSelect(getSelectedNode(), node.getTableName());
             data=HistoTable.get(lineID);
         } else {
             //recuperation des données du noeud courant
@@ -434,7 +436,7 @@ public class IsipProcessor extends ProcessorFrame {
         }
 
         // changement dynamique de l'icone en cas de changement
-        node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("STATUS")).getSelectedItem());
+        node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("ICON")).getSelectedItem());
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
         
         //close();

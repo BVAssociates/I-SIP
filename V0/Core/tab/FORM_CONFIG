@@ -14,5 +14,5 @@ DATE_HISTO,Date Collecte,Label
 DATE_UPDATE,Date commentaire,Label
 USER_UPDATE,User commentaire,Label
 #STATUS,field_%[STATUS],Icon
-STATUS,Etat du changement,List
-COMMENT,Commentaire du changement,Edit
+STATUS,Etat du commentaire,List
+COMMENT,Commentaire,Edit

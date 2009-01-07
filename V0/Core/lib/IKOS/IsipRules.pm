@@ -42,7 +42,9 @@ sub new() {
 	# TODO : import them from a configuration file
 	@{ $self->{type} } = $class->enum_type;
 	%{ $self->{field_status} } = $class->enum_field_status;
-	%{ $self->{line_status} } = $class->enum_line_status;
+
+	%{ $self->{line_icon} } = $class->enum_line_icon;
+	%{ $self->{field_icon} } = $class->enum_field_icon;
 	
 	%{ $self->{field_diff_status} } = $class->enum_field_diff_status;
 	%{ $self->{line_diff_status} } = $class->enum_line_diff_status;
@@ -123,11 +125,16 @@ sub enum_type () {
 sub enum_field_status () {
 	my $self=shift;
 	
-	#return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu");
+	return (EMPTY => "",  OK => "Valide", TEST => "Test", SEEN => "Attente", UNKNOWN => "Inconnu");
 }
 
-sub enum_line_status () {
+sub enum_field_icon () {
+	my $self=shift;
+	
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
+}
+
+sub enum_line_icon () {
 	my $self=shift;
 	
 	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu");
@@ -170,11 +177,11 @@ sub get_field_description() {
 # param status : current status from histo
 # param comment : current comment from histo
 # return status : new computed status
-sub get_field_status () {
+sub get_field_icon () {
 	my $self=shift;
 	
 	my $name=shift;
-	my $status=lc shift;
+	my $status=shift;
 	my $comment=shift;
 	
 	$self->_debug("get type of ",$name);
@@ -185,20 +192,20 @@ sub get_field_status () {
 	# new status
 	my $return_status;
 	
-	if ($type eq "Administratif") {
+	if ($type eq "administratif") {
 	# "Administratif always OK
-		$return_status=$self->{field_status}{OK};
+		$return_status=$self->{field_icon}{OK};
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
 	elsif ($type eq "exclus") {
-		$return_status=$self->{field_status}{HIDDEN};
+		$return_status=$self->{field_icon}{HIDDEN};
 	}
 	elsif ($status eq "") {
-		$return_status=$self->{field_status}{EMPTY};
+		$return_status=$self->{field_icon}{EMPTY};
 	}
 	else {
 	# other are returned as is
-		$return_status=$self->{field_status}{$status_by_name{$status}};
+		$return_status=$self->{field_icon}{$status_by_name{$status}};
 		$return_status="ERROR" if not exists $status_by_name{$status};
 	}
 	
@@ -211,26 +218,26 @@ sub get_field_status () {
 #  - if no set_diff, return status  
 # param status_list : list of status of each field
 # return status : computed status
-sub get_line_status () {
+sub get_line_icon () {
 	my $self=shift;
 	
 	my @status_list=@_;
 	my $return_status;
 	
-	if (grep ($_ eq $self->{field_status}{EMPTY},@status_list)) {
-		$return_status=$self->{line_status}{NEW};
+	if (grep ($_ eq $self->{field_icon}{EMPTY},@status_list)) {
+		$return_status=$self->{line_icon}{NEW};
 	}
-	elsif (grep ($_ eq $self->{field_status}{UNKNOWN},@status_list)) {
-		$return_status=$self->{line_status}{UNKNOWN};
+	elsif (grep ($_ eq $self->{field_icon}{UNKNOWN},@status_list)) {
+		$return_status=$self->{line_icon}{UNKNOWN};
 	}
-	elsif (grep ($_ eq $self->{field_status}{TEST},@status_list)) {
-		$return_status=$self->{line_status}{SEEN};
+	elsif (grep ($_ eq $self->{field_icon}{TEST},@status_list)) {
+		$return_status=$self->{line_icon}{SEEN};
 	}
-	elsif (grep ($_ eq $self->{field_status}{SEEN},@status_list)) {
-		$return_status=$self->{line_status}{SEEN};
+	elsif (grep ($_ eq $self->{field_icon}{SEEN},@status_list)) {
+		$return_status=$self->{line_icon}{SEEN};
 	}
-	elsif (grep ($_ eq $self->{field_status}{OK},@status_list)) {
-		$return_status=$self->{line_status}{OK};
+	elsif (grep ($_ eq $self->{field_icon}{OK},@status_list)) {
+		$return_status=$self->{line_icon}{OK};
 	}
 	else {
 		$return_status="ERROR";
