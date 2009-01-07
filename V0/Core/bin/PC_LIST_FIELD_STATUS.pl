@@ -239,8 +239,16 @@ elsif ($explore_mode eq "explore") {
 
 $table_status->output_separator('@');
 
-while (my @row=$table_status->fetch_row_array) {
-	print join($table_status->output_separator,@row)."\n";
+# put row in memory
+my %memory_row;
+while (my %row=$table_status->fetch_row) {
+	$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
+}
+
+# order the lines in the order of table field
+my @field_order=$ikos_sip->get_table_field($table_name);
+for (@field_order) {
+	print $memory_row{$_} if exists $memory_row{$_};
 }
 
 sortie($bv_severite);
