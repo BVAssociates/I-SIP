@@ -35,6 +35,8 @@ sub open() {
 	$self->{query_field}  = [ $self->field() ];
 	$self->{query_date}=$options->{date};
 	
+	$self->{key}=["FIELD_NAME"];
+	
 	$self->{isip_rules} = {};
 	
 	return bless($self,$class);
