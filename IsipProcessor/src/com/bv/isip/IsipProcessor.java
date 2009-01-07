@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 public class IsipProcessor extends ProcessorFrame {
@@ -215,43 +216,50 @@ public class IsipProcessor extends ProcessorFrame {
     {
         // On  créer le bouton Valider
 		JButton validate_button =
-			new JButton("Valider");
+			new JButton("Appliquer");
 		// On ajoute le callback sur le bouton
 		validate_button.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent event)
 			{
 				// On appelle la méthode de validation
-				validateInput();
-			}
+                //sablier pendant le traitement
+                getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, getContentPane());
+                validateInput();
+                //sablier pendant le traitement
+                getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
+            }
 		});
 		// On crée un panneau avec un GridBagLayout
-		GridBagLayout layout = new GridBagLayout();
-		GridBagConstraints constraints =
-			new GridBagConstraints(1, 0, 1, 1, 100, 100,
-			GridBagConstraints.CENTER, GridBagConstraints.NONE,
-			new Insets(10, 10, 10, 10), 0, 0);
-		JPanel button_panel = new JPanel(layout);
-		layout.setConstraints(validate_button, constraints);
-		button_panel.add(validate_button);
-
-		// Maintenant, on va créer le bouton Fermer
-		JButton close_button =
-			new JButton("Fermer");
-		// On ajoute le callback sur le bouton
-		close_button.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent event)
-			{
-				// On appelle la méthode de fermeture
-				close();
-			}
-		});
-	   constraints = new GridBagConstraints(0, 0, 1, 1, 100, 100,
+        GridBagLayout layout = new GridBagLayout();
+        GridBagConstraints constraints =
+                new GridBagConstraints(1, 0, 1, 1, 100, 100,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE,
-                new Insets(3, 0, 3, 0), 0, 0);
-		layout.setConstraints(close_button, constraints);
-		button_panel.add(close_button);
+                new Insets(10, 10, 10, 10), 0, 0);
+        JPanel button_panel = new JPanel(layout);
+        layout.setConstraints(validate_button, constraints);
+        button_panel.add(validate_button);
+
+	       /*
+            * TODO : est-ce utile?
+        // Maintenant, on va créer le bouton Fermer
+        JButton close_button =
+        new JButton("Fermer");
+        // On ajoute le callback sur le bouton
+        close_button.addActionListener(new ActionListener()
+        {
+        public void actionPerformed(ActionEvent event)
+        {
+        // On appelle la méthode de fermeture
+        close();
+        }
+        });
+        constraints = new GridBagConstraints(0, 0, 1, 1, 100, 100,
+        GridBagConstraints.CENTER, GridBagConstraints.NONE,
+        new Insets(3, 0, 3, 0), 0, 0);
+        layout.setConstraints(close_button, constraints);
+        button_panel.add(close_button);
+         */
 
         // Maintenant, on va créer le bouton Fermer
 		JButton cancel_button =
@@ -262,11 +270,14 @@ public class IsipProcessor extends ProcessorFrame {
 			public void actionPerformed(ActionEvent event)
 			{
                 try {
-                    // On appelle la méthode de fermeture
-                    populateFormPanel(false);
+                    getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, getContentPane());
+                    // On appelle la méthode de refresh
+                    populateFormPanel(true);
                 } catch (InnerException ex) {
                     getMainWindowInterface().showPopupForException(
 				"Errur lors de la mise à jour", ex);
+                } finally {
+                    getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
                 }
 			}
 		});
@@ -381,8 +392,7 @@ public class IsipProcessor extends ProcessorFrame {
         IsisParameter[] data;
         IsisParameter[] data_node;
         
-        //sablier pendant le traitement
-        getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, this);
+        
         
         GenericTreeObjectNode node = ((GenericTreeObjectNode) getSelectedNode());
 
@@ -414,11 +424,7 @@ public class IsipProcessor extends ProcessorFrame {
          } catch (InnerException ex) {
             getMainWindowInterface().showPopupForException(
                     "Erreur lors de l'execution de la commande", ex);
-            // parent must have already popup, so we just exit
             return;
-        }
-        finally {
-            getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, this);
         }
 
         //On met les nouvelles données dans le node
