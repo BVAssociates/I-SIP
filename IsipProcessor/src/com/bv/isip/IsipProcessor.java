@@ -324,11 +324,11 @@ public class IsipProcessor extends ProcessorFrame {
         if (refresh) {
             //recuperation des données depuis la table
             GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
-            String lineID=((IsisParameter)node.getContext(true).get("ID")).value;
+            String field_name=((IsisParameter)node.getContext(true).get("FIELD_NAME")).value;
             SimpleSelect HistoTable=
                     //new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
                     new SimpleSelect(getSelectedNode(), node.getTableName());
-            data=HistoTable.get(lineID);
+            data=HistoTable.get(field_name);
         } else {
             //recuperation des données du noeud courant
             data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
@@ -436,7 +436,8 @@ public class IsipProcessor extends ProcessorFrame {
         }
 
         // changement dynamique de l'icone en cas de changement
-        node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("ICON")).getSelectedItem());
+        //node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("ICON")).getSelectedItem());
+        node.getLabel().icon = "field_"+TreeNodeFactory.getValueOfParameter(data_node, "ICON");
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
         
         //close();
