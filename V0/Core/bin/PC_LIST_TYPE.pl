@@ -92,8 +92,8 @@ if ( @ARGV < 0) {
 my $bv_severite=0;
 use IKOS::IsipRules;
 
-my @type_list=IsipRules->enum_type();
+my %type_list=IsipRules->enum_type();
 
-foreach (@type_list) {
+foreach (values %type_list) {
 	print $_,"\n";
 }

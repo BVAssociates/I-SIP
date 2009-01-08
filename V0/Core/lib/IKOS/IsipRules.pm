@@ -40,7 +40,7 @@ sub new() {
 	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
-	@{ $self->{type} } = $class->enum_type;
+	%{ $self->{type} } = $class->enum_type;
 	%{ $self->{field_status} } = $class->enum_field_status;
 
 	%{ $self->{line_icon} } = $class->enum_line_icon;
@@ -118,7 +118,7 @@ sub _debug() {
 sub enum_type () {
 	my $self=shift;
 	
-	return ("fonctionnel","technique","manuel","administratif","exclus");
+	return (DATA => "fonctionnel", CONFIG => "technique", MANUAL => "manuel", STAMP => "administratif", HIDDEN => "exclus");
 }
 
 
@@ -188,11 +188,12 @@ sub get_field_icon () {
 	my $type=$self->get_field_type($name);
 	
 	my %status_by_name= reverse %{$self->{field_status}};
+	my %type_by_name= reverse %{$self->{field_type}};
 	
 	# new status
 	my $return_status;
 	
-	if ($type eq "administratif") {
+	if ($type_by_name{$type} eq "administratif") {
 	# "Administratif always OK
 		$return_status=$self->{field_icon}{OK};
 		#$return_status=$self->{field_status}{HIDDEN};
