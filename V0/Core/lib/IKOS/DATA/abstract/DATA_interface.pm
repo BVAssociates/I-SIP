@@ -3,7 +3,9 @@ package DATA_interface;
 # code import
 use strict;
 use Carp qw(carp cluck confess croak );
-use Scalar::Util qw(blessed);;
+use Scalar::Util qw(blessed);
+
+use IKOS::IsipLog '$logger';
 
 ##################################################
 ##  constructor  ##
@@ -181,13 +183,22 @@ sub debugging {
 # simple debug method
 sub _debug() {
 	my $self = shift;
-	print STDERR "DEBUG:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
+	#print STDERR "DEBUG:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
+	$logger->debug($self->{table_name}.":",@_);
 }
 
 # simple print method
 sub _info() {
 	my $self = shift;
-	print STDERR "INFO:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
+	#print STDERR "INFO:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
+	$logger->info($self->{table_name}.":",@_);
+}
+
+# simple print method
+sub _error() {
+	my $self = shift;
+	#print STDERR "ERROR:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
+	$logger->error($self->{table_name}.":",@_);
 }
 
 

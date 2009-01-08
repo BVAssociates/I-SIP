@@ -31,7 +31,7 @@ if ($@) {
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'info',
+		maxlevel => 'debug',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%p:%m'
 		});
@@ -43,6 +43,11 @@ if ($@) {
 		filename        => 'file.log',
 		mode            => 'append'
 		});
+	
+	
+	#Log::WarnDie may be used, but it put everything from STDERR
+	#in $logger->error() on STDOUT. So we must be aware of bad effect on output...
+	##Log::WarnDie->dispatcher( $logger );
 }
 
 1;

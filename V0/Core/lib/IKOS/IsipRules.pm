@@ -182,7 +182,7 @@ sub get_field_icon () {
 	my %status_by_name= reverse %{$self->{field_status}};
 	my %type_by_name= reverse %{$self->{type}};
 	
-	$logger->debug("get type of ",$name);
+	#$logger->debug("get type of ",$name);
 	my $type_txt=lc $self->get_field_type($name);
 	
 	my $type;

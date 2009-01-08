@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use IKOS::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -159,7 +161,9 @@ use IKOS::DATA::DataDiff;
 
 use POSIX qw(strftime);
 
-
+#$logger->debug("print");
+#$logger->error("print");
+#$logger->notice("print");
 
 my $table_status;
 
