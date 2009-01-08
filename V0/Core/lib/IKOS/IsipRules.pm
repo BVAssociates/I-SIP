@@ -4,6 +4,7 @@ package IsipRules;
 use Carp qw(carp croak );
 use strict;
 
+use IKOS::IsipLog '$logger';
 use IKOS::DATA::Sqlite;
 
 =head1 NAME
@@ -105,12 +106,6 @@ sub debugging {
     return $self->{debugging};
 }
 
-# simple debug method
-sub _debug() {
-	my $self = shift;
-	print STDERR "DEBUG:RULES.".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
-}
-
 ##################################################
 ##  static methods to get constants enumeration ##
 ##################################################
@@ -131,13 +126,13 @@ sub enum_field_status () {
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache");
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache", ERROR => "erreur");
 }
 
 sub enum_line_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu");
+	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu", ERROR => "erreur");
 }
 
 sub enum_field_diff_status() {
@@ -181,33 +176,58 @@ sub get_field_icon () {
 	my $self=shift;
 	
 	my $name=shift;
-	my $status=shift;
+	my $status_desc=shift;
 	my $comment=shift;
 	
-	$self->_debug("get type of ",$name);
-	my $type=$self->get_field_type($name);
-	
 	my %status_by_name= reverse %{$self->{field_status}};
-	my %type_by_name= reverse %{$self->{field_type}};
+	my %type_by_name= reverse %{$self->{type}};
+	
+	$logger->debug("get type of ",$name);
+	my $type_txt=lc $self->get_field_type($name);
+	
+	my $type;
+	if (not defined $type_by_name{$type_txt}) {
+		$type="";
+		$logger->error($type_txt." n'est pas un type valide") 
+	} else {
+		$type=$type_by_name{$type_txt};
+	}
+	
+	my $status;
+	if (not defined $status_by_name{$status_desc}) {
+		$status="";
+		$logger->error($status_desc." n'est pas un status valide") 
+	} else {
+		$status=$status_by_name{$status_desc};
+	}
 	
 	# new status
 	my $return_status;
 	
-	if ($type_by_name{$type} eq "administratif") {
+	if ($type eq "STAMP") {
 	# "Administratif always OK
 		$return_status=$self->{field_icon}{OK};
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
-	elsif ($type eq "exclus") {
+	elsif ($type eq "EXCLUDE" or $type eq "HIDDEN") {
 		$return_status=$self->{field_icon}{HIDDEN};
 	}
-	elsif ($status eq "") {
-		$return_status=$self->{field_icon}{EMPTY};
-	}
 	else {
-	# other are returned as is
-		$return_status=$self->{field_icon}{$status_by_name{$status}};
-		$return_status="ERROR" if not exists $status_by_name{$status};
+		if ($status eq "OK") {
+			$return_status=$self->{field_icon}{OK};
+		}
+		elsif ($status eq "EMPTY") {
+			$return_status=$self->{field_icon}{EMPTY};
+		}
+		elsif ($status eq "TEST") {
+			$return_status=$self->{field_icon}{TEST};
+		}
+		elsif ($status eq "SEEN") {
+			$return_status=$self->{field_icon}{SEEN};
+		}
+		elsif ($status eq "UNKNOWN") {
+			$return_status=$self->{field_icon}{UNKNOWN};
+		}
 	}
 	
 	return $return_status;
@@ -217,34 +237,44 @@ sub get_field_icon () {
 #  - if set_diff has been called before, it will
 # use it to return the "diff" status
 #  - if no set_diff, return status  
-# param status_list : list of status of each field
+# param icon_list : list of status of each field
 # return status : computed status
 sub get_line_icon () {
 	my $self=shift;
 	
-	my @status_list=@_;
-	my $return_status;
+	my @icon_list=@_;
+	my $return_icon;
 	
-	if (grep ($_ eq $self->{field_icon}{EMPTY},@status_list)) {
-		$return_status=$self->{line_icon}{NEW};
-	}
-	elsif (grep ($_ eq $self->{field_icon}{UNKNOWN},@status_list)) {
-		$return_status=$self->{line_icon}{UNKNOWN};
-	}
-	elsif (grep ($_ eq $self->{field_icon}{TEST},@status_list)) {
-		$return_status=$self->{line_icon}{SEEN};
-	}
-	elsif (grep ($_ eq $self->{field_icon}{SEEN},@status_list)) {
-		$return_status=$self->{line_icon}{SEEN};
-	}
-	elsif (grep ($_ eq $self->{field_icon}{OK},@status_list)) {
-		$return_status=$self->{line_icon}{OK};
-	}
-	else {
-		$return_status="ERROR";
-	}
+	my %icon_by_name= reverse %{$self->{field_icon}};
+	
+	my %counter=(EMPTY => 0, UNKNOWN => 0, SEEN => 0, TEST => 0, OK => 0);
+	
+	foreach (@icon_list) {
+		my $icon;
+		if (not defined $_) {
+			$logger->critical("Impossible de determiner l'icone de la ligne, car un champ n'a pas d'icone") ;
+			return $self->{line_icon}{ERROR};
+			last;
+		}
+		elsif (not defined $icon_by_name{$_}) {
+			
+			$logger->critical("Impossible de determiner l'icone de la ligne, car $_ n'est pas un icone valide") ;
+			return $self->{line_icon}{ERROR};
+			last;
+		} else {
+			$icon=$icon_by_name{$_};
+		}
 		
-	return $return_status;
+		$counter{$icon}++;
+		
+	}
+	
+	return $self->{line_icon}{NEW} if $counter{EMPTY} > 0;
+	return $self->{line_icon}{UNKNOWN} if $counter{UNKNOWN} > 0;
+	return $self->{line_icon}{SEEN} if $counter{TEST} > 0;
+	return $self->{line_icon}{SEEN} if $counter{SEEN} > 0;
+	return $self->{line_icon}{OK} if $counter{OK} > 0;
+
 }
 
 1;
