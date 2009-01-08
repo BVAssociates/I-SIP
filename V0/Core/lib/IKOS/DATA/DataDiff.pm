@@ -45,6 +45,9 @@ sub open() {
 	$self->{table_1}=$data_ref1;
 	$self->{table_2}=$data_ref2;
 	
+	# member where whole table will be saved while compare
+	$self->{in_memory_table}={};
+	
 	# this object will store differences
 	$self->{diff}={};
 	
@@ -56,7 +59,8 @@ sub open() {
 	bless ($self, $class);
 	
 	# user query
-	$self->{query_field}  = [ $self->field() ];
+	$self->{field}  = [ $self->{table_2}->field() ];
+	$self->{query_field}  = [ $self->{table_2}->query_field() ];
 	$self->{dynamic_field}  = [ "ICON" ];
 	
 	$self->_debug("initialisation");
@@ -148,7 +152,7 @@ sub query_condition() {
 }
 
 # utility sub for fetch_row
-sub _next_source_only() {
+sub _fetch_source_only() {
 	my $self = shift;
 	
 	# if no deleted keys, return nothing
@@ -165,6 +169,17 @@ sub _next_source_only() {
 	my $return_key=shift @{ $self->{current_source_only_key} }
 }
 
+sub _fetch_row_memory() {
+	my $self=shift;
+	
+	my $first=(sort keys %{$self->{in_memory_table}})[0];
+	return () if not defined $first;
+	
+	my %row= %{$self->{in_memory_table}->{$first}};
+	delete $self->{in_memory_table}->{$first};
+	return %row;
+}
+
 # get row  by one based on query
 sub fetch_row() {
 	my $self = shift;
@@ -174,7 +189,7 @@ sub fetch_row() {
 	#$self->compare() if not defined $self->{diff};
 	
 	# first, printing lines only in source
-	my $source_only_key=$self->_next_source_only();
+	my $source_only_key=$self->_fetch_source_only();
 	$self->{fetch_source_only_running}=1;
 	
 	# We use table_2 to print the target table
@@ -183,7 +198,8 @@ sub fetch_row() {
 		%current_row = $self->{diff}->get_source_only_by_key($source_only_key);
 	}
 	else {
-		%current_row = $self->{table_2}->fetch_row();
+		#%current_row = $self->{table_2}->fetch_row();
+		%current_row = $self->_fetch_row_memory();
 	}
 	
 	# table_2 return no lines, so we return
@@ -403,6 +419,8 @@ sub compare() {
 	}
 	undef %row;
 	
+	# we keep a ref on the target table (for fetch)
+	$self->{in_memory_table}=\%in_memory_table2;
 
 	#first pass to get primary keys which are on one table
 	## after 2 loops :
