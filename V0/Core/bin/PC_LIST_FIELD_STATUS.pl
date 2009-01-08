@@ -211,9 +211,11 @@ if ($explore_mode eq "compare") {
 	$table_to->query_date($date_explore) if $date_explore;
 	
 	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
-	$table_status->query_field($table_to->field,"ICON");
+	$table_status->query_field($table_status->query_field,"ICON");
 	$table_status->compare();
 	
+	$table_status->dynamic_field($table_status->dynamic_field,"TYPE","TEXT");
+	$table_status->query_field($table_status->query_field,"TYPE","TEXT");
 	
 }
 elsif ($explore_mode eq "explore") {
@@ -239,9 +241,13 @@ elsif ($explore_mode eq "explore") {
 
 $table_status->output_separator('@');
 
+my $rules=$ikos_sip->get_isip_rules($table_name);
+
 # put row in memory
 my %memory_row;
 while (my %row=$table_status->fetch_row) {
+	$row{TYPE}=$rules->get_field_type($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+	$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 	$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
 }
 

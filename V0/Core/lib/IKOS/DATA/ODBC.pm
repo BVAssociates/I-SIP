@@ -195,6 +195,7 @@ sub _open_database() {
 	$self->_debug("Open database DSN : ",$self->{database_name});
 	# use RaiseError exception to stop the script at first error
 	$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=$self->{database_name}","TGILLON","TGILLON",{ RaiseError => 1});
+	#$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=SCF1","T1581","aptvd",{ RaiseError => 1});
 
 	# remove trailing spaces in CHAR fields
 	$self->{database_handle}->{ChopBlanks}=1;
@@ -229,7 +230,7 @@ sub query_condition_has_numeric() {
 	push @{$self->{query_condition}}, $joined_temp_condition;
 }
 
-# Create an SQL query with specific ODBC TXT syntax
+# Create an SQL query with specific ODBC syntax
 sub get_query()
 {
 	my $self = shift;

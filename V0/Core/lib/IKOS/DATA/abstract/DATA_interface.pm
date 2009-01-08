@@ -377,6 +377,7 @@ sub has_fields() {
 	foreach my $field (@fields_requested) {
 		push (@field_found, grep {$field eq $_} @field_avaiable) ;
 	}
+	$self->_debug("has fields : ",join(',',@field_found));
 	return @field_found;
 }
 

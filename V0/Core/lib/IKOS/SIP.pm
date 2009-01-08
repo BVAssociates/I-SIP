@@ -7,6 +7,7 @@ use IKOS::DATA::Sqlite;
 use IKOS::DATA::ITools;
 use IKOS::DATA::Histo;
 use IKOS::DATA::HistoField;
+use IKOS::IsipRules;
 
 use Carp qw(carp croak );
 
@@ -136,6 +137,16 @@ sub exist_local_table() {
 	return $return_value;
 }
 
+sub get_isip_rules() {
+	my $self = shift;
+	
+	my $table_name=shift or croak "open_isip_rules() wait args : 'tablename'";
+	
+	my $tmp_return = eval {IsipRules->new($self->get_sqlite_path($table_name), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	return $tmp_return;
+}
+
 sub open_local_table() {
 	my $self = shift;
 	
@@ -261,7 +272,6 @@ sub initialize_database() {
 	TABLE_SCHEMA VARCHAR(30) ,
 	TEXT VARCHAR(30) ,
 	DESCRIPTION VARCHAR(30) ,
-	OWNER VARCHAR(30) ,
 	TYPE VARCHAR(30) )");
 	
 	$master_table->close();
