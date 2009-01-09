@@ -6,18 +6,8 @@ package com.bv.isip;
 
 import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
-import com.bv.isis.console.com.ServiceSessionProxy;
-import com.bv.isis.console.common.IndexedList;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
-import com.bv.isis.console.node.TreeNodeFactory;
-import com.bv.isis.corbacom.IsisParameter;
-import com.bv.isis.corbacom.IsisTableDefinition;
-import com.bv.isis.corbacom.ServiceSessionInterface;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.TreeMap;
-import javax.swing.JComponent;
 
 /**
  *

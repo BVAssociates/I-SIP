@@ -14,9 +14,6 @@ package com.bv.isip;
 import java.awt.AWTException;
 import java.awt.Point;
 import java.awt.Robot;
-import java.awt.event.InputEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -208,11 +205,13 @@ public class IsipPanel extends javax.swing.JPanel
                 false, false, false, false, false, false
             };
 
-            public Class getColumnClass(int columnIndex) {
+            @Override
+			public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }
 
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
+            @Override
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
@@ -220,10 +219,12 @@ public class IsipPanel extends javax.swing.JPanel
         jTable1.setAutoscrolls(false);
         jTable1.getTableHeader().setReorderingAllowed(false);
         jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            @Override
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTable1MouseClicked(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+            @Override
+			public void mousePressed(java.awt.event.MouseEvent evt) {
                 jTable1MousePressed(evt);
             }
         });

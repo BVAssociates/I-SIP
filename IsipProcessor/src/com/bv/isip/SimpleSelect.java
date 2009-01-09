@@ -16,7 +16,6 @@ import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.TreeMap;
 import javax.swing.tree.MutableTreeNode;
 
 /**
@@ -156,7 +155,7 @@ public class SimpleSelect
      *
      * @return un Iterator
      */
-    public Iterator keysIterator()
+    public Iterator<String> keysIterator()
     {
         return _tableData.keySet().iterator();
     }

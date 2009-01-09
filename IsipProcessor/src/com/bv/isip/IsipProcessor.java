@@ -8,8 +8,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -26,12 +24,9 @@ import com.bv.isis.console.com.ServiceSessionProxy;
 import com.bv.isis.console.common.IndexedList;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
-import com.bv.isis.console.node.GenericTreeClassNode;
 import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.console.processor.ProcessorFrame;
-import com.bv.isis.corbacom.IsisNodeLabel;
-import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -42,7 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 public class IsipProcessor extends ProcessorFrame {
@@ -58,7 +52,7 @@ public class IsipProcessor extends ProcessorFrame {
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"IsipTest", "IsipTest");
 
-        _fieldObject=new Hashtable();
+        _fieldObject=new Hashtable<String, JComponent>();
 
        	trace_methods.beginningOfMethod();
 		trace_methods.endOfMethod();
