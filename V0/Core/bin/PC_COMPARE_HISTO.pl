@@ -123,7 +123,7 @@ $date_explore=$opts{d} if exists $opts{d};
 my $bv_severite=0;
 
 use Isip::Environnement;
-use ITable::ITools::ITools;
+use ITable::ITools;
 use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);

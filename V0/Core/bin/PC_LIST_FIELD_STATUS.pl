@@ -156,7 +156,7 @@ $explore_mode="compare" if $env_compare or $date_compare;
 my $bv_severite=0;
 
 use Isip::Environnement;
-use ITable::ITools::ITools;
+use ITable::ITools;
 use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
@@ -223,7 +223,7 @@ elsif ($explore_mode eq "explore") {
 	
 	
 	# recupere à liste de champ à afficher
-	use ITable::ITools::ITools;
+	use ITable::ITools;
 	my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
 	my $separator=$itools_table->output_separator;
 	my @query_field=$itools_table->field;

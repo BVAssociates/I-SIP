@@ -152,7 +152,7 @@ die "Variable <Environnement> not set" if not $environnement;
 my $table_ikos=$ENV{TABLE_NAME};
 die "Variable <TABLE_NAME> not set" if not $table_ikos;
 
-use ITable::ITools::ITools;
+use ITable::ITools;
 my $itools_table=ITools->open($table_name);
 my $separator=$itools_table->output_separator;
 my @field=$itools_table->field;

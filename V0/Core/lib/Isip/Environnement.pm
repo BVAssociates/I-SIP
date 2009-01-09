@@ -4,7 +4,7 @@ use strict;
 
 use ITable::ODBC;
 use ITable::Sqlite;
-use ITable::ITools::ITools;
+use ITable::ITools;
 use Isip::ITable::Histo;
 use Isip::ITable::HistoField;
 use Isip::IsipRules;

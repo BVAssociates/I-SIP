@@ -147,7 +147,7 @@ if (not $table_name =~ /^IKOS_FIELD_(\w+)_(\w+)$/) {
 }
 my ($environnement,$table_ikos) = ($1,$2);
 
-use ITable::ITools::ITools;
+use ITable::ITools;
 my $itools_table=ITools->open($table_name);
 my $separator=$itools_table->output_separator;
 my @field=$itools_table->field;

@@ -111,7 +111,7 @@ my $tablename=shift;
 
 #  Corps du script
 ###########################################################
-use ITable::ITools::ITools;
+use ITable::ITools;
 use Isip::Environnement;
 
 my $bv_severite=0;

@@ -177,7 +177,7 @@ is($odbc_diff->count,0,'Histo->compare_from(table_odbc) return no difference');
 # IKOS::ITools
 ################################################
 
-use ITable::ITools::ITools;
+use ITable::ITools;
 
 my $test_table = ITools->open("ps", {debug => 0});
 ok( defined($test_table),'ITools->open_table()' );

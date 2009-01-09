@@ -116,7 +116,7 @@ my $bv_severite=0;
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 
 # recupere à liste de champ à afficher
-use ITable::ITools::ITools;
+use ITable::ITools;
 my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$tablename);
 my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;

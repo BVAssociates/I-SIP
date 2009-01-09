@@ -107,7 +107,7 @@ my $table_name=shift;
 ###########################################################
 
 use Isip::Environnement;
-use ITable::ITools::ITools;
+use ITable::ITools;
 
 
 my $bv_debug=0;
