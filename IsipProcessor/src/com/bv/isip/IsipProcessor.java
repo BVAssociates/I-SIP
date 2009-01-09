@@ -30,6 +30,7 @@ import com.bv.isis.console.processor.ProcessorFrame;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.JComponent;
@@ -318,11 +319,12 @@ public class IsipProcessor extends ProcessorFrame {
         if (refresh) {
             //recuperation des données depuis la table
             GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
-            String field_name=((IsisParameter)node.getContext(true).get("FIELD_NAME")).value;
+            String field_name=((IsisParameter)node.getContext(true).get(_formKey)).value;
             SimpleSelect HistoTable=
-                    //new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
-                    new SimpleSelect(getSelectedNode(), node.getTableName());
+                    new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
+                    //new SimpleSelect(getSelectedNode(), node.getTableName());
             data=HistoTable.get(field_name);
+            //data=HistoTable.get(field_name);
         } else {
             //recuperation des données du noeud courant
             data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
@@ -357,27 +359,77 @@ public class IsipProcessor extends ProcessorFrame {
         return data;
     }
 
+    public String removeAccents(String phrase) {
+        String PLAIN_ASCII =
+      "AaEeIiOoUu"    // grave
+    + "AaEeIiOoUuYy"  // acute
+    + "AaEeIiOoUuYy"  // circumflex
+    + "AaOoNn"        // tilde
+    + "AaEeIiOoUuYy"  // umlaut
+    + "Aa"            // ring
+    + "Cc"            // cedilla
+    + "OoUu"          // double acute
+    ;
+
+    String UNICODE =
+ "\u00C0\u00E0\u00C8\u00E8\u00CC\u00EC\u00D2\u00F2\u00D9\u00F9"
++ "\u00C1\u00E1\u00C9\u00E9\u00CD\u00ED\u00D3\u00F3\u00DA\u00FA\u00DD\u00FD"
++ "\u00C2\u00E2\u00CA\u00EA\u00CE\u00EE\u00D4\u00F4\u00DB\u00FB\u0176\u0177"
++ "\u00C3\u00E3\u00D5\u00F5\u00D1\u00F1"
++ "\u00C4\u00E4\u00CB\u00EB\u00CF\u00EF\u00D6\u00F6\u00DC\u00FC\u0178\u00FF"
++ "\u00C5\u00E5"
++ "\u00C7\u00E7"
++ "\u0150\u0151\u0170\u0171"
+;
+       if (phrase == null) return null;
+       StringBuffer sb = new StringBuffer();
+       int n = phrase.length();
+       for (int i = 0; i < n; i++) {
+          char c = phrase.charAt(i);
+          int pos = UNICODE.indexOf(c);
+          if (pos > -1){
+              sb.append(PLAIN_ASCII.charAt(pos));
+          }
+          else {
+              sb.append(c);
+          }
+       }
+       return sb.toString();
+
+
+    }
+
     public IsisParameter[] getFormPanelData()
     {
         IsisParameter[] data_from=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
-        IsisParameter[] data=new IsisParameter[data_from.length];
+        ArrayList<IsisParameter> data=new ArrayList<IsisParameter>();
  
         char sep=data_from[0].quoteCharacter;
+
+        int j=0;
         for(int i=0; i < data_from.length; i++)
         {
-            data[i]=new IsisParameter(data_from[i].name, data_from[i].value , sep);
-            
-            JComponent textBox = _fieldObject.get(data[i].name);
+            JComponent textBox = _fieldObject.get(data_from[i].name);
             if (textBox instanceof JTextField) {
-                data[i].value=((JTextField) textBox).getText();
+                data.add(new IsisParameter(data_from[i].name,
+                        removeAccents(((JTextField) textBox).getText()) ,
+                        sep));
+
             } else if (textBox instanceof JLabel) {
-                data[i].value=((JLabel) textBox).getText();
+                //Les champ ReadOnly n'ont pas besoin d'etre modifiés
+                //Il faut quand meme revoyer la clef primaire
+                if (data_from[i].name.equals(_formKey) ) {
+                    data.add(new IsisParameter(data_from[i].name,
+                            ((JLabel) textBox).getText() , sep));
+                }
+                
             } else if (textBox instanceof JComboBox) {
-                data[i].value=(String) ((JComboBox) textBox).getSelectedItem();
+                data.add(new IsisParameter(data_from[i].name,
+                        (String) ((JComboBox) textBox).getSelectedItem() , sep));
             }
 
         }
-        return data;
+        return data.toArray(new IsisParameter[0]);
     }
 
     /**
@@ -564,4 +616,9 @@ public class IsipProcessor extends ProcessorFrame {
      * Constante stockant la commande d'insertion
      */
     private final String replaceCommand="ReplaceAndExec_IKOS_FIELD.pl";
+
+     /**
+     * Constante : champ stockant le nom de la clef de la table editée
+     */
+    private final String _formKey="ID";
 }
