@@ -127,6 +127,9 @@ foreach (@ARGV) {
 	}
 }
 
+use Encode;
+$values=encode("cp850",$values);
+
 log_info("VALUES: ",$values);
 log_info("CONDITION: ",$conditions);
 

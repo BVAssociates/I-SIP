@@ -127,6 +127,9 @@ foreach (@ARGV) {
 	}
 }
 
+use Encode;
+$values=encode("cp850",$values);
+
 log_info("VALUES: ",$values);
 log_info("CONDITION: ",$conditions);
 
@@ -161,7 +164,8 @@ $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000,
 
 # add dynamic field. Needed for array_to_hash()
 $local_table->dynamic_field("TEXT","TYPE","ICON");
-$local_table->query_field(@field);
+#$local_table->query_field(@field);
+$local_table->query_field("ID","COMMENT","STATUS");
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 
 #delete dynamic field from line to insert
@@ -170,8 +174,10 @@ foreach ($local_table->dynamic_field()) {
 }
 
 use POSIX qw(strftime);
-$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime if exists $row{DATE_UPDATE};
-$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
+$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime;
+$row{USER_UPDATE} = $ENV{IsisUser};
 $local_table->update_row( %row );
+
+#sleep 100;
 
 sortie($bv_severite);
