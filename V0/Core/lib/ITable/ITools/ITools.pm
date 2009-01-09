@@ -1,6 +1,6 @@
 package ITools;
 
-use IKOS::DATA::ITools::Define;
+use ITable::ITools::Define;
 use Carp qw(carp cluck confess croak );
 
 use strict;
@@ -32,7 +32,7 @@ sub open (){
 	$required_module = ucfirst(lc($define_obj->type() ) );
 	
 	# Load the correct object for TYPE
-	eval "require IKOS::DATA::ITools::$required_module";
+	eval "require ITable::ITools::$required_module";
 	if ($@) {
 		croak("$@\nUnable to find the module for definition TYPE : ".$define_obj->type());
 	}

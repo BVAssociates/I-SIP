@@ -155,14 +155,14 @@ $explore_mode="compare" if $env_compare or $date_compare;
 ###########################################################
 my $bv_severite=0;
 
-use IKOS::SIP;
-use IKOS::DATA::ITools;
-use IKOS::DATA::DataDiff;
+use Isip::Environnement;
+use ITable::ITools::ITools;
+use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
 
 # New SIP Object instance
-my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
+my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 
 # recuperation de la clef primaine de la table
 my $table_key = $ikos_sip->get_table_key($table_name);
@@ -198,7 +198,7 @@ my $table_key_value=join(',',@table_key_list_value);
 my $table_status;
 
 if ($explore_mode eq "compare") {
-	my $env_sip_from = SIP->new($env_compare);
+	my $env_sip_from = Environnement->new($env_compare);
 	my $env_sip_to = $ikos_sip;
 	
 	# fetch selected row from histo table
@@ -223,7 +223,7 @@ elsif ($explore_mode eq "explore") {
 	
 	
 	# recupere à liste de champ à afficher
-	use IKOS::DATA::ITools;
+	use ITable::ITools::ITools;
 	my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
 	my $separator=$itools_table->output_separator;
 	my @query_field=$itools_table->field;

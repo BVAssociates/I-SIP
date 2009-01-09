@@ -112,7 +112,7 @@ my $table=shift;
 
 #  Corps du script
 ###########################################################
-use IKOS::DATA::ODBC;
+use ITable::ODBC;
 
 
 my $database_name="IKOS_DEV";

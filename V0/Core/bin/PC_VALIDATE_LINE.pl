@@ -111,13 +111,13 @@ my $tablename=shift;
 
 #  Corps du script
 ###########################################################
-use IKOS::DATA::ITools;
-use IKOS::SIP;
+use ITable::ITools::ITools;
+use Isip::Environnement;
 
 my $bv_severite=0;
 
 # New SIP Object instance
-my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
+my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 
 # recuperation de la clef primaine de la table
 my $table_key = $ikos_sip->get_table_key($tablename);

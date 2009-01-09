@@ -1,6 +1,6 @@
 package DBI_interface;
 
-require IKOS::DATA::abstract::DATA_interface;
+require ITable::abstract::DATA_interface;
 @ISA=("DATA_interface");
 
 use Carp qw(carp cluck confess croak );

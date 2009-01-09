@@ -4,12 +4,12 @@ package IsipRules;
 use Carp qw(carp croak );
 use strict;
 
-use IKOS::IsipLog '$logger';
-use IKOS::DATA::Sqlite;
+use Isip::IsipLog '$logger';
+use ITable::Sqlite;
 
 =head1 NAME
 
- IKOS::IsipRules - Class to handle type and status
+ Isip::IsipRules - Class to handle type and status
  
 =head1 SYNOPSIS
 

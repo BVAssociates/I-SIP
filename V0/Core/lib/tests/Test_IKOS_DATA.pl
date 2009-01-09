@@ -12,7 +12,7 @@ use warnings;
 # IKOS::Sqlite
 ################################################
 
-use IKOS::DATA::Sqlite;
+use ITable::Sqlite;
 
 # Open
 ############
@@ -74,7 +74,7 @@ is(undef $table_sqlite, undef, 'Destroy object');
 # IKOS::Histo
 ################################################
 
-use IKOS::DATA::Histo;
+use Isip::ITable::Histo;
 
 # Open
 ############
@@ -136,7 +136,7 @@ is($histo_diff->count,0,'Histo->compare_from(myself) return no difference');
 # IKOS::ODBC
 ################################################
 
-use IKOS::DATA::ODBC;
+use ITable::ODBC;
 
 my $table_odbc;
 $table_odbc = ODBC->open("SCF1_IKGLFIC","PROTYPP", { debug => 0 });
@@ -177,7 +177,7 @@ is($odbc_diff->count,0,'Histo->compare_from(table_odbc) return no difference');
 # IKOS::ITools
 ################################################
 
-use IKOS::DATA::ITools;
+use ITable::ITools::ITools;
 
 my $test_table = ITools->open("ps", {debug => 0});
 ok( defined($test_table),'ITools->open_table()' );

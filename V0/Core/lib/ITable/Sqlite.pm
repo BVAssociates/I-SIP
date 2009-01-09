@@ -1,6 +1,6 @@
 package Sqlite;
 
-require IKOS::DATA::abstract::DBI_interface;
+require ITable::abstract::DBI_interface;
 @ISA = ("DBI_interface");
 
 use Carp qw(carp cluck confess croak );

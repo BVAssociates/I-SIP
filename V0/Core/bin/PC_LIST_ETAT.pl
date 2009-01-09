@@ -90,7 +90,7 @@ if ( @ARGV < 0) {
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
-use IKOS::IsipRules;
+use Isip::IsipRules;
 
 my %type_list=IsipRules->enum_field_status();
 

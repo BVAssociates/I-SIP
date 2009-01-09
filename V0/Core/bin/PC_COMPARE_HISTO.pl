@@ -122,14 +122,14 @@ $date_explore=$opts{d} if exists $opts{d};
 ###########################################################
 my $bv_severite=0;
 
-use IKOS::SIP;
-use IKOS::DATA::ITools;
-use IKOS::DATA::DataDiff;
+use Isip::Environnement;
+use ITable::ITools::ITools;
+use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
 
-my $env_sip_from = SIP->new($environnement_from);
-my $env_sip_to = SIP->new($environnement_to);
+my $env_sip_from = Environnement->new($environnement_from);
+my $env_sip_to = Environnement->new($environnement_to);
 	
 #open IKOS table for DATA
 my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});

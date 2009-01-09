@@ -1,13 +1,13 @@
-package SIP;
+package Environnement;
 
 use strict;
 
-use IKOS::DATA::ODBC;
-use IKOS::DATA::Sqlite;
-use IKOS::DATA::ITools;
-use IKOS::DATA::Histo;
-use IKOS::DATA::HistoField;
-use IKOS::IsipRules;
+use ITable::ODBC;
+use ITable::Sqlite;
+use ITable::ITools::ITools;
+use Isip::ITable::Histo;
+use Isip::ITable::HistoField;
+use Isip::IsipRules;
 
 use Carp qw(carp croak );
 
@@ -17,7 +17,7 @@ sub new() {
 	my $self= {};
 	
 	# Arguments
-	$self->{environnement} = shift or croak "SIP->new take 1 argument";
+	$self->{environnement} = shift or croak "Environnement->new take 1 argument";
 	$self->{options} = shift;
 	
 	$self->{options}->{debug} = 0 if not exists $self->{options}->{debug};
@@ -316,7 +316,7 @@ sub SQL_drop() {
 
 =head1 NAME
 
- IKOS::SIP - Class to access data from IKOS SIP 
+ Isip::Environnement - Class to access data from IKOS SIP 
 
 =head1 SYNOPSIS
 

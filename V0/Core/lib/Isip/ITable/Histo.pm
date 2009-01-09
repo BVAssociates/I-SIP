@@ -1,10 +1,10 @@
 package Histo;
 
 
-require IKOS::DATA::abstract::DATA_interface;
+require ITable::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
-use IKOS::DATA::Sqlite;
+use ITable::Sqlite;
 
 use Carp qw(carp cluck confess croak );
 use Scalar::Util qw(blessed);
@@ -562,7 +562,7 @@ sub finish() {
 
 =head1 NAME
 
- IKOS::DATA::Histo - Computed IKOS::DATA::DATA_interface
+ Isip::ITable::Histo - Computed ITable::DATA_interface
  
 =head1 SYNOPSIS
 

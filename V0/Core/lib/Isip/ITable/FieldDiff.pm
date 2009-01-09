@@ -1,7 +1,7 @@
 package FieldDiff;
 
 
-require IKOS::DATA::DataDiff;
+require Isip::ITable::DataDiff;
 @ISA = ("DataDiff");
 
 use Carp qw(carp cluck confess croak );

@@ -106,8 +106,8 @@ my $table_name=shift;
 #  Corps du script
 ###########################################################
 
-use IKOS::SIP;
-use IKOS::DATA::ITools;
+use Isip::Environnement;
+use ITable::ITools::ITools;
 
 
 my $bv_debug=0;
@@ -193,7 +193,7 @@ while (my %info_key = $list_table->fetch_row() ) {
 $list_table->finish();
 
 # access to SIP data
-my $sip = SIP->new($environnement);
+my $sip = Environnement->new($environnement);
 
 # we are ready, so begin with cleanup old files
 

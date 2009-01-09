@@ -1,25 +1,25 @@
 package Ft;
-#require IKOS::DATA::ITools::Legacy;
+#require ITable::ITools::Legacy;
 @ISA = ("Legacy");
 
 1;  # so the require or use succeeds
 
 =head1 NAME
 
-IKOS::DATA::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
+ITable::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
 
 =head1 SYNOPSIS
 
- See IKOS::DATA::ITools::Legacy
+ See ITable::ITools::Legacy
 =cut
  
  
  
 package Legacy;
-require IKOS::DATA::abstract::ITools_interface;
+require ITable::abstract::ITools_interface;
 @ISA = ("ITools_interface");
 
-use IKOS::DATA::ITools::Define;
+use ITable::ITools::Define;
 
 use Carp qw(carp cluck confess croak );
 use Data::Dumper;

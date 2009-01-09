@@ -1,4 +1,4 @@
-package IKOS::IsipLog;
+package Isip::IsipLog;
 
 use strict;
 use Carp qw(carp cluck confess croak );

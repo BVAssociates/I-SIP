@@ -147,13 +147,13 @@ if (not $table_name =~ /^IKOS_FIELD_(\w+)_(\w+)$/) {
 }
 my ($environnement,$table_ikos) = ($1,$2);
 
-use IKOS::DATA::ITools;
+use ITable::ITools::ITools;
 my $itools_table=ITools->open($table_name);
 my $separator=$itools_table->output_separator;
 my @field=$itools_table->field;
 
-use IKOS::SIP;
-my $env_sip=SIP->new($environnement);
+use Isip::Environnement;
+my $env_sip=Environnement->new($environnement);
 my $local_table;
 my %row;
 

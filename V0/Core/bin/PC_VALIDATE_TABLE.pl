@@ -97,8 +97,8 @@ my $bv_severite=0;
 
 die "Not implemented";
 
-use IKOS::SIP;
-$sip = SIP->new($environnement);
+use Isip::Environnement;
+$sip = Environnement->new($environnement);
 
 $histo_table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level);
 

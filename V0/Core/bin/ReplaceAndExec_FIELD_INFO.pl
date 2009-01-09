@@ -152,13 +152,13 @@ die "Variable <Environnement> not set" if not $environnement;
 my $table_ikos=$ENV{TABLE_NAME};
 die "Variable <TABLE_NAME> not set" if not $table_ikos;
 
-use IKOS::DATA::ITools;
+use ITable::ITools::ITools;
 my $itools_table=ITools->open($table_name);
 my $separator=$itools_table->output_separator;
 my @field=$itools_table->field;
 
-use IKOS::SIP;
-my $env_sip=SIP->new($environnement);
+use Isip::Environnement;
+my $env_sip=Environnement->new($environnement);
 my $local_table;
 my %row;
 

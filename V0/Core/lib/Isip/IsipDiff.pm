@@ -204,7 +204,7 @@ sub count() {
 
 =head1 NAME
 
- IKOS::DATA::TableDiff - Class to store diff between 2 tables
+ ITable::TableDiff - Class to store diff between 2 tables
  
 =head1 SYNOPSIS
 

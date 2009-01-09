@@ -104,11 +104,11 @@ my $table_name=shift;
 ###########################################################
 my $bv_severite=0;
 
-use IKOS::SIP;
-use IKOS::DATA::DataDiff;
+use Isip::Environnement;
+use Isip::ITable::DataDiff;
 
 
-my $env_sip = SIP->new($environnement);
+my $env_sip = Environnement->new($environnement);
 
 # quirk because INFO_TABLE use %Environnement%
 $ENV{Environnement}=$environnement;

@@ -58,7 +58,7 @@ sub _set_columns_info() {
 
 package ODBC;
 
-require IKOS::DATA::abstract::DBI_interface;
+require ITable::abstract::DBI_interface;
 @ISA = ("DBI_interface");
 
 use strict;

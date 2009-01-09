@@ -5,7 +5,7 @@ use strict;
 use Carp qw(carp cluck confess croak );
 use Scalar::Util qw(blessed);
 
-use IKOS::IsipLog '$logger';
+use Isip::IsipLog '$logger';
 
 ##################################################
 ##  constructor  ##
@@ -433,7 +433,7 @@ sub equals_struct() {
 
 =head1 NAME
 
- IKOS::DATA::DATA_Interface - Abstract Interface to access data of IKOS SIP 
+ ITable::DATA_Interface - Abstract Interface to access data of IKOS SIP 
 
 =head1 SYNOPSIS
 
@@ -441,10 +441,10 @@ This Class cannnot be instancied as is.
 You must use one of the derived Class which implement the open() method and some
 method to access data like fetch_row() or insert_row().
 
-As Class sample, you can study the IKOS::DATA::Sqlite or IKOS::DATA::ODBC Classes.
+As Class sample, you can study the ITable::Sqlite or ITable::ODBC Classes.
 
- use IKOS::DATA::Sqlite;
- use IKOS::DATA::ODBC;
+ use ITable::Sqlite;
+ use ITable::ODBC;
 
  #################
  # class methods #
@@ -488,32 +488,32 @@ As Class sample, you can study the IKOS::DATA::Sqlite or IKOS::DATA::ODBC Classe
 
 =over 4
 
-=item IKOS::DATA::Sqlite
+=item ITable::Sqlite
 
 Access Data from a Sqlite database.
 
  $obj = Sqlite->open($database_name, $table_name);
 
-=item IKOS::DATA::ODBC
+=item ITable::ODBC
 
 Access Data from an ODBC database.
 
  $obj = ODBC->open($DSN, $table_name);
 
-=item IKOS::DATA::ODBC_TXT
+=item ITable::ODBC_TXT
 
 Access Data from a database using the ODBC Text Driver.
 
  $obj = ODBC_TXT->open($DSN, $table_name);
  
-=item IKOS::DATA::ITools
+=item ITable::ITools
 
 Access Data from an ITools table.
 The table name must be in $BV_TABPATH.
 
  $obj = ITools->open($table_name);
 
-=item IKOS::DATA::Histo
+=item Isip::ITable::Histo
 
 Access Data from a special Sqlite database.
 

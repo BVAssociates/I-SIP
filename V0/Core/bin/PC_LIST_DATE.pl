@@ -99,9 +99,9 @@ my $table_name=shift;
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
-use IKOS::SIP;
+use Isip::Environnement;
 
-my $sip=SIP->new($environ);
+my $sip=Environnement->new($environ);
 my $table=$sip->open_local_table($table_name."_HISTO", {debug => 0 });
 
 $table->query_field("DATE_HISTO");

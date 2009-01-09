@@ -1,12 +1,12 @@
 package HistoField;
 
-require IKOS::DATA::Sqlite;
+require ITable::Sqlite;
 @ISA = ("Sqlite");
 
 use Carp qw(carp cluck confess croak );
 use strict;
 
-use IKOS::IsipRules;
+use Isip::IsipRules;
 use Scalar::Util qw(blessed);
 #use Data::Dumper;
 

@@ -1,14 +1,14 @@
 package DataDiff;
 
 
-require IKOS::DATA::abstract::DATA_interface;
+require ITable::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
 use Carp qw(carp cluck confess croak );
 use strict;
 use Scalar::Util qw(blessed);
 
-use IKOS::IsipDiff;
+use Isip::IsipDiff;
 
 #use Data::Dumper;
 

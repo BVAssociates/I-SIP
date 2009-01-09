@@ -5,7 +5,7 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use IKOS::IsipLog '$logger';
+use Isip::IsipLog '$logger';
 
 #  Documentation
 ###########################################################
@@ -155,9 +155,9 @@ $explore_mode="compare" if $env_compare or $date_compare;
 ###########################################################
 my $bv_severite=0;
 
-use IKOS::SIP;
-use IKOS::DATA::ITools;
-use IKOS::DATA::DataDiff;
+use Isip::Environnement;
+use ITable::ITools::ITools;
+use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
 
@@ -168,8 +168,8 @@ use POSIX qw(strftime);
 my $table_status;
 
 if ($explore_mode eq "compare") {
-	my $env_sip_from = SIP->new($env_compare);
-	my $env_sip_to = SIP->new($environnement);
+	my $env_sip_from = Environnement->new($env_compare);
+	my $env_sip_to = Environnement->new($environnement);
 		
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
@@ -187,7 +187,7 @@ if ($explore_mode eq "compare") {
 
 }
 elsif ($explore_mode eq "explore") {
-	my $env_sip = SIP->new($environnement);
+	my $env_sip = Environnement->new($environnement);
 	
 	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_status->query_date($date_explore) if $date_explore;

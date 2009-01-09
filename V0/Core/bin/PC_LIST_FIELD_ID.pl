@@ -108,15 +108,15 @@ my $field_id=shift;
 #  Corps du script
 ###########################################################
 
-use IKOS::SIP;
+use Isip::Environnement;
 
 my $bv_severite=0;
 
 # New SIP Object instance
-my $ikos_sip = SIP->new($environnement, {debug => $debug_level});
+my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 
 # recupere à liste de champ à afficher
-use IKOS::DATA::ITools;
+use ITable::ITools::ITools;
 my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$tablename);
 my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
