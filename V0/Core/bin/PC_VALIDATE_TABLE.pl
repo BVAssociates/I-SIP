@@ -95,6 +95,8 @@ my $commentaire=shift or $commentaire="Validation globale";
 ###########################################################
 my $bv_severite=0;
 
+die "Not implemented";
+
 use IKOS::SIP;
 $sip = SIP->new($environnement);
 

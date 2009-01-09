@@ -1,4 +1,0 @@
-SEP=";"
-FORMAT="Login;Nom;Prenom;Commentaire"
-SIZE="20s;20s;20s;50s"
-KEY="Login"
