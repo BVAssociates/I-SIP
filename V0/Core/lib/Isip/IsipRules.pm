@@ -188,7 +188,7 @@ sub get_field_icon () {
 	my $type;
 	if (not defined $type_by_name{$type_txt}) {
 		$type="";
-		$logger->error($type_txt." n'est pas un type valide") 
+		#$logger->error($type_txt." n'est pas un type valide") 
 	} else {
 		$type=$type_by_name{$type_txt};
 	}
@@ -196,7 +196,7 @@ sub get_field_icon () {
 	my $status;
 	if (not defined $status_by_name{$status_desc}) {
 		$status="";
-		$logger->error($status_desc." n'est pas un status valide") 
+		$logger->error($self->{table_name}.":<".$status_desc."> n'est pas un status valide") 
 	} else {
 		$status=$status_by_name{$status_desc};
 	}

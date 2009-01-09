@@ -31,17 +31,17 @@ if ($@) {
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'debug',
+		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%p:%m'
 		});
 	$logger->add(file => {
 		newline  => 1,
-		maxlevel => 'debug',
+		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%p:%m',
-		filename        => 'file.log',
-		mode            => 'append'
+		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',
+		mode            => 'append',
 		});
 	
 	
