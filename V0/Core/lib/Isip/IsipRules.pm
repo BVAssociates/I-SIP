@@ -47,8 +47,8 @@ sub new() {
 	%{ $self->{line_icon} } = $class->enum_line_icon;
 	%{ $self->{field_icon} } = $class->enum_field_icon;
 	
-	%{ $self->{field_diff_status} } = $class->enum_field_diff_status;
-	%{ $self->{line_diff_status} } = $class->enum_line_diff_status;
+	%{ $self->{field_diff_icon} } = $class->enum_field_diff_icon;
+	%{ $self->{line_diff_icon} } = $class->enum_line_diff_icon;
 
 
 	# Amen
@@ -135,28 +135,40 @@ sub enum_line_icon () {
 	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu", ERROR => "erreur");
 }
 
-sub enum_field_diff_status() {
+sub enum_field_diff_icon() {
 	my $self=shift;
 	
 	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
 }
 
-sub enum_line_diff_status() {
+sub enum_line_diff_icon() {
 	my $self=shift;
 	
-	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
+	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime", ERROR => "erreur");
 }
 
 ##################################################
 ##  methods to compute status from a Histo line ##
 ##################################################
 
+#get type keyword of a column
 sub get_field_type() {
 	my $self=shift;
 	
-	my $col_name=shift or croak("usage get_type(col_name)");
+	my $col_name=shift or croak("usage get_field_type(col_name)");
 	
-	return $self->{current_type}->{$col_name};
+	my %type_by_name= reverse %{$self->{type}};
+	my $type_txt=lc $self->{current_type}->{$col_name};
+	
+	my $type;
+	if (not defined $type_by_name{$type_txt}) {
+		$type="";
+		$logger->error($type_txt." n'est pas un type valide") 
+	} else {
+		$type=$type_by_name{$type_txt};
+	}
+	return $type;
+	
 }
 
 sub get_field_description() {
@@ -180,18 +192,9 @@ sub get_field_icon () {
 	my $comment=shift;
 	
 	my %status_by_name= reverse %{$self->{field_status}};
-	my %type_by_name= reverse %{$self->{type}};
 	
 	#$logger->debug("get type of ",$name);
-	my $type_txt=lc $self->get_field_type($name);
-	
-	my $type;
-	if (not defined $type_by_name{$type_txt}) {
-		$type="";
-		#$logger->error($type_txt." n'est pas un type valide") 
-	} else {
-		$type=$type_by_name{$type_txt};
-	}
+	my $type=$self->get_field_type($name);
 	
 	my $status;
 	if (not defined $status_by_name{$status_desc}) {
@@ -275,6 +278,58 @@ sub get_line_icon () {
 	return $self->{line_icon}{SEEN} if $counter{SEEN} > 0;
 	return $self->{line_icon}{OK} if $counter{OK} > 0;
 
+}
+
+
+sub get_field_diff_icon () {
+	my $self=shift;
+	
+	my $name=shift;
+	my $diff=shift;
+	
+	#my $type=$self->get_field_type($name);
+	
+	# TODO write display rules?
+	return $self->{field_diff_icon}->{$diff};
+}
+
+sub get_line_diff_icon() {
+	my $self=shift;
+	
+	my @icon_list=@_;
+	my $return_icon;
+	
+	my %icon_by_name= reverse %{$self->{field_diff_icon}};
+	
+	my %counter;
+	foreach (keys %{$self->{field_diff_icon}} ) {
+		$counter{$_}=0;
+	}
+	
+	foreach (@icon_list) {
+		my $icon;
+		if (not defined $_) {
+			$logger->critical("Impossible de determiner l'icone de la ligne, car un champ n'a pas d'icone") ;
+			return $self->{line_diff_icon}{ERROR};
+			last;
+		}
+		elsif (not defined $icon_by_name{$_}) {
+			
+			$logger->critical("Impossible de determiner l'icone de la ligne, car $_ n'est pas un icone valide") ;
+			return $self->{line_diff_icon}{ERROR};
+			last;
+		} else {
+			$icon=$icon_by_name{$_};
+		}
+		
+		$counter{$icon}++;
+		
+	}
+	
+	return $self->{line_diff_icon}{UPDATE} if $counter{UPDATE} > 0;
+	return $self->{line_diff_icon}{NEW} if $counter{NEW} > 0;
+	return $self->{line_diff_icon}{DELETE} if $counter{DELETE} > 0;
+	return $self->{line_diff_icon}{OK} if $counter{OK} > 0;
 }
 
 1;

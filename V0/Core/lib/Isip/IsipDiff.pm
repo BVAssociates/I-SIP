@@ -82,7 +82,11 @@ sub add_source_update() {
 
 sub get_source_update() {
 	my $self=shift;
-	
+	if (@_) {
+		my $key=shift;
+		return () if not exists $self->{diff_source_update}->{$key};
+		return %{ $self->{diff_source_update}->{$key} }
+	}
 	return %{ $self->{diff_source_update} };
 }
 
@@ -102,7 +106,7 @@ sub get_row_status() {
 		$return_status="DELETE";
 	}
 	elsif (exists $self->{diff_source_update}->{$key}) {
-		$return_status="UPDATE";
+
 	}
 	
 	return $self->{avaiable_status}->{$return_status};
@@ -119,24 +123,20 @@ sub add_target_only() {
 	$self->{diff_target_only}->{$key} = $data;
 }
 
+# return data that are only on target
+# arg1 : primary key
+# return : a hash of line (hash)
+# return : a line (hash) if arg1
 sub get_target_only() {
 	my $self=shift;
-	
+	if (@_) {
+		my $key=shift;
+		return () if not exists $self->{diff_target_only}->{$key};
+		return %{ $self->{diff_target_only}->{$key} }
+	}
 	return %{ $self->{diff_target_only} };
 }
 
-sub get_target_only_by_key() {
-	my $self=shift;
-	
-	my $key=shift or croak("get_target_only_key take 1 arg : \$key");
-	
-	if (not exists $self->{diff_target_only}->{$key}) {
-		return {};
-	}
-	else {
-		return %{ $self->{diff_target_only}->{$key} };
-	}
-}
 
 sub add_source_only() {
 	my $self=shift;
@@ -150,18 +150,18 @@ sub add_source_only() {
 	$self->{diff_source_only}->{$key} = $data
 }
 
+# return data that are only on source
+# arg1 : primary key
+# return : a hash of line (hash)
+# return : a line (hash) if arg1
 sub get_source_only() {
 	my $self=shift;
-	
+	if (@_) {
+		my $key=shift;
+		return () if not exists $self->{diff_source_only}->{$key};
+		return %{ $self->{diff_source_only}->{$key} };
+	}
 	return %{ $self->{diff_source_only} };
-}
-
-sub get_source_only_by_key() {
-	my $self=shift;
-	
-	my $key=shift or croak("get_source_only_key take 1 arg : \$key");
-	
-	return %{ $self->{diff_source_only}->{$key} };
 }
 
 sub add_target_only_field() {

@@ -166,38 +166,39 @@ use POSIX qw(strftime);
 #$logger->notice("print");
 
 my $table_status;
+my $env_sip = Environnement->new($environnement);
 
 if ($explore_mode eq "compare") {
 	my $env_sip_from = Environnement->new($env_compare);
-	my $env_sip_to = Environnement->new($environnement);
+	my $env_sip = Environnement->new($environnement);
 		
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_from->query_date($date_compare) if $date_compare;
 
-	my $table_to=$env_sip_to->open_local_from_histo_table($table_name, {debug => $debug_level});
+	my $table_to=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_to->query_date($date_explore) if $date_explore;
 
 	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
 
 	$table_status->compare();
 	
-	my @query_field=$env_sip_to->get_table_field($table_name);
+	my @query_field=$env_sip->get_table_field($table_name);
 	$table_status->query_field(@query_field);
 
 }
 elsif ($explore_mode eq "explore") {
-	my $env_sip = Environnement->new($environnement);
 	
 	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_status->query_date($date_explore) if $date_explore;
 	
-	my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
-	$table_status->isip_rules($type_rules);
 	
 	my @query_field=$env_sip->get_table_field($table_name);
 	$table_status->query_field(@query_field);
 }
+
+my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
+$table_status->isip_rules($type_rules);
 
 $table_status->output_separator('@');
 
