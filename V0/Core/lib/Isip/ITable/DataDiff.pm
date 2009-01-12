@@ -51,6 +51,9 @@ sub open() {
 	# this object will store differences
 	$self->{diff}={};
 	
+	#this object will store display rules
+	$self->{isip_rules}={};
+		
 	# static value
 	$self->{current_source_only_key}=[];
 	$self->{fetch_source_only_running}=0;
@@ -114,6 +117,18 @@ sub size {
     my $self = shift;
     if (@_) { croak("'size' member is read-only") }
     return %{ $self->{table_target}->{size} };
+}
+
+sub isip_rules() {
+	my $self = shift;
+	
+	my $isip_rules_ref;
+	if (@_) {
+		$isip_rules_ref = shift;
+		croak("arg1 of isip_rules must be a object ref") if not blessed $isip_rules_ref;
+		$self->{isip_rules}=$isip_rules_ref;
+	}
+    return $self->{isip_rules} ;
 }
 
 
@@ -186,7 +201,7 @@ sub fetch_row() {
 	
 	my %current_row;
 	
-	#$self->compare() if not defined $self->{diff};
+	croak(__PACKAGE__."->compare() must be called before ".__PACKAGE__."->fetch_row()") if not blessed $self->{diff};
 	
 	# first, printing lines only in source
 	my $source_only_key=$self->_fetch_source_only();
@@ -195,7 +210,7 @@ sub fetch_row() {
 	# We use table_target to print the target table
 	# Then we add informations about the difference with table_source
 	if ($source_only_key) {
-		%current_row = $self->{diff}->get_source_only_by_key($source_only_key);
+		%current_row = $self->{diff}->get_source_only($source_only_key);
 	}
 	else {
 		#%current_row = $self->{table_target}->fetch_row();
@@ -208,10 +223,42 @@ sub fetch_row() {
 		return ();
 	}
 	
-	my $key=join(',',sort @current_row{$self->{table_target}->key()});
-	
+	# compute dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
-		$current_row{ICON}=$self->{diff}->get_row_status($key);
+	
+		my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
+		my $return_status=$line_diff_icon{OK};
+		my $key=join(',',sort @current_row{$self->key()});
+	
+		#TODO manage type for NEW and DELETE line
+		my %test=$self->{diff}->get_target_only($key);
+		if (%test) {
+			# unecessary to call isip_rules->get_field_diff_icon
+			
+			$return_status=$line_diff_icon{NEW};
+		}
+		elsif ($self->{diff}->get_source_only($key)) {
+			# unecessary to call isip_rules->get_field_diff_icon
+			$return_status=$line_diff_icon{DELETE};
+		}
+		elsif (my %source_update_row=$self->{diff}->get_source_update($key)) {
+			
+			my @diff_list;
+			
+			# compute icon field by field
+			foreach my $field (keys %current_row) {
+				if ($source_update_row{$field}) {
+					push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'UPDATE');
+				} else {
+					push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'OK');
+				}
+			}
+			
+			# compute icon of whole line
+			$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
+		}
+		
+		$current_row{ICON}=$return_status;
 	}
 	
 	return %current_row;
@@ -483,7 +530,7 @@ sub compare() {
 					$self->_info("Column only in source (ignore) : Key (".$current_keys.") $field1");
 					
 				} elsif ($row_table2{$field1} ne $row_table1{$field1}) {
-					$self->_info("Field modified in target table : Key (".$current_keys.") $field1 : '",$row_table1{$field1},"' -> '",$row_table2{$field1} ,"'");
+					$self->_info("Field modified in target table : Key (".$current_keys.") $field1 : '".$row_table1{$field1}."' -> '".$row_table2{$field1}."'");
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 					
 				}
