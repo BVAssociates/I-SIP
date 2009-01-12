@@ -42,8 +42,8 @@ sub open() {
 	
 	# DataDiff table related
 
-	$self->{table_1}=$data_ref1;
-	$self->{table_2}=$data_ref2;
+	$self->{table_source}=$data_ref1;
+	$self->{table_target}=$data_ref2;
 	
 	# member where whole table will be saved while compare
 	$self->{in_memory_table}={};
@@ -59,8 +59,8 @@ sub open() {
 	bless ($self, $class);
 	
 	# user query
-	$self->{field}  = [ $self->{table_2}->field() ];
-	$self->{query_field}  = [ $self->{table_2}->query_field() ];
+	$self->{field}  = [ $self->{table_target}->field() ];
+	$self->{query_field}  = [ $self->{table_target}->query_field() ];
 	$self->{dynamic_field}  = [ "ICON" ];
 	
 	$self->_debug("initialisation");
@@ -69,51 +69,51 @@ sub open() {
 }
 
 ##################################################
-##  public methods delegated to the first table ##
+##  public methods delegated to the target table ##
 ##################################################
 
 
 sub table_name {
     my $self = shift;
     if (@_) { croak("'table_name' member is read-only") }
-    return $self->{table_1}->{table_name};
+    return $self->{table_target}->{table_name};
 }
 
 sub field {
     my $self = shift;
     if (@_) { croak("'field' member is read-only") }
-    return @{ $self->{table_1}->{field} };
+    return @{ $self->{table_target}->{field} };
 }
 
 sub field_txt {
     my $self = shift;
     if (@_) { croak("'field_txt' member is read-only") }
-    return %{ $self->{table_1}->{field_txt} };
+    return %{ $self->{table_target}->{field_txt} };
 }
 
 sub field_desc {
     my $self = shift;
     if (@_) { croak("'field_desc' member is read-only") }
-    return %{ $self->{table_1}->{field_desc} };
+    return %{ $self->{table_target}->{field_desc} };
 }
 
 sub key {
     my $self = shift;
     if (@_) { croak("'key' member is read-only") }
-    return @{ $self->{table_1}->{key} };
+    return @{ $self->{table_target}->{key} };
 }
 
 sub not_null {
     my $self = shift;
     if (@_) { croak("'not_null' member is read-only") }
-    return @{ $self->{table_1}->{not_null} };
+    return @{ $self->{table_target}->{not_null} };
 }
 
 
 sub size {
     my $self = shift;
     if (@_) { croak("'size' member is read-only") }
-    return %{ $self->{table_1}->{size} };
+    return %{ $self->{table_target}->{size} };
 }
 
 
@@ -192,23 +192,23 @@ sub fetch_row() {
 	my $source_only_key=$self->_fetch_source_only();
 	$self->{fetch_source_only_running}=1;
 	
-	# We use table_2 to print the target table
-	# Then we add informations about the difference with table_1
+	# We use table_target to print the target table
+	# Then we add informations about the difference with table_source
 	if ($source_only_key) {
 		%current_row = $self->{diff}->get_source_only_by_key($source_only_key);
 	}
 	else {
-		#%current_row = $self->{table_2}->fetch_row();
+		#%current_row = $self->{table_target}->fetch_row();
 		%current_row = $self->_fetch_row_memory();
 	}
 	
-	# table_2 return no lines, so we return
+	# table_target return no lines, so we return
 	if (not %current_row) {
 		$self->{fetch_source_only_running}=0;
 		return ();
 	}
 	
-	my $key=join(',',sort @current_row{$self->{table_2}->key()});
+	my $key=join(',',sort @current_row{$self->{table_target}->key()});
 	
 	if (grep ('^ICON$', $self->query_field()) ) {
 		$current_row{ICON}=$self->{diff}->get_row_status($key);
@@ -261,8 +261,8 @@ sub compare_exclude() {
 sub compare_order_based() {
 	my $self=shift;
 	
-	my $table_from = $self->{table_1};
-	my $table_to = $self->{table_2};
+	my $table_from = $self->{table_source};
+	my $table_to = $self->{table_target};
 	my @key;
 
 	# store the result in a IsipDiff object
@@ -381,8 +381,8 @@ sub compare_order_based() {
 sub compare() {
 	my $self=shift;
 	
-	my $table_from = $self->{table_1};
-	my $table_to = $self->{table_2};
+	my $table_from = $self->{table_source};
+	my $table_to = $self->{table_target};
 	my @key;
 
 	# store the result in a IsipDiff object
@@ -503,12 +503,12 @@ sub update_compare_target() {
 	my $diff_object = $self->{diff};
 	
 	my $request_number=0;
-	$self->{table_2}->begin_transaction();
+	$self->{table_target}->begin_transaction();
 	
 	# remove lines only in source
 	my %key_new_hash=$diff_object->get_target_only();
 	foreach my $key_new (keys %key_new_hash ) {
-		$self->{table_2}->delete_row( %{ $key_new_hash{$key_new} } );
+		$self->{table_target}->delete_row( %{ $key_new_hash{$key_new} } );
 		$request_number++;
 	}
 	undef %key_new_hash;
@@ -516,7 +516,7 @@ sub update_compare_target() {
 	# add missing lines
 	my %key_delete_hash=$diff_object->get_source_only();
 	foreach my $key_delete (keys %key_delete_hash) {
-		$self->{table_2}->insert_row( %{ $key_delete_hash{$key_delete} } );
+		$self->{table_target}->insert_row( %{ $key_delete_hash{$key_delete} } );
 		$request_number++;
 	}
 	undef %key_delete_hash;
@@ -524,7 +524,7 @@ sub update_compare_target() {
 	# add new field
 	my @key_new_field_hash=$diff_object->get_source_only_field();
 	foreach my $new_field (@key_new_field_hash) {
-		$self->{table_2}->add_field($new_field);
+		$self->{table_target}->add_field($new_field);
 		$request_number++;
 	}
 	undef @key_new_field_hash;
@@ -546,10 +546,10 @@ sub update_compare_target() {
 			$key_update_hash{$key_update}{$_} = shift @table_key_value;
 		}
 		
-		$self->{table_2}->update_row(%{ $key_update_hash{$key_update} });
+		$self->{table_target}->update_row(%{ $key_update_hash{$key_update} });
 		$request_number++;
 	}
-	$self->{table_2}->commit_transaction();
+	$self->{table_target}->commit_transaction();
 	$self->_debug("Les changements ont été appliqués ($request_number)");
 	
 	return $request_number;
