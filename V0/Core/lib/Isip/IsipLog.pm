@@ -5,6 +5,9 @@ use Carp qw(carp cluck confess croak );
 
 use Log::Handler;
 
+
+our $logger;
+
 BEGIN {
 	use Exporter   ();
 	our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
@@ -17,10 +20,42 @@ BEGIN {
 	# your exported package globals go here,
 	# as well as any optionally exported functions
 	@EXPORT_OK   = qw($logger);
+	
+	# DIE and WARN trap
+	
+	#  Save current __WARN__ setting
+	#  Replace it with a sub that
+	#   If there is a dispatcher
+	#    Remembers the last parameters
+	#    Dispatches a warning message
+	#   Executes the standard system warn() or whatever was there before
+
+	my $WARN = $SIG{__WARN__};
+	$SIG{__WARN__} = sub {
+		if ($logger) {
+			$logger->warning( @_ );
+		}
+		$WARN ? $WARN->( @_ ) : CORE::warn( @_ );
+	};
+
+	#  Save current __DIE__ setting
+	#  Replace it with a sub that
+	#   If there is a dispatcher
+	#    Remembers the last parameters
+	#    Dispatches a critical message
+	#   Executes the standard system die() or whatever was there before
+
+	my $DIE = $SIG{__DIE__};
+	$SIG{__DIE__} = sub {
+		if ($logger) {
+			$logger->critical( @_ );
+		}
+		$DIE ? $DIE->( @_ ) : CORE::die( @_ );
+	};
+
 }
 our @EXPORT_OK;
 
-our $logger;
 
 #Check if global logger already initialized
 $logger=eval { Log::Handler->get_logger('logger') };
