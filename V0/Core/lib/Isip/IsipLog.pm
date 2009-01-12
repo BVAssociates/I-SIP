@@ -53,6 +53,8 @@ BEGIN {
 		$DIE ? $DIE->( @_ ) : CORE::die( @_ );
 	};
 
+	$Carp::Internal{__PACKAGE__} = 1;
+
 }
 our @EXPORT_OK;
 

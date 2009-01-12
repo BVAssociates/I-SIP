@@ -177,7 +177,12 @@ sub query_condition() {
 sub isip_rules() {
 	my $self = shift;
 	
-	if (@_) { $self->{isip_rules} = shift }
+	my $isip_rules_ref;
+	if (@_) {
+		$isip_rules_ref = shift;
+		croak("arg1 of isip_rules must be a object ref") if not blessed $isip_rules_ref;
+		$self->{isip_rules}=$isip_rules_ref;
+	}
     return $self->{isip_rules} ;
 }
 
