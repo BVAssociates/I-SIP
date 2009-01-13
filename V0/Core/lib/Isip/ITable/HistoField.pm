@@ -42,63 +42,6 @@ sub open() {
 	return bless($self,$class);
 }
 
-# overide Sqlite
-# Add dynamic field if necessary
-sub fetch_row_array() {
-	my $self = shift;
-	
-	my %temp_line;
-	
-	# loop if hidden fields
-	do {
-		my @return_line=$self->SUPER::fetch_row_array();
-		
-		# nothing to return, exit
-		return () if not @return_line;
-		
-		# save query_field
-		my @query_field_save=$self->query_field();
-		
-		# move dynamic field to the end
-		my @used_dynamic_fields;
-		foreach my $field (@query_field_save) {
-			if (grep ($_ eq $field, $self->dynamic_field) ) {
-				push @used_dynamic_fields, $field ;
-			}
-		}
-		$self->query_field($self->field,@used_dynamic_fields);
-		
-		# put line into hash
-		%temp_line=$self->array_to_hash(@return_line, ("") x scalar @used_dynamic_fields);
-
-		# now handle rules if defined
-		if (blessed $self->{isip_rules}) {
-			$temp_line{TYPE}=$self->{isip_rules}->get_field_type($temp_line{FIELD_NAME}) if exists $temp_line{TYPE};
-			$temp_line{ICON}=$self->{isip_rules}->get_field_icon($temp_line{FIELD_NAME},$temp_line{STATUS}, $temp_line{COMMENT}) if exists $temp_line{ICON};
-			
-			$temp_line{TEXT}=$self->{isip_rules}->get_field_description($temp_line{FIELD_NAME}) if exists $temp_line{TEXT};
-		}
-		# restore query_field
-		$self->query_field(@query_field_save);
-		
-	} while  ($temp_line{ICON} eq "cache");
-	
-	
-	return $self->hash_to_array(%temp_line);
-}
-
-sub isip_rules() {
-	my $self = shift;
-	
-	my $isip_rules_ref;
-	if (@_) {
-		$isip_rules_ref = shift;
-		croak("arg1 of isip_rules must be a object ref") if not blessed $isip_rules_ref;
-		$self->{isip_rules}=$isip_rules_ref;
-	}
-    return $self->{isip_rules} ;
-}
-
 sub query_key_value() {
 	my $self = shift;
     if (@_) { $self->{query_key_value} = shift }
@@ -123,9 +66,15 @@ sub get_query()
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, "TABLE_KEY ='".$self->query_key_value()."'" if $self->query_key_value;
 	
+	my @real_query_field;
+	foreach my $field_condition ($self->query_field()) {
+		push @real_query_field, $field_condition if not grep ($field_condition eq $_, $self->dynamic_field());
+	}
+	
+	
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
-	$select_histo= "SELECT ".join(',',$self->field)." FROM
+	$select_histo= "SELECT ".join(',',@real_query_field)." FROM
 		$self->{table_name} INNER JOIN (
 			SELECT
 			TABLE_KEY as TABLE_KEY_2,

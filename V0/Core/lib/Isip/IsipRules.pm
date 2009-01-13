@@ -158,16 +158,29 @@ sub get_field_type() {
 	my $col_name=shift or croak("usage get_field_type(col_name)");
 	
 	my %type_by_name= reverse %{$self->{type}};
-	my $type_txt=lc $self->{current_type}->{$col_name};
+	my $type_txt=lc $self->get_field_type_txt($col_name);
 	
 	my $type;
-	if (not defined $type_by_name{$type_txt}) {
+	if ($type_txt eq "") {
+		$type="";
+	}
+	elsif (not defined $type_by_name{$type_txt}) {
 		$type="";
 		$logger->error($type_txt." n'est pas un type valide") 
 	} else {
 		$type=$type_by_name{$type_txt};
 	}
 	return $type;
+	
+}
+
+#get type full descruption of a column
+sub get_field_type_txt() {
+	my $self=shift;
+	
+	my $col_name=shift or croak("usage get_field_type_txt(col_name)");
+	
+	return $self->{current_type}->{$col_name};
 	
 }
 
@@ -213,7 +226,7 @@ sub get_field_icon () {
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
 	elsif ($type eq "EXCLUDE" or $type eq "HIDDEN") {
-		$return_status=$self->{field_icon}{HIDDEN};
+		$return_status=$self->{field_icon}{OK};
 	}
 	else {
 		if ($status eq "OK") {
@@ -287,7 +300,11 @@ sub get_field_diff_icon () {
 	my $name=shift;
 	my $diff=shift;
 	
-	#my $type=$self->get_field_type($name);
+	my $type=$self->get_field_type($name);
+	
+	if ($type eq "HIDDEN") {
+		return $self->{field_diff_icon}->{OK};
+	}
 	
 	# TODO write display rules?
 	return $self->{field_diff_icon}->{$diff};

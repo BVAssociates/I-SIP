@@ -264,15 +264,29 @@ sub fetch_row()
 
 	my %row_object;
 	my @row=$self->fetch_row_array();
-	my @fields=$self->query_field();
+	my @real_fields;
+	my @dyna_fields;
 	
-	return () if @row == 0;
+	
+	foreach my $temp_field ($self->query_field()) {
+		if (grep (/^$temp_field$/, $self->dynamic_field()) ) {
+			push @dyna_fields,$temp_field;
+		}
+		else {
+			push @real_fields,$temp_field;
+		}
+	}
+
+	return () if not @row;
 	
 	# internal test
-	croak "fetch_row_array returned wrong number of values (got ".@row." instead of ".@fields.")" if  @row != @fields;
+	croak "fetch_row_array returned wrong number of values (got ".@row." instead of ".@real_fields.")" if  @row != @real_fields;
 
-	for (my $i=0; $i < @fields; $i++) {
-		$row_object{$fields[$i]}=$row[$i];
+	for (my $i=0; $i < @real_fields; $i++) {
+		$row_object{$real_fields[$i]}=$row[$i];
+	}
+	for (@dyna_fields) {
+		$row_object{$_}="";
 	}
 		
 	return %row_object;
@@ -388,7 +402,7 @@ sub has_fields() {
 	foreach my $field (@fields_requested) {
 		push (@field_found, grep {$field eq $_} @field_avaiable) ;
 	}
-	$self->_debug("has fields : ",join(',',@field_found));
+	#$self->_debug("has fields : ",join(',',@field_found));
 	return @field_found;
 }
 

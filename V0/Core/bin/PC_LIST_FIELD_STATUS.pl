@@ -105,7 +105,7 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('hvc:', \%opts);
+getopts('Thvc:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -161,6 +161,10 @@ use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
 
+## DEBUG ONLY
+if (exists $opts{T}) {$ENV{AAPTYCOD}='NOVVAL2'; $bv_severite=202 };
+## DEBUG ONLY
+
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 
@@ -171,10 +175,6 @@ if (not $table_key) {
 	log_erreur("pas de clef primaine pour la table $table_name");
 	sortie(202);
 }
-
-## DEBUG ONLY
-#$ENV{AAPTYCOD}='HCPC'; $bv_severite=202;
-## DEBUG ONLY
 
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
@@ -195,61 +195,89 @@ my $table_key_value=join(',',@table_key_list_value);
 #print STDERR "KEY_VAL=$table_key_value\n";
 ## DEBUG
 
-my $table_status;
+# recupere à liste de champ à afficher
+use ITable::ITools;
+my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
+my $separator=$itools_table->output_separator;
+my @query_field=$itools_table->field;
+
+my $rules=$ikos_sip->get_isip_rules($table_name);
+
+my %memory_row;
 
 if ($explore_mode eq "compare") {
+
 	my $env_sip_from = Environnement->new($env_compare);
 	my $env_sip_to = $ikos_sip;
 	
-	# fetch selected row from histo table
+	# open first table
 	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
 	$table_from->query_key_value($table_key_value);
 	$table_from->query_date($date_compare) if $date_compare;
 	
+	# open second table
 	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
 	$table_to->query_key_value($table_key_value);
 	$table_to->query_date($date_explore) if $date_explore;
 	
-	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
-	$table_status->query_field($table_status->query_field,"ICON");
+	# open DataDiff table from two table
+	my $table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
+	$table_status->output_separator('@');
+	
+	# Only FIELD_VALUE must be compare
+	$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
+	
+	# compute diff
 	$table_status->compare();
 	
-	$table_status->dynamic_field($table_status->dynamic_field,"TYPE","TEXT");
-	$table_status->query_field($table_status->query_field,"TYPE","TEXT");
+	# declare some additionnal blank fields
+	# (ICON field will be computed into DataDiff)
+	$table_status->dynamic_field("ICON","TYPE","TEXT");
+	$table_status->query_field(@query_field);
+
+	# Assign a IsipRules to compute ICON field
+	$table_status->isip_rules($rules);
+	
+	# put row in memory
+	while (my %row=$table_status->fetch_row) {
+		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
+		
+		# don't display ignored fields
+		if ($row{TYPE} ne "exclus") {
+			$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
+		}
+	}
 	
 }
 elsif ($explore_mode eq "explore") {
 
+	# open histo table
+	my $table_status = $ikos_sip->open_histo_field_table($table_name, {debug => $debug_level});
 	
-	
-	# recupere à liste de champ à afficher
-	use ITable::ITools;
-	my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
-	my $separator=$itools_table->output_separator;
-	my @query_field=$itools_table->field;
-
-	my $type_rules = IsipRules->new($ikos_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
-
-	# fetch selected row from histo table
-	$table_status = $ikos_sip->open_histo_field_table($table_name, {debug => $debug_level});
-	
-	$table_status->isip_rules($type_rules);
 	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
 	$table_status->query_field(@query_field);
+	
+	$table_status->output_separator('@');
+	
+	# put row in memory
+	while (my %row=$table_status->fetch_row) {
+	
+		# compute dynamic fields
+		$row{ICON}=$rules->get_field_icon($row{FIELD_NAME},$row{STATUS}, $row{COMMENT}) if exists $row{ICON};
+			
+		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
+		
+		# don't display ignored fields
+		if ($row{TYPE} ne "exclus") {
+			$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
+		}
+	}
 }
 
-$table_status->output_separator('@');
 
-my $rules=$ikos_sip->get_isip_rules($table_name);
-
-# put row in memory
-my %memory_row;
-while (my %row=$table_status->fetch_row) {
-	$row{TYPE}=$rules->get_field_type($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-	$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
-	$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
-}
 
 # order the lines in the order of table field
 my @field_order=$ikos_sip->get_table_field($table_name);

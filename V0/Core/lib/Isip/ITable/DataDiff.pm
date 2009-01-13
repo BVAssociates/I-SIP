@@ -119,6 +119,15 @@ sub size {
     return %{ $self->{table_target}->{size} };
 }
 
+sub query_field {
+    my $self = shift;
+    if (@_) {
+		$self->{table_source}->query_field(@_);
+		$self->{table_target}->query_field(@_);
+	}
+    return @{ $self->{table_target}->{query_field} };
+}
+
 sub isip_rules() {
 	my $self = shift;
 	
@@ -226,39 +235,46 @@ sub fetch_row() {
 	# compute dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
 	
-		my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
-		my $return_status=$line_diff_icon{OK};
-		my $key=join(',',sort @current_row{$self->key()});
-	
-		#TODO manage type for NEW and DELETE line
-		my %test=$self->{diff}->get_target_only($key);
-		if (%test) {
-			# unecessary to call isip_rules->get_field_diff_icon
-			
-			$return_status=$line_diff_icon{NEW};
+		if (not blessed $self->{isip_rules}) {
+			carp ("no IsipRules set");
+			$current_row{ICON}="ERROR";
 		}
-		elsif ($self->{diff}->get_source_only($key)) {
-			# unecessary to call isip_rules->get_field_diff_icon
-			$return_status=$line_diff_icon{DELETE};
-		}
-		elsif (my %source_update_row=$self->{diff}->get_source_update($key)) {
-			
-			my @diff_list;
-			
-			# compute icon field by field
-			foreach my $field (keys %current_row) {
-				if ($source_update_row{$field}) {
-					push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'UPDATE');
-				} else {
-					push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'OK');
+		else {
+		
+			my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
+			my $return_status=$line_diff_icon{OK};
+			my $key=join(',',sort @current_row{$self->key()});
+		
+			#TODO manage type for NEW and DELETE line
+			my %test=$self->{diff}->get_target_only($key);
+			if (%test) {
+				# unecessary to call isip_rules->get_field_diff_icon
+				
+				$return_status=$line_diff_icon{NEW};
+			}
+			elsif ($self->{diff}->get_source_only($key)) {
+				# unecessary to call isip_rules->get_field_diff_icon
+				$return_status=$line_diff_icon{DELETE};
+			}
+			elsif (my %source_update_row=$self->{diff}->get_source_update($key)) {
+				
+				my @diff_list;
+				
+				# compute icon field by field
+				foreach my $field (keys %current_row) {
+					if ($source_update_row{$field}) {
+						push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'UPDATE');
+					} else {
+						push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'OK');
+					}
 				}
+				
+				# compute icon of whole line
+				$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
 			}
 			
-			# compute icon of whole line
-			$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
+			$current_row{ICON}=$return_status;
 		}
-		
-		$current_row{ICON}=$return_status;
 	}
 	
 	return %current_row;
@@ -450,6 +466,10 @@ sub compare() {
 	#	croak("The 2 tables have not the same fields");
 	#}
 	
+	foreach my $key_field ($table_to->key()) {
+		croak("query fields does not contains the key fields") if not grep (/^$key_field$/, $table_to->query_field() );
+	}
+	
 	@key=$table_to->key();
 	$table_to->query_sort(@key);
 	$table_from->query_sort(@key);
@@ -492,7 +512,10 @@ sub compare() {
 			
 			# remove excluded fields
 			foreach my $field ( $self->compare_exclude ) {
-				delete $in_memory_table1{$current_keys}{$field};
+				#TODO must we keep all information about delete line or
+				# only compared field ?
+				
+				#delete $in_memory_table1{$current_keys}{$field};
 			}
 			
 			#put whole row
@@ -504,7 +527,10 @@ sub compare() {
 			
 			# remove excluded fields
 			foreach my $field ($self->compare_exclude) {
-				delete $in_memory_table2{$current_keys}{$field};
+				#TODO must we keep all information about delete line or
+				# only compared field ?
+				
+				#delete $in_memory_table2{$current_keys}{$field};
 			}
 
 			#put whole row
