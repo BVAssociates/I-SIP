@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -24,23 +26,35 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
 
-=head2 -i : Insert les données de la table IKOS
+=item -v : Mode verbeux
 
-=head2 -c nombre : Commit tous les n insertions
+=item -i : Insert les données de la table IKOS
+
+=item -c nombre : Commit tous les n insertions
+
+=back
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=over
 
-=head2 * table a créer
+=item environnement : environnement à utiliser
+
+=item tablename : table dont la base sera créé
+
+=back
 
 =head1 AUTHOR
 
@@ -63,12 +77,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n";
+	$logger->notice(@_);
 }
 
 
@@ -118,8 +134,9 @@ $db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
 
 # db2_table_line  return one row
 my %db2_table_line = $db2_table->fetch_row();
-log_erreur("la table $table_name n'est pas configurée") if not %db2_table_line;
+log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not %db2_table_line;
 
+$logger->notice("Create database for table",$table_name);
 $env_sip->initialize_database($table_name, {debug => $debug_level});
 
 if ($populate) {
@@ -129,7 +146,7 @@ if ($populate) {
 	
 	my $count=0;
 
-	print "Populate $table_name\_HISTO with data from IKOS table\n";
+	$logger->notice("Populate $table_name\_HISTO with data from IKOS table");
 	$|=1;
 	
 	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
@@ -151,12 +168,12 @@ if ($populate) {
 	#$histo_table->commit_transaction();
 	
 	# execute special query on table backend
-	print "Set STATUS to Valide\n";
+	$logger->notice("Set STATUS to Valide");
 	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
 		SET STATUS='".$histo_table->{valid_keyword}."',
 			COMMENT='Creation'");
 			
-	print "Create indexes\n";
+	$logger->notice("Create indexes");
 	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
 	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
 	$histo_table->{table_histo}->execute("ANALYZE");

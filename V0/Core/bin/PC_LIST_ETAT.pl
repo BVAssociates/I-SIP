@@ -13,7 +13,7 @@ PC_LIST_ETAT - Liste les etats possibles
 
 =head1 SYNOPSIS
 
- PC_LIST_ETAT.pl [-h][-v]
+ PC_LIST_ETAT.pl [-h] [-v]
  
 =head1 DESCRIPTION
 
@@ -21,11 +21,15 @@ Liste les etats possibles
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
-=over 4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -35,6 +39,7 @@ Liste les etats possibles
 
 =head1 ARGUMENTS
 
+none
 
 =head1 AUTHOR
 
@@ -57,12 +62,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n";
+	$logger->notice(@_);
 }
 
 

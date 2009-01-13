@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -21,21 +23,33 @@ Créer les PCI et DEF nécéssaires à la declaration d'une table dans SIP IKOS
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
 
-=head2 -c : decrit uniquement les colonnes utiles des tables (key, label)
+=item -v : Mode verbeux
+
+=item -c : decrit uniquement les colonnes utiles des tables (key, label)
+
+=back
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=over
 
-=head2 * table a décrire
+=item environnement : environnement à utiliser
+
+=item tablename : table a décrire
+
+=back
 
 =head1 AUTHOR
 
@@ -58,21 +72,23 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 sub write_file($$) {
-	die "write_file prend 2 paramtres" if @_ != 2;
+	log_erreur("write_file prend 2 paramètres") if @_ != 2;
 	my $filename=shift;
 	my $string=shift;
 	
-	print "writing to $filename\n";
-	open (FILE,">$filename") or die "error opening $filename : $!";
+	log_info("writing to",$filename);
+	open (FILE,">$filename") or log_erreur("error opening $filename :",$!);
 	print FILE $string."\n";
 	close FILE;	
 	
@@ -195,18 +211,19 @@ while (my %info_key = $list_table->fetch_row() ) {
 $list_table->finish();
 
 # access to SIP data
+log_info("opening environnement",$environnement);
 my $sip = Environnement->new($environnement);
 
 # we are ready, so begin with cleanup old files
 
 
 if ($table_name) {
-	print "Cleaning old labels for $table_name\n";
+	log_info("Cleaning old labels for", $table_name);
 	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_$environnement');
 	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_$environnement');
 }
 else {
-	print "Cleaning all old labels\n";
+	log_info("Cleaning all old labels");
 	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
 
@@ -224,6 +241,7 @@ while (my %info = $list_table->fetch_row() ) {
 	#	next;
 	#}
 	# open DATA table
+	log_info("Get information from",$info{TABLE_NAME});
 	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
 	my @field_list=(@virtual_field,$ikos_data->field() );
 	
@@ -310,7 +328,7 @@ while (my %info = $list_table->fetch_row() ) {
 		my $label_desc="";
 		$label_desc= "(".$info{Description}.")" if $info{Description};
 		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME},$info{Description});
-		print "Insert $ikos_data_table into ICleLabels\n";
+		log_info("Insert $ikos_data_table into ICleLabels");
 		system('Insert -f into ICleLabels values',$label_string);
 		if ($? == -1) {
 			die "failed to execute: $!\n";
@@ -326,13 +344,13 @@ while (my %info = $list_table->fetch_row() ) {
 	my @pkey_list=split(',',$info{PRIMARY_KEY});
 	map {$_='%['.$_.']'} @pkey_list;
 	my $label_string = sprintf($label_item_template,$ikos_data_table,join(',',@pkey_list),$label_desc);
-	print "Insert $ikos_data_table into ICleLabels\n";
+	log_info("Insert $ikos_data_table into ICleLabels");
 	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
-		die "failed to execute: $!\n";
+		log_erreur("failed to execute:",$!);
 	}
 	elsif (($? >> 8) != 0) {
-		die sprintf ("'Insert' died with signal %d, %s",($?  >> 8))
+		log_erreur(sprintf ("'Insert' died with signal %d, %s",($?  >> 8)));
 	};
 	
 	# CREATE/update table INFO
@@ -342,5 +360,5 @@ while (my %info = $list_table->fetch_row() ) {
 	##TODO
 }
 
+log_info("Collecte des données sur le portail");
 system('AgentCollect -s PortalICleLabels ICleLabels');
-        

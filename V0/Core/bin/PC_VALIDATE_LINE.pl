@@ -5,6 +5,7 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
 
 ###########################################################
 =head1 NAME
@@ -13,15 +14,15 @@ PC_VALIDATE_LINE
 
 =head1 SYNOPSIS
 
- PC_VALIDATE_LINE.pl environnement table
+ PC_VALIDATE_LINE.pl environnement table_name
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Met le status "Valide" sur tous les champs d'une ligne
 
 =head2 ENVIRONNEMENT
 
-=over 4
+=over
 
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
@@ -29,7 +30,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head2 OPTIONS
 
-=over 4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -39,13 +40,11 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head2 ARGUMENTS 
 
-=over 4
+=over
 
-=item * environnement à utiliser
+=item environnement : environnement à utiliser
 
-=item * nom de la table a décrire
-
-=item * nom du champ
+=item table_name : nom de la table a décrire
 
 =back
 
@@ -69,11 +68,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n";
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
+	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -82,7 +84,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('Thv', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -101,13 +103,6 @@ if ( @ARGV != 2) {
 my $environnement=shift;
 my $tablename=shift;
 
-# quirk to test
-#$ENV{Environnement}=$environnement;
-#$ENV{GSL_FILE}=$tablename;
-
-##for debug
-##$ENV{AAPTYCOD}='AFFEXT';
-
 
 #  Corps du script
 ###########################################################
@@ -115,6 +110,10 @@ use ITable::ITools;
 use Isip::Environnement;
 
 my $bv_severite=0;
+
+## DEBUG ONLY
+if (exists $opts{T}) { $ENV{RDNPRCOD}='VTS'; $bv_severite=202 };
+## DEBUG ONLY
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -127,6 +126,7 @@ if (not $table_key) {
 	sortie(202);
 }
 
+log_info("recherche de la clef primaire <$table_key>");
 my $table_key_value = $ENV{$table_key} if exists $ENV{$table_key};
 if (not $table_key_value) {
 	log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
@@ -136,7 +136,7 @@ if (not $table_key_value) {
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_from_histo_table($tablename, {debug => $debug_level});
 
-print "Validate all field for key $table_key_value\n";
+log_info("Validate all field for key $table_key_value");
 $table_histo->validate_row_by_key($table_key_value);
 
 # update all field for key

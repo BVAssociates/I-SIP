@@ -5,9 +5,7 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use Carp;
-$Carp::MaxArgLen=0;
-$Carp::MaxArgNums=0;
+use Isip::IsipLog '$logger';
 
 #  Documentation
 ###########################################################
@@ -17,17 +15,22 @@ PC_LIST_FIELD_DIFF - Affiche les deux versions d'un champ d'une ligne d'une tabl
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_DIFF.pl [-c environnement_source@date_source] environnement_cible table date_cible
+ PC_LIST_FIELD_DIFF.pl [-c environnement_source@date_source] environnement_cible table_name [date_cible]
  
 =head1 DESCRIPTION
 
 Affiche les deux versions d'un champ d'une ligne d'une table.
 
-La premiere version affichée est la version de l'environnement à une date donnée spécifié par
+La premiere ligne affichée est la version d'un champ de l'environnement à une date donnée spécifié par
 l'option -c, ou bien par l'environnement (voir partie ENVIRONNEMENT).
 
-La seconde version affichée est la version de l'environnement à une date donnée spécifié par
+La seconde ligne affichée est la version du champ de l'environnement à une date donnée spécifié par
 les arguments environnement_cible et date_cible.
+
+Si date_source ou date_cible est omis, alors la date est la date de la dernière collecte.
+
+Une option cachée -T existe pour mettre valider le script avec une valeur de CLE de test.
+
 
 =head1 ENVIRONNEMENT
 
@@ -36,6 +39,8 @@ les arguments environnement_cible et date_cible.
 =item Environnement : Environnement en cours d'exploration
 
 =item CLE=VALEUR : l'environnement doit contenir la valeur de la clef de la ligne à afficher
+
+exemple : RDNPRCOD=VTS
 
 =item FIELD_NAME : nom du champ à afficher
 
@@ -59,15 +64,20 @@ les arguments environnement_cible et date_cible.
 
 =item -c environnement_source@date_source : force le mode COMPARE
 
+Un des deux paramètres "environnement_source"
+ou "date_source" peut être vide
+
 =back
 
 =head1 ARGUMENTS
 
 =over 4
 
-=item * environnement de destination
+=item environnement_cible : environnement de la destination
 
-=item * table a afficher
+=item table_name : table a afficher
+
+=item date_cible : date de la destination
 
 =back
 
@@ -95,12 +105,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -157,7 +169,7 @@ $env_compare=$environnement if $date_compare and not $env_compare;
 
 
 ## DEBUG ONLY
-if (exists $opts{T}) {$ENV{RDNPRCOD}='VTS'; $field_name='RDGDNDOS'; $bv_severite=202 };
+if (exists $opts{T}) { $ENV{RDNPRCOD}='VTS'; $field_name='RDGDNDOS'; $bv_severite=202 };
 ## DEBUG ONLY
 
 

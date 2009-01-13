@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -21,7 +23,7 @@ Liste l'historique d'un champs d'une table dans un environnement
 
 =head2 ENVIRONNEMENT
 
-=over 4
+=over
 
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
@@ -29,7 +31,7 @@ Liste l'historique d'un champs d'une table dans un environnement
 
 =head2 OPTIONS
 
-=over 4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -41,11 +43,11 @@ Liste l'historique d'un champs d'une table dans un environnement
 
 =over 4
 
-=item * environnement à utiliser
+=item environnement : environnement à utiliser
 
-=item * nom de la table a décrire
+=item table : nom de la table a décrire
 
-=item * nom du champ
+=item champ : nom du champ
 
 =back
 
@@ -69,11 +71,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n";
+	#print STDERR "ERREUR: ".join(" ",@_)."\n";
+	$logger->error(@_);
+	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n";
+	$logger->notice(@_);
 }
 
 
@@ -82,7 +87,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('Thv', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -109,13 +114,16 @@ $ENV{GSL_FILE}=$tablename;
 ##for debug
 #$ENV{AAPTYCOD}='AFFEXT';
 
-
 #  Corps du script
 ###########################################################
 use ITable::ITools;
 use Isip::Environnement;
 
 my $bv_severite=0;
+
+## DEBUG ONLY
+if (exists $opts{T}) { $ENV{RDNPRCOD}='VTS'; $bv_severite=202 };
+## DEBUG ONLY
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -131,28 +139,30 @@ if (not $table_key) {
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
 
-
+log_info("deduction de la clef primaire depuis l'environnement");
 foreach (@table_key_list) {
 	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
 	if (not $ENV{$_}) {
-		log_erreur("Clef primaine <$ENV{$_}> n'est pas definie dans l'environnement");
+		log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
 		sortie(202);
 	}
 }
 
 my $table_key_value=join(',',@table_key_list_value);
 
-print STDERR "KEY= $table_key\n";
-print STDERR "KEY_VAL=$table_key_value\n";
+log_info("KEY= $table_key");
+log_info("KEY_VAL=$table_key_value");
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
 $table_histo->query_field($ikos_sip->get_histo_field());
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
+my $counter=0;
 while (my @line=$table_histo->fetch_row_array() ) {
+	$counter++;
 	print join('@',@line)."\n";
 }
 
-
+log_erreur("No history found for:",$field) if not $counter;
 

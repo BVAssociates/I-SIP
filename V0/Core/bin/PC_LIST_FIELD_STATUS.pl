@@ -5,15 +5,18 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
+
 #  Documentation
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne de ICON
+PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne ICON
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-c environnement_source@date_source] environnement_cible table date_cible
+ PC_LIST_FIELD_STATUS.pl [-c environnement_source@date_source] environnement_cible table_name date_cible
  
 =head1 DESCRIPTION
 
@@ -23,14 +26,18 @@ Par défaut, la colonne ICON contient l'état du commentaire.
 
 Avec l'option -c, ICON contient 
 la différence avec un autre environnement ou une autre date.
+Dans ce mode, les informations affichés sont celles de la cible.
+L'icone correspond à la différence de donnée de la source vers la cible.
 
 =head1 ENVIRONNEMENT
 
-=over 4
+=over
 
 =item Environnement : Environnement en cours d'exploration
 
 =item CLE=VALEUR : l'environnement doit contenir la valeur de la clef de la ligne à afficher
+
+exemple : RDNPRCOD=VTS
 
 =item DATE_EXPLORE : Date en cours d'exploration
 
@@ -44,7 +51,7 @@ la différence avec un autre environnement ou une autre date.
 
 =head1 OPTIONS
 
-=over 4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -56,11 +63,13 @@ la différence avec un autre environnement ou une autre date.
 
 =head1 ARGUMENTS
 
-=over 4
+=over
 
-=item * environnement de destination
+=item environnement_cible : environnement la destination
 
-=item * table a afficher
+=item table_name : table a afficher
+
+=item date_cible : date utilisée pour la destination
 
 =back
 
@@ -85,12 +94,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -150,6 +161,7 @@ $env_compare=$environnement if $date_compare and not $env_compare;
 my $explore_mode="explore";
 $explore_mode="compare" if $env_compare or $date_compare;
 
+log_info("Mode d'exploration : $explore_mode");
 
 #  Corps du script
 ###########################################################
@@ -162,7 +174,7 @@ use Isip::ITable::DataDiff;
 use POSIX qw(strftime);
 
 ## DEBUG ONLY
-if (exists $opts{T}) {$ENV{AAPTYCOD}='NOVVAL2'; $bv_severite=202 };
+if (exists $opts{T}) {$ENV{RDNPRCOD}='VTS'; $bv_severite=202 };
 ## DEBUG ONLY
 
 # New SIP Object instance
@@ -172,28 +184,26 @@ my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
 my $table_key = $ikos_sip->get_table_key($table_name);
 
 if (not $table_key) {
-	log_erreur("pas de clef primaine pour la table $table_name");
+	log_erreur("pas de clef primaine configurée pour la table $table_name");
 	sortie(202);
 }
 
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
 
-# recherche de la clef dans l'environnement
+log_info("recherche de la clef primaire $table_key dans l'environnement");
 foreach (@table_key_list) {
 	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
 	if (not $ENV{$_}) {
-		log_erreur("Clef primaine <$_> n'est pas definie dans l'environnement");
+		log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
 		sortie(202);
 	}
 }
 
 my $table_key_value=join(',',@table_key_list_value);
 
-## DEBUG
-#print STDERR "KEY= $table_key\n";
-#print STDERR "KEY_VAL=$table_key_value\n";
-## DEBUG
+log_info("KEY= $table_key");
+log_info("KEY_VAL=$table_key_value");
 
 # recupere à liste de champ à afficher
 use ITable::ITools;

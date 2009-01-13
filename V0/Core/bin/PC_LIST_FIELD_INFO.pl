@@ -5,11 +5,13 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_INFO - Liste le contenu d'une table locale
+PC_LIST_FIELD_INFO - Liste les informations d'une table
 
 =head1 SYNOPSIS
 
@@ -17,15 +19,19 @@ PC_LIST_FIELD_INFO - Liste le contenu d'une table locale
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Liste les informations d'une table contenue dans la table suffixée _INFO de la base
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
-=over4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -35,7 +41,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 ARGUMENTS
 
-=over4
+=over
 
 =item environnement : environnement à utiliser
 
@@ -64,12 +70,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 

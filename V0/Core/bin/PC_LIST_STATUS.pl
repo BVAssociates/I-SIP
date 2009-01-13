@@ -85,12 +85,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -150,6 +152,7 @@ $env_compare=$environnement if $date_compare and not $env_compare;
 my $explore_mode="explore";
 $explore_mode="compare" if $env_compare or $date_compare;
 
+log_info("mode $explore_mode activé");
 
 #  Corps du script
 ###########################################################
@@ -161,9 +164,6 @@ use Isip::ITable::DataDiff;
 
 use POSIX qw(strftime);
 
-#$logger->debug("print");
-#$logger->error("print");
-#$logger->notice("print");
 
 my $table_status;
 my $env_sip = Environnement->new($environnement);

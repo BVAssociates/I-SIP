@@ -5,23 +5,29 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
 
-PC_UPDATE_HISTO - Met à jour les champs d'une table Historique depuis la référence
+PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl environnement tablename
+ PC_UPDATE_HISTO.pl [-h] [-v] environnement tablename
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par ODBC.
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
@@ -33,9 +39,9 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=head2 environnement : environnement à utiliser
 
-=head2 * table a décrire
+=head2 tablename : table a décrire
 
 =head1 AUTHOR
 
@@ -58,12 +64,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -90,6 +98,8 @@ if ( @ARGV != 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 
+$table_name="" if $table_name eq "ALL";
+
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
@@ -108,8 +118,10 @@ my $db2_table = ITools->open("INFO_TABLE" ,{debug => $debug_level});
 
 $db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
 
+my $counter=0;
 while (my %db2_table_line = $db2_table->fetch_row() ) {
-
+	$counter++;
+	
 	my $table_name=$db2_table_line{TABLE_NAME};
 	
 	#open IKOS table for DATA
@@ -125,5 +137,7 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	}
 
 }
+
+log_erreur("No table found for",$table_name) if not $counter;
 
 sortie($bv_severite);

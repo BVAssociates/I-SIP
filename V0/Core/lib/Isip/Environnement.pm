@@ -2,14 +2,17 @@ package Environnement;
 
 use strict;
 
-use ITable::ODBC;
-use ITable::Sqlite;
 use ITable::ITools;
-use Isip::ITable::Histo;
-use Isip::ITable::HistoField;
-use Isip::IsipRules;
+# commented lines, because module loaded on demand
+#use ITable::ODBC;
+#use ITable::Sqlite;
+#use Isip::ITable::Histo;
+#use Isip::ITable::HistoField;
+#use Isip::IsipRules;
 
 use Carp qw(carp croak );
+
+use Isip::IsipLog '$logger';
 
 sub new() {
     my $proto = shift;
@@ -32,6 +35,8 @@ sub new() {
 	$self->{datasource}=$env_config{Datasource};
 	
 	croak "Datasource field cannot be null" if not $env_config{Datasource};
+	
+	$logger->info("Environnement $self->{environnement} opened");
 	
 	return bless($self, $class);
 }
@@ -110,13 +115,15 @@ sub get_sqlite_path() {
 	}
 	
 	#not found
-	carp "$filename not found in BV_TABPATH";
+	$logger->error("$filename not found in BV_TABPATH");
 	return undef;
 }
 
 # change this methods to configure Database Access
 sub exist_local_table() {
 	my $self = shift;
+	
+	use ITable::Sqlite;
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
@@ -140,6 +147,8 @@ sub exist_local_table() {
 sub get_isip_rules() {
 	my $self = shift;
 	
+	use Isip::IsipRules;
+	
 	my $table_name=shift or croak "open_isip_rules() wait args : 'tablename'";
 	
 	my $tmp_return = eval {IsipRules->new($self->get_sqlite_path($table_name), $table_name, @_)};
@@ -150,6 +159,8 @@ sub get_isip_rules() {
 sub open_local_table() {
 	my $self = shift;
 	
+	use ITable::Sqlite;
+	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
 	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name), $table_name, @_)};
@@ -159,6 +170,8 @@ sub open_local_table() {
 
 sub open_local_from_histo_table() {
 	my $self = shift;
+	
+	use Isip::ITable::Histo;
 	
 	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
 	
@@ -176,6 +189,8 @@ sub open_local_from_histo_table() {
 sub open_histo_field_table() {
 	my $self = shift;
 	
+	use Isip::ITable::HistoField;
+	
 	my $table_name=shift or croak "open_histo_field_table() wait args : 'tablename'";
 	
 	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
@@ -188,6 +203,8 @@ sub open_histo_field_table() {
 
 sub open_ikos_table() {
 	my $self = shift;
+	
+	use ITable::ODBC;
 	
 	my $table_name=shift or croak "open_ikos_table() wait args : 'tablename'";
 	
@@ -202,27 +219,13 @@ sub open_ikos_table() {
 	return $table_ikos;
 }
 
-=begin comment : may be confusing
-
-sub open_histo_table() {
-	my $self = shift;
-	
-	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
-	
-	return Sqlite->open("IKOS_".$self->{environnement} , $table_name."_HISTO", @_);
-}
-
-=end
-
-=cut
-
 sub initialize_database() {
 	my $self=shift;
 	
 	my $tablename=shift or die "bad arguments";
 	
 	my $options=shift;
-	die "bad arguments" if $options and ref($options) ne "HASH";
+	croak "bad arguments" if $options and ref($options) ne "HASH";
 
 	# Get infos from IKOS tables via ODBC
 	my $table = $self->open_ikos_table($tablename, {debug => 0 });
@@ -236,11 +239,13 @@ sub initialize_database() {
 	$table_def->finish;
 	
 	# compute path of database file
-	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/".$ENV{ServiceName}."/tab/IKOS_".$self->{environnement}."_".$tablename.".sqlite";
+	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
+	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
+	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/IKOS_".$self->{environnement}."_".$tablename.".sqlite";
 	
-	die "file <$database_path> already exist" if -e $database_path;
+	die "database already exist at <$database_path>" if -e $database_path;
 	
-	print "Creating empty file : $database_path\n";
+	$logger->notice("Creating empty file : $database_path");
 	#create empty file
 	open DATABASEFILE,">$database_path" or die "unable to create file : $!";
 	close DATABASEFILE;
@@ -250,7 +255,7 @@ sub initialize_database() {
 	# opening master table
 	my $master_table=Sqlite->open($database_path, 'sqlite_master', $options);
 	
-	print "Create table $tablename\_HISTO\n";
+	$logger->notice("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE $tablename\_HISTO (
 	ID INTEGER PRIMARY KEY,
 	DATE_HISTO VARCHAR(30),
@@ -263,7 +268,7 @@ sub initialize_database() {
 	COMMENT VARCHAR(50),
 	STATUS VARCHAR(30))");
 
-	print "Create table $tablename\_INFO\n";
+	$logger->notice("Create table $tablename\_INFO");
 	$master_table->execute("CREATE TABLE $tablename\_INFO (
 	FIELD_NAME VARCHAR(30) PRIMARY KEY,
 	DATE_UPDATE VARCHAR(30) ,
@@ -278,12 +283,12 @@ sub initialize_database() {
 	
 	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
 	
-	warn "WARNING: $tablename n'a pas de clef primaire définie dans INFO_TABLE" if not $defined_table{PRIMARY_KEY};
+	$logger->error("$tablename n'a pas de clef primaire définie dans INFO_TABLE") if not $defined_table{PRIMARY_KEY};
 
 	my %size_hash=$table->size();
 	my %field_txt_hash=$table->field_txt();
 	
-	print "Populate $tablename\_INFO with information from IKOS table\n";
+	$logger->notice("Populate $tablename\_INFO with information from IKOS table");	
 	
 	$info_table->begin_transaction;
 	foreach my $field ($table->field) {

@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -17,7 +19,7 @@ PC_LIST_DATE - Liste les date de mise à jour d'une table dans un environnement
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Liste les date de collecte d'une table dans un environnement
 
 =head1 ENVIRONNEMENT
 
@@ -25,7 +27,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 OPTIONS
 
-=over4
+=over
 
 =item -h : Affiche l'aide en ligne
 
@@ -35,7 +37,7 @@ Liste les champs d'une table dans un environnement à la date courante
 
 =head1 ARGUMENTS
 
-=over4
+=over 4
 
 =item environnement : environnement à utiliser
 
@@ -64,12 +66,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -102,7 +106,7 @@ my $bv_severite=0;
 use Isip::Environnement;
 
 my $sip=Environnement->new($environ);
-my $table=$sip->open_local_table($table_name."_HISTO", {debug => 0 });
+my $table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level });
 
 $table->query_field("DATE_HISTO");
 $table->custom_select_query("select distinct DATE_HISTO from $table_name\_HISTO");

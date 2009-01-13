@@ -5,11 +5,13 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_ODBC - Liste les champs d'une table dans un environnement
+PC_LIST_FIELD_ODBC - Liste les champs d'une table IKOS par ODBC
 
 =head1 SYNOPSIS
 
@@ -17,43 +19,33 @@ PC_LIST_FIELD_ODBC - Liste les champs d'une table dans un environnement
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Liste les champs d'une table IKOS à la date courante en utilisant le driver ODBC
 
 =head2 ENVIRONNEMENT
 
-=over 4
+=over
 
-=item ITOOLS
-
-L'environnement du service de l'ICles IKOS doit être chargé
+=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
 =back
 
 =head2 OPTIONS
 
-=over 4
+=over
 
-=item -h
+=item -h : Affiche l'aide en ligne
 
-Affiche l'aide en ligne
-
-=item -v
-
-Mode verbeux
+=item -v : Mode verbeux
 
 =back
 
 =head2 ARGUMENTS 
 
-=over 4
+=over
 
-=item *
+=item environnement : environnement à utiliser
 
-environnement à utiliser
-
-=item *
-
-table a décrire
+=item tablename : table a décrire
 
 =back
 
@@ -78,12 +70,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -112,15 +106,14 @@ my $table=shift;
 
 #  Corps du script
 ###########################################################
-use ITable::ODBC;
+use Isip::Environnement;
 
+my $isip_env=Environnement->new($environ);
 
-my $database_name="IKOS_DEV";
-
-my $table_info = ODBC_TXT->open($database_name, $table, {debug => $debug_level });
+my $table_info = $isip_env->open_ikos_table($table, {debug => $debug_level });
 
 if (not defined $table_info) {
-	die "error opening $database_name.$table";
+	die "error opening $table";
 }
 
 while (my %line=$table_info->fetch_row() ) {

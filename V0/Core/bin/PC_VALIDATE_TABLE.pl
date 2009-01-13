@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -58,12 +60,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n";
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n";
+	$logger->notice(@_);
 }
 
 
@@ -95,7 +99,9 @@ my $commentaire=shift or $commentaire="Validation globale";
 ###########################################################
 my $bv_severite=0;
 
+
 die "Not implemented";
+
 
 use Isip::Environnement;
 $sip = Environnement->new($environnement);
