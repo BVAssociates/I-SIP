@@ -35,7 +35,7 @@ BEGIN {
 		if ($logger) {
 			$logger->warning( @_ );
 		}
-		$WARN ? $WARN->( @_ ) : CORE::warn( @_ );
+		#$WARN ? $WARN->( @_ ) : CORE::warn( @_ );
 	};
 
 	#  Save current __DIE__ setting
@@ -50,7 +50,7 @@ BEGIN {
 		if ($logger) {
 			$logger->critical( @_ );
 		}
-		$DIE ? $DIE->( @_ ) : CORE::die( @_ );
+		$DIE ? $DIE->() : CORE::die();
 	};
 
 	$Carp::Internal{__PACKAGE__} = 1;
@@ -68,13 +68,13 @@ if ($@) {
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'info',
+		maxlevel => 'error',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%p:%m'
 		});
 	$logger->add(file => {
 		newline  => 1,
-		maxlevel => 'info',
+		maxlevel => 'debug',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%p:%m',
 		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',

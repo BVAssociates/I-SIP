@@ -149,8 +149,10 @@ my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
-my $pci_field_template='Item~~Historique~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
-Item~~Editer~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE}"~~IsipProcessor~~0~~Configure';
+my $pci_field_template='Item~~Historique Complet~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
+Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE}"~~IsipProcessor~~0~~Configure
+Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF~0~~Configure
+';
 
 my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s (%s)';
 my $label_item_template='IKOS_TABLE_%s.Item;line_%%[ICON];%s %s';
@@ -284,7 +286,7 @@ while (my %info = $list_table->fetch_row() ) {
 		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
 	}
 
-	$string .= sprintf($pci_fkey_template,join(',',@fkey_list));
+	$string .= sprintf($pci_fkey_template,join(',',@fkey_list)) if @fkey_list;
 
 	
 	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
