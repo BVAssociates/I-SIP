@@ -58,9 +58,9 @@ public class IsipProcessor extends ProcessorFrame {
        	trace_methods.beginningOfMethod();
 		trace_methods.endOfMethod();
 	}
-	
-	
 
+	
+	
 	public ProcessorInterface duplicate() {
 		
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
@@ -305,7 +305,7 @@ public class IsipProcessor extends ProcessorFrame {
 		// On redimensionne la fenêtre
 		setPreferredSize(new Dimension(400, 400));
 
-        populateFormPanel(true);
+        populateFormPanel(false);
 
 		trace_methods.endOfMethod();
 	}
@@ -319,12 +319,16 @@ public class IsipProcessor extends ProcessorFrame {
         if (refresh) {
             //recuperation des données depuis la table
             GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
-            String field_name=((IsisParameter)node.getContext(true).get(_formKey)).value;
+            String field_id=((IsisParameter)node.getContext(true).get(_formKey)).value;
+            String field_name=((IsisParameter)node.getContext(true).get("FIELD_NAME")).value;
             SimpleSelect HistoTable=
-                    new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
-                    //new SimpleSelect(getSelectedNode(), node.getTableName());
-            data=HistoTable.get(field_name);
+                    //new SimpleSelect(getSelectedNode(), "FIELD_HISTO");
+                    new SimpleSelect(getSelectedNode(), node.getTableName(),new String[] {""}, _formKey+" = "+field_id);
             //data=HistoTable.get(field_name);
+            data=HistoTable.get(field_name);
+            if (data == null) {
+                throw new InnerException("Les informations ont changés pendant l'edition", "Veuiller fermer et recommencer ", null);
+            }
         } else {
             //recuperation des données du noeud courant
             data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
@@ -358,7 +362,14 @@ public class IsipProcessor extends ProcessorFrame {
         }
         return data;
     }
-
+    /**
+     * Fonction prévue pour contourner le problemes des accents dans le Administrate
+     * Problème depuis résolu
+     *
+     * @param phrase
+     * @return
+     */
+    @Deprecated
     public String removeAccents(String phrase) {
         String PLAIN_ASCII =
       "AaEeIiOoUu"    // grave
@@ -412,7 +423,8 @@ public class IsipProcessor extends ProcessorFrame {
             JComponent textBox = _fieldObject.get(data_from[i].name);
             if (textBox instanceof JTextField) {
                 data.add(new IsisParameter(data_from[i].name,
-                        removeAccents(((JTextField) textBox).getText()) ,
+                        //removeAccents(((JTextField) textBox).getText()) ,
+                        ((JTextField) textBox).getText() ,
                         sep));
 
             } else if (textBox instanceof JLabel) {
