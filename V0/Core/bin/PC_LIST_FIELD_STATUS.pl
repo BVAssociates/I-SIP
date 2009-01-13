@@ -13,7 +13,7 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne de
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-c environnement_source@date_source] environnement_cible date_cible table
+ PC_LIST_FIELD_STATUS.pl [-c environnement_source@date_source] environnement_cible table date_cible
  
 =head1 DESCRIPTION
 
@@ -222,7 +222,6 @@ if ($explore_mode eq "compare") {
 	
 	# open DataDiff table from two table
 	my $table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
-	$table_status->output_separator('@');
 	
 	# Only FIELD_VALUE must be compare
 	$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
@@ -245,7 +244,7 @@ if ($explore_mode eq "compare") {
 		
 		# don't display ignored fields
 		if ($row{TYPE} ne "exclus") {
-			$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
+			$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
 		}
 	}
 	
@@ -272,7 +271,7 @@ elsif ($explore_mode eq "explore") {
 		
 		# don't display ignored fields
 		if ($row{TYPE} ne "exclus") {
-			$memory_row{$row{FIELD_NAME}}= join($table_status->output_separator,$table_status->hash_to_array(%row))."\n";
+			$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
 		}
 	}
 }
