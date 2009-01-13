@@ -547,14 +547,11 @@ sub compare() {
 			
 				next if grep(/^$field1$/, $self->compare_exclude);
 				
-				if (not exists $row_table2{$field1}) {
+				if (not exists $row_table1{$field1}) {
 					$self->_info("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff}->add_source_only_field($field1);
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 				
-				} elsif (not defined $row_table1{$field1}) {
-					$self->_info("Column only in source (ignore) : Key (".$current_keys.") $field1");
-					
 				} elsif ($row_table2{$field1} ne $row_table1{$field1}) {
 					$self->_info("Field modified in target table : Key (".$current_keys.") $field1 : '".$row_table1{$field1}."' -> '".$row_table2{$field1}."'");
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});

@@ -325,7 +325,7 @@ sub fetch_row() {
 	# now the status has been computed, we remove unwanted field
 	my %return_query_line;
 	foreach ($self->query_field()) {
-		$return_query_line{$_}=$return_line{$_};
+		$return_query_line{$_}=$return_line{$_} if exists $return_line{$_};
 	}
 	
 	return %return_query_line;
