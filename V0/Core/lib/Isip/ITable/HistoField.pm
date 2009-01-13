@@ -65,6 +65,7 @@ sub get_query()
 	my $date_format = "%Y-%m-%d %H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, "TABLE_KEY ='".$self->query_key_value()."'" if $self->query_key_value;
+	push @select_conditions, $self->query_condition() if $self->query_condition;
 	
 	my @real_query_field;
 	foreach my $field_condition ($self->query_field()) {
