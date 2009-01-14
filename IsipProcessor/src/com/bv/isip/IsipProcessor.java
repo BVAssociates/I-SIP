@@ -495,7 +495,7 @@ public class IsipProcessor extends ProcessorFrame {
 
         // changement dynamique de l'icone en cas de changement
         //node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("ICON")).getSelectedItem());
-        node.getLabel().icon = "field_"+TreeNodeFactory.getValueOfParameter(data_node, "ICON");
+        node.getLabel().icon = "isip_"+TreeNodeFactory.getValueOfParameter(data_node, "ICON");
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
         
         //close();
