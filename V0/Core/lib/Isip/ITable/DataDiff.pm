@@ -237,41 +237,23 @@ sub fetch_row() {
 	
 		if (not blessed $self->{isip_rules}) {
 			carp ("no IsipRules set");
-			$current_row{ICON}="ERROR";
+			$current_row{ICON}="isip_error";
 		}
 		else {
 		
 			my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
 			my $return_status=$line_diff_icon{OK};
 			my $key=join(',',sort @current_row{$self->key()});
-		
-			#TODO manage type for NEW and DELETE line
-			my %test=$self->{diff}->get_target_only($key);
-			if (%test) {
-				# unecessary to call isip_rules->get_field_diff_icon
-				
-				$return_status=$line_diff_icon{NEW};
+			
+			my @diff_list;
+			
+			# compute icon field by field
+			foreach my $field (keys %current_row) {
+				push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,$self->{diff}->get_field_status($key,$field));
 			}
-			elsif ($self->{diff}->get_source_only($key)) {
-				# unecessary to call isip_rules->get_field_diff_icon
-				$return_status=$line_diff_icon{DELETE};
-			}
-			elsif (my %source_update_row=$self->{diff}->get_source_update($key)) {
-				
-				my @diff_list;
-				
-				# compute icon field by field
-				foreach my $field (keys %current_row) {
-					if ($source_update_row{$field}) {
-						push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'UPDATE');
-					} else {
-						push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,'OK');
-					}
-				}
-				
-				# compute icon of whole line
-				$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
-			}
+			
+			# compute icon of whole line
+			$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
 			
 			$current_row{ICON}=$return_status;
 		}

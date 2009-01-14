@@ -62,23 +62,25 @@ our @EXPORT_OK;
 #Check if global logger already initialized
 $logger=eval { Log::Handler->get_logger('logger') };
 
-# if not create it
+# if not, create it
 if ($@) {
 	$logger=Log::Handler->create_logger('logger');
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'error',
+		maxlevel => 'notice',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%p:%m'
+		message_layout  => '%T:%L:%S:%m',
+		alias    => 'screen-out',
 		});
 	$logger->add(file => {
 		newline  => 1,
-		maxlevel => 'debug',
+		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%p:%m',
+		message_layout  => '%T:%L:%S:%m',
 		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',
 		mode            => 'append',
+		alias    => 'file-out',
 		});
 	
 	

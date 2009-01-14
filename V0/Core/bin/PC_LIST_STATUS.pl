@@ -15,7 +15,7 @@ PC_LIST_STATUS - Affiche une table et y ajoute une colonne de ICON
 
 =head1 SYNOPSIS
 
- PC_LIST_STATUS.pl [-c environnement_source@date_source] environnement_cible date_cible table
+ PC_LIST_STATUS.pl [-x icon] [-c environnement_source@date_source] environnement_cible table_name [date_cible]
  
 =head1 DESCRIPTION
 
@@ -52,15 +52,19 @@ la différence avec un autre environnement ou une autre date.
 
 =item -c environnement_source@date_source : force le mode COMPARE
 
+=item -x icone : n'affiche pas les lignes contenant "icone"
+
 =back
 
 =head1 ARGUMENTS
 
-=over 4
+=over
 
-=item * environnement de destination
+=item environnement_cible : environnement de destination
 
-=item * table a afficher
+=item table_name : table a afficher
+
+=item date_cible : date d'exploration de la table cible
 
 =back
 
@@ -75,7 +79,9 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	my $exit_value=shift;
+	$logger->notice("Sortie du programme, code $exit_value");
+	exit $exit_value;
 }
 
 sub usage($) {
@@ -107,12 +113,14 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('hvc:', \%opts);
+getopts('x:hvc:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $exlude_icon=$opts{x};
 
 #  Traitement des arguments
 ###########################################################
@@ -168,6 +176,8 @@ use POSIX qw(strftime);
 my $table_status;
 my $env_sip = Environnement->new($environnement);
 
+my @query_field=$env_sip->get_table_field($table_name);
+
 if ($explore_mode eq "compare") {
 	my $env_sip_from = Environnement->new($env_compare);
 	my $env_sip = Environnement->new($environnement);
@@ -183,7 +193,6 @@ if ($explore_mode eq "compare") {
 
 	$table_status->compare();
 	
-	my @query_field=$env_sip->get_table_field($table_name);
 	$table_status->query_field(@query_field);
 
 }
@@ -192,8 +201,6 @@ elsif ($explore_mode eq "explore") {
 	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_status->query_date($date_explore) if $date_explore;
 	
-	
-	my @query_field=$env_sip->get_table_field($table_name);
 	$table_status->query_field(@query_field);
 }
 
@@ -202,8 +209,8 @@ $table_status->isip_rules($type_rules);
 
 $table_status->output_separator('@');
 
-while (my @row=$table_status->fetch_row_array) {
-	print join($table_status->output_separator,@row)."\n";
+while (my %row=$table_status->fetch_row) {
+	print join($table_status->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row {ICON} eq $exlude_icon);
 }
 
 sortie($bv_severite);

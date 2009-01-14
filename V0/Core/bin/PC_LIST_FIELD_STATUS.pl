@@ -174,7 +174,7 @@ use Isip::ITable::DataDiff;
 use POSIX qw(strftime);
 
 ## DEBUG ONLY
-if (exists $opts{T}) {$ENV{RDNPRCOD}='VTS'; $bv_severite=202 };
+if (exists $opts{T}) {$ENV{RDNPRCOD}='CDE'; $bv_severite=202 };
 ## DEBUG ONLY
 
 # New SIP Object instance

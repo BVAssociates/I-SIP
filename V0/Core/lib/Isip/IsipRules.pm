@@ -126,25 +126,25 @@ sub enum_field_status () {
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "inconnu", HIDDEN => "cache", ERROR => "erreur");
+	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "invalide", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
 }
 
 sub enum_line_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "inconnu", ERROR => "erreur");
+	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "invalide", ERROR => "erreur");
 }
 
 sub enum_field_diff_icon() {
 	my $self=shift;
 	
-	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime");
+	return (NEW => "ajoute", UPDATE => "different", OK => "egal", DELETE => "supprime", STAMP_UPDATE => "stamp_update");
 }
 
 sub enum_line_diff_icon() {
 	my $self=shift;
 	
-	return (NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime", ERROR => "erreur");
+	return (NEW => "ajoute", UPDATE => "different", OK => "egal", DELETE => "supprime", ERROR => "erreur");
 }
 
 ##################################################
@@ -222,7 +222,7 @@ sub get_field_icon () {
 	
 	if ($type eq "STAMP") {
 	# "Administratif always OK
-		$return_status=$self->{field_icon}{OK};
+		$return_status=$self->{field_icon}{STAMP};
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
 	elsif ($type eq "EXCLUDE" or $type eq "HIDDEN") {

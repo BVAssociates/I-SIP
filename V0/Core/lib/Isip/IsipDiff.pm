@@ -28,9 +28,6 @@ sub new() {
 	$self->{diff_source_only_field} = {};
 	
 	$self->{diff_nb}=0;
-	
-	# Constants
-	$self->{avaiable_status} = {NEW => "ajoute", UPDATE => "modifie", OK => "valide", DELETE => "supprime"};
 
 	bless ($self, $class);
 	
@@ -92,10 +89,11 @@ sub get_source_update() {
 
 # calcul l'etat d'une ligne en fonction de l'etat de ses champs
 
-sub get_row_status() {
+sub get_field_status() {
 	my $self=shift;
 	
-	my $key=shift or croak("usage : line_get_status(key)");
+	my $key=shift or croak("usage : line_get_status(key,field)");
+	my $field=shift or croak("usage : line_get_status(key,field)");
 	
 	my $return_status="OK";
 	
@@ -105,11 +103,11 @@ sub get_row_status() {
 	elsif (exists $self->{diff_source_only}->{$key}) {
 		$return_status="DELETE";
 	}
-	elsif (exists $self->{diff_source_update}->{$key}) {
-
+	elsif (exists $self->{diff_source_update}->{$key}->{$field}) {
+		$return_status="UPDATE";
 	}
 	
-	return $self->{avaiable_status}->{$return_status};
+	return $return_status;
 }
 
 sub add_target_only() {
