@@ -442,18 +442,23 @@ public abstract class ProcessingHandler
 	*
 	* Description:
 	* Cette méthode statique permet d'afficher une fenêtre à l'utilisateur lui
-	* permettant de saisir une valeur pour un paramètre de préprocessing. Le
-	* message à afficher comme invite à l'utilisateur est le contenu de
-	* l'argument prompt.
+	* permettant de choisir une valeur pour un paramètre de préprocessing. La
+    * liste de choix est la liste des clefs fournies par la table passée en 
+    * parametre. Le message à afficher comme invite à l'utilisateur est le
+    * contenu de l'argument prompt.
 	*
 	* Si un problème survient lors de la saisie du paramètre, ou si
 	* l'utilisateur annule la saisie, l'exception InnerException est levée.
 	*
 	* Arguments:
-	*  - prompt: Le message de la fenêtre de saisie,
+	*  - message: Le message de la fenêtre de saisie,
+    *  - table_name: La table a interroger,
 	*  - parent: Une référence sur un objet Component.
+    *  - context: context d'execution
+    *  - serviceSession: Une référence sur une interface
+	*    ServiceSessionInterface,
 	*
-	* Retourne: La valeur saisie par l'utilisateur.
+	* Retourne: La valeur choisie par l'utilisateur.
 	*
 	* Lève: InnerException.
 	* ----------------------------------------------------------*/
