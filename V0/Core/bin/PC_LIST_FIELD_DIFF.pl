@@ -62,7 +62,7 @@ exemple : RDNPRCOD=VTS
 
 =item -v : Mode verbeux
 
-=item -c environnement_source@date_source : force le mode COMPARE
+=item -c : environnement_source@date_source : force le mode COMPARE
 
 Un des deux paramètres "environnement_source"
 ou "date_source" peut être vide
@@ -152,9 +152,7 @@ if ( @ARGV < 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 my $temp_date_explore=shift;
-my $temp_time_explore=shift;
 $date_explore=$temp_date_explore if $temp_date_explore;
-$date_explore .= " ".$temp_time_explore if $temp_time_explore;
 
 if (exists $opts{c}) {
 	if ($opts{c} =~ /@/) {
@@ -192,8 +190,6 @@ if (not $env_compare and not $date_compare) {
 
 use Isip::Environnement;
 use ITable::ITools;
-
-use POSIX qw(strftime);
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -255,7 +251,7 @@ if (not %row_from) {
 		$row_from{$_}="";
 	}
 	$row_from{ID}=0;
-	$row_from{DATE_HISTO}=$date_compare;
+	$row_from{DATE_HISTO}=$date_compare if $date_compare;
 	$row_from{ENVIRONNEMENT}=$env_compare if $table_from->has_fields("ENVIRONNEMENT");
 	#$row_from{TABLE_NAME}=$table_name;
 	#$row_from{TABLE_KEY}=$table_key_value;

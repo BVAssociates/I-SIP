@@ -1,0 +1,6 @@
+COMMAND="Select -s from ENVIRON where Environnement != %Environnement%"
+SEP=":"
+FORMAT="Environnement:Description:Datasource"
+SIZE="20s:20s:20s"
+NOTNULL="Datasource"
+KEY="Environnement"

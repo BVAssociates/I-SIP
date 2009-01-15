@@ -54,7 +54,9 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	my $exit_value=shift;
+	$logger->notice("Sortie du programme, code $exit_value");
+	exit $exit_value;
 }
 
 sub usage($) {
@@ -78,6 +80,8 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
+
+log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
 getopts('hvn', \%opts);
@@ -108,8 +112,6 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 
-use POSIX qw(strftime);
-
 my $env_sip = Environnement->new($environnement);
 
 # quirk because INFO_TABLE use %Environnement%
@@ -125,15 +127,26 @@ while (my %db2_table_line = $db2_table->fetch_row() ) {
 	my $table_name=$db2_table_line{TABLE_NAME};
 	
 	#open IKOS table for DATA
+	log_info("Connexion à IKOS");
 	my $current_table=$env_sip->open_ikos_table($table_name, {debug => $debug_level});
+	log_info("Connexion à la base locale");
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level, timeout => 100000});
 	
 	my $table_diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
+
+	log_info("Debut de la comparaison");
 	$table_diff->compare();
 
-	if (not exists $opts{n}) {
-		$table_diff->update_compare_target();
-		$table_diff->_info("Les changements ont ete appliqués");
+	if (exists $opts{n}) {
+		log_info("Option -n : les changements ne seront pas appliqués");
+	} else {
+		my $diff_counter = $table_diff->update_compare_target();
+		if ($diff_counter) {
+			log_info("Les changements ont ete appliqués ($diff_counter)");
+			$histo_table->{table_histo}->execute("ANALYZE");
+		} else {
+			log_info("Aucune mise à jour");
+		}
 	}
 
 }

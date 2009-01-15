@@ -112,6 +112,8 @@ sub log_info {
 map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
+log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
+
 my %opts;
 getopts('x:hvc:', \%opts) or usage(0);
 
@@ -139,9 +141,7 @@ if ( @ARGV < 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 my $temp_date_explore=shift;
-my $temp_time_explore=shift;
 $date_explore=$temp_date_explore if $temp_date_explore;
-$date_explore .= " ".$temp_time_explore if $temp_time_explore;
 
 if (exists $opts{c}) {
 	if ($opts{c} =~ /@/) {
@@ -169,9 +169,6 @@ my $bv_severite=0;
 use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
-
-use POSIX qw(strftime);
-
 
 my $table_status;
 my $env_sip = Environnement->new($environnement);

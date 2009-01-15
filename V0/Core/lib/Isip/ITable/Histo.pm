@@ -42,8 +42,8 @@ sub open() {
 	bless ($self, $class);
 	
 	$self->_set_columns_info_histo();
-	$self->_debug("Virtual Fields : ", join("|",$self->field()));
-	$self->_debug("Virtual Keys : ", join("|",$self->key()));
+	$self->_info("Virtual Fields : ", join("|",$self->field()));
+	$self->_info("Virtual Keys : ", join("|",$self->key()));
 	$self->_debug("Virtual Not NULL : ", join("|",$self->not_null()));
 	my %temp_hash=$self->size();
 	$self->_debug("Virtual Size : ", join("|",values %temp_hash ));
@@ -78,37 +78,30 @@ sub open() {
 sub _set_columns_info_histo() {
 	my $self = shift;
 
-=begin comment : how to know "real" key name ??
-	#get Real informations for fields
-	my $table_info=$self->{database_handle}->prepare("PRAGMA table_info($self->{table_name})");
-	$self->_debug("Get columns info for $self->{table_name_real}");
-	$table_info->execute();
-	
-	while (my @col=$table_info->fetchrow_array) {
-		push (@{$self->{field_real}},       $col[1]);
-		$self->{size}->{$col[1]}=       $col[2];
-		push (@{$self->{not_null}},     $col[1]) if $col[3];
-		push (@{$self->{key_real}},          $col[1]) if $col[5];
-	}
-	
-	if (not @{$self->{field_real} }) {
-		croak("Error reading information of table : $self->{table_name}");
-	}
-=begin comment
-=cut
-	
 	# get histo informations
-	$self->_debug("Get virtual columns info for $self->{table_name} in the HISTO table");
-	$self->{table_histo}->custom_select_query("select distinct FIELD_NAME from $self->{table_name_histo}");
+	#$self->_debug("Get virtual columns info for $self->{table_name} in the HISTO table");
+	#$self->{table_histo}->custom_select_query("select distinct FIELD_NAME from $self->{table_name_histo}");
+	#$self->_info("This table contains 0 line";
 	
-	while (my ($column_name)=$self->{table_histo}->fetch_row_array) {
-		push (@{$self->{field}}, $column_name);
-	}
+	#while (my ($column_name)=$self->{table_histo}->fetch_row_array) {
+	#	push (@{$self->{field}}, $column_name);
+	#}
 	
 	#$self->{table_histo}->finish();
 	
 	if (not $self->field()) {
-		warn "WARN:This table contains 0 field"
+		
+		my $table_info=Sqlite->open($self->{database_name}, $self->{table_name}."_INFO", {debug => $self->debugging()});
+		$self->_debug("Get columns info for $self->{table_name}");
+		#$table_info->execute();
+		
+		while (my %field_info=$table_info->fetch_row) {
+			push (@{$self->{field}}, $field_info{FIELD_NAME});
+		}
+	
+		if (not @{$self->{field} }) {
+			croak("Error reading information of table : $self->{table_name}");
+		}
 	}
 }
 
@@ -203,8 +196,9 @@ sub get_query()
 	my $select_histo;
 	my @select_conditions;
 	
-	my $date_format = "%Y-%m-%d %H:%M";
-	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
+	my $provided_date_format = "%Y-%m-%d_%H:%M";
+	
+	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, $self->query_condition if $self->query_condition;
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!
@@ -369,7 +363,7 @@ sub insert_row() {
 	}
 	
 	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
+	my $date_current = strftime "%Y-%m-%dT%H:%M", localtime;
 	
 	# active transaction mode if not already done
 	if ( $self->{table_histo}->active_transaction() > 0 ) {
@@ -441,7 +435,7 @@ sub update_row() {
 	
 	
 	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
+	my $date_current = strftime "%Y-%m-%dT%H:%M", localtime;
 	
 	# concat key values
 	my @key_value;
@@ -500,7 +494,7 @@ sub delete_row() {
 	
 	
 	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%d %H:%M", localtime;
+	my $date_current = strftime "%Y-%m-%dT%H:%M", localtime;
 	
 	# concat key values
 	my @key_value;
@@ -533,7 +527,7 @@ sub validate_row_by_key() {
 	$self->{table_histo}->_open_database;
 	$key=$self->{table_histo}->{database_handle}->quote($key);
 	my $updated_value=$self->{table_histo}->{database_handle}->quote($self->{valid_keyword});
-	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%d %H:%M", localtime);
+	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%dT%H:%M", localtime);
 	my $user_update = $self->{table_histo}->{database_handle}->quote($ENV{ISIS_USER});
 	
 	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=$updated_value, USER_UPDATE=$user_update, DATE_UPDATE=$date_update where TABLE_KEY=$key";

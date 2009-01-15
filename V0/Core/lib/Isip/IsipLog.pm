@@ -70,12 +70,12 @@ if ($@) {
 		newline  => 1,
 		maxlevel => 'notice',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%S:%m',
+		message_layout  => '%L:%m',
 		alias    => 'screen-out',
 		});
 	$logger->add(file => {
 		newline  => 1,
-		maxlevel => 'info',
+		maxlevel => 'debug',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%S:%m',
 		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',

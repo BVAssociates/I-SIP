@@ -183,21 +183,30 @@ sub debugging {
 # simple debug method
 sub _debug() {
 	my $self = shift;
-	#print STDERR "DEBUG:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n" if $self->debugging();
-	$logger->debug(ref($self).".".$self->{table_name}.",",@_);
+	
+	# if debugging mode, promote debug messages to info messages
+	if ($self->debugging()) {
+		$logger->info(ref($self).".".$self->{table_name}.",",@_);
+	} else {
+		$logger->debug(ref($self).".".$self->{table_name}.",",@_);
+	}
 }
 
 # simple print method
 sub _info() {
 	my $self = shift;
-	#print STDERR "INFO:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
-	$logger->info(ref($self).".".$self->{table_name}.",",@_);
+	
+	# if debugging mode, promote info messages to notice messages
+	if ($self->debugging()) {
+		$logger->notice(ref($self).".".$self->{table_name}.",",@_);
+	} else {
+		$logger->info(ref($self).".".$self->{table_name}.",",@_);
+	}
 }
 
 # simple print method
 sub _error() {
 	my $self = shift;
-	#print STDERR "ERROR:".ref($self).":".$self->{table_name}.":".join(' ',@_)."\n";
 	$logger->error(ref($self).".".$self->{table_name}.",",@_);
 }
 

@@ -109,7 +109,7 @@ my $sip=Environnement->new($environ);
 my $table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level });
 
 $table->query_field("DATE_HISTO");
-$table->custom_select_query("select distinct DATE_HISTO from $table_name\_HISTO");
+$table->custom_select_query("select distinct strftime(\"%Y-%m-%d_%H:%M\",DATE_HISTO) from $table_name\_HISTO ORDER BY DATE_HISTO DESC");
 
 
 die "unable to open local $table_name in env $environ" if not defined $table;
