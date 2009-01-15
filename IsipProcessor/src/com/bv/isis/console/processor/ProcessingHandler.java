@@ -60,6 +60,7 @@ import com.bv.core.trace.TraceAPI;
 import com.bv.core.trace.Trace;
 import com.bv.core.util.UtilStringTokenizer;
 import com.bv.core.message.MessageManager;
+import com.bv.isis.corbacom.IsisTableDefinition;
 import javax.swing.JOptionPane;
 import java.util.Vector;
 import java.awt.Component;
@@ -73,6 +74,8 @@ import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.common.DialogManager;
 import com.bv.isis.console.node.LabelFactory;
 import com.bv.isis.console.com.RemoteFileChooser;
+import com.bv.isis.console.com.ServiceSessionProxy;
+import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.corbacom.IsisParameter;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 
@@ -322,6 +325,20 @@ public abstract class ProcessingHandler
 				context);
 			value = getValueFromUser(prompt, parent);
 		}
+        // Est-ce que la valeur nécessite le choix de l'utilisateur dans une liste?
+        else if(value.startsWith("getListValue(") == true)
+		{
+            // remove getListValue("...)
+			String params = getValue(value.substring(12), context);
+
+            int index=params.indexOf(',');
+            // split with ,
+            // remove '"' and ')'
+            String message=params.substring(2, index-1).trim();
+            String table_name=params.substring(index+1,params.length()-1).trim();
+            
+			value = getListValueFromUser(message,table_name , parent,context,serviceSession);
+		}
 		// Est-ce que la valeur nécessite une sélection de fichier ou de 
 		// répertoire par l'utilisateur ?
 		else if(value.startsWith("selectFile(") == true ||
@@ -409,6 +426,81 @@ public abstract class ProcessingHandler
 		String value = JOptionPane.showInputDialog(parent, prompt, 
 			MessageManager.getMessage("&YesNoQuestion"),
 			JOptionPane.QUESTION_MESSAGE);
+		trace_debug.writeTrace("L'utilisateur a saisi=" + value);
+		if(value == null)
+		{
+			// L'utilisateur a annulé, on lève une exception
+			trace_methods.endOfMethod();
+			throw new InnerException("&ERR_InputCanceled", null, null);
+		}
+		trace_methods.endOfMethod();
+		return value;
+	}
+
+    /*----------------------------------------------------------
+	* Nom: getListValueFromUser
+	*
+	* Description:
+	* Cette méthode statique permet d'afficher une fenêtre à l'utilisateur lui
+	* permettant de saisir une valeur pour un paramètre de préprocessing. Le
+	* message à afficher comme invite à l'utilisateur est le contenu de
+	* l'argument prompt.
+	*
+	* Si un problème survient lors de la saisie du paramètre, ou si
+	* l'utilisateur annule la saisie, l'exception InnerException est levée.
+	*
+	* Arguments:
+	*  - prompt: Le message de la fenêtre de saisie,
+	*  - parent: Une référence sur un objet Component.
+	*
+	* Retourne: La valeur saisie par l'utilisateur.
+	*
+	* Lève: InnerException.
+	* ----------------------------------------------------------*/
+	private static String getListValueFromUser(
+        String message,
+		String table_name,
+		Component parent,
+        IndexedList context,
+		ServiceSessionInterface serviceSession
+		)
+		throws
+			InnerException
+	{
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"ProcessingHandler", "getListValueFromUser");
+		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
+		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
+
+		trace_methods.beginningOfMethod();
+		trace_arguments.writeTrace("table=" + table_name);
+        trace_arguments.writeTrace("message=" + message);
+		trace_arguments.writeTrace("parent=" + parent);
+
+        // On recupere le Proxy associé
+        ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
+
+        // On va chercher les informations dans la table (Wide par securité)
+        String[] result = session_proxy.getSelectResult(table_name, new String[] {""}, "","", context);
+        //String[] result = session_proxy.getWideSelectResult(selectedIsisNode.getAgentName(), tableName, columnsName, condition, "", context);
+        IsisTableDefinition table_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, table_name);
+
+        if (result.length <= 1) {
+            throw new InnerException("&LOG_ErrorWhileLoadingData", null, null);
+        }
+
+        // on ne recupere que les clefs
+        // on saute la premiere ligne qui contient l'entete du Select
+        String[] result_key= new String[result.length-1];
+        for (int i=1; i < result.length; i++) {
+            IsisParameter[] iparam = TreeNodeFactory.buildParametersFromSelectResult(result, i, table_definition);
+            result_key[i-1]=TreeNodeFactory.buildKeyFromSelectResult(iparam, table_definition);
+        }
+
+		// On va afficher une boîte de dialogue de saisie
+		String value = (String) JOptionPane.showInputDialog(parent, message,
+			MessageManager.getMessage("&YesNoQuestion"),
+			JOptionPane.QUESTION_MESSAGE,null, result_key, result_key[0]);
 		trace_debug.writeTrace("L'utilisateur a saisi=" + value);
 		if(value == null)
 		{
