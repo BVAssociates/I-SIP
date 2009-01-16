@@ -9,4 +9,5 @@ Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
 Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand
 
 
-#Item~Developpement~Affiche Processor~adm~~~IsipProcessor~TYPE~0~~Expand
+Item~Developpement~Affiche Processor error~adm~~~IsipProcessor~TYPE~0~~Expand
+Item~Developpement~Affiche Processor~adm~~~IsipProcessor~FORM_CONFIG~0~~Expand

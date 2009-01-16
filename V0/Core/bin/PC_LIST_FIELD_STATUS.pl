@@ -232,13 +232,13 @@ if ($explore_mode eq "compare") {
 	# Only FIELD_VALUE must be compare
 	$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
 	
-	# compute diff
-	$table_status->compare();
-	
 	# declare some additionnal blank fields
 	# (ICON field will be computed into DataDiff)
 	$table_status->dynamic_field("ICON","TYPE","TEXT");
 	$table_status->query_field(@query_field);
+	
+	# compute diff
+	$table_status->compare();
 
 	# Assign a IsipRules to compute ICON field
 	$table_status->isip_rules($rules);

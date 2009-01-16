@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -67,7 +69,9 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	my $exit_value=shift;
+	$logger->notice("Sortie du programme, code $exit_value");
+	exit $exit_value;
 }
 
 sub usage($) {
@@ -77,14 +81,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	@_=grep {defined $_} @_;
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	@_=grep {defined $_} @_;
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -92,6 +96,8 @@ sub log_info {
 ###########################################################
 
 my @argv_save=@ARGV;
+
+log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
 getopts('hv', \%opts);
@@ -174,7 +180,7 @@ foreach ($local_table->dynamic_field()) {
 }
 
 use POSIX qw(strftime);
-$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime;
+$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
 $row{USER_UPDATE} = $ENV{IsisUser};
 $local_table->update_row( %row );
 

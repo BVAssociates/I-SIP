@@ -2,6 +2,7 @@ package Isip::IsipLog;
 
 use strict;
 use Carp qw(carp cluck confess croak );
+$Carp::MaxArgNums=0;
 
 use Log::Handler;
 
