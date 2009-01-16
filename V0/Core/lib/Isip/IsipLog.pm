@@ -75,7 +75,7 @@ if ($@) {
 		});
 	$logger->add(file => {
 		newline  => 1,
-		maxlevel => 'debug',
+		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%S:%m',
 		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',
