@@ -27,8 +27,10 @@ import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
 import com.bv.isis.console.node.GenericTreeClassNode;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.console.node.LabelFactory;
 import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.console.processor.ProcessorFrame;
+import com.bv.isis.corbacom.IsisForeignKeyLink;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
@@ -43,14 +45,14 @@ import javax.swing.JComboBox;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-public class IsipProcessor extends ProcessorFrame {
+public class EditFormProcessor extends ProcessorFrame {
 
     /**
      * Isip contructor
      *
      * @param  closeable
      */
-	public IsipProcessor() {
+	public EditFormProcessor() {
 		super(true);
 		
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
@@ -72,7 +74,7 @@ public class IsipProcessor extends ProcessorFrame {
 		trace_methods.beginningOfMethod();
 
 		trace_methods.endOfMethod();
-		return new IsipProcessor();
+		return new EditFormProcessor();
 	}
 
 	public String getDescription() {
@@ -108,13 +110,12 @@ public class IsipProcessor extends ProcessorFrame {
             throw new InnerException("", "Ce processeur prend un parametre : Table", null);
         }
 
-        _FormConfiguration = new IsipFormConfig((GenericTreeObjectNode)selectedNode,parameters);
+        _FormConfiguration = new EditFormConfig((GenericTreeObjectNode)selectedNode,parameters);
 
         // get the primary keys for current table
         TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
         GenericTreeObjectNode node = (GenericTreeObjectNode)selectedNode;
-        IsisTableDefinition definition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
-        _formKey=definition.key.clone();
+        _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
         
 		setTitle(menuItem.getText());
 		makePanel();
@@ -152,6 +153,8 @@ public class IsipProcessor extends ProcessorFrame {
         int position = 0;
         for (Iterator<String> field = _FormConfiguration.keysIterator(); field.hasNext();) {
             String formId = field.next();
+
+            //TODO verifier que le champ existe dans le context ou dans la table
 
             String formType = _FormConfiguration.getType(formId);
             String formLabel = _FormConfiguration.getLabel(formId);
@@ -199,7 +202,7 @@ public class IsipProcessor extends ProcessorFrame {
                 }
                 else if(formType.equals("List"))
                 {
-                    form_value = new JComboBox(getStatusList());
+                    form_value = new JComboBox(getFieldList(formId));
                 } else
                     throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
 
@@ -310,7 +313,7 @@ public class IsipProcessor extends ProcessorFrame {
 	protected void makePanel() throws InnerException
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"IsipProcessor", "makePanel");
+			"EditFormProcessor", "makePanel");
 
         // Creation du panneau de saisie
         JPanel form_panel = makeFormPanel();
@@ -340,11 +343,11 @@ public class IsipProcessor extends ProcessorFrame {
             // Construction de la condition du Select pour ne recuperer que
             // la ligne correspondante aux clefs
             String condition="";
-            for(int k=0; k < _formKey.length ;k++) {
+            for(int k=0; k < _tableDefinition.key.length ;k++) {
                 if (! condition.equals("")) {
                     condition += " AND ";
                 }
-                condition=_formKey[k]+"="+((IsisParameter)node.getContext(true).get(_formKey[k])).value;
+                condition=_tableDefinition.key[k]+"="+((IsisParameter)node.getContext(true).get(_tableDefinition.key[k])).value;
             }
             SimpleSelect HistoTable=
                     new SimpleSelect(getSelectedNode(), node.getTableName(),new String[] {""}, condition);
@@ -441,8 +444,8 @@ public class IsipProcessor extends ProcessorFrame {
             } else if (textBox instanceof JLabel) {
                 //Les champ ReadOnly n'ont pas besoin d'etre modifiés
                 //Il faut quand meme revoyer les clefs primaires
-                for (int k=0; k<_formKey.length ; k++) {
-                    if (data_from[i].name.equals(_formKey[k])) {
+                for (int k=0; k<_tableDefinition.key.length ; k++) {
+                    if (data_from[i].name.equals(_tableDefinition.key[k])) {
                         data.add(new IsisParameter(data_from[i].name,
                                 ((JLabel) textBox).getText() , sep));
                     }
@@ -481,8 +484,7 @@ public class IsipProcessor extends ProcessorFrame {
         for (int i = 0; i < data.length; i++) {
             if (!first)
             {
-                //TODO : separator from definition
-                command.append("@");
+                command.append(_tableDefinition.separator);
             }
             first = false;
             command.append(data[i].value);
@@ -495,9 +497,12 @@ public class IsipProcessor extends ProcessorFrame {
             data=populateFormPanel(true);
             
          } catch (InnerException ex) {
+            // La popup a déjà été lancée par ExecutionSurveyor
             //getMainWindowInterface().showPopupForException(
             //        "Erreur lors de l'execution de la commande", ex);
-            return;
+
+             // TODO traiter l'erreur
+             return;
         }
 
         //On met les nouvelles données dans le node
@@ -506,12 +511,22 @@ public class IsipProcessor extends ProcessorFrame {
             data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
         }
 
-        // changement dynamique de l'icone en cas de changement
-        //node.getLabel().icon = "field_"+((String)((JComboBox)_fieldObject.get("ICON")).getSelectedItem());
-        node.getLabel().icon = "isip_"+TreeNodeFactory.getValueOfParameter(data_node, "ICON");
+
+        try {
+            // recalcul du label avec le nouveau context
+            LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
+                    node.getServiceType(), node, node.getContext(true));
+
+        } catch (InnerException exception) {
+            Trace trace_errors = TraceAPI.declareTraceErrors("Console");
+
+			trace_errors.writeTrace(
+				"Erreur lors de la modification du Label: " +
+				exception.getMessage());
+        }
+        //averti l'interface que le contenu a changé
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
-        
-        //close();
+
     }
 
     /**
@@ -532,7 +547,7 @@ public class IsipProcessor extends ProcessorFrame {
 		String[] message = null;
 
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"IsipProcessor", "execute");
+			"EditFormProcessor", "execute");
 		Trace trace_errors = TraceAPI.declareTraceErrors("Console");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 
@@ -599,12 +614,35 @@ public class IsipProcessor extends ProcessorFrame {
 	}
 
     /**
-     * Interroge la table STATUS et recupère les differents etats d'un champ
+     * Interroge la table liée par clef étrangère et recupère la liste des
+     * clefs
      *
-     * @return Liste de Status
+     * @param le champ
+     * @return Liste de clefs
      */
-    private String[] getStatusList() throws InnerException
+    private String[] getFieldList(String field_name) throws InnerException
     {
+        String foreign_table="";
+        String foreign_column="";
+
+        // recherche de la table+champ lié dans la definition
+        for (int i=0; i < _tableDefinition.foreignKeys.length; i++) {
+            IsisForeignKeyLink[] fkeys=_tableDefinition.foreignKeys[i].links;
+            for (int j=0; j< fkeys.length; j++) {
+                if (fkeys[i].localColumnName.equals(field_name)) {
+                    foreign_table=_tableDefinition.foreignKeys[i].foreignTableName;
+                    foreign_column=fkeys[i].foreignColumnName;
+
+                }
+            }
+        }
+
+        if (foreign_table.equals("") || foreign_column.equals("")) {
+            throw new InnerException("",
+                    "Le champ "+field_name+" n'a pas de table liée par clef étrangère",
+                    null);
+        }
+        
         // On recupere l'objet ServiceSession
         GenericTreeObjectNode selectedNode = (GenericTreeObjectNode) getSelectedNode();
         ServiceSessionInterface service_session = selectedNode.getServiceSession();
@@ -612,8 +650,8 @@ public class IsipProcessor extends ProcessorFrame {
 
         // On recupere le Proxy associé
         ServiceSessionProxy session_proxy = new ServiceSessionProxy(service_session);
-        // On va chercher les informations dans la table FORM_CONFIG
-        String[] result = session_proxy.getSelectResult("ETAT", new String[] {"Name"}, "", "", context);
+        // On va chercher les informations dans la table lié par clef etrangère
+        String[] result = session_proxy.getSelectResult(foreign_table, new String[] {foreign_column}, "", "", context);
 
         //Quirk! suppression entete+ajout etat ""
         result[0]="";
@@ -636,15 +674,18 @@ public class IsipProcessor extends ProcessorFrame {
      * Membre contenant une definition de la configuration permettant d'afficher
      * les differentes boites de dialogues
      */
-    private IsipFormConfig _FormConfiguration;
+    private EditFormConfig _FormConfiguration;
 
     /**
      * Constante stockant la commande d'insertion
      */
+    //TODO recuperer le script général pour la modification
+    //TODO prévoir l'ajout/suppression?
+    //private final String replaceCommand="ReplaceAndExec.pl";
     private final String replaceCommand="ReplaceAndExec_IKOS_FIELD.pl";
 
      /**
      * Constante : champ stockant le nom de la clef de la table editée
      */
-    private String[] _formKey;
+    private IsisTableDefinition _tableDefinition;
 }

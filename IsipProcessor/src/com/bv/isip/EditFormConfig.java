@@ -19,7 +19,7 @@ import com.bv.isis.corbacom.IsisTableColumn;
  * @see IsipProcessor
  *
  */
-public class IsipFormConfig extends SimpleSelect
+public class EditFormConfig extends SimpleSelect
 {
 
     /**
@@ -28,7 +28,7 @@ public class IsipFormConfig extends SimpleSelect
      * 
      * @param selectedNode : noeud de l'arbre en cours d'exploration
      */
-    IsipFormConfig(GenericTreeObjectNode selectedNode,String tableConfig)
+    EditFormConfig(GenericTreeObjectNode selectedNode,String tableConfig)
             throws InnerException
     {
         super(selectedNode,tableConfig);
