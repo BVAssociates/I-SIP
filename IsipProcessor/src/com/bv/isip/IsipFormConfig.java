@@ -8,6 +8,7 @@ import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
 import com.bv.isis.console.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.corbacom.IsisTableColumn;
 
 /**
  *
@@ -27,9 +28,28 @@ public class IsipFormConfig extends SimpleSelect
      * 
      * @param selectedNode : noeud de l'arbre en cours d'exploration
      */
-    IsipFormConfig(GenericTreeObjectNode selectedNode) throws InnerException
+    IsipFormConfig(GenericTreeObjectNode selectedNode,String tableConfig)
+            throws InnerException
     {
-        super(selectedNode,"FORM_CONFIG");
+        super(selectedNode,tableConfig);
+        
+        
+        IsisTableColumn[] form_columns = getDefinition().columns;
+
+        if (_columns.length != form_columns.length) {
+            throw new InnerException("",
+                    "La table passée en parametre n'a pas les champs attendus",
+                    null);
+        }
+        //TODO columns can be in different order
+        for (int i=0; i < _columns.length; i++) {
+            if ( ! form_columns[i].name.equals(_columns[i])) {
+                throw new InnerException("",
+                    "La table passée en parametre n'a pas les champs attendus",
+                    null);
+            }
+        }
+
 
         Trace trace_methods = TraceAPI.declareTraceMethods("Console",
                 "IsipFormConfig", "IsipFormConfig");
@@ -58,5 +78,6 @@ public class IsipFormConfig extends SimpleSelect
         return getValue(key,"FORM_TYPE");
     }
 
+    private final String[] _columns=new String[] {"FORM_FIELD","FORM_LABEL","FORM_TYPE"};
     
 }

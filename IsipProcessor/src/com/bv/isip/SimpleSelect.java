@@ -67,7 +67,8 @@ public class SimpleSelect
       * @param condition
       * @throws com.bv.isis.console.common.InnerException
       */
-    SimpleSelect(MutableTreeNode selectedTreeNode, String tableName,String[] columnsName,String condition) throws InnerException
+    SimpleSelect(MutableTreeNode selectedTreeNode, String tableName,String[] columnsName,String condition)
+            throws InnerException
     {
         Trace trace_methods = TraceAPI.declareTraceMethods("Console",
                 "IsipTableSelect", "IsipTableSelect");
@@ -104,6 +105,27 @@ public class SimpleSelect
         }
 
         trace_methods.endOfMethod();
+    }
+
+    /**
+     * Methode permettant d'acceder à la definition de la table
+     * 
+     * @return objet IsisTableDefinition
+     */
+    public IsisTableDefinition getDefinition()
+    {
+        return _tableDefinition;
+    }
+
+     /**
+     * Methode générique pour obtenir une ligne entiere sous forme de tableau
+     * de IsisParameter
+     * @param key : clef associé à une ligne
+     * @return tableau de IsisParameter
+     */
+    public IsisParameter[] getFirst()
+    {
+        return _tableData.get(keysIterator().next());
     }
 
     /**
