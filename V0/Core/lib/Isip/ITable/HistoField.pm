@@ -31,15 +31,49 @@ sub open() {
 		
 	my $self  = $class->SUPER::open($database_name, $table_name."_HISTO", $options);
 	
-	$self->{dynamic_field}= [ "TYPE", "TEXT","ICON"];
+	$self->{dynamic_field}= [ "TYPE", "TEXT","ICON","DESCRIPTION"];
 	$self->{query_field}  = [ $self->field() ];
 	$self->{query_date}=$options->{date};
 	
+	$self->{field_doc}= {};
+	$self->_set_field_description();
+	
+	# force primary key
 	$self->{key}=["FIELD_NAME"];
 	
 	$self->{isip_rules} = {};
 	
 	return bless($self,$class);
+}
+
+
+# Get documentation from database
+sub _set_field_description() {
+	my $self = shift;
+
+	
+	if ($self->{field_doc}) {
+		
+		#TODO better way to get database path!
+		
+		my $database_doc=$self->{database_name};
+		my $table_name_doc=$self->{table_name};
+		
+		$table_name_doc =~ s#_HISTO##;
+		$database_doc =~ s#/\w+(_$table_name_doc.sqlite)$#/ISIP_DOC$1#;
+		
+		my $table_doc=eval{
+			Sqlite->open($database_doc, $table_name_doc."_DOC", {debug => $self->debugging()})
+		};
+		
+		return if $@;
+		
+		$self->_debug("Get field doc $table_name_doc");
+		
+		while (my %field_doc=$table_doc->fetch_row) {
+			$self->{field_doc}->{$field_doc{TABLE_KEY}}{$field_doc{FIELD_NAME}}=$field_doc{DESCRIPTION};
+		}
+	}
 }
 
 sub query_key_value() {
@@ -93,6 +127,22 @@ sub get_query()
 		ORDER BY TABLE_KEY;";
 
 	return $select_histo;
+}
+
+
+sub fetch_row() {
+	my $self=shift;
+	
+	my %row=$self->SUPER::fetch_row();
+	
+	if ( %row and grep($_ eq "DESCRIPTION",$self->query_field()) ) {
+		$row{DESCRIPTION}="";
+	
+		$row{DESCRIPTION}=$self->{field_doc}->{$row{TABLE_KEY}}{$row{FIELD_NAME}}
+			if exists $self->{field_doc}->{$row{TABLE_KEY}}{$row{FIELD_NAME}};
+	}
+	
+	return %row;
 }
  
  

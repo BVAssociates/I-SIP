@@ -148,9 +148,9 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl %s %s %%DATE_EXPLORE%%"
 SEP="@"
-FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT"
-SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
-KEY="FIELD_NAME"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@DESCRIPTION"
+SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
+KEY="ID"
 
 FKEY="[STATUS] on ETAT[Name]"
 ';
@@ -166,7 +166,7 @@ my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 my $pci_field_template='Item~~Historique Complet~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
-Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE}"~~IsipProcessor~~0~~Configure
+Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE}"~~IsipProcessor~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 ';
 
