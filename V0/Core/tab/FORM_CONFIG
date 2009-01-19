@@ -3,6 +3,7 @@
 # FORM_FIELD,FORM_LABEL,FORM_TYPE
 
 ID,Identifiant unique,Invisible
+
 TABLE_NAME,Table en cours,Label
 TABLE_KEY,Ligne en cours,Label
 #TYPE,Type de champ,Label
@@ -13,6 +14,8 @@ SEP2,,Separator
 DATE_HISTO,Date Collecte,Label
 DATE_UPDATE,Date commentaire,Label
 USER_UPDATE,User commentaire,Label
-#STATUS,field_%[STATUS],Icon
+#STATUS,%[ICON],Icon
 STATUS,Etat du commentaire,List
 COMMENT,Commentaire,Edit
+SEP3,,Separator
+DESCRIPTION,Documentation globale,Edit

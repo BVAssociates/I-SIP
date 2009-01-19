@@ -90,6 +90,8 @@ sub get_table_field() {
 	return $table->field;
 }
 
+
+# provide file path of Sqlite database depending on architecture, environnement and table name
 sub get_sqlite_path() {
 	my $self = shift;
 	
@@ -98,9 +100,18 @@ sub get_sqlite_path() {
 	my $filename;
 	my $database_path;
 	
-	# table suffixed with _* are in the same database
-	$table_name =~ s/_\w+$//;
-	$filename = "IKOS_".$self->{environnement}."_".$table_name.".sqlite";
+	my $table_real;
+	my $table_extension;
+	
+	# table are in format TABLENAME_EXTENSION ou TABLENAME
+	($table_real,$table_extension) = ($table_name =~ /^([[:alpha:]]+)(?:_([[:alpha:]]+))?$/);
+	
+	if (not $table_extension or $table_extension eq "INFO" or $table_extension eq "HISTO") {
+		$filename = "IKOS_".$self->{environnement}."_".$table_real.".sqlite";
+	}
+	elsif ($table_extension and $table_extension eq "DOC") {
+		$filename = "ISIP_DOC_".$table_real.".sqlite";
+	}
 	
 	if (not exists $ENV{BV_TABPATH}) {
 		croak('Environnement variable "BV_TABPATH" does not exist');
@@ -115,7 +126,7 @@ sub get_sqlite_path() {
 	}
 	
 	#not found
-	$logger->error("$filename not found in BV_TABPATH");
+	$logger->error("table $table_name : $filename not found in BV_TABPATH");
 	return undef;
 }
 
@@ -152,6 +163,18 @@ sub get_isip_rules() {
 	my $table_name=shift or croak "open_isip_rules() wait args : 'tablename'";
 	
 	my $tmp_return = eval {IsipRules->new($self->get_sqlite_path($table_name), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	return $tmp_return;
+}
+
+sub open_documentation_table() {
+	my $self = shift;
+	
+	use ITable::Sqlite;
+	
+	my $table_name=shift or croak "open_info_table() wait args : 'tablename'";
+	
+	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name."_DOC"), $table_name."_DOC", @_)};
 	croak "Error opening $table_name : $@" if $@;
 	return $tmp_return;
 }

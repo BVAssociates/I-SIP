@@ -203,11 +203,25 @@ log_info("KEY_VAL=$table_key_value");
 
 # recupere à liste de champ à afficher
 use ITable::ITools;
-my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name);
+my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name, {debug => $debug_level});
 my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
 
+# Create IsipRule object
 my $rules=$ikos_sip->get_isip_rules($table_name);
+
+# fetch documentation of fields for key
+my %field_doc;
+my $table_doc=eval {$ikos_sip->open_documentation_table($table_name, {debug => $debug_level}) };
+if ($@) {
+	warn $@;
+}
+else {
+	$table_doc->query_condition("TABLE_KEY = 'table_key_value'");
+	while (my %row_doc=$table_doc->fetch_row) {
+		$field_doc{$row_doc{FIELD_NAME}}=$row_doc{DESCRIPTION};
+	}
+}
 
 my %memory_row;
 
@@ -234,7 +248,7 @@ if ($explore_mode eq "compare") {
 	
 	# declare some additionnal blank fields
 	# (ICON field will be computed into DataDiff)
-	$table_status->dynamic_field("ICON","TYPE","TEXT");
+	$table_status->dynamic_field("ICON","TYPE","TEXT","DESCRIPTION");
 	$table_status->query_field(@query_field);
 	
 	# compute diff
@@ -245,6 +259,7 @@ if ($explore_mode eq "compare") {
 	
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
+		$row{DESCRIPTION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DESCRIPTION");
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 		
@@ -262,6 +277,7 @@ elsif ($explore_mode eq "explore") {
 	
 	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
+	$table_status->dynamic_field($table_status->dynamic_field,"DESCRIPTION");
 	$table_status->query_field(@query_field);
 	
 	$table_status->output_separator('@');
@@ -270,6 +286,7 @@ elsif ($explore_mode eq "explore") {
 	while (my %row=$table_status->fetch_row) {
 	
 		# compute dynamic fields
+		$row{DESCRIPTION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DESCRIPTION");
 		$row{ICON}=$rules->get_field_icon($row{FIELD_NAME},$row{STATUS}, $row{COMMENT}) if exists $row{ICON};
 			
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");

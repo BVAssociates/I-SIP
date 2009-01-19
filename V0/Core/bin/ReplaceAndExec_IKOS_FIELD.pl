@@ -169,9 +169,10 @@ my %row;
 $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000, debug => $debug_level});
 
 # add dynamic field. Needed for array_to_hash()
-$local_table->dynamic_field("TEXT","TYPE","ICON");
+#$local_table->dynamic_field("TEXT","TYPE","ICON");
 #$local_table->query_field(@field);
-$local_table->query_field("ID","COMMENT","STATUS");
+$local_table->dynamic_field("DESCRIPTION");
+$local_table->query_field("ID","COMMENT","STATUS","DESCRIPTION");
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 
 #delete dynamic field from line to insert

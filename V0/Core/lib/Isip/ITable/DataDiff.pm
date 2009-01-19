@@ -61,7 +61,7 @@ sub open() {
 	# We bless the object with the new class
 	bless ($self, $class);
 	
-	# user query
+	# default query
 	$self->{field}  = [ $self->{table_target}->field() ];
 	$self->{query_field}  = [ $self->{table_target}->query_field() ];
 	$self->{dynamic_field}  = [ "ICON" ];
@@ -117,15 +117,6 @@ sub size {
     my $self = shift;
     if (@_) { croak("'size' member is read-only") }
     return %{ $self->{table_target}->{size} };
-}
-
-sub query_field {
-    my $self = shift;
-    if (@_) {
-		$self->{table_source}->query_field(@_);
-		$self->{table_target}->query_field(@_);
-	}
-    return @{ $self->{table_target}->{query_field} };
 }
 
 sub isip_rules() {
@@ -232,7 +223,12 @@ sub fetch_row() {
 		return ();
 	}
 	
-	# compute dynamic fields
+	# initialize dynamic fields
+	foreach ($self->dynamic_field) {
+		$current_row{$_}="";
+	}
+	
+	# compute internal dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
 	
 		if (not blessed $self->{isip_rules}) {
