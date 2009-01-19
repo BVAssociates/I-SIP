@@ -171,9 +171,13 @@ $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000,
 # add dynamic field. Needed for array_to_hash()
 #$local_table->dynamic_field("TEXT","TYPE","ICON");
 #$local_table->query_field(@field);
-$local_table->dynamic_field("DESCRIPTION");
-$local_table->query_field("ID","COMMENT","STATUS","DESCRIPTION");
+$local_table->dynamic_field("DOCUMENTATION");
+#$local_table->query_field("ID","COMMENT","STATUS","DOCUMENTATION");
+$local_table->query_field("ID","COMMENT","STATUS");
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
+
+# keep DOCUMENTATION field
+my $description=$row{DOCUMENTATION};
 
 #delete dynamic field from line to insert
 foreach ($local_table->dynamic_field()) {
@@ -181,10 +185,16 @@ foreach ($local_table->dynamic_field()) {
 }
 
 use POSIX qw(strftime);
-$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
-$row{USER_UPDATE} = $ENV{IsisUser};
+my $current_date=strftime "%Y-%m-%dT%H:%M", localtime;
+my $current_user=$ENV{IsisUser};
+
+#Update comment
+$row{DATE_UPDATE} = $current_date;
+$row{USER_UPDATE} = $current_user;
 $local_table->update_row( %row );
 
-#sleep 100;
+#Update documentation
+#$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
+
 
 sortie($bv_severite);

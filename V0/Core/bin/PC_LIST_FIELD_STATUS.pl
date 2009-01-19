@@ -219,7 +219,7 @@ if ($@) {
 else {
 	$table_doc->query_condition("TABLE_KEY = 'table_key_value'");
 	while (my %row_doc=$table_doc->fetch_row) {
-		$field_doc{$row_doc{FIELD_NAME}}=$row_doc{DESCRIPTION};
+		$field_doc{$row_doc{FIELD_NAME}}=$row_doc{DOCUMENTATION};
 	}
 }
 
@@ -248,7 +248,7 @@ if ($explore_mode eq "compare") {
 	
 	# declare some additionnal blank fields
 	# (ICON field will be computed into DataDiff)
-	$table_status->dynamic_field("ICON","TYPE","TEXT","DESCRIPTION");
+	$table_status->dynamic_field("ICON","TYPE","TEXT","DOCUMENTATION");
 	$table_status->query_field(@query_field);
 	
 	# compute diff
@@ -259,7 +259,7 @@ if ($explore_mode eq "compare") {
 	
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
-		$row{DESCRIPTION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DESCRIPTION");
+		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 		
@@ -277,7 +277,7 @@ elsif ($explore_mode eq "explore") {
 	
 	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
-	$table_status->dynamic_field($table_status->dynamic_field,"DESCRIPTION");
+	$table_status->dynamic_field($table_status->dynamic_field,"DOCUMENTATION");
 	$table_status->query_field(@query_field);
 	
 	$table_status->output_separator('@');
@@ -286,7 +286,7 @@ elsif ($explore_mode eq "explore") {
 	while (my %row=$table_status->fetch_row) {
 	
 		# compute dynamic fields
-		$row{DESCRIPTION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DESCRIPTION");
+		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
 		$row{ICON}=$rules->get_field_icon($row{FIELD_NAME},$row{STATUS}, $row{COMMENT}) if exists $row{ICON};
 			
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");

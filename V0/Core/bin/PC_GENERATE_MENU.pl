@@ -148,7 +148,7 @@ my $fkey_def_template='FKEY="[%s] on %s[%s]"
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
 my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl %s %s %%DATE_EXPLORE%%"
 SEP="@"
-FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@DESCRIPTION"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@DOCUMENTATION"
 SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="ID"
 
@@ -157,8 +157,6 @@ FKEY="[STATUS] on ETAT[Name]"
 
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
-#Item~~Afficher Ligne~expl~~~DisplayTable~IKOS_FIELD_%s~0~~Expand
-#Item~~Editer Commentaire~expl~~~Administrate~IKOS_FIELD_%s~0~~Expand
 #Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';
 my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand

@@ -18,4 +18,4 @@ USER_UPDATE,User commentaire,Label
 STATUS,Etat du commentaire,List
 COMMENT,Commentaire,Edit
 SEP3,,Separator
-DESCRIPTION,Documentation globale,Edit
+DOCUMENTATION,Documentation globale,Label
