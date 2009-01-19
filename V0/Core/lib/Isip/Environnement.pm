@@ -25,6 +25,7 @@ sub new() {
 	
 	$self->{options}->{debug} = 0 if not exists $self->{options}->{debug};
 	
+	# store global info about environnement 
 	my $environ_table=ITools->open("ENVIRON",$self->{options});
 	$environ_table->query_condition("Environnement = $self->{environnement}");
 	
@@ -34,11 +35,42 @@ sub new() {
 	$self->{description}=$env_config{Description};
 	$self->{datasource}=$env_config{Datasource};
 	
-	croak "Datasource field cannot be null" if not $env_config{Datasource};
+	$logger->warning( "Datasource field should not be null" ) if not $env_config{Datasource};
+	
+	
+	# store info about tables
+	$self->{info_table}= {};
+	#quirk because INFO_TABLE use %Environnement%
+	$ENV{Environnement}=$self->{environnement};
+	my $table_info=ITools->open("INFO_TABLE", $self->{options});
+	$table_info->query_condition("Active = 1");
+	
+	while (my %row=$table_info->fetch_row) {
+		$self->{info_table}->{$row{TABLE_NAME}}->{key}=$row{PRIMARY_KEY};
+		$self->{info_table}->{$row{TABLE_NAME}}->{key}="xml_path" if $row{TYPE_SOURCE} eq "XML";
+		
+		
+		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LIBELLE_KEY};
+		$self->{info_table}->{$row{TABLE_NAME}}->{f_table}=$row{F_TABLE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{f_key}=$row{F_KEY};
+		
+		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{Description};
+		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
+		
+		$self->{info_table}->{$row{TABLE_NAME}}->{type_source}=$row{TYPE_SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$row{SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$self->{datasource} if not $row{SOURCE};
+	}
 	
 	$logger->info("Environnement $self->{environnement} opened");
 	
 	return bless($self, $class);
+}
+
+sub get_table_info() {
+	my $self = shift;
+	
+	return %{$self->{info_table}};
 }
 
 sub get_histo_field() {
@@ -61,16 +93,7 @@ sub get_table_key() {
 	#
 	# For now, we'll use INFO_TABLE
 	
-	# quirk because INFO_TABLE use %Environnement%
-	$ENV{Environnement}=$self->{environnement};
-	
-	my $table=ITools->open("INFO_TABLE", {debug => $debug_level});
-	$table->query_condition("TABLE_NAME = '$tablename'");
-	$table->query_field("PRIMARY_KEY");
-
-	($key_found) = $table->fetch_row_array();
-	$table->finish;
-	return $key_found;
+	return $self->{info_table}->{$tablename}->{key};
 }
 
 sub get_table_field() {
@@ -104,7 +127,8 @@ sub get_sqlite_path() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^([[:alpha:]]+)(?:_([[:alpha:]]+))?$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|INFO|DOC)$/);
+	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
 	if (not $table_extension or $table_extension eq "INFO" or $table_extension eq "HISTO") {
 		$filename = "IKOS_".$self->{environnement}."_".$table_real.".sqlite";
@@ -224,7 +248,9 @@ sub open_histo_field_table() {
 		return $table_histo
 }
 
+#@OBSOLETE
 sub open_ikos_table() {
+	die "use open_source_table instead";
 	my $self = shift;
 	
 	use ITable::ODBC;
@@ -242,24 +268,51 @@ sub open_ikos_table() {
 	return $table_ikos;
 }
 
+sub open_source_table() {
+	my $self=shift;
+	my $table_name=shift or croak "open_source_table() wait args : 'table_name'";
+	my @options=@_;
+	
+	my $return_table;
+	
+	# open source table depending on TYPE_SOURCE
+	if ($self->{info_table}->{$table_name}->{type_source} eq "ODBC") {
+		if (not $self->{info_table}->{$table_name}->{source}) {
+			$logger->error("SOURCE missing for $table_name");
+		}
+		
+		use ITable::ODBC;
+
+		$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
+		$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+		
+		#manually set KEY
+		$return_table->key(sort split(/,/,$self->{info_table}->{$table_name}->{key}));
+	}
+	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
+		if (not $self->{info_table}->{$table_name}->{source}) {
+			$logger->error("SOURCE missing for $table_name");
+		}
+		
+		use ITable::XmlFile;
+		
+		$logger->info("Connexion à XML : $self->{info_table}->{$table_name}->{source}");
+		$return_table=XmlFile->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+	}
+	
+	return $return_table;
+}
+
 sub initialize_database() {
 	my $self=shift;
 	
-	my $tablename=shift or die "bad arguments";
+	my $itable_obj=shift or die "bad arguments";
 	
 	my $options=shift;
 	croak "bad arguments" if $options and ref($options) ne "HASH";
 
-	# Get infos from IKOS tables via ODBC
-	my $table = $self->open_ikos_table($tablename, {debug => 0 });
-	if (not defined $table) {
-		die "error opening $table in IKOS";
-	}
-
-	my $table_def=ITools->open("INFO_TABLE",$options);
-	$table_def->query_condition("TABLE_NAME = '$tablename'");
-	my %defined_table=$table_def->fetch_row();
-	$table_def->finish;
+	my $tablename=$itable_obj->table_name();
+	$logger->error("$tablename n'a pas de clef primaire définie") if not $itable_obj->{key};
 	
 	# compute path of database file
 	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
@@ -306,15 +359,14 @@ sub initialize_database() {
 	
 	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
 	
-	$logger->error("$tablename n'a pas de clef primaire définie dans INFO_TABLE") if not $defined_table{PRIMARY_KEY};
 
-	my %size_hash=$table->size();
-	my %field_txt_hash=$table->field_txt();
+	my %size_hash=$itable_obj->size();
+	my %field_txt_hash=$itable_obj->field_txt();
 	
-	$logger->notice("Populate $tablename\_INFO with information from IKOS table");	
+	$logger->notice("Populate $tablename\_INFO with information from source table");	
 	
 	$info_table->begin_transaction;
-	foreach my $field ($table->field) {
+	foreach my $field ($itable_obj->field) {
 		# extract type and size from format "type(size)"
 		my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
 		
@@ -329,14 +381,6 @@ sub initialize_database() {
 	}
 	$info_table->commit_transaction;
 
-}
-
-sub SQL_drop() {
-	my $self=shift;
-	
-	my $tablename=shift or die;
-	
-	return "DROP $tablename;";
 }
 
 1;

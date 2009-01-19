@@ -151,7 +151,7 @@ log_erreur("Conditions non gérées") if $conditions;
 ###########################################################
 my $bv_severite=0;
 
-if (not $table_name =~ /^IKOS_FIELD_(\w+)_(\w+)$/) {
+if (not $table_name =~ /^IKOS_FIELD_([[:alpha:]]+)_(\w+)$/) {
 	log_erreur("Table $table_name non géré par $0");
 }
 my ($environnement,$table_ikos) = ($1,$2);

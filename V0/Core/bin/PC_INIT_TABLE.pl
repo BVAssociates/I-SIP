@@ -93,7 +93,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvic:', \%opts);
+getopts('hvic:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -126,22 +126,15 @@ use Isip::ITable::DataDiff;
 
 my $env_sip = Environnement->new($environnement);
 
-# quirk because INFO_TABLE use %Environnement%
-$ENV{Environnement}=$environnement;
-my $db2_table = ITools->open("INFO_TABLE");
-
-$db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
-
-# db2_table_line  return one row
-my %db2_table_line = $db2_table->fetch_row();
-log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not %db2_table_line;
+my %table_info = $env_sip->get_table_info();
+log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not exists $table_info{$table_name};
 
 $logger->notice("Create database for table",$table_name);
-$env_sip->initialize_database($table_name, {debug => $debug_level});
+my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
+$env_sip->initialize_database($current_table, {debug => $debug_level});
 
 if ($populate) {
 	#open IKOS table for DATA
-	my $current_table=$env_sip->open_ikos_table($table_name, {debug => $debug_level});
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	
 	my $count=0;

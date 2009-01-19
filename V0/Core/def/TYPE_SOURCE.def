@@ -1,0 +1,4 @@
+SEP=";"
+FORMAT="Name;Description"
+SIZE="20s;20s"
+KEY="Name"

@@ -102,8 +102,6 @@ if ( @ARGV != 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 
-$table_name="" if $table_name eq "ALL";
-
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
@@ -114,31 +112,35 @@ use Isip::ITable::DataDiff;
 
 my $env_sip = Environnement->new($environnement);
 
-# quirk because INFO_TABLE use %Environnement%
-$ENV{Environnement}=$environnement;
-my $db2_table = ITools->open("INFO_TABLE" ,{debug => $debug_level});
+my %table_info = $env_sip->get_table_info();
+log_erreur("la table $table_name n'est pas connue") if not exists $table_info{$table_name};
 
-$db2_table->query_condition("TABLE_NAME = '$table_name'") if $table_name;
+my @list_table;
+if (not $table_name) {
+	@list_table=keys %table_info;
+} else {
+	@list_table=($table_name);
+}
 
 my $counter=0;
-while (my %db2_table_line = $db2_table->fetch_row() ) {
+my $source_table;
+foreach my $current_table (@list_table) {
 	$counter++;
 	
-	my $table_name=$db2_table_line{TABLE_NAME};
+	log_info("Connexion à la table source : $current_table");
+	# open source table depending on TYPE_SOURCE
+	$source_table=$env_sip->open_source_table($current_table);
 	
-	#open IKOS table for DATA
-	log_info("Connexion à IKOS");
-	my $current_table=$env_sip->open_ikos_table($table_name, {debug => $debug_level});
-	log_info("Connexion à la base locale");
+	
+	log_info("Connexion à la base d'historisation");
 	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level, timeout => 100000});
-	
-	my $table_diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
+	my $table_diff=DataDiff->open($source_table, $histo_table, {debug => $debug_level});
 
-	log_info("Debut de la comparaison");
+	log_info("Debut de la comparaison de $table_name");
 	$table_diff->compare();
 
 	if (exists $opts{n}) {
-		log_info("Option -n : les changements ne seront pas appliqués");
+		log_info("Option -n : les changements n'ont pas été appliqués");
 	} else {
 		my $diff_counter = $table_diff->update_compare_target();
 		if ($diff_counter) {

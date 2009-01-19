@@ -187,30 +187,13 @@ die "$pci_path not readable" if not -r $pci_path;
 die "$pci_path not writable" if not -w $pci_path;
 die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 
-# INFO_TABLE verification
-
-# quirk because INFO_TABLE use %Environnement%
-$ENV{Environnement}=$environnement;
-my $list_table = ITools->open("INFO_TABLE", {debug => $bv_debug });
-
-if (not defined $list_table) {
-	die "error opening INFO_TABLE";
-}
-
-# mise en mémoire des primary/foreign key
-my %table_key;
-my %table_fkey;
-my %table_info;
-while (my %info_key = $list_table->fetch_row() ) {
-	$table_key {$info_key{TABLE_NAME}} = $info_key{PRIMARY_KEY};
-	$table_fkey {$info_key{TABLE_NAME}} = $info_key{F_TABLE};
-	$table_info {$info_key{TABLE_NAME}} = $info_key{Description};
-}
-$list_table->finish();
 
 # access to SIP data
 log_info("opening environnement",$environnement);
 my $sip = Environnement->new($environnement);
+
+# get table info
+my %table_info_all=$sip->get_table_info();
 
 # we are ready, so begin with cleanup old files
 
@@ -225,25 +208,30 @@ else {
 	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
 
-my @condition;
-push @condition,"TABLE_NAME = '$table_name'" if defined $table_name;
-push @condition,"Active = 1";
-# only table with defined primary key
-push @condition,"PRIMARY_KEY != ''";
-$list_table->query_condition(join(' AND ',@condition));
 
-while (my %info = $list_table->fetch_row() ) {
 
-	#if ( not $sip->exist_local_table($info{TABLE_NAME}, { debug => $bv_debug }) ) {
-	#	warn "$info{TABLE_NAME} don't exist in local tables\n";
+my @list_table;
+if (not $table_name) {
+	@list_table=keys %table_info_all;
+} else {
+	@list_table=($table_name);
+}
+
+
+foreach my $current_table (@list_table) {
+
+	my %table_info=%{ $table_info_all{$current_table} };
+
+	#if ( not $sip->exist_local_table($current_table, { debug => $bv_debug }) ) {
+	#	warn "$current_table don't exist in local tables\n";
 	#	next;
 	#}
 	# open DATA table
-	log_info("Get information from",$info{TABLE_NAME});
-	my $ikos_data = $sip->open_ikos_table($info{TABLE_NAME}, { debug => $bv_debug });
-	my @field_list=(@virtual_field,$ikos_data->field() );
+	log_info("Get information from",$current_table);
+	my $source_data = $sip->open_source_table($current_table, { debug => $bv_debug });
+	my @field_list=(@virtual_field,$source_data->field() );
 	
-	my $ikos_data_table=$environnement."_".$info{TABLE_NAME};
+	my $source_data_table=$environnement."_".$current_table;
 	
 	my $string;	
 	my $filename;
@@ -254,38 +242,38 @@ while (my %info = $list_table->fetch_row() ) {
 		# reset field list
 		@field_list=(@virtual_field);
 		#add only used fields
-		push @field_list,split(',',$info{PRIMARY_KEY});
-		push @field_list,$info{LIBELLE_KEY} if $info{LIBELLE_KEY};
-		push @field_list,split(',',$info{F_KEY});
+		push @field_list,split(',',$table_info{key});
+		push @field_list,$table_info{label_field} if $table_info{label_field};
+		push @field_list,split(',',$table_info{f_key});
 	}
 	
-	my $ikos_data_size = join($separator,('20s') x @field_list ) ;
-	my $ikos_data_field = join($separator, @field_list);
+	my $source_data_size = join($separator,('20s') x @field_list ) ;
+	my $source_data_field = join($separator, @field_list);
 	$string = sprintf ($def_template,
 			$environnement,
-			$info{TABLE_NAME},
+			$current_table,
 			$separator,
-			$ikos_data_field,
-			$ikos_data_size, 
-			$info{PRIMARY_KEY});
+			$source_data_field,
+			$source_data_size, 
+			$table_info{key});
 		
-	if ($info{F_KEY} and $info{F_TABLE}) {
+	if ($table_info{f_key} and $table_info{f_table}) {
 		$string .= sprintf($fkey_def_template,
-			$info{F_KEY},
-			"IKOS_TABLE_$environnement\_".$info{F_TABLE},
-			$table_key{$info{F_TABLE}});
+			$table_info{f_key},
+			"IKOS_TABLE_$environnement\_".$table_info{f_table},
+			$table_info_all{$table_info{f_table}}{key} );
 	}
 	
-	$filename=sprintf($def_filename,$def_path,$ikos_data_table);
+	$filename=sprintf($def_filename,$def_path,$source_data_table);
 	
 	write_file($filename,$string);
 
 
 ##### CREATE DEF FIELD
 	
-	$string = sprintf ($def_field_template,$environnement,$info{TABLE_NAME});
+	$string = sprintf ($def_field_template,$environnement,$current_table);
 				
-	$filename=sprintf($def_field_filename,$def_path,$ikos_data_table);
+	$filename=sprintf($def_field_filename,$def_path,$source_data_table);
 	
 	write_file($filename,$string);
 
@@ -293,27 +281,27 @@ while (my %info = $list_table->fetch_row() ) {
 ##### CREATE PCI
 	
 	$string = sprintf ($pci_template,
-			($ikos_data_table) x 3,
-			$info{TABLE_NAME});
+			($source_data_table) x 3,
+			$current_table);
 	
 	# get all table having current table as F_KEY
 	my @fkey_list;
-	for my $name (keys %table_fkey) {
-		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_fkey{$name} and ($table_fkey{$name} eq $info{TABLE_NAME});
+	for my $name (keys %table_info_all) {
+		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info{$name}{f_key} and ($table_info{$name}{f_key} eq $current_table);
 	}
 
 	$string .= sprintf($pci_fkey_template,join(',',@fkey_list)) if @fkey_list;
 
 	
-	$filename=sprintf($pci_filename,$pci_path,$ikos_data_table);
+	$filename=sprintf($pci_filename,$pci_path,$source_data_table);
 	
 	write_file($filename,$string);
 	
 ##### CREATE PCI FIELD
 	
-	$string = sprintf ($pci_field_template,$info{TABLE_NAME});
+	$string = sprintf ($pci_field_template,$current_table);
 	
-	$filename=sprintf($pci_field_filename,$pci_path,$ikos_data_table);
+	$filename=sprintf($pci_field_filename,$pci_path,$source_data_table);
 	
 	write_file($filename,$string);
 	
@@ -324,9 +312,9 @@ while (my %info = $list_table->fetch_row() ) {
 				$label_field_table_template)
 	{
 		my $label_desc="";
-		$label_desc= "(".$info{Description}.")" if $info{Description};
-		my $label_string = sprintf($_,$ikos_data_table,$info{TABLE_NAME},$info{Description});
-		log_info("Insert $ikos_data_table into ICleLabels");
+		$label_desc= "(".$table_info{description}.")" if $table_info{description};
+		my $label_string = sprintf($_,$source_data_table,$current_table,$table_info{description});
+		log_info("Insert $source_data_table into ICleLabels");
 		system('Insert -f into ICleLabels values',$label_string);
 		if ($? == -1) {
 			die "failed to execute: $!\n";
@@ -338,11 +326,11 @@ while (my %info = $list_table->fetch_row() ) {
 	
 	#specifique
 	my $label_desc=" ";
-	$label_desc= "(%[".$info{LIBELLE_KEY}."])" if $info{LIBELLE_KEY};
-	my @pkey_list=split(',',$info{PRIMARY_KEY});
+	$label_desc= "(%[".$table_info{label_field}."])" if $table_info{label_field};
+	my @pkey_list=split(',',$table_info{key});
 	map {$_='%['.$_.']'} @pkey_list;
-	my $label_string = sprintf($label_item_template,$ikos_data_table,join(',',@pkey_list),$label_desc);
-	log_info("Insert $ikos_data_table into ICleLabels");
+	my $label_string = sprintf($label_item_template,$source_data_table,join(',',@pkey_list),$label_desc);
+	log_info("Insert $source_data_table into ICleLabels");
 	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
 		log_erreur("failed to execute:",$!);
