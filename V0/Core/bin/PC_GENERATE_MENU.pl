@@ -287,7 +287,7 @@ foreach my $current_table (@list_table) {
 	# get all table having current table as F_KEY
 	my @fkey_list;
 	for my $name (keys %table_info_all) {
-		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info{$name}{f_key} and ($table_info{$name}{f_key} eq $current_table);
+		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info_all{$name}{f_table} and ($table_info_all{$name}{f_table} eq $current_table);
 	}
 
 	$string .= sprintf($pci_fkey_template,join(',',@fkey_list)) if @fkey_list;

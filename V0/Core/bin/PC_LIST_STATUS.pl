@@ -177,7 +177,6 @@ my @query_field=$env_sip->get_table_field($table_name);
 
 if ($explore_mode eq "compare") {
 	my $env_sip_from = Environnement->new($env_compare);
-	my $env_sip = Environnement->new($environnement);
 		
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});

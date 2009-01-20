@@ -133,9 +133,10 @@ $logger->notice("Create database for table",$table_name);
 my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
 $env_sip->initialize_database($current_table, {debug => $debug_level});
 
+my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
+
 if ($populate) {
 	#open IKOS table for DATA
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 	
 	my $count=0;
 
@@ -165,11 +166,11 @@ if ($populate) {
 	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
 		SET STATUS='".$histo_table->{valid_keyword}."',
 			COMMENT='Creation'");
-			
-	$logger->notice("Create indexes");
-	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
-	$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
-	$histo_table->{table_histo}->execute("ANALYZE");
 }
+			
+$logger->notice("Create indexes");
+$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
+$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
+$histo_table->{table_histo}->execute("ANALYZE");
 
 sortie($bv_severite);

@@ -217,7 +217,7 @@ if ($@) {
 	warn $@;
 }
 else {
-	$table_doc->query_condition("TABLE_KEY = 'table_key_value'");
+	$table_doc->query_condition("TABLE_KEY = '$table_key_value'");
 	while (my %row_doc=$table_doc->fetch_row) {
 		$field_doc{$row_doc{FIELD_NAME}}=$row_doc{DOCUMENTATION};
 	}
