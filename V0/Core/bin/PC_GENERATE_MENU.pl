@@ -87,7 +87,7 @@ sub write_file($$) {
 	my $filename=shift;
 	my $string=shift;
 	
-	log_info("writing to",$filename);
+	$logger->info("writing to",$filename);
 	open (FILE,">$filename") or log_erreur("error opening $filename :",$!);
 	print FILE $string."\n";
 	close FILE;	
@@ -125,7 +125,7 @@ my $table_name=shift;
 use Isip::Environnement;
 use ITable::ITools;
 
-
+my $bv_severite=0;
 my $bv_debug=0;
 
 
@@ -190,21 +190,22 @@ die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
 
 # access to SIP data
 log_info("opening environnement",$environnement);
-my $sip = Environnement->new($environnement);
+my $env = Environnement->new($environnement);
 
 # get table info
-my %table_info_all=$sip->get_table_info();
+my %table_info_all=$env->get_table_info();
+my $link_obj=$env->get_links();
 
 # we are ready, so begin with cleanup old files
 
 
 if ($table_name) {
-	log_info("Cleaning old labels for", $table_name);
+	$logger->info("Cleaning old labels for", $table_name);
 	system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_$table_name_$environnement');
 	system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_$table_name_$environnement');
 }
 else {
-	log_info("Cleaning all old labels");
+	$logger->info("Cleaning all old labels");
 	system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 }
 
@@ -222,13 +223,18 @@ foreach my $current_table (@list_table) {
 
 	my %table_info=%{ $table_info_all{$current_table} };
 
-	#if ( not $sip->exist_local_table($current_table, { debug => $bv_debug }) ) {
+	#if ( not $env->exist_local_table($current_table, { debug => $bv_debug }) ) {
 	#	warn "$current_table don't exist in local tables\n";
 	#	next;
 	#}
 	# open DATA table
-	log_info("Get information from",$current_table);
-	my $source_data = $sip->open_source_table($current_table, { debug => $bv_debug });
+	log_info("Traitement de ",$current_table);
+	my $source_data = eval { $env->open_source_table($current_table, { debug => $bv_debug }) };
+	if ($@) {
+		$bv_severite=202;
+		next;
+	}
+	
 	my @field_list=(@virtual_field,$source_data->field() );
 	
 	my $source_data_table=$environnement."_".$current_table;
@@ -244,7 +250,8 @@ foreach my $current_table (@list_table) {
 		#add only used fields
 		push @field_list,split(',',$table_info{key});
 		push @field_list,$table_info{label_field} if $table_info{label_field};
-		push @field_list,split(',',$table_info{f_key});
+		push @field_list,split(',',$link_obj->get_parent_fields());
+		die "TODO"
 	}
 	
 	my $source_data_size = join($separator,('20s') x @field_list ) ;
@@ -257,11 +264,11 @@ foreach my $current_table (@list_table) {
 			$source_data_size, 
 			$table_info{key});
 		
-	if ($table_info{f_key} and $table_info{f_table}) {
+	foreach my $f_table ($link_obj->get_parent_tables($current_table)) {
 		$string .= sprintf($fkey_def_template,
-			$table_info{f_key},
-			"IKOS_TABLE_$environnement\_".$table_info{f_table},
-			$table_info_all{$table_info{f_table}}{key} );
+			join(',',$link_obj->get_child_fields($current_table,$f_table)) ,
+			"IKOS_TABLE_$environnement\_".$f_table,
+			join(',',$link_obj->get_parent_fields($current_table,$f_table)) ,   );
 	}
 	
 	$filename=sprintf($def_filename,$def_path,$source_data_table);
@@ -285,12 +292,14 @@ foreach my $current_table (@list_table) {
 			$current_table);
 	
 	# get all table having current table as F_KEY
-	my @fkey_list;
-	for my $name (keys %table_info_all) {
-		push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info_all{$name}{f_table} and ($table_info_all{$name}{f_table} eq $current_table);
-	}
+	my @child_table=$link_obj->get_child_tables($current_table);
+	map ($_ = "IKOS_TABLE_$environnement\_$_", @child_table);
+	
+	#for my $name (@child_table) {
+	#	push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info_all{$name}{f_table} and ($table_info_all{$name}{f_table} eq $current_table);
+	#}
 
-	$string .= sprintf($pci_fkey_template,join(',',@fkey_list)) if @fkey_list;
+	$string .= sprintf($pci_fkey_template,join(',',@child_table)) if @child_table;
 
 	
 	$filename=sprintf($pci_filename,$pci_path,$source_data_table);
@@ -314,7 +323,7 @@ foreach my $current_table (@list_table) {
 		my $label_desc="";
 		$label_desc= "(".$table_info{description}.")" if $table_info{description};
 		my $label_string = sprintf($_,$source_data_table,$current_table,$table_info{description});
-		log_info("Insert $source_data_table into ICleLabels");
+		$logger->info("Insert $source_data_table into ICleLabels");
 		system('Insert -f into ICleLabels values',$label_string);
 		if ($? == -1) {
 			die "failed to execute: $!\n";
@@ -330,7 +339,7 @@ foreach my $current_table (@list_table) {
 	my @pkey_list=split(',',$table_info{key});
 	map {$_='%['.$_.']'} @pkey_list;
 	my $label_string = sprintf($label_item_template,$source_data_table,join(',',@pkey_list),$label_desc);
-	log_info("Insert $source_data_table into ICleLabels");
+	$logger->info("Insert $source_data_table into ICleLabels");
 	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
 		log_erreur("failed to execute:",$!);
@@ -346,5 +355,7 @@ foreach my $current_table (@list_table) {
 	##TODO
 }
 
-log_info("Collecte des données sur le portail");
+log_info("Prise en compte des descriptions sur le portail");
 system('AgentCollect -s PortalICleLabels ICleLabels');
+
+sortie($bv_severite);

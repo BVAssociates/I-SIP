@@ -1,6 +1,5 @@
 
 SEP=":"
-FORMAT="Environnement:Description:Datasource"
+FORMAT="Environnement:Description:DEFAUT_ODBC"
 SIZE="20s:20s:20s"
-NOTNULL="Datasource"
 KEY="Environnement"

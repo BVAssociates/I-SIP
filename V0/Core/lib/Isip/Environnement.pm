@@ -14,6 +14,8 @@ use Carp qw(carp croak );
 
 use Isip::IsipLog '$logger';
 
+use ITable::ILink;
+
 sub new() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
@@ -33,35 +35,76 @@ sub new() {
 	croak "Unable to get information of Environnement : $self->{environnement}" if not %env_config;
 	
 	$self->{description}=$env_config{Description};
-	$self->{datasource}=$env_config{Datasource};
+	$self->{datasource}=$env_config{DEFAUT_ODBC};
 	
-	$logger->warning( "Datasource field should not be null" ) if not $env_config{Datasource};
+	$logger->warning( "Datasource field should not be null" ) if not $self->{datasource};
 	
 	
-	# store info about tables
+	# store global info about tables
 	$self->{info_table}= {};
-	#quirk because INFO_TABLE use %Environnement%
-	$ENV{Environnement}=$self->{environnement};
-	my $table_info=ITools->open("INFO_TABLE", $self->{options});
-	$table_info->query_condition("Active = 1");
+	$self->{link_table}=ILink->new();
+
 	
-	while (my %row=$table_info->fetch_row) {
-		$self->{info_table}->{$row{TABLE_NAME}}->{key}=$row{PRIMARY_KEY};
-		$self->{info_table}->{$row{TABLE_NAME}}->{key}="xml_path" if $row{TYPE_SOURCE} eq "XML";
-		
-		
-		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LIBELLE_KEY};
-		$self->{info_table}->{$row{TABLE_NAME}}->{f_table}=$row{F_TABLE};
-		$self->{info_table}->{$row{TABLE_NAME}}->{f_key}=$row{F_KEY};
-		
-		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{Description};
+	my $table_info=ITools->open("TABLE_INFO", $self->{options});
+	$table_info->query_condition("COLLECTE = 1");
+	while (my %row=$table_info->fetch_row) {		
 		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
-		
 		$self->{info_table}->{$row{TABLE_NAME}}->{type_source}=$row{TYPE_SOURCE};
-		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$row{SOURCE};
-		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$self->{datasource} if not $row{SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
+		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{DESCRIPTION};
+		# default datasource
+		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$self->{datasource};
+		
 	}
 	
+	
+	# store global info about primary keys
+	my $key_info=ITools->open("FIELD_KEY", $self->{options});
+	my %temp_key;
+	while (my %row=$key_info->fetch_row) {
+		# filter
+		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
+		
+		push @{$temp_key{$row{TABLE_NAME}}},$row{FIELD_KEY};
+	}
+	
+	foreach my $table (keys %{ $self->{info_table} }) {
+		
+		# fixed key for XML sources
+		if ($self->{info_table}->{$table}->{type_source} eq "XML") {
+			$self->{info_table}->{$table}->{key}="xml_path";
+		} else {
+			if ($temp_key{$table}) {
+				my $string_key=join(',',sort @{ $temp_key{$table} });
+				$self->{info_table}->{$table}->{key}=$string_key;
+			} else {
+				$logger->warning("Vous devez definir une cle primaire pour $table") ;
+			}
+		}
+	}
+	
+
+	# store global info about relations between tables
+	my $link_info=ITools->open("FIELD_LINK", $self->{options});
+	while (my %row=$link_info->fetch_row) {
+		# filter on known tables
+		next if not exists $self->{info_table}->{$row{TABLE_LINK}};
+
+		$self->{link_table}->add_link($row{TABLE_LINK},$row{FIELD_LINK},$row{F_TABLE},$row{F_KEY})
+	}
+	
+	# store specific info about tables
+	my $source_info=ITools->open("SOURCE_ENV", $self->{options});
+	while (my %row=$source_info->fetch_row) {
+		# filter on known tables
+		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
+
+		#overide datasource with specific
+		$self->{info_table}->{$row{TABLE_NAME}}->{source}=$row{SOURCE};
+
+	}
+
+
 	$logger->info("Environnement $self->{environnement} opened");
 	
 	return bless($self, $class);
@@ -71,6 +114,12 @@ sub get_table_info() {
 	my $self = shift;
 	
 	return %{$self->{info_table}};
+}
+
+sub get_links() {
+	my $self = shift;
+		
+	return $self->{link_table};
 }
 
 sub get_histo_field() {
@@ -287,6 +336,7 @@ sub open_source_table() {
 		$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
 		
 		#manually set KEY
+		croak ("PRIMARY KEY not defined for $table_name") if (not $self->{info_table}->{$table_name}->{key});
 		$return_table->key(sort split(/,/,$self->{info_table}->{$table_name}->{key}));
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {

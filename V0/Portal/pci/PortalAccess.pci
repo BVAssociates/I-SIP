@@ -4,6 +4,9 @@
 Item~~Environnements~expl~~~Explore~ENVIRON~0~~Expand
 Item~Configuration SIP~Administrer Environnements~adm~~~Administrate~ENVIRON~0~~Configure
 Item~Configuration SIP~Administrer Modules~adm~~~Administrate~MODULE~0~~Configure
+Item~Configuration SIP~Administrer Tables~adm~~~Administrate~TABLE_INFO~0~~Configure
+Item~Configuration SIP~Administrer Liens entre tables~adm~~~Explore~TABLE_INFO~0~~Configure
+Item~Configuration SIP~Administrer Sources spécifiques~adm~~~Administrate~SOURCE_ENV~0~~Configure
 
 Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
 Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand
