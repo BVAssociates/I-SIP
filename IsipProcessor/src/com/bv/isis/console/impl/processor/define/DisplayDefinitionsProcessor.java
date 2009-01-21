@@ -1114,7 +1114,7 @@ public class DisplayDefinitionsProcessor
 
     private void remove_unused()
     {
-        for (int row=0; row < _model.getRowCount(); row++) {
+        for (int row=_model.getRowCount()-1; row >= 0 ; row--) {
             if(((String)_model.getValueAt(row, 5)).equals("0")) {
                 removeDefinition(row);
             }
