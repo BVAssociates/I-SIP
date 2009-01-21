@@ -164,7 +164,7 @@ if ($populate) {
 	# execute special query on table backend
 	$logger->notice("Set STATUS to Valide");
 	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
-		SET STATUS='".$histo_table->{valid_keyword}."',
+		SET STATUS='Valide',
 			COMMENT='Creation'");
 }
 			

@@ -101,3 +101,17 @@ sub get_foreign_fields() {
 }
 
 1;
+
+=head1 NAME
+
+Package ILink
+ 
+=head1 DESCRIPTION
+
+Stocke l'ensemble des relations de clefs étrangères entre les tables.
+
+=head1 AUTHOR
+
+Copyright (c) 2008 BV Associates. Tous droits réservés.
+
+=cut

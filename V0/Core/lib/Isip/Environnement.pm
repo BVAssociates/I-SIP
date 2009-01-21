@@ -180,7 +180,7 @@ sub get_sqlite_path() {
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
 	if (not $table_extension or $table_extension eq "INFO" or $table_extension eq "HISTO") {
-		$filename = "IKOS_".$self->{environnement}."_".$table_real.".sqlite";
+		$filename = "ISIP_".$self->{environnement}."_".$table_real.".sqlite";
 	}
 	elsif ($table_extension and $table_extension eq "DOC") {
 		$filename = "ISIP_DOC_".$table_real.".sqlite";
@@ -248,7 +248,7 @@ sub open_documentation_table() {
 	my $table_name=shift or croak "open_info_table() wait args : 'tablename'";
 	
 	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name."_DOC"), $table_name."_DOC", @_)};
-	croak "Error opening $table_name : $@" if $@;
+	croak "Error opening $table_name\_DOC : $@" if $@;
 	return $tmp_return;
 }
 
@@ -367,7 +367,7 @@ sub initialize_database() {
 	# compute path of database file
 	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
 	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
-	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/IKOS_".$self->{environnement}."_".$tablename.".sqlite";
+	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/ISIP_".$self->{environnement}."_".$tablename.".sqlite";
 	
 	die "database already exist at <$database_path>" if -e $database_path;
 	
