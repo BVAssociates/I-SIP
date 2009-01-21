@@ -216,7 +216,7 @@ if ($explore_mode eq "compare") {
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_from->query_date($date_compare) if $date_compare;
-
+	$table_from->query_key_value(join(',',@key_condition));
 
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
