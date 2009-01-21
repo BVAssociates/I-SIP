@@ -158,6 +158,12 @@ sub query_condition_has_numeric() {
 	
 }
 
+sub query_key_value() {
+	my $self = shift;
+    if (@_) { $self->{query_key_value} = shift }
+    return $self->{query_key_value} ;
+}
+
 sub query_condition() {
 	my $self = shift;
 
@@ -200,6 +206,7 @@ sub get_query()
 	
 	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, $self->query_condition if $self->query_condition;
+	push @select_conditions, "TABLE_KEY like '".$self->{query_key_value}."'" if $self->{query_key_value};
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!
 	#my @query_conditions;

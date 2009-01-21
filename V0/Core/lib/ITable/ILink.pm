@@ -49,7 +49,7 @@ sub get_child_fields() {
 }
 
 # for a table having some foreign_key
-# return ($foreign_key1, $foreign_key2) correspinding to get_child_fields()
+# return ($foreign_key1, $foreign_key2) corresponding to get_child_fields()
 sub get_parent_fields() {
 	my $self=shift;
 	my $table=shift;

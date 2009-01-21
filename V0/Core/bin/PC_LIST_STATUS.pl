@@ -170,9 +170,44 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 
-my $table_status;
 my $env_sip = Environnement->new($environnement);
 
+# recuperation de la structure des liens
+my $links = $env_sip->get_links();
+my %table_key_value;
+# on essaye de retrouver toutes les clefs etrangere dans l'environnement
+# on ne possède pas l'information de l'arbre d'exploration, donc on cherche
+#	les clefs etrangères de toutes les tables parentes
+foreach my $parent_table ($links->get_parent_tables($table_name) ) {
+	my @parent_field=$links->get_parent_fields($table_name,$parent_table);
+	my @child_field=$links->get_child_fields($table_name,$parent_table);
+	
+	foreach (@parent_field) {
+		my $var=shift @child_field;
+		if ( exists $ENV{$_} ) {
+			$table_key_value{$var}=$ENV{$_};
+		}
+	}
+}
+
+# table qui sera affichée
+my $table_explore;
+# ouverture de la table en cours d'exploration
+my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
+$table_current->query_date($date_explore) if $date_explore;
+
+# construction de la condition sur la clef
+my @key=sort $table_current->key();
+my @key_condition=@table_key_value{@key};
+foreach (@key_condition) {
+	if (not defined) {
+		$_ = '%';
+	}
+}
+
+$table_current->query_key_value(join(',',@key_condition));
+
+# recuperation des colonnes à afficher
 my @query_field=$env_sip->get_table_field($table_name);
 
 if ($explore_mode eq "compare") {
@@ -182,31 +217,27 @@ if ($explore_mode eq "compare") {
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_from->query_date($date_compare) if $date_compare;
 
-	my $table_to=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
-	$table_to->query_date($date_explore) if $date_explore;
 
-	$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
+	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
-	$table_status->compare();
-	
-	$table_status->query_field(@query_field);
+	$table_explore->compare();
 
 }
 elsif ($explore_mode eq "explore") {
 	
-	$table_status=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
-	$table_status->query_date($date_explore) if $date_explore;
-	
-	$table_status->query_field(@query_field);
+	$table_explore=$table_current;
 }
 
+# champs à afficher
+$table_explore->query_field(@query_field);
+
 my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
-$table_status->isip_rules($type_rules);
+$table_explore->isip_rules($type_rules);
 
-$table_status->output_separator('@');
+$table_explore->output_separator('@');
 
-while (my %row=$table_status->fetch_row) {
-	print join($table_status->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row {ICON} eq $exlude_icon);
+while (my %row=$table_explore->fetch_row) {
+	print join($table_explore->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row {ICON} eq $exlude_icon);
 }
 
 sortie($bv_severite);
