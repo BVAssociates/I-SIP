@@ -803,10 +803,31 @@ public class DisplayDefinitionsProcessor
 		// On ajoute le callback sur le bouton
 		close_button.addActionListener(new ActionListener()
 		{
+
 			public void actionPerformed(ActionEvent event)
 			{
 				// On appelle la méthode de fermeture
 				close();
+			}
+		});
+        // Maintenant, on va créer le bouton Fermer
+		JButton empty_button =
+			new JButton(MessageManager.getMessage("Vider non utilisés"));
+		// On ajoute le callback sur le bouton
+		empty_button.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent event)
+			{
+                // On va demander confirmation à l'utilisateur
+                MainWindowInterface window_interface = getMainWindowInterface();
+                int reply = window_interface.showPopup("YesNoQuestion",
+                        "Supprimer les définitions non utilisées\nEtes vous sûr?", null);
+                if (reply != JOptionPane.YES_OPTION) {
+                    // L'utilisateur n'a pas validé la sortie
+                    return;
+                }
+				// On appelle la méthode de nettoyage
+				remove_unused();
 			}
 		});
 		// On crée un panneau avec un GridBagLayout
@@ -818,6 +839,12 @@ public class DisplayDefinitionsProcessor
 		JPanel button_panel = new JPanel(layout);
 		layout.setConstraints(close_button, constraints);
 		button_panel.add(close_button);
+        GridBagConstraints constraints2 =
+			new GridBagConstraints(1, 0, 1, 1, 100, 100,
+			GridBagConstraints.CENTER, GridBagConstraints.NONE,
+			new Insets(3, 0, 3, 0), 0, 0);
+		layout.setConstraints(empty_button, constraints2);
+        button_panel.add(empty_button);
 		// On place ce panneau dans la zone sud
 		getContentPane().add(button_panel, BorderLayout.SOUTH);
 		trace_methods.endOfMethod();
@@ -900,6 +927,14 @@ public class DisplayDefinitionsProcessor
 		{
 			public void actionPerformed(ActionEvent e)
 			{
+                // On va demander confirmation à l'utilisateur
+                MainWindowInterface window_interface = getMainWindowInterface();
+                int reply = window_interface.showPopup("YesNoQuestion",
+                        "&Question_ConfirmRemoval", null);
+                if (reply != JOptionPane.YES_OPTION) {
+                    // L'utilisateur n'a pas validé la sortie
+                    return;
+                }
 				removeDefinition(selectedRow);
 			}
 		});
@@ -1055,15 +1090,7 @@ public class DisplayDefinitionsProcessor
 			trace_methods.endOfMethod();
 			return;
 		}
-		// On va demander confirmation à l'utilisateur
-		int reply = window_interface.showPopup("YesNoQuestion",
-			"&Question_ConfirmRemoval", null);
-		if(reply != JOptionPane.YES_OPTION)
-		{
-			// L'utilisateur n'a pas validé la sortie
-			trace_methods.endOfMethod();
-			return;
-		}
+		
 		// On tente de supprimer la définition
 		TableDefinitionManager manager = TableDefinitionManager.getInstance();
 		try
@@ -1084,4 +1111,13 @@ public class DisplayDefinitionsProcessor
 		}
 		trace_methods.endOfMethod();
  	}
+
+    private void remove_unused()
+    {
+        for (int row=0; row < _model.getRowCount(); row++) {
+            if(((String)_model.getValueAt(row, 5)).equals("0")) {
+                removeDefinition(row);
+            }
+        }
+    }
 }
