@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import com.bv.core.message.MessageManager;
@@ -314,10 +315,13 @@ public class EditFormProcessor extends ProcessorFrame {
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"EditFormProcessor", "makePanel");
+        
+        JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
 
         // Creation du panneau de saisie
         JPanel form_panel = makeFormPanel();
-        getContentPane().add(form_panel, BorderLayout.CENTER);
+        jScrollPane1.setViewportView(form_panel);
+        getContentPane().add(jScrollPane1, BorderLayout.CENTER);
 
         JPanel button_panel = makeButtonPanel();
 		// On place ce panneau dans la zone sud
@@ -330,25 +334,35 @@ public class EditFormProcessor extends ProcessorFrame {
 		trace_methods.endOfMethod();
 	}
 
+    /**
+     * Remplit les champs du formulaire. Si refresh est false, on utilise le
+     * contexte du noeud pour récuperer les données. Si refresh est true, on
+     * va chercher les données sur le disque.
+     *
+     * @param refresh rafraichir depuis le disque
+     * @return une tableau de IsisParameter
+     *
+     * @throws com.bv.isis.console.common.InnerException
+     */
     private IsisParameter[] populateFormPanel(boolean refresh)
             throws InnerException
     {
         // Variable qui stockera les valeurs à afficher
         IsisParameter[] data;
 
+        // Construction de la condition du Select pour ne recuperer que
+        // la ligne correspondante aux clefs
+        GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
+        String condition = "";
+        for (int k = 0; k < _tableDefinition.key.length; k++) {
+            if (!condition.equals("")) {
+                condition += " AND ";
+            }
+            condition = _tableDefinition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(_tableDefinition.key[k])).value;
+        }
+
         if (refresh) {
             //recuperation des données depuis la table
-            GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
-
-            // Construction de la condition du Select pour ne recuperer que
-            // la ligne correspondante aux clefs
-            String condition="";
-            for(int k=0; k < _tableDefinition.key.length ;k++) {
-                if (! condition.equals("")) {
-                    condition += " AND ";
-                }
-                condition=_tableDefinition.key[k]+"="+((IsisParameter)node.getContext(true).get(_tableDefinition.key[k])).value;
-            }
             SimpleSelect HistoTable=
                     new SimpleSelect(getSelectedNode(), node.getTableName(),new String[] {""}, condition);
             data=HistoTable.getFirst();
@@ -356,7 +370,7 @@ public class EditFormProcessor extends ProcessorFrame {
                 throw new InnerException("Les informations ont changés pendant l'edition", "Veuiller fermer et recommencer ", null);
             }
         } else {
-            //recuperation des données du noeud courant
+            //recuperation des données dans le noeud courant
             data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
         }
 
@@ -424,6 +438,12 @@ public class EditFormProcessor extends ProcessorFrame {
 
     }
 
+    /**
+     * Lit les données du formulaire et retourne un tableau de IsisParamter.
+     * Ne retourne que les valeurs des champs éditables et les clefs primaires.
+     *
+     * @return un tableau de IsisParameter
+     */
     public IsisParameter[] getFormPanelData()
     {
         IsisParameter[] data_from=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
@@ -437,7 +457,6 @@ public class EditFormProcessor extends ProcessorFrame {
             JComponent textBox = _fieldObject.get(data_from[i].name);
             if (textBox instanceof JTextField) {
                 data.add(new IsisParameter(data_from[i].name,
-                        //removeAccents(((JTextField) textBox).getText()) ,
                         ((JTextField) textBox).getText() ,
                         sep));
 
