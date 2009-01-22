@@ -99,7 +99,7 @@ sub write_file($$) {
 
 
 my %opts;
-getopts('hvc', \%opts);
+getopts('hvc', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -159,7 +159,7 @@ my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Item~~Explore Champs~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 #Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';
-my $pci_fkey_template='Item~Tables liées~Explorer~expl~~~Explore~%s~0~~Expand
+my $pci_fkey_template='Item~Tables liées~%s~expl~~~Explore~%s~0~~Expand
 ';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
@@ -293,13 +293,10 @@ foreach my $current_table (@list_table) {
 	
 	# get all table having current table as F_KEY
 	my @child_table=$link_obj->get_child_tables($current_table);
-	map ($_ = "IKOS_TABLE_$environnement\_$_", @child_table);
-	
-	#for my $name (@child_table) {
-	#	push @fkey_list, "IKOS_TABLE_$environnement\_".$name if $table_info_all{$name}{f_table} and ($table_info_all{$name}{f_table} eq $current_table);
-	#}
 
-	$string .= sprintf($pci_fkey_template,join(',',@child_table)) if @child_table;
+	foreach (@child_table) {
+		$string .= sprintf($pci_fkey_template,"$_ ($table_info_all{$_}{description})","IKOS_TABLE_$environnement\_$_") if @child_table;
+	}
 
 	
 	$filename=sprintf($pci_filename,$pci_path,$source_data_table);

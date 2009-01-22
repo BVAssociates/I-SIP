@@ -78,7 +78,7 @@ sub new() {
 				my $string_key=join(',',sort @{ $temp_key{$table} });
 				$self->{info_table}->{$table}->{key}=$string_key;
 			} else {
-				$logger->warning("Vous devez definir une cle primaire pour $table") ;
+				$logger->info("No PRIMARY KEY for $table") ;
 			}
 		}
 	}
@@ -95,6 +95,7 @@ sub new() {
 	
 	# store specific info about tables
 	my $source_info=ITools->open("SOURCE_ENV", $self->{options});
+	$source_info->query_condition("ENVIRONNEMENT = $self->{environnement}");
 	while (my %row=$source_info->fetch_row) {
 		# filter on known tables
 		next if not exists $self->{info_table}->{$row{TABLE_NAME}};

@@ -1,8 +1,3 @@
 # Commandes d'Exploitation : Droit expl
 
-Table~Developpement~Affiche Processor~adm~~~IsipProcessor~TYPE~0~~Expand
-
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
-
-Item~Configuration SIP~Administrer Tables IKOS~adm~~~Administrate~INFO_TABLE~0~~Configure
-Item~Configuration SIP~Resynchroniser les schemas avec IKOS~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
