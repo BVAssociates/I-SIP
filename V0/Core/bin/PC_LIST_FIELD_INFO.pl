@@ -109,8 +109,9 @@ my $table_name=shift;
 my $bv_severite=0;
 use Isip::Environnement;
 
-my $sip=Environnement->new($environ);
-my $table=$sip->open_local_table($table_name."_INFO", {debug => 0 });
+#my $sip=Environnement->new($environ);
+#my $table=$sip->open_local_table($table_name."_INFO", {debug => 0 });
+my $table=Environnement->open_local_table($table_name."_INFO", {debug => 0 });
 
 die "unable to open local $table_name\_INFO in env $environ" if not defined $table;
 

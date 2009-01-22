@@ -164,11 +164,11 @@ sub get_table_field() {
 }
 
 
-# provide file path of Sqlite database depending on architecture, environnement and table name
-sub get_sqlite_path() {
+# provide file name of Sqlite database depending on table name
+sub get_sqlite_filename() {
 	my $self = shift;
 	
-	my $table_name=shift or croak "get_local_database() wait args : 'tablename'";
+	my $table_name=shift or croak "get_sqlite_filename() wait args : 'tablename'";
 	
 	my $filename;
 	my $database_path;
@@ -180,17 +180,28 @@ sub get_sqlite_path() {
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|INFO|DOC)$/);
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
-	if (not $table_extension or $table_extension eq "INFO" or $table_extension eq "HISTO") {
+	if (not $table_extension  or $table_extension eq "HISTO") {
+	
+		croak("Environnement non defini") if not $self->{environnement};
+		
 		$filename = "ISIP_".$self->{environnement}."_".$table_real.".sqlite";
 	}
-	elsif ($table_extension and $table_extension eq "DOC") {
+	elsif ($table_extension and $table_extension eq "DOC" or $table_extension eq "INFO") {
 		$filename = "ISIP_DOC_".$table_real.".sqlite";
 	}
 	
-	if (not exists $ENV{BV_TABPATH}) {
-		croak('Environnement variable "BV_TABPATH" does not exist');
-	}
+	return $filename;
+}
+
+# provide file path of Sqlite database depending on architecture, environnement and table name
+sub get_sqlite_path() {
+	my $self = shift;
 	
+	my $table_name=shift or croak "get_sqlite_path() wait args : 'tablename'";
+	
+	my $filename=$self->get_sqlite_filename($table_name);
+	
+	# OS dependant
 	use Config;
 	my $env_separator = $Config{path_sep};
 	
@@ -354,7 +365,7 @@ sub open_source_table() {
 	return $return_table;
 }
 
-sub initialize_database() {
+sub initialize_database_histo() {
 	my $self=shift;
 	
 	my $itable_obj=shift or die "bad arguments";
@@ -368,7 +379,9 @@ sub initialize_database() {
 	# compute path of database file
 	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
 	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
-	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/ISIP_".$self->{environnement}."_".$tablename.".sqlite";
+	
+	my $database_filename=$self->get_sqlite_filename($tablename);
+	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/".$database_filename;
 	
 	die "database already exist at <$database_path>" if -e $database_path;
 	
@@ -394,11 +407,57 @@ sub initialize_database() {
 	FIELD_VALUE VARCHAR(30),
 	COMMENT VARCHAR(50),
 	STATUS VARCHAR(30))");
+	
+	$master_table->close();
+	
+}
 
-	$logger->notice("Create table $tablename\_INFO");
-	$master_table->execute("CREATE TABLE $tablename\_INFO (
+sub initialize_database_documentation() {
+	my $self=shift;
+	
+	my $itable_obj=shift or die "bad arguments";
+	
+	my $options=shift;
+	croak "bad arguments" if $options and ref($options) ne "HASH";
+	$logger->error("$itable_obj->table_name() n'a pas de clef primaire définie") if not $itable_obj->{key};
+
+	my $tablename_doc=$itable_obj->table_name()."_DOC";
+	my $tablename_info=$itable_obj->table_name()."_INFO";
+	
+	# compute path of database file
+	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
+	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
+	
+	my $database_filename=$self->get_sqlite_filename($tablename_info);
+	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/".$database_filename;
+	
+	die "database already exist at <$database_path>" if -e $database_path;
+	
+	$logger->notice("Creating empty file : $database_path");
+	#create empty file
+	open DATABASEFILE,">$database_path" or die "unable to create file : $!";
+	close DATABASEFILE;
+	
+	die "Impossible de retrouver le fichier créé" if not $self->get_sqlite_path($tablename_info);
+	
+	# opening master table
+	my $master_table=Sqlite->open($database_path, 'sqlite_master', $options);
+	
+	$logger->notice("Create table $tablename_doc");
+	$master_table->execute("CREATE TABLE \"$tablename_doc\" (
+		USER_UPDATE VARCHAR(30),
+		DATE_UPDATE VARCHAR(30),
+		TABLE_NAME VARCHAR(30),
+		TABLE_KEY VARCHAR(30),
+		FIELD_NAME VARCHAR(30),
+		DOCUMENTATION VARCHAR(30),
+		PRIMARY KEY (TABLE_NAME, TABLE_KEY, FIELD_NAME) )");
+
+	$logger->notice("Create table $tablename_info");
+	$master_table->execute("CREATE TABLE $tablename_info (
 	FIELD_NAME VARCHAR(30) PRIMARY KEY,
 	DATE_UPDATE VARCHAR(30) ,
+	USER_UPDATE VARCHAR(30),
 	DATA_TYPE VARCHAR(30) NOT NULL,
 	DATA_LENGTH VARCHAR(30) NOT NULL,
 	TABLE_SCHEMA VARCHAR(30) ,
@@ -408,13 +467,13 @@ sub initialize_database() {
 	
 	$master_table->close();
 	
-	my $info_table=Sqlite->open($database_path,"$tablename\_INFO",$options);
+	my $info_table=$self->open_local_table("$tablename_info",$options);
 	
 
 	my %size_hash=$itable_obj->size();
 	my %field_txt_hash=$itable_obj->field_txt();
 	
-	$logger->notice("Populate $tablename\_INFO with information from source table");	
+	$logger->notice("Populate $tablename_info with information from source table");	
 	
 	$info_table->begin_transaction;
 	foreach my $field ($itable_obj->field) {

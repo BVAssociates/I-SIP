@@ -91,7 +91,7 @@ sub _set_columns_info_histo() {
 	
 	if (not $self->field()) {
 		
-		my $table_info=Sqlite->open($self->{database_name}, $self->{table_name}."_INFO", {debug => $self->debugging()});
+		my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_name}."_INFO"), $self->{table_name}."_INFO", {debug => $self->debugging()});
 		$self->_debug("Get columns info for $self->{table_name}");
 		#$table_info->execute();
 		

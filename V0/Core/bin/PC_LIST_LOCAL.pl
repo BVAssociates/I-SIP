@@ -86,7 +86,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hv', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -108,6 +108,16 @@ my $table_name=shift;
 ###########################################################
 my $bv_severite=0;
 use Isip::Environnement;
+
+# DEBUG
+use ITable::XmlFile;
+my $table_xml=XmlFile->open('D:\BV Associates\docs\maquette\AppConfiguration.xml', { debug => 1 });
+while (my @line=$table_xml->fetch_row_array()) {
+	print join('%%%',@line)."\n";
+}
+die;
+# DEBUG
+
 
 my $sip=Environnement->new($environ);
 my $table=$sip->open_local_table($table_name, {debug => $debug_level });

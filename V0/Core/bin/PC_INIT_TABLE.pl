@@ -131,7 +131,11 @@ log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abor
 
 $logger->notice("Create database for table",$table_name);
 my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
-$env_sip->initialize_database($current_table, {debug => $debug_level});
+
+eval { $env_sip->initialize_database_documentation($current_table, {debug => $debug_level}) };
+
+$env_sip->initialize_database_histo($current_table, {debug => $debug_level}) ;
+
 
 my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 

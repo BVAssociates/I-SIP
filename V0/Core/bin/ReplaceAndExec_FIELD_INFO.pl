@@ -149,8 +149,8 @@ if ($table_name ne $table_name) {
 	log_erreur("Table $table_name non géré par $0");
 }
 
-my $environnement=$ENV{Environnement};
-die "Variable <Environnement> not set" if not $environnement;
+#my $environnement=$ENV{Environnement};
+#die "Variable <Environnement> not set" if not $environnement;
 
 my $table_ikos=$ENV{TABLE_NAME};
 die "Variable <TABLE_NAME> not set" if not $table_ikos;
@@ -161,11 +161,12 @@ my $separator=$itools_table->output_separator;
 my @field=$itools_table->field;
 
 use Isip::Environnement;
-my $env_sip=Environnement->new($environnement);
+#my $env_sip=Environnement->new($environnement);
 my $local_table;
 my %row;
 
-$local_table=$env_sip->open_local_table($table_ikos."_INFO", {timeout => 10000, debug => $debug_level});
+#$local_table=$env_sip->open_local_table($table_ikos."_INFO", {timeout => 10000, debug => $debug_level});
+$local_table=Environnement->open_local_table($table_ikos."_INFO", {timeout => 10000, debug => $debug_level});
 
 $local_table->query_field(@field);
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));

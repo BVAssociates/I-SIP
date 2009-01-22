@@ -87,7 +87,7 @@ sub new() {
 sub _init_info() {
 	my $self=shift;
 	
-	my $table_info=Sqlite->open($self->{database_name},$self->{table_info_name}, { debug => $self->debugging() } );
+	my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_info_name}),$self->{table_info_name}, { debug => $self->debugging() } );
 	
 	# narrow query if needed
 	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
