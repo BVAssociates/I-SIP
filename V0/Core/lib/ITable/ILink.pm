@@ -40,17 +40,17 @@ sub add_link() {
 
 # for a table having some foreign_key
 # return ($field1, $field2)
-sub get_child_fields() {
+sub get_foreign_fields() {
 	my $self=shift;
 	my $table=shift;
 	my $f_table=shift or croak ("usage : get_child_fields(table,f_table)");
 	
-	return sort keys %{$self->{table_parent}->{$table}->{$f_table}};
+	return %{$self->{table_parent}->{$table}->{$f_table}};
 }
 
 # for a table having some foreign_key
 # return ($foreign_key1, $foreign_key2) corresponding to get_child_fields()
-sub get_parent_fields() {
+sub get_parent_fields_OBSOLETE() {
 	my $self=shift;
 	my $table=shift;
 	my $f_table=shift or croak ("usage : get_child_fields(table,f_table)");
@@ -81,24 +81,6 @@ sub get_child_tables() {
 
 }
 
-# return list of foreign fields of a foreign table
-# in same order that get_linked_fields()
-sub get_foreign_fields() {
-	my $self=shift;
-	
-	my $table_foreign=shift or croak "usage: get_foreign_fields (table_foreign)";
-	
-	my @field_list;
-	
-	foreach my $field ( $self->get_linked_fields() ) {
-		if (exists $self->{table_link}->{$field}->{table_foreign} ) {
-			push @field_list, $self->{table_link}->{$field}->{table_foreign}
-		}
-	}
-	
-	return @field_list;
-
-}
 
 1;
 

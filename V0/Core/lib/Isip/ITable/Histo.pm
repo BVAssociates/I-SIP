@@ -144,6 +144,8 @@ sub query_sort {
 # arg :
 # true  (arg>0) : return only keys with numbers
 # false (arg=0) : return only keys without numbers
+
+# @OBSOLETE
 sub query_condition_has_numeric() {
 	my $self = shift;
 	
@@ -158,19 +160,12 @@ sub query_condition_has_numeric() {
 	
 }
 
+# special case of query_condition
+# can use internal field TABLE_KEY to speed up queries
 sub query_key_value() {
 	my $self = shift;
     if (@_) { $self->{query_key_value} = shift }
     return $self->{query_key_value} ;
-}
-
-sub query_condition() {
-	my $self = shift;
-
-    if (@_) { 
-		croak("Unable to set condition on ".ref($self));
-	}
-    return @{ $self->{query_condition} };
 }
 
 sub isip_rules() {
@@ -205,8 +200,13 @@ sub get_query()
 	my $provided_date_format = "%Y-%m-%d_%H:%M";
 	
 	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
-	push @select_conditions, $self->query_condition if $self->query_condition;
 	push @select_conditions, "TABLE_KEY like '".$self->{query_key_value}."'" if $self->{query_key_value};
+	
+	foreach ($self->query_condition()) {
+		if (/^\s*(\w+)\s*([=<>]+|like)\s*\'(\w+)\'\s*$/) {
+			push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+		}
+	}
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!
 	#my @query_conditions;

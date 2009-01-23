@@ -174,18 +174,21 @@ my $env_sip = Environnement->new($environnement);
 
 # recuperation de la structure des liens
 my $links = $env_sip->get_links();
-my %table_key_value;
+my @query_condition;
+
 # on essaye de retrouver toutes les clefs etrangere dans l'environnement
 # on ne possède pas l'information de l'arbre d'exploration, donc on cherche
 #	les clefs etrangères de toutes les tables parentes
+##DEBUG
+#$ENV{RDNPRCOD}='AFF';
+##DEBUG
 foreach my $parent_table ($links->get_parent_tables($table_name) ) {
-	my @parent_field=$links->get_parent_fields($table_name,$parent_table);
-	my @child_field=$links->get_child_fields($table_name,$parent_table);
+	my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);
 	
-	foreach (@parent_field) {
-		my $var=shift @child_field;
-		if ( exists $ENV{$_} ) {
-			$table_key_value{$var}=$ENV{$_};
+	foreach my $foreign_field (keys %foreign_fields) {
+		my $var=$foreign_fields{$foreign_field};
+		if ( exists $ENV{$var} ) {
+			push @query_condition, "$foreign_field = '$ENV{$var}'";
 		}
 	}
 }
@@ -196,16 +199,7 @@ my $table_explore;
 my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 $table_current->query_date($date_explore) if $date_explore;
 
-# construction de la condition sur la clef
-my @key=sort $table_current->key();
-my @key_condition=@table_key_value{@key};
-foreach (@key_condition) {
-	if (not defined) {
-		$_ = '%';
-	}
-}
-
-$table_current->query_key_value(join(',',@key_condition));
+$table_current->query_condition(@query_condition);
 
 # recuperation des colonnes à afficher
 my @query_field=$env_sip->get_table_field($table_name);
@@ -216,7 +210,8 @@ if ($explore_mode eq "compare") {
 	#open IKOS table for DATA
 	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
 	$table_from->query_date($date_compare) if $date_compare;
-	$table_from->query_key_value(join(',',@key_condition));
+
+	$table_from->query_condition(@query_condition);
 
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 

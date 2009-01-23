@@ -250,10 +250,12 @@ foreach my $current_table (@list_table) {
 		#add only used fields
 		push @field_list,split(',',$table_info{key});
 		push @field_list,$table_info{label_field} if $table_info{label_field};
-		push @field_list,split(',',$link_obj->get_parent_fields());
-		die "TODO"
+		
+		#push @field_list,split(',',$link_obj->get_foreign_fields());
+		die "TODO";
 	}
 	
+	# fill standards value of DEF
 	my $source_data_size = join($separator,('20s') x @field_list ) ;
 	my $source_data_field = join($separator, @field_list);
 	$string = sprintf ($def_template,
@@ -263,12 +265,18 @@ foreach my $current_table (@list_table) {
 			$source_data_field,
 			$source_data_size, 
 			$table_info{key});
-		
+	
+	# add one FKEY entry per foreign tables
 	foreach my $f_table ($link_obj->get_parent_tables($current_table)) {
+	
+		my %foreign_field=$link_obj->get_foreign_fields($current_table,$f_table);
+		my @sorted_keys=sort keys %foreign_field;
+		
+		# create FKEY entry
 		$string .= sprintf($fkey_def_template,
-			join(',',$link_obj->get_child_fields($current_table,$f_table)) ,
+			join(',', @sorted_keys) ,
 			"IKOS_TABLE_$environnement\_".$f_table,
-			join(',',$link_obj->get_parent_fields($current_table,$f_table)) ,   );
+			join(',', @foreign_field{@sorted_keys} ));
 	}
 	
 	$filename=sprintf($def_filename,$def_path,$source_data_table);
@@ -334,8 +342,25 @@ foreach my $current_table (@list_table) {
 	my $label_desc=" ";
 	$label_desc= "(%[".$table_info{label_field}."])" if $table_info{label_field};
 	my @pkey_list=split(',',$table_info{key});
-	map {$_='%['.$_.']'} @pkey_list;
-	my $label_string = sprintf($label_item_template,$source_data_table,join(',',@pkey_list),$label_desc);
+	
+	# suppression de l'affichage des clefs primaire qui sont des clef etrangere d'autres tables
+	my @parent_tables=$link_obj->get_parent_tables($current_table);
+	my %fkey_seen;
+	foreach my $parent (@parent_tables) {
+		my %foreign_key=$link_obj->get_foreign_fields($current_table,$parent);
+		foreach (keys %foreign_key) {
+			$fkey_seen{$_}++;
+		}
+	}
+	
+	my @new_pkey_list;
+	foreach my $pkey (@pkey_list) {
+		push @new_pkey_list, $pkey if not exists $fkey_seen{$pkey} ;
+	}
+	
+	
+	map {$_='%['.$_.']'} @new_pkey_list;
+	my $label_string = sprintf($label_item_template,$source_data_table,join(',',@new_pkey_list),$label_desc);
 	$logger->info("Insert $source_data_table into ICleLabels");
 	system('Insert -f into ICleLabels values',$label_string);
 	if ($? == -1) {
