@@ -473,7 +473,11 @@ public abstract class ProcessingHandler
 			InnerException
 	{
 
-
+        /**
+         * Classe interne stockant une liste renvoyée par un Select
+         * Dans un JOptionPane, permet d'afficher les champs, puis permet de
+         * recuperer uniquement la clef de l'element selectionné
+         */
         class IsisParameterOption
         {
 
@@ -481,6 +485,13 @@ public abstract class ProcessingHandler
             private IsisParameter[] _fields;
             private IsisTableDefinition _definition;
 
+            /**
+             * Constructeur de IsisParameterOption
+             * 
+             * @param fields ligne renvoyée par un Select. Doit contenir les
+             * clefs primaire en premier. Ils seront supprimés de l'affichage
+             * @param definition la IsisTableDefinition corresondante à fields
+             */
             IsisParameterOption(IsisParameter[] fields, IsisTableDefinition definition)
             {
                 _fields = fields;
@@ -496,6 +507,9 @@ public abstract class ProcessingHandler
                 _key=temp_key.toString();
             }
 
+            /**
+             * methode utilisée dans le JOptionPane pour afficher le texte
+             */
             @Override
             public String toString()
             {
@@ -512,11 +526,16 @@ public abstract class ProcessingHandler
                 return return_string.toString();
             }
 
+            /**
+             * recupère la clef sous forme de texte
+             */
             public String getKey()
             {
                 return _key;
             }
         }
+
+        
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"ProcessingHandler", "getListValueFromUser");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
@@ -527,14 +546,15 @@ public abstract class ProcessingHandler
         trace_arguments.writeTrace("message=" + message);
 		trace_arguments.writeTrace("parent=" + parent);
 
-        // On recupere le Proxy associé
-        ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
-
         String condition="";
         String sort_order="";
         String columns="";
         String selected_column[];
         String table_name;
+        IsisTableDefinition definition;
+
+        // On recupere le Proxy associé
+        ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
 
         // condition des paramètres.
         // Le format est: <table>[@<colonnes>[@<condition>[@<sort>[@<log?>]]]
@@ -553,11 +573,15 @@ public abstract class ProcessingHandler
             default:
                 throw new InnerException("Format non reconnu", parameters, null);
         }
+
+        // On recupere la definition de la table en cours
+        definition=session_proxy.getTableDefinition(table_name, context);
+        String keys[]=definition.key;
+        
         if (columns.equals("") == false) {
             // On découpe la liste des colonnes
             tokenizer = new UtilStringTokenizer(columns, ",");
-            
-            String keys[]=session_proxy.getTableDefinition(table_name, context).key;
+
 
             selected_column = new String[tokenizer.getTokensCount()+keys.length];
 
@@ -570,7 +594,15 @@ public abstract class ProcessingHandler
                 selected_column[keys.length+index] = tokenizer.getToken(index);
             }
         } else {
-            selected_column = new String[0];
+            //Si aucune colonne n'est donnée, on ne met que les clefs
+            
+            selected_column = new String[keys.length*2];
+
+            // on ajoute systematiquement la liste des clefs
+            // puis on ajoute les clef a nouveau pour affichage
+            for (int index = 0; index < keys.length*2; index++) {
+                selected_column[index] = keys[index/2];
+            }
         }
 
         // On va chercher les informations dans la table
