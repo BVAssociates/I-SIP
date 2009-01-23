@@ -464,7 +464,7 @@ public abstract class ProcessingHandler
 	* ----------------------------------------------------------*/
 	private static String getListValueFromUser(
         String message,
-		String table_name,
+		String parameters,
 		Component parent,
         IndexedList context,
 		ServiceSessionInterface serviceSession
@@ -472,21 +472,109 @@ public abstract class ProcessingHandler
 		throws
 			InnerException
 	{
+
+
+        class IsisParameterOption
+        {
+
+            private String _key;
+            private IsisParameter[] _fields;
+            private IsisTableDefinition _definition;
+
+            IsisParameterOption(IsisParameter[] fields, IsisTableDefinition definition)
+            {
+                _fields = fields;
+                _definition = definition;
+                
+                StringBuilder temp_key=new StringBuilder();
+                String sep="";
+                for (int i=0; i < _definition.key.length; i++) {
+                    temp_key.append(sep);
+                    temp_key.append(fields[i].value);
+                    sep=_definition.separator;
+                }
+                _key=temp_key.toString();
+            }
+
+            @Override
+            public String toString()
+            {
+                StringBuilder return_string=new StringBuilder();
+                String sep="";
+
+                
+                
+                for (int i=_definition.key.length; i < _fields.length; i++) {
+                    return_string.append(sep);
+                    return_string.append(_fields[i].value);
+                    sep=_definition.separator;
+                }
+                return return_string.toString();
+            }
+
+            public String getKey()
+            {
+                return _key;
+            }
+        }
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"ProcessingHandler", "getListValueFromUser");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
 
 		trace_methods.beginningOfMethod();
-		trace_arguments.writeTrace("table=" + table_name);
+		trace_arguments.writeTrace("table=" + parameters);
         trace_arguments.writeTrace("message=" + message);
 		trace_arguments.writeTrace("parent=" + parent);
 
         // On recupere le Proxy associé
         ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
 
-        // On va chercher les informations dans la table (Wide par securité)
-        String[] result = session_proxy.getSelectResult(table_name, new String[] {""}, "","", context);
+        String condition="";
+        String sort_order="";
+        String columns="";
+        String selected_column[];
+        String table_name;
+
+        // condition des paramètres.
+        // Le format est: <table>[@<colonnes>[@<condition>[@<sort>[@<log?>]]]
+        UtilStringTokenizer tokenizer =
+                new UtilStringTokenizer(parameters, "@");
+        switch (tokenizer.getTokensCount()) {
+            case 4:
+                sort_order = tokenizer.getToken(3);
+            case 3:
+                condition = tokenizer.getToken(2);
+            case 2:
+                columns = tokenizer.getToken(1);
+            case 1:
+                table_name=(tokenizer.getToken(0));
+                break;
+            default:
+                throw new InnerException("Format non reconnu", parameters, null);
+        }
+        if (columns.equals("") == false) {
+            // On découpe la liste des colonnes
+            tokenizer = new UtilStringTokenizer(columns, ",");
+            
+            String keys[]=session_proxy.getTableDefinition(table_name, context).key;
+
+            selected_column = new String[tokenizer.getTokensCount()+keys.length];
+
+            // on ajoute systematiquement la liste des clefs
+            for (int index = 0; index < keys.length; index++) {
+                selected_column[index] = keys[index];
+            }
+            
+            for (int index = 0; index < tokenizer.getTokensCount(); index++) {
+                selected_column[keys.length+index] = tokenizer.getToken(index);
+            }
+        } else {
+            selected_column = new String[0];
+        }
+
+        // On va chercher les informations dans la table
+        String[] result = session_proxy.getSelectResult(table_name, selected_column, condition,sort_order, context);
         //String[] result = session_proxy.getWideSelectResult(selectedIsisNode.getAgentName(), tableName, columnsName, condition, "", context);
         IsisTableDefinition table_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, table_name);
 
@@ -496,25 +584,26 @@ public abstract class ProcessingHandler
 
         // on ne recupere que les clefs
         // on saute la premiere ligne qui contient l'entete du Select
-        String[] result_key= new String[result.length-1];
+        IsisParameterOption[] options=new IsisParameterOption[result.length-1];
         for (int i=1; i < result.length; i++) {
             IsisParameter[] iparam = TreeNodeFactory.buildParametersFromSelectResult(result, i, table_definition);
-            result_key[i-1]=TreeNodeFactory.buildKeyFromSelectResult(iparam, table_definition);
+            options[i-1]=new IsisParameterOption(iparam, table_definition);
         }
 
 		// On va afficher une boîte de dialogue de saisie
-		String value = (String) JOptionPane.showInputDialog(parent, message,
+		IsisParameterOption choice = (IsisParameterOption) JOptionPane.showInputDialog(parent, message,
 			MessageManager.getMessage("&YesNoQuestion"),
-			JOptionPane.QUESTION_MESSAGE,null, result_key, result_key[0]);
-		trace_debug.writeTrace("L'utilisateur a saisi=" + value);
-		if(value == null)
+			JOptionPane.QUESTION_MESSAGE,null, options, options[0]);
+		
+		if(choice == null)
 		{
 			// L'utilisateur a annulé, on lève une exception
 			trace_methods.endOfMethod();
 			throw new InnerException("&ERR_InputCanceled", null, null);
 		}
+        trace_debug.writeTrace("L'utilisateur a saisi=" + choice.getKey());
 		trace_methods.endOfMethod();
-		return value;
+		return choice.getKey();
 	}
 
 	/*----------------------------------------------------------
