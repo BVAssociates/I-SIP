@@ -203,7 +203,7 @@ sub get_query()
 	push @select_conditions, "TABLE_KEY like '".$self->{query_key_value}."'" if $self->{query_key_value};
 	
 	foreach ($self->query_condition()) {
-		if (/^\s*(\w+)\s*([=<>]+|like)\s*\'(\w+)\'\s*$/) {
+		if (/^\s*(\w+)\s*([=<>]+|like)\s*\'(.*)\'\s*$/) {
 			push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
 		}
 	}
