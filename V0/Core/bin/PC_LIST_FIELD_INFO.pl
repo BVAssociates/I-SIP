@@ -15,7 +15,7 @@ PC_LIST_FIELD_INFO - Liste les informations d'une table
 
 =head1 SYNOPSIS
 
- PC_LIST_LOCAL.pl [-h][-v] environnement tablename
+ PC_LIST_LOCAL.pl [-h][-v] tablename
  
 =head1 DESCRIPTION
 
@@ -42,8 +42,6 @@ Liste les informations d'une table contenue dans la table suffixée _INFO de la b
 =head1 ARGUMENTS
 
 =over
-
-=item environnement : environnement à utiliser
 
 =item tablename : table a ouvrir
 
@@ -96,12 +94,11 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 2) {
+if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environ=shift;
 my $table_name=shift;
 
 #  Corps du script
@@ -109,11 +106,10 @@ my $table_name=shift;
 my $bv_severite=0;
 use Isip::Environnement;
 
-#my $sip=Environnement->new($environ);
-#my $table=$sip->open_local_table($table_name."_INFO", {debug => 0 });
+
 my $table=Environnement->open_local_table($table_name."_INFO", {debug => 0 });
 
-die "unable to open local $table_name\_INFO in env $environ" if not defined $table;
+die "unable to open local $table_name\_INFO " if not defined $table;
 
 while (my @line=$table->fetch_row_array()) {
 	print join(',',@line)."\n";
