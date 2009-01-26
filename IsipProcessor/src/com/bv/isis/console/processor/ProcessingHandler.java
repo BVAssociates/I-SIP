@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/processor/ProcessingHandler.java,v $
-* $Revision: 1.9 $
+* $Revision: 1.10 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Classe de traitement de processing
@@ -15,6 +15,9 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: ProcessingHandler.java,v $
+* Revision 1.10  2009/01/14 14:23:03  tz
+* Prise en compte de la modification des packages.
+*
 * Revision 1.9  2008/08/11 10:47:25  tz
 * Modification de la syntaxe des séquence de processing.
 *
@@ -60,7 +63,6 @@ import com.bv.core.trace.TraceAPI;
 import com.bv.core.trace.Trace;
 import com.bv.core.util.UtilStringTokenizer;
 import com.bv.core.message.MessageManager;
-import com.bv.isis.corbacom.IsisTableDefinition;
 import javax.swing.JOptionPane;
 import java.util.Vector;
 import java.awt.Component;
@@ -68,15 +70,16 @@ import java.awt.Component;
 //
 // Imports du projet
 //
-import com.bv.isis.console.abs.gui.MainWindowInterface;
-import com.bv.isis.console.common.IndexedList;
-import com.bv.isis.console.common.InnerException;
-import com.bv.isis.console.common.DialogManager;
+import com.bv.isis.console.core.abs.gui.MainWindowInterface;
+import com.bv.isis.console.core.common.IndexedList;
+import com.bv.isis.console.core.common.InnerException;
+import com.bv.isis.console.core.common.DialogManager;
 import com.bv.isis.console.node.LabelFactory;
 import com.bv.isis.console.com.RemoteFileChooser;
 import com.bv.isis.console.com.ServiceSessionProxy;
 import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.corbacom.IsisParameter;
+import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 
 /*----------------------------------------------------------

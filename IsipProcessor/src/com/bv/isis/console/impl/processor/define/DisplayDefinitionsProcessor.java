@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/impl/processor/define/DisplayDefinitionsProcessor.java,v $
-* $Revision: 1.11 $
+* $Revision: 1.12 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Processeur d'affichage du cache des définitions
@@ -15,6 +15,9 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: DisplayDefinitionsProcessor.java,v $
+* Revision 1.12  2009/01/14 14:23:16  tz
+* Prise en compte de la modification des packages.
+*
 * Revision 1.11  2008/02/21 12:07:27  tz
 * Chargement des fichiers de message en UTF-8.
 *
@@ -91,11 +94,11 @@ import javax.swing.JOptionPane;
 // Imports du projet
 //
 import com.bv.isis.console.processor.ProcessorFrame;
-import com.bv.isis.console.abs.gui.MainWindowInterface;
-import com.bv.isis.console.common.InnerException;
-import com.bv.isis.console.processor.NonEditableTable;
-import com.bv.isis.console.abs.processor.ProcessorInterface;
-import com.bv.isis.console.abs.processor.TableDefinitionListener;
+import com.bv.isis.console.core.abs.gui.MainWindowInterface;
+import com.bv.isis.console.core.common.InnerException;
+import com.bv.isis.console.core.gui.NonEditableTable;
+import com.bv.isis.console.core.abs.processor.ProcessorInterface;
+import com.bv.isis.console.core.abs.processor.TableDefinitionListener;
 import com.bv.isis.console.com.TableDefinitionManager;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.console.com.ObjectLeasingHolder;

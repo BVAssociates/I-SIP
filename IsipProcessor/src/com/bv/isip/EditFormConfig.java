@@ -6,7 +6,7 @@ package com.bv.isip;
 
 import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
-import com.bv.isis.console.common.InnerException;
+import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.corbacom.IsisTableColumn;
 
