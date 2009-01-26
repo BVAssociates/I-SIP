@@ -155,7 +155,6 @@ log_info("KEY_VAL=$table_key_value");
 
 # fetch selected row from histo table
 my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
-$table_histo->query_field($ikos_sip->get_histo_field());
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
 my $counter=0;

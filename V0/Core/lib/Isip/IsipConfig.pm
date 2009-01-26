@@ -113,6 +113,8 @@ sub get_links() {
 sub get_histo_field() {
 	my $self = shift;
 	
+	croak "OBSOLETE method. Please update script";
+	
 	return ("ID","DATE_HISTO","DATE_UPDATE","USER_UPDATE","TABLE_NAME","TABLE_KEY","FIELD_NAME","FIELD_VALUE","COMMENT","STATUS");
 }
 
