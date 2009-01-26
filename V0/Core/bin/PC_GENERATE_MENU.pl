@@ -302,9 +302,8 @@ foreach my $current_table (@list_table) {
 	# get all table having current table as F_KEY
 	my @child_table=$link_obj->get_child_tables($current_table);
 
-	foreach (@child_table) {
-		$string .= sprintf($pci_fkey_template,"$_ ($table_info_all{$_}{description})","IKOS_TABLE_$environnement\_$_") if @child_table;
-	}
+	my @table_list=map {"IKOS_TABLE_$environnement\_$_"} @child_table;
+	$string .= sprintf($pci_fkey_template,"Explorer Tables",join (',',@table_list)) if @child_table;
 
 	
 	$filename=sprintf($pci_filename,$pci_path,$source_data_table);
