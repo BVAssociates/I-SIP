@@ -2,7 +2,7 @@
 UpgradableReleases 2.0.6
 RebootAfterwards TRUE
 UpdateDescription Mise à jour dernière version I-SIP_IKOS
-Entry data/fr/icons.zip
+Entry data/fr/icons/icons.zip
 Entry data/fr/console.mdb
 Entry lib/I-SIP_IKOS.jar
 
