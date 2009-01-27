@@ -1,0 +1,4 @@
+# Patch du fichier LAX pour adminFromTable
+
+# Exemples de modification de paramètres: UPDATE <Nom du paramètre> <Valeur>
+UPDATE lax.class.path lib/I-SIP_IKOS.jar;%[value]

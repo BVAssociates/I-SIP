@@ -1,0 +1,7 @@
+# Fichier de mise à jour pour I-SIP_IKOS
+UpgradableReleases 2.0.6
+RebootAfterwards FALSE
+UpdateDescription Installation initiale I-SIP_IKOS
+Entry I-SIS Console.lax_patch
+Entry conf/Console_config.ini_patch
+
