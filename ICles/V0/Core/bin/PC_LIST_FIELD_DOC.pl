@@ -152,7 +152,7 @@ log_info("KEY_VAL=$table_key_value");
 
 # fetch selected row from doc table
 my $table_doc = $ikos_sip->open_documentation_table($tablename, {debug => $debug_level});
-$table_doc->query_condition("TABLE_KEY = '$table_key_value'");
+$table_doc->query_condition("$table_key = '$table_key_value'");
 
 my $counter=0;
 while (my @line=$table_doc->fetch_row_array() ) {

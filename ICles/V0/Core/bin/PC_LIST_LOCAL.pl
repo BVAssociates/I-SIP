@@ -110,9 +110,14 @@ my $bv_severite=0;
 use Isip::Environnement;
 
 # DEBUG
-use ITable::XmlFile;
-my $table_xml=XmlFile->open('D:\BV Associates\docs\maquette\AppConfiguration.xml', { debug => 1 });
-while (my @line=$table_xml->fetch_row_array()) {
+use Isip::ITable::ODBC_Query;
+my $table_query=ODBC_Query->open('SCF1_IKGLFIC','CROEXPP2','Select FNCDTRAIT,FNTYPTRAIT,FNCDOGA,FNNOCRITRT,FKLBLCRITR from CROEXPP,CRITRTP where ( FNCDTRAIT=FKCDTRAIT AND FNNOCRITRT=FKNOCRITRT)', { debug => 1 });
+
+#$table_query->query_field('FNCDTRAIT','FNCDOGA');
+$table_query->query_condition("FNCDTRAIT like 'ACH555%'");
+#print $table_query->get_query;
+
+while (my @line=$table_query->fetch_row_array()) {
 	print join('%%%',@line)."\n";
 }
 die;

@@ -104,10 +104,9 @@ my $table_name=shift;
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
-use Isip::Environnement;
+use Isip::IsipConfig;
 
-
-my $table=Environnement->open_local_table($table_name."_INFO", {debug => 0 });
+my $table=IsipConfig->open_local_table($table_name."_INFO", {debug => 0 });
 
 die "unable to open local $table_name\_INFO " if not defined $table;
 
