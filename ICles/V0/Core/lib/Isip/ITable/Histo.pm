@@ -58,6 +58,9 @@ sub open() {
 	
 	## internal members
 	
+	# constant timestamp when updating a row (otherwise locatime())
+	$self->{update_timestamp}=undef;
+	
 	# instance temp values
 	$self->{temp_next_row} = {};
 	# flag for end of fetch_row
@@ -138,6 +141,21 @@ sub query_sort {
 		}
 	}
     return @{ $self->{query_sort} };
+}
+
+# force using a timestamp when update_row()
+sub set_update_timestamp() {
+    my $self = shift;
+    
+	my $timestamp=shift or croak ("usage : set_update_timestamp(timestamp)");
+	
+	# ISO 8601 format : 1977-04-22T06:00
+	if ( $timestamp !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
+		$self->_error("timestamp must be like 1977-04-22T06:00 (ISO 8601)");
+		croak("usage : set_update_timestamp(timestamp)")
+	}
+	
+	$self->{update_timestamp}=$timestamp;
 }
 
 # quirk to get only key which contains number (or not)
@@ -369,8 +387,14 @@ sub insert_row() {
 		delete $row{$_};
 	}
 	
-	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%dT%H:%M", localtime;
+	my $date_current;
+	if ($self->{update_timestamp}) {
+		$date_current = $self->{update_timestamp};
+	}
+	else {
+		use POSIX qw(strftime);
+		$date_current = strftime "%Y-%m-%dT%H:%M", localtime;
+	}
 	
 	# active transaction mode if not already done
 	if ( $self->{table_histo}->active_transaction() > 0 ) {
@@ -440,9 +464,14 @@ sub update_row() {
 	}
 	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
 	
-	
-	use POSIX qw(strftime);
-	my $date_current = strftime "%Y-%m-%dT%H:%M", localtime;
+	my $date_current;
+	if ($self->{update_timestamp}) {
+		$date_current = $self->{update_timestamp};
+	}
+	else {
+		use POSIX qw(strftime);
+		$date_current = strftime "%Y-%m-%dT%H:%M", localtime;
+	}
 	
 	# concat key values
 	my @key_value;

@@ -79,9 +79,14 @@ sub _sql_parse() {
 	my $self=shift;
 	
 	my $parser = SQL::Parser->new();
-	$parser->{RaiseError}=1;
-	$parser->{PrintError}=1;
+	$parser->{RaiseError}=0;
+	$parser->{PrintError}=0;
 	my $stmt_obj = SQL::Statement->new($self->{sql_string},$parser);
+	
+	if (my $error=$stmt_obj->errstr) {
+		$error =~ tr/\!\n//d;
+		croak ($error,": $self->{sql_string}");
+	}
 	
 	# store tables
 	foreach ($stmt_obj->tables) {
@@ -134,6 +139,15 @@ sub _set_columns_info() {
 ##  public methods delegated to the target table ##
 ##################################################
 
+sub key {
+    my $self = shift;
+    if (@_) { 
+		@{ $self->{key} } = @_ ;
+		$self->_debug("New Keys : ", join("|",@{$self->{key}}));
+	}
+    return @{ $self->{key} };
+}
+
 sub query_sort {
     my $self = shift;
 	
@@ -155,15 +169,28 @@ sub get_query() {
 		$query =~ s/SELECT\s+(.+)\s+FROM/SELECT $query_fields FROM/i;
 	}
 	
-	if ( $self->query_condition() and $self->{sql_statement_obj}->where() ) {
-		if ($self->{sql_statement_obj}->order()) {
-			$query =~ s/WHERE\s+(.+)\s+(ORDER)/WHERE ($1) AND $conditions $2/i;
-		}
-		elsif ($self->{sql_statement_obj}->limit()) {
-			$query =~ s/WHERE\s+(.+)\s+(LIMIT)/WHERE ($1) AND $conditions $2/i;
+	if ( $self->query_condition()) {
+		if ($self->{sql_statement_obj}->where() ) {
+			if ($self->{sql_statement_obj}->order()) {
+				$query =~ s/WHERE\s+(.+)\s+(ORDER)/WHERE ($1) AND $conditions $2/i;
+			}
+			elsif ($self->{sql_statement_obj}->limit()) {
+				$query =~ s/WHERE\s+(.+)\s+(LIMIT)/WHERE ($1) AND $conditions $2/i;
+			}
+			else {
+				$query =~ s/WHERE\s+(.+)$/WHERE ($1) AND $conditions/i;
+			}
 		}
 		else {
-			$query =~ s/WHERE\s+(.+)$/WHERE ($1) AND $conditions/i;
+			if ($self->{sql_statement_obj}->order()) {
+				$query =~ s/ORDER/ WHERE $conditions ORDER/i;
+			}
+			elsif ($self->{sql_statement_obj}->limit()) {
+				$query =~ s/LIMIT/ WHERE $conditions LIMIT/i;
+			}
+			else {
+				$query =~ s/$/ WHERE $conditions/i;
+			}
 		}
 	}
 	#return $self->print_recursive_where($where_hash);

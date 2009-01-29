@@ -27,15 +27,23 @@ sub new() {
 	
 	
 	# store global info about tables
+	$self->{info_env}= {};
 	$self->{info_table}= {};
 	$self->{link_table}=ILink->new();
 
+	#BEGIN of information retrieval
+	my $table_environ=ITools->open("ENVIRON",$self->{options});
+	while (my %row=$table_environ->fetch_row) {
+		$self->{info_env}->{$row{Environnement}}->{description}=$row{Description};
+		$self->{info_env}->{$row{Environnement}}->{defaut_datasource}=$row{DEFAUT_ODBC};
+	}
 	
 	my $table_info=ITools->open("TABLE_INFO", $self->{options});
-	$table_info->query_condition("COLLECTE = 1");
+	#$table_info->query_condition("COLLECTE = 1");
 	while (my %row=$table_info->fetch_row) {		
 		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{type_source}=$row{TYPE_SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{param_source}=$row{PARAM_SOURCE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
 		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{DESCRIPTION};
 	}
@@ -102,6 +110,12 @@ sub get_table_list() {
 	my $self = shift;
 
 	return keys %{$self->{info_table}};
+}
+
+sub get_environnement_list() {
+	my $self = shift;
+
+	return keys %{$self->{info_environ}};
 }
 
 sub get_links() {

@@ -94,7 +94,7 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV < 1 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -113,7 +113,6 @@ use Isip::ITable::DataDiff;
 my $env_sip = Environnement->new($environnement);
 
 my %table_info = $env_sip->get_table_info();
-log_erreur("la table $table_name n'est pas connue") if not exists $table_info{$table_name};
 
 my @list_table;
 if (not $table_name) {
@@ -122,21 +121,30 @@ if (not $table_name) {
 	@list_table=($table_name);
 }
 
+# set global timestamp for update
+use POSIX qw(strftime);
+my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+log_info("Connexion à la table source : $current_table");
+
 my $counter=0;
 my $source_table;
 foreach my $current_table (@list_table) {
 	$counter++;
 	
+	log_erreur("la table $current_table n'est pas connue") if not exists $table_info{$current_table};
 	log_info("Connexion à la table source : $current_table");
 	# open source table depending on TYPE_SOURCE
 	$source_table=$env_sip->open_source_table($current_table);
 	
 	
 	log_info("Connexion à la base d'historisation");
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level, timeout => 100000});
+	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
+	# set timestamp for all update/insert operation
+	$histo_table->set_update_timestamp($timestamp);
+	
 	my $table_diff=DataDiff->open($source_table, $histo_table, {debug => $debug_level});
 
-	log_info("Debut de la comparaison de $table_name");
+	log_info("Debut de la comparaison de $current_table");
 	$table_diff->compare();
 
 	if (exists $opts{n}) {
@@ -152,7 +160,5 @@ foreach my $current_table (@list_table) {
 	}
 
 }
-
-log_erreur("No table found for",$table_name) if not $counter;
 
 sortie($bv_severite);

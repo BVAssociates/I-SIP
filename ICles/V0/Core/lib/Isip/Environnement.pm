@@ -24,14 +24,12 @@ sub new() {
 	$self->{environnement} = $environnement;
 	
 	# store global info about environnement 
-	my $environ_table=ITools->open("ENVIRON",$self->{options});
-	$environ_table->query_condition("Environnement = $self->{environnement}");
+	if (not exists $self->{info_env}->{$environnement} ) {
+		croak "Unable to get information of Environnement : $self->{environnement}";
+	}
 	
-	my %env_config=$environ_table->fetch_row();
-	croak "Unable to get information of Environnement : $self->{environnement}" if not %env_config;
-	
-	$self->{description}=$env_config{Description};
-	$self->{defaut_datasource}=$env_config{DEFAUT_ODBC};
+	$self->{description}=$self->{info_env}->{$environnement}->{description};
+	$self->{defaut_datasource}=$self->{info_env}->{$environnement}->{defaut_datasource};
 	
 	$logger->warning( "Defaut Datasource should not be null" ) if not $self->{defaut_datasource};
 	
@@ -160,10 +158,17 @@ sub open_source_table() {
 			$logger->error("SOURCE missing for $table_name");
 		}
 		
-		use ITable::ODBC;
-
-		$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
-		$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+		if ($self->{info_table}->{$table_name}->{param_source}) {
+			use Isip::ITable::ODBC_Query;
+			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
+			$return_table=ODBC_Query->open($self->{info_table}->{$table_name}->{source}, $table_name, $self->{info_table}->{$table_name}->{param_source}, @options);
+		}
+		else {
+			use ITable::ODBC;
+			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
+			$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+		}
+		
 		
 		#manually set KEY
 		croak ("PRIMARY KEY not defined for $table_name") if (not $self->{info_table}->{$table_name}->{key});
