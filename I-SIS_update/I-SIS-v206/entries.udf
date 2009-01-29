@@ -1,0 +1,9 @@
+# Fichier de mise à jour pour I-SIS 206
+UpgradableReleases 2.0.4
+RebootAfterwards TRUE
+UpdateDescription Mise à jour I-SIS v2.0.4 -> v2.0.6
+Entry conf/Console_config.ini
+Entry lib/isisconsole.jar
+Entry data/data.zip
+Entry help/help.zip
+
