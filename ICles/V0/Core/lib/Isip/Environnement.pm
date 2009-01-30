@@ -111,6 +111,14 @@ sub get_sqlite_filename() {
 	return $filename;
 }
 
+sub exists_histo_table() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : exists_doc_table(tablename)");
+	
+	return 1 if $self->get_sqlite_path($table_name."_HISTO");
+}
+
 sub open_local_from_histo_table() {
 	my $self = shift;
 	

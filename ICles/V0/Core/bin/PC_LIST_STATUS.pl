@@ -180,7 +180,7 @@ my @query_condition;
 # on ne possède pas l'information de l'arbre d'exploration, donc on cherche
 #	les clefs etrangères de toutes les tables parentes
 ##DEBUG
-#$ENV{RDNPRCOD}='AFF';
+#$ENV{RDNPRCOD}='AFF' ; $bv_severite=202;
 ##DEBUG
 foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);
@@ -188,6 +188,7 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	foreach my $foreign_field (keys %foreign_fields) {
 		my $var=$foreign_fields{$foreign_field};
 		if ( exists $ENV{$var} ) {
+			$logger->info("Clef etrangère pour filtrage : $foreign_field = '$ENV{$var}'");
 			push @query_condition, "$foreign_field = '$ENV{$var}'";
 		}
 	}

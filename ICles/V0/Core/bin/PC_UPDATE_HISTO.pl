@@ -124,12 +124,20 @@ if (not $table_name) {
 # set global timestamp for update
 use POSIX qw(strftime);
 my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-log_info("Connexion à la table source : $current_table");
+log_info("Date de collecte utilisée : $timestamp");
 
 my $counter=0;
 my $source_table;
 foreach my $current_table (@list_table) {
+	
+	if ( not ($env_sip->exists_doc_table($current_table)
+				and $env_sip->exists_histo_table($current_table)) ) {
+		$logger->error("$current_table n'a pas été initialisée");
+		next;
+	}
+	
 	$counter++;
+	
 	
 	log_erreur("la table $current_table n'est pas connue") if not exists $table_info{$current_table};
 	log_info("Connexion à la table source : $current_table");
@@ -148,14 +156,14 @@ foreach my $current_table (@list_table) {
 	$table_diff->compare();
 
 	if (exists $opts{n}) {
-		log_info("Option -n : les changements n'ont pas été appliqués");
+		log_info("Simulation : les changements n'ont pas été appliqués");
 	} else {
 		my $diff_counter = $table_diff->update_compare_target();
 		if ($diff_counter) {
-			log_info("Les changements ont ete appliqués ($diff_counter)");
+			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
 			$histo_table->{table_histo}->execute("ANALYZE");
 		} else {
-			log_info("Aucune mise à jour");
+			log_info("Aucune mise à jour sur $current_table");
 		}
 	}
 

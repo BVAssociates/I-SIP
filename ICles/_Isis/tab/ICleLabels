@@ -70,7 +70,7 @@ IKOS_TABLE_PROD_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]
 IKOS_TABLE_PROD_OREXOGP.Table;key_go;Clefs de OREXOGP (Programme Type Organisme)
 IKOS_FIELD_PROD_OREXOGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
 IKOS_FIELD_PROD_OREXOGP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_OREXOGP.Item;isip_%[ICON];  
+IKOS_TABLE_PROD_OREXOGP.Item;isip_%[ICON];%[IKCDOGA]  
 IKOS_TABLE_PROD_OGAP.Table;key_go;Clefs de OGAP (Organisme)
 IKOS_FIELD_PROD_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
 IKOS_FIELD_PROD_OGAP.Table;page_white_key;Liste des champs
@@ -91,3 +91,7 @@ IKOS_TABLE_PROD_VALPARP.Table;key_go;Clefs de VALPARP (Valeurs particulières)
 IKOS_FIELD_PROD_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
 IKOS_FIELD_PROD_VALPARP.Table;page_white_key;Liste des champs
 IKOS_TABLE_PROD_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
+IKOS_TABLE_PROD_OREXOGP2.Table;key_go;Clefs de OREXOGP2 (Organismes)
+IKOS_FIELD_PROD_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_FIELD_PROD_OREXOGP2.Table;page_white_key;Liste des champs
+IKOS_TABLE_PROD_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  

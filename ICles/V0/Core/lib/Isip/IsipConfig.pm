@@ -227,6 +227,15 @@ sub exist_local_table() {
 	return $return_value;
 }
 
+sub exists_doc_table() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : exists_doc_table(tablename)");
+	
+	return 1 if $self->get_sqlite_path($table_name."_DOC");
+}
+
+
 sub get_isip_rules() {
 	my $self = shift;
 	
