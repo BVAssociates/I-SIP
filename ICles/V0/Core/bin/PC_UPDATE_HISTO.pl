@@ -160,8 +160,12 @@ foreach my $current_table (@list_table) {
 	} else {
 		my $diff_counter = $table_diff->update_compare_target();
 		if ($diff_counter) {
-			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
 			$histo_table->{table_histo}->execute("ANALYZE");
+			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
+			
+			log_info("Sauvegarde de la date de collecte");
+			my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
+			$table_date->insert_row_array($environnement,$timestamp,"");
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}

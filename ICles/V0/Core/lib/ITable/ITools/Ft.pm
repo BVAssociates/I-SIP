@@ -11,6 +11,7 @@ ITable::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
 =head1 SYNOPSIS
 
  See ITable::ITools::Legacy
+ 
 =cut
  
  
@@ -115,6 +116,53 @@ sub fetch_row_array()
 	return @temp_return
 }
 
+sub insert_row_array() {
+	my $self=shift;
+	
+	my @row = @_;
+	
+	my $insert_cmd="Insert INTO ".$self->table_name()." VALUES ".join($self->output_separator,@row);	
+	my @return=`$insert_cmd`;
+	my $return = $? >> 8;
+	
+	if ($return) {
+		croak("Error $return while executing : $insert_cmd");
+	}
+	return $return;
+}
+
+sub insert_row() {
+	my $self=shift;
+	
+	my %row = @_;
+	
+	my @array=$self->hash_to_array(%row);
+	$self->insert_row_array(@array);
+}
+
+sub update_row_array() {
+	my $self=shift;
+	
+	my @row = @_;
+	
+	my $insert_cmd="Replace INTO ".$self->table_name()." VALUES ".join($self->output_separator,@row);	
+	my @return=`$insert_cmd`;
+	my $return = $? >> 8;
+	
+	if ($return) {
+		croak("Error $return while executing : $insert_cmd");
+	}
+	return $return;
+}
+
+sub update_row() {
+	my $self=shift;
+	
+	my %row = @_;
+	
+	my @array=$self->hash_to_array(%row);
+	$self->update_row_array(@array);
+}
 
 # abort current request being processed
 sub finish() {
