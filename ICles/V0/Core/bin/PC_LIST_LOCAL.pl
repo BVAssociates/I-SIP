@@ -112,16 +112,23 @@ use Isip::Environnement;
 # DEBUG
 use Isip::ITable::ODBC_Query;
 #my $table_query=ODBC_Query->open('SCF1_IKGLFIC','CROEXPP2','Select FNCDTRAIT,FNTYPTRAIT,FNCDOGA,FNNOCRITRT,FKLBLCRITR from CROEXPP,CRITRTP where ( FNCDTRAIT=FKCDTRAIT AND FNNOCRITRT=FKNOCRITRT)', { debug => 1 });
-my $table_query=ODBC_Query->open('SCF1_IKGLFIC','OREXOGP2','Select DISTINCT FNCDTRAIT,FNTYPTRAIT,FNCDOGA from CROEXPP', { debug => 1 });
+my $table_query=ODBC_Query->open('SCF1_IKGLFIC',$table_name,
+'SELECT CRITRTP.FKCDTRAIT, CRITRTP.FKNOCRMTRT, CRITRTP.FKNOMPRG, CRITRTP.FKINDCRITG, CRITRTP.FKINDCRITO, CRITRTP.FKLBLCRITR, CRITRTP.FKCDTTYPOP, CRITRTP.FKPGMCTLE, CRITRTP.FKPGMSELEC, CROEXPP.FNTYPTRAIT, CROEXPP.FNCDOGA, CROEXPP.FNINDCRITG, CROEXPP.FNVLCRITRT
+	FROM CRITRTP
+	INNER JOIN CROEXPP
+	ON CRITRTP.FKCDTRAIT = CROEXPP.FNCDTRAIT AND CRITRTP.FKNOCRITRT = CROEXPP.FNNOCRITRT
+');
 
 #$table_query->query_field('FNNOCRITRT','FKLBLCRITR');
-$table_query->query_condition("FNCDTRAIT like 'FACP%'");
+#$table_query->query_condition("FNCDTRAIT like 'FACP%'");
 #die $table_query->get_query;
 
+my $count=0;
 while (my @line=$table_query->fetch_row_array()) {
-	print join('%',@line)."\n";
+	#print join('%',@line)."\n";
+	$count++;
 }
-die;
+die $count;
 # DEBUG
 
 

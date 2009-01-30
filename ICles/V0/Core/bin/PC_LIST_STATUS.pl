@@ -181,6 +181,8 @@ my @query_condition;
 #	les clefs etrangères de toutes les tables parentes
 ##DEBUG
 #$ENV{RDNPRCOD}='AFF' ; $bv_severite=202;
+#$ENV{FLCDTRAIT}='ACH750' ; $bv_severite=202;
+#$ENV{FLTYPTRAIT}='17' ; $bv_severite=202;
 ##DEBUG
 foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);

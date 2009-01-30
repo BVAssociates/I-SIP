@@ -150,6 +150,7 @@ if ($populate) {
 	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
 	$diff->compare();
 	$diff->update_compare_target();
+	undef $diff;
 	#$histo_table->begin_transaction();
 	#while (my %data_line=$current_table->fetch_row() ) {
 	#	if (not ($count % $group_commit)) {

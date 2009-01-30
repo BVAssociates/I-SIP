@@ -123,7 +123,7 @@ sub begin_transaction() {
 sub commit_transaction() {
 	my $self=shift;
 	
-	$self->_debug("COMMIT transaction");
+	$self->_info("COMMIT transaction");
 	$self->{_active_transaction} = 0;
 	$self->{database_handle}->commit();
 	$self->_close_database();
@@ -186,7 +186,7 @@ sub execute() {
 	my $query=shift;
 	
 	$self->_open_database;
-	$self->_debug('Excute SQL : ',$query);
+	$self->_info('Excute SQL : ',$query);
 	$self->{database_handle}->do($query);
 	$self->_close_database;
 }
