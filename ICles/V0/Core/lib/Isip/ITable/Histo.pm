@@ -215,7 +215,7 @@ sub get_query()
 	my $select_histo;
 	my @select_conditions;
 	
-	my $provided_date_format = "%Y-%m-%d_%H:%M";
+	my $provided_date_format = "%Y-%m-%dT%H:%M";
 	
 	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	push @select_conditions, "TABLE_KEY like '".$self->{query_key_value}."'" if $self->{query_key_value};

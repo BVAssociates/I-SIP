@@ -25,7 +25,7 @@ sub open() {
 	
 	# mandatory parameter
 	if (@_ < 3) {
-		croak ($class.'->open : take 1 mandatory argument: ${class}->open( "SQL QUERY" , table_name [ ,{ timeout => $sec, debug => $num} ])')
+		croak ($class.'->open : take 3 mandatory argument: ${class}->open( database_name, table_name, "SQL QUERY"  [ ,{ timeout => $sec, debug => $num} ])')
 	}
 	
 	my $database_name=shift;
@@ -98,7 +98,7 @@ sub _sql_parse() {
 		# put in field list
 		push ( @{$self->{field}}, $_->name);
 		# set to field => undef
-		$self->{field_table}->{$_->name}=undef;
+		$self->{field_table}->{$_->name}=$_->table;
 	}
 	
 	croak "<*> not allowed in SQL : $self->{sql_string}" if grep ( /\*/,@{$self->{field}});
@@ -106,6 +106,7 @@ sub _sql_parse() {
 	return $stmt_obj;
 }
 
+# set information relative to one table from the query
 sub _set_columns_info() {
 	my $self=shift;
 	
@@ -120,17 +121,14 @@ sub _set_columns_info() {
 	
 	my @current_fields=$self->field();
 	
-	foreach my $field ( $self->field() ) {
+	# look for owned columns in field list
+	foreach my $field ( @current_fields ) {
 		if ($table_obj->has_fields($field)) {
-			
-			# check if already defined
-			if (defined $self->{field_table}->{$field}) {
-				carp("field $field exists in more than one table ($self->{field_table}->{$field},$tablename)in SQL : $self->{sql_string}");
+			if (not defined $self->{field_table}->{$field}) {
+				$self->{field_table}->{$field}=$tablename;
 			}
-			
-		$self->{field_table}->{$field}=$tablename;
-		$self->{size}->{$field} = $table_size{$field};
-		$self->{field_txt}->{$field} = $table_field_txt{$field};
+			$self->{size}->{$field} = $table_size{$field};
+			$self->{field_txt}->{$field} = $table_field_txt{$field};
 		}
 	}
 }
