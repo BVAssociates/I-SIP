@@ -238,8 +238,8 @@ sub fetch_row() {
 		else {
 		
 			my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
-			my $return_status=$line_diff_icon{OK};
-			my $key=join(',',sort @current_row{$self->key()});
+			my $return_status="ERROR";
+			my $key=join(',',@current_row{sort $self->key()});
 			
 			my @diff_list;
 			
@@ -448,7 +448,7 @@ sub compare() {
 		croak("query fields does not contains the key fields") if not grep (/^$key_field$/, $table_to->query_field() );
 	}
 	
-	@key=$table_to->key();
+	@key=sort $table_to->key();
 	
 	# Slurp the tables in memory
 	my %in_memory_table1;
@@ -484,7 +484,7 @@ sub compare() {
 		my $new_keys = $seen_keys{$current_keys};
 		# this key does not exist on the target
 		if ($new_keys < 0) {
-			$self->_info("Line only in source table : Key (".$current_keys.")");
+			$self->_debug("Line only in source table : Key (".$current_keys.")");
 			
 			# remove excluded fields
 			foreach my $field ( $self->compare_exclude ) {
@@ -499,7 +499,7 @@ sub compare() {
 		}
 		# this key are new in the table table
 		elsif ($new_keys > 0) {
-			$self->_info("Line only in target table : Key (".$current_keys.")");
+			$self->_debug("Line only in target table : Key (".$current_keys.")");
 			
 			# remove excluded fields
 			foreach my $field ($self->compare_exclude) {
@@ -524,12 +524,12 @@ sub compare() {
 				next if grep(/^$field1$/, $self->compare_exclude);
 				
 				if (not exists $row_table1{$field1}) {
-					$self->_info("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
+					$self->_debug("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff}->add_source_only_field($field1);
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 				
 				} elsif ($row_table2{$field1} ne $row_table1{$field1}) {
-					$self->_info("Field modified in target table : Key (".$current_keys.") $field1 : '".$row_table1{$field1}."' -> '".$row_table2{$field1}."'");
+					$self->_debug("Field modified in target table : Key (".$current_keys.") $field1 : '".$row_table1{$field1}."' -> '".$row_table2{$field1}."'");
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 					
 				}
