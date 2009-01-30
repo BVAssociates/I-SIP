@@ -449,8 +449,6 @@ sub compare() {
 	}
 	
 	@key=$table_to->key();
-	$table_to->query_sort(@key);
-	$table_from->query_sort(@key);
 	
 	# Slurp the tables in memory
 	my %in_memory_table1;

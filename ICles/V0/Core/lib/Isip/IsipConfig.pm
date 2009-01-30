@@ -115,7 +115,7 @@ sub get_table_list() {
 sub get_environnement_list() {
 	my $self = shift;
 
-	return keys %{$self->{info_environ}};
+	return keys %{$self->{info_env}};
 }
 
 sub get_links() {

@@ -1,6 +1,5 @@
 # Commandes d'Exploitation : Droit expl
 
-Table~~Ajouter/Supprimer~adm~~~Administrate~CONF_ENVIRON~0~~Configure
 Item~~Resynchroniser les schemas avec IKOS~adm~perl -e "exit 1 if exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
 
 Item~~Mettre à jour les données~adm~perl -e "exit 1 if not exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_UPDATE_HISTO.pl %Environnement% %TABLE_NAME%~1~~Release
