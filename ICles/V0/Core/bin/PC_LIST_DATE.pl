@@ -92,28 +92,31 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 2) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environ=shift;
-my $table_name=shift;
+#my $table_name=shift;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
-use Isip::Environnement;
+#use Isip::Environnement;
 
-my $sip=Environnement->new($environ);
-my $table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level });
+#my $sip=Environnement->new($environ);
+#my $table=$sip->open_local_table($table_name."_HISTO", {debug => $debug_level });
 
-$table->query_field("DATE_HISTO");
-$table->custom_select_query("select distinct DATE_HISTO from $table_name\_HISTO ORDER BY DATE_HISTO DESC");
+#$table->query_field("DATE_HISTO");
+#$table->custom_select_query("select distinct DATE_HISTO from $table_name\_HISTO ORDER BY DATE_HISTO DESC");
 
+use ITable::ITools;
+my $table=ITools->open("DATE_UPDATE");
+$table->query_condition("ENVIRON = $environ");
 
-die "unable to open local $table_name in env $environ" if not defined $table;
+die "unable to open local DATE_UPDATE in env $environ" if not defined $table;
 
 while (my @line=$table->fetch_row_array()) {
-	print join(',',@line)."\n";
+	print join($table->output_separator,@line)."\n";
 }

@@ -83,7 +83,7 @@ if ($@) {
 		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',
 		mode            => 'append',
 		alias    => 'file-out',
-		});
+		}) if exists $ENV{ISIP_HOME};
 	
 	
 	#Log::WarnDie may be used, but it put everything from STDERR

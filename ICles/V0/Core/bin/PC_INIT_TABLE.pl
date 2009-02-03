@@ -139,6 +139,12 @@ $env_sip->initialize_database_histo($current_table, {debug => $debug_level}) ;
 
 my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 
+# set global timestamp for update
+use POSIX qw(strftime);
+my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+log_info("Date de collecte utilisée : $timestamp");
+$histo_table->set_update_timestamp($timestamp);
+
 if ($populate) {
 	#open IKOS table for DATA
 	
