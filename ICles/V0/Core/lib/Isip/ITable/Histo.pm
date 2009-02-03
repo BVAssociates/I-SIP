@@ -32,6 +32,8 @@ sub open() {
 	
 	my $self = $class->SUPER::open($table_name, $options);
 	
+	$self->_info("Create new Histo object for : $table_name");
+	
 	# real informations (Aggregation)
 	$self->{table_name_histo} = $self->{table_name}."_HISTO";
 	$self->{database_name} = $database_name;
@@ -42,8 +44,8 @@ sub open() {
 	bless ($self, $class);
 	
 	$self->_set_columns_info_histo();
-	$self->_info("Virtual Fields : ", join("|",$self->field()));
-	$self->_info("Virtual Keys : ", join("|",$self->key()));
+	$self->_debug("Virtual Fields : ", join("|",$self->field()));
+	$self->_debug("Virtual Keys : ", join("|",$self->key()));
 	$self->_debug("Virtual Not NULL : ", join("|",$self->not_null()));
 	my %temp_hash=$self->size();
 	$self->_debug("Virtual Size : ", join("|",values %temp_hash ));

@@ -39,9 +39,10 @@ sub new() {
 	}
 	
 	my $table_info=ITools->open("TABLE_INFO", $self->{options});
-	#$table_info->query_condition("COLLECTE = 1");
+	$table_info->query_condition("ACTIVE = 1");
 	while (my %row=$table_info->fetch_row) {		
 		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{root_table}=$row{ROOT_TABLE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{type_source}=$row{TYPE_SOURCE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{param_source}=$row{PARAM_SOURCE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
