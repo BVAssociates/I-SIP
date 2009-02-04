@@ -20,6 +20,8 @@ my @force_include=("ITable::ITools::Ft");
 my $filter="Bleach";
 my @filter_pattern=("Isip.*","ITable.*");
 
+my $option="";
+
 # don't work
 my %meta;
 #Comments        CompanyName     FileDescription FileVersion
@@ -57,7 +59,7 @@ if (not grep {m[V0/Core/lib]} @INC) {
 	push @INC, "$ENV{ISIP_HOME}/V0/Core/lib/";
 }
 
-my $filter_option=join(' ',map {"-F $filter=$_"} @filter_pattern);
+my $filter_option=join(' ',map {"-F $filter=$_"} @filter_pattern) if $filter;
 
 my $myself=basename($0);
 my $file_option=join(' ', map {"\"$_\""} grep {/\.pl/} @file_list);
@@ -65,7 +67,7 @@ my $file_option=join(' ', map {"\"$_\""} grep {/\.pl/} @file_list);
 my $include_option=join(' ', map {"-M $_"} @force_include);
 
 my $meta_option=join(' ',map {"-N=\"$_=$meta{$_}\""} keys %meta);
-my $cmd="pp -p $meta_option -f $filter $include_option $filter_option -o \"$package_dir/$package_name\" $file_option";
+my $cmd="pp -p $option $meta_option $include_option $filter_option -o \"$package_dir/$package_name\" $file_option";
 
 print "execute : $cmd\n";
 system($cmd);
