@@ -212,7 +212,12 @@ sub initialize_database_histo() {
 	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
 	
 	my $database_filename=$self->get_sqlite_filename($tablename);
-	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/".$database_filename;
+	
+	#get first tab path
+	my $database_dir=$self->_find_file($ENV{BV_TABPATH});
+	croak("$database_dir not writable") if not -w $database_dir;
+	
+	my $database_path=$database_dir."/".$database_filename;
 	
 	die "database already exist at <$database_path>" if -e $database_path;
 	

@@ -87,7 +87,7 @@ sub _set_columns_info() {
 	croak $@ if $@;
 	
 	if (not $self->field()) {
-		croak("Error reading information of table : $self->{table_name}");
+		croak("Error reading information of table : $self->{table_name}, in database $self->{database_path}");
 	}
 }
 

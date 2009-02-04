@@ -96,6 +96,24 @@ sub write_file($$) {
 	
 }
 
+sub find_file($$) {
+	
+	my $path_list = shift;
+	my $filename = shift;
+	
+	use Config;
+	my $env_separator = $Config{path_sep};
+	
+	
+	foreach my $path (split ($env_separator,$path_list)) {
+		my $filepath = $path;
+		$filepath .= "/".$filename if $filename;
+		return $filepath if -r $filepath;
+	}
+	
+	return undef;
+}
+
 #  Traitement des Options
 ###########################################################
 
@@ -200,17 +218,15 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 
 ##### BEGIN CLEANUP ##### 
 
-
-my $def_path=sprintf('%s\%s\_Services\def',$ENV{CLES_HOME},"ISIP");
+#find first def path
+my $def_path=find_file($ENV{BV_DEFPATH},'');
 die "$def_path not readable" if not -r $def_path;
 die "$def_path not writable" if not -w $def_path;
-die "$def_path not in BV_DEFPATH" if $ENV{BV_DEFPATH} !~ /\Q$def_path\E/;
 
-my $pci_path=sprintf('%s\%s\_Services\pci',$ENV{CLES_HOME},"ISIP");
+#find first pci path
+my $pci_path=find_file($ENV{BV_PCIPATH},'');
 die "$pci_path not readable" if not -r $pci_path;
 die "$pci_path not writable" if not -w $pci_path;
-die "$pci_path not in BV_PCIPATH" if $ENV{BV_PCIPATH} !~ /\Q$pci_path\E/;
-
 
 ##### BEGIN GETTING INFO ##### 
 

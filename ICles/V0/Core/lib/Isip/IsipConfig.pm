@@ -188,18 +188,11 @@ sub get_sqlite_path() {
 	
 	my $filename=$self->get_sqlite_filename($table_name,$environnement);
 	
-	# OS dependant
-	use Config;
-	my $env_separator = $Config{path_sep};
-	
-	my $filepath;
-	foreach my $path (split ($env_separator,$ENV{BV_TABPATH})) {
-		return $path."/".$filename if -r $path."/".$filename;
-	}
+	my $filepath=$self->_find_file($ENV{BV_TABPATH},$filename);
 	
 	#not found
-	$logger->error("table $table_name : $filename not found in BV_TABPATH");
-	return undef;
+	$logger->error("table $table_name : $filename not found in BV_TABPATH")	if not $filepath;
+	return $filepath;
 }
 
 # change this methods to configure Database Access
@@ -292,7 +285,11 @@ sub initialize_database_documentation() {
 	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
 	
 	my $database_filename=$self->get_sqlite_filename($tablename_info);
-	my $database_path=$ENV{CLES_HOME}."/".$ENV{ICleName}."/_Services/tab/".$database_filename;
+	#get first tab path
+	my $database_dir=$self->_find_file($ENV{BV_TABPATH});
+	croak("$database_dir not writable") if not -w $database_dir;
+	
+	my $database_path=$database_dir."/".$database_filename;
 	
 	die "database already exist at <$database_path>" if -e $database_path;
 	
@@ -354,6 +351,25 @@ sub initialize_database_documentation() {
 	}
 	$info_table->commit_transaction;
 
+}
+
+sub _find_file() {
+	my $self=shift;
+	
+	my $path_list = shift;
+	my $filename = shift;
+	
+	use Config;
+	my $env_separator = $Config{path_sep};
+	
+	
+	foreach my $path (split ($env_separator,$path_list)) {
+		my $filepath = $path;
+		$filepath .= "/".$filename if $filename;
+		return $filepath if -r $filepath;
+	}
+	
+	return undef;
 }
 
 1;
