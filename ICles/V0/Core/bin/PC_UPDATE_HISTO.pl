@@ -165,7 +165,10 @@ foreach my $current_table (@list_table) {
 			
 			log_info("Sauvegarde de la date de collecte");
 			my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
-			$table_date->insert_row_array($environnement,$timestamp,"");
+			$table_date->insert_row(ENVIRON => $environnement,
+									DATE_UPDATE => $timestamp,
+									DESCRIPTION => "",
+									BASELINE => 0);
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}

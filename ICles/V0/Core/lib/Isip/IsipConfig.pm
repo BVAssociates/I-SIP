@@ -79,8 +79,9 @@ sub new() {
 	# store global info about relations between tables
 	my $link_info=ITools->open("FIELD_LINK", $self->{options});
 	while (my %row=$link_info->fetch_row) {
-		# filter on known tables
+		# filter only on known tables
 		next if not exists $self->{info_table}->{$row{TABLE_LINK}};
+		next if not exists $self->{info_table}->{$row{F_TABLE}};
 
 		$self->{link_table}->add_link($row{TABLE_LINK},$row{FIELD_LINK},$row{F_TABLE},$row{F_KEY})
 	}
