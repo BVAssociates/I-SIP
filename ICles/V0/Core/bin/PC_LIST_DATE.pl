@@ -82,12 +82,15 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvns:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $print_now=$opts{n};
+my $separator=$opts{s};
 
 #  Traitement des arguments
 ###########################################################
@@ -113,10 +116,23 @@ my $bv_severite=0;
 
 use ITable::ITools;
 my $table=ITools->open("DATE_UPDATE");
-$table->query_condition("ENVIRON = $environ");
+$table->query_condition("ENVIRON = $environ") if $environ;
+$separator=$table->output_separator if not defined $separator;
 
 die "unable to open local DATE_UPDATE in env $environ" if not defined $table;
 
-while (my @line=$table->fetch_row_array()) {
-	print join($table->output_separator,@line)."\n";
+my %seen_env;
+
+while (my %line=$table->fetch_row()) {
+	$seen_env{$line{ENVIRON}}++;
+	print join($separator,@line{$table->query_field})."\n";
+}
+
+use POSIX qw(strftime);
+my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+if ($print_now) {
+	# special dates
+	foreach (keys %seen_env) {
+		print join($separator,($_,$timestamp,"maintenant",0))."\n";
+	}
 }

@@ -1,5 +1,5 @@
 # Commandes d'Exploitation : Droit expl
 
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
-Item~Baseline~Ajouter Baseline~expl~~DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE)~ExecuteProcedure~PC_SET_BASELINE.pl~0~~Method
-Item~Baseline~Administrer Baselines~expl~~~Administrate~DATE_UPDATE~0~~Configure
+Item~Baselines~Ajouter Baseline~expl~~DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION)~ExecuteProcedure~PC_SET_BASELINE.pl~0~~Method
+Item~Baselines~Administrer Baselines~expl~~~Administrate~DATE_UPDATE~0~~Configure

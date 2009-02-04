@@ -7,7 +7,7 @@ Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalA
 Item~Configuration SIP~Ajouter/Supprimer Environnements~adm~~~Administrate~CONF_ENVIRON~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
 Item~Configuration SIP~Administrer Tables~adm~~~Explore~CONF_MODULE~0~~Expand
-Item~Configuration SIP~Resynchroniser les schemas avec IKOS~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl -a~0~~Method
+Item~Configuration SIP~Rafraichir les menus d'exploration~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl -a~0~~Method
 
 
 #Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
