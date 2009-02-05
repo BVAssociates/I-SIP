@@ -80,10 +80,10 @@ if ($@) {
 		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%S:%m',
-		filename        => $ENV{ISIP_HOME}.'/logs/Isip.log',
+		filename        => $ENV{ISIP_LOG}.'/Isip.log',
 		mode            => 'append',
 		alias    => 'file-out',
-		}) if exists $ENV{ISIP_HOME};
+		}) if exists $ENV{ISIP_LOG};
 	
 	
 	#Log::WarnDie may be used, but it put everything from STDERR
