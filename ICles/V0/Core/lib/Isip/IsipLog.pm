@@ -49,9 +49,14 @@ BEGIN {
 
 	my $DIE = $SIG{__DIE__};
 	$SIG{__DIE__} = sub {
+	
+		# check if we are in eval { }
+		return if $^S;
+		
 		if ($logger) {
 			$logger->critical( @_ );
 		}
+		
 		$DIE ? $DIE->() : CORE::die();
 	};
 

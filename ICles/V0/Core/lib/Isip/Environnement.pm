@@ -152,6 +152,17 @@ sub open_histo_field_table() {
 	return $table_histo
 }
 
+sub open_cache_table() {
+	my $self = shift;
+	
+	use ITable::Sqlite;
+	
+	my $table_name=shift or croak "open_cache_table() wait args : 'tablename'";
+	
+	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path("GLOBAL"), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	return $tmp_return;
+}
 
 sub open_source_table() {
 	my $self=shift;
