@@ -169,6 +169,7 @@ my $bv_severite=0;
 use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
+use Isip::IsipTreeCache;
 
 my $env_sip = Environnement->new($environnement);
 
@@ -198,6 +199,7 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 
 # table qui sera affichée
 my $table_explore;
+my $dirty_cache;
 # ouverture de la table en cours d'exploration
 my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
 $table_current->query_date($date_explore) if $date_explore;
@@ -224,18 +226,21 @@ if ($explore_mode eq "compare") {
 elsif ($explore_mode eq "explore") {
 	
 	$table_explore=$table_current;
+	$dirty_cache=IsipTreeCache->new($env_sip);
 }
 
 # champs à afficher
 $table_explore->query_field(@query_field);
 
 my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
+
 $table_explore->isip_rules($type_rules);
 
 $table_explore->output_separator('@');
 
 while (my %row=$table_explore->fetch_row) {
-	print join($table_explore->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row {ICON} eq $exlude_icon);
+	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_line($table_name, \%row);
+	print join($table_explore->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row{ICON} eq $exlude_icon);
 }
 
 sortie($bv_severite);
