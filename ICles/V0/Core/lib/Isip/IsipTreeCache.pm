@@ -2,24 +2,28 @@ package IsipTreeCache;
 use fields qw(isip_env links dirty_child);
 
 use strict;
-use Isip::Environnement;
 use Isip::IsipLog '$logger';
 
 use Carp qw(carp croak );
+use Scalar::Util qw(blessed);
 
 
 sub new() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-	my $self= {};
 	
 	# Arguments
 	my $environnement = shift or croak "usage: IsipTreeCache->new(env or env_ref,{options})";
 	my $options= shift;
 	
-	$self = fields::new($class);
+	my $env_class=blessed($environnement);
+	if (not ($env_class and $env_class eq "Environnement") ) {
+		croak "usage: IsipTreeCache->new(Evnironnement,{options})";
+	}
+	
+	my $self = fields::new($class);
 
-	$self->{isip_env}=Environnement->new($environnement,$options);
+	$self->{isip_env}=$environnement;
 	$self->{links}=$self->{isip_env}->get_links();
 
 	## remember :
@@ -37,12 +41,14 @@ sub new() {
 }
 
 # compute key from parent table dirty by their child
+# arg1 : table_name
+# arg2 : hash ref of line (contain at least foreign key)
 sub add_dirty_line() {
 	my $self=shift;
 	
 	my $table_name=shift;
 	
-	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name,field1,field2,...)");
+	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...)");
 	my %line_hash=%{$line_hash_ref};
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
@@ -76,7 +82,7 @@ sub add_dirty_line() {
 	$table->query_condition(@condition_array);
 	
 	#get line from parent table
-	my $count;
+	my $count=0;
 	my %parent_line;
 	while (my %row=$table->fetch_row) {
 		%parent_line=%row;
@@ -95,16 +101,45 @@ sub add_dirty_line() {
 	
 }
 
-
-sub is_dirty_key() {
+# return true if line of table is dirty (ie: one of its child was modified)
+# arg1 : table_name
+# arg2 : hash ref of line (contain at least primary key)
+sub is_dirty_line() {
 	my $self=shift;
 	
-	die "not implemented yet";
+	my $table_name=shift;
+	my $line_hash_ref=shift or croak("usage : is_dirty_line(table_name, {field1 => 'value',field2 => 'value',...)");
+	my %line_hash=%{$line_hash_ref};
+	
+	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
+		$logger->error("$table_name does not exists");
+		return 0;
+	}
+	my @table_key_field=split(',',$self->{isip_env}->{info_table}->{$table_name}->{key});
+	
+	foreach (@table_key_field) {
+		croak ("is_dirty_line : wait at least all keys in arg2") if not exists $line_hash{$_};
+	}
+	my $table_key_value=join(',', @line_hash{@table_key_field});
+	
+	# check in current object
+	foreach my $dirty_key (@{$self->{dirty_child}->{$table_name}}) {
+		return 1 if $table_key_value eq $dirty_key;
+	}
+	
+	# check on disk	
+	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key_value'");
+	
+	my $count=0;
+	while (my @row=$table->fetch_row_array) {
+		$count++;
+	}
 
-	return 0;
+	return $count;
 }
 
-# update cache table with informations from $self->{dirty_child}
+# write table to disk with informations from $self->{dirty_child}
 sub write_dirty_parent() {
 	my $self=shift;
 	
@@ -115,6 +150,8 @@ sub write_dirty_parent() {
 	my %dirty_temp=%{$self->{dirty_child}};
 	foreach my $dirty_table (keys %dirty_temp) {
 		foreach my $dirty_key ( @{ $dirty_temp{$dirty_table} }) {
+			# DELETE AND INSERT (aka INSERT OR IGNORE)
+			$table->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$dirty_table' AND TABLE_KEY ='$dirty_key'");
 			eval {$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key)};
 			$@ =~ /(are not unique)/;
 			if ($1) {
@@ -124,7 +161,6 @@ sub write_dirty_parent() {
 				$logger->error("Erreur while inserting $dirty_table,$dirty_key  in CHILD_TO_COMMENT");
 				die;
 			}
-			undef $@;
 		}
 	}
 
@@ -152,15 +188,19 @@ sub parent_list() {
 
 # for class testing only
 if (!caller) {
-	my $test=IsipTreeCache->new("DEV");
+	require Isip::Environnement;
+	my $test=IsipTreeCache->new(Environnement->new("DEV"));
 	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920',
         'FNTYPTRAIT' => 'IC',
         'FNCDOGA' => 'ICF' });
 	$test->write_dirty_parent();
 	
 	use Data::Dumper;
-	die Dumper($test->{dirty_child});
+	print Dumper($test->{dirty_child});
 	
+	print "TEST:".$test->is_dirty_line('TRAITP', {FHCDTRAIT => 'ACH920'} )."\n";
+	print "TEST:".$test->is_dirty_line('TRAITP', {FHCDTRAIT => 'ACH920x'} )."\n";
+	print "TEST:".$test->is_dirty_line('TRAITP2', {FHCDTRAIT => 'ACH920'} )."\n";
 }
 
 1;

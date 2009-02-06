@@ -227,7 +227,7 @@ sub insert_row() {
 	# execute query
 	$self->_debug('Execute SQL');
 	eval { $self->{database_statement}->execute() };
-	croak "Error while : ".$insert_query if $@;
+	croak "Error while : ".$insert_query. " : ".$@ if $@;
 	
 	my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name}, "ID");
 	
