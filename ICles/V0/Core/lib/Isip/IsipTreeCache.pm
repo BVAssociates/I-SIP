@@ -40,6 +40,46 @@ sub new() {
 	return $self;
 }
 
+
+sub add_dirty_key() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $key_string=shift or croak("usage: add_dirty_key(table_name, key_string)");
+	
+	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
+		$logger->error("$table_name does not exists");
+		return 0;
+	}
+	
+	my @table_key_field=split(',',$self->{isip_env}->{info_table}->{$table_name}->{key});
+	my @table_key_value=split(',',$key_string);
+	
+	if (@table_key_field != @table_key_value) {
+		croak("key must have ",scalar @table_key_field," fields (get ".scalar @table_key_value.")");
+	}
+	
+	# construct table line
+	my @fetch_condition;
+	foreach my $field (@table_key_field) {
+		push @fetch_condition, $field ." = '". shift(@table_key_value)."'";
+	}
+	
+	my $table=$self->{isip_env}->open_local_from_histo_table($table_name);
+	$table->query_condition(@fetch_condition);
+	
+	my $count=0;
+	my %return_row;
+	while(my %row=$table->fetch_row) {
+		$count++;
+		%return_row=%row;
+	}
+	
+	croak("unable to find line for $key_string in $table_name : $count lines found") if not $count;
+	
+	$self->add_dirty_line($table_name,\%return_row);
+}
+
 # compute key from parent table dirty by their child
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least foreign key)
@@ -50,6 +90,11 @@ sub add_dirty_line() {
 	
 	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...)");
 	my %line_hash=%{$line_hash_ref};
+	
+	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
+		$logger->error("$table_name does not exists");
+		return 0;
+	}
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
 
@@ -101,6 +146,46 @@ sub add_dirty_line() {
 	
 }
 
+# compute cache from while IsipDiff object
+sub add_dirty_diff() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $diff_ref=shift;
+	
+	my $diff_class=blessed($diff_ref);
+	if (not ($diff_class and $diff_ref->isa("IsipDiff") )) {
+		croak "usage: IsipTreeCache->add_dirty_diff(IsipDiff class)";
+	}
+	
+	# remove lines only in source
+	my %key_new_hash=$diff_ref->get_target_only();
+	foreach my $key_new (keys %key_new_hash ) {
+		#$self->add_dirty_line($table_name, $key_new_hash{$key_new} );
+	}
+	undef %key_new_hash;
+	
+	# add missing lines
+	my %key_delete_hash=$diff_ref->get_source_only();
+	foreach my $key_delete (keys %key_delete_hash) {
+		$self->add_dirty_line($table_name,$key_delete_hash{$key_delete} );
+	}
+	undef %key_delete_hash;
+	
+	# add new field
+	my @key_new_field_hash=$diff_ref->get_source_only_field();
+	foreach my $new_field (@key_new_field_hash) {
+		#TODO ?!
+	}
+	undef @key_new_field_hash;
+	
+	# update modified lines
+	my %key_update_hash=$diff_ref->get_source_update();
+	foreach my $key_update (keys %key_update_hash ) {
+		$self->add_dirty_key($table_name,$key_update);
+	}
+}
+
 # return true if line of table is dirty (ie: one of its child was modified)
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least primary key)
@@ -140,7 +225,7 @@ sub is_dirty_line() {
 }
 
 # write table to disk with informations from $self->{dirty_child}
-sub write_dirty_parent() {
+sub write_dirty_cache() {
 	my $self=shift;
 	
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
@@ -167,6 +252,16 @@ sub write_dirty_parent() {
 	$table->commit_transaction();
 }
 
+sub clear_dirty_cache() {
+	my $self=shift;
+
+	my $table_name=shift or croak("usage: parent_list(table)");
+	
+	my $cache=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	
+	$cache->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$table_name'");
+	
+}
 
 # recursive function
 # return field list linked by foreign key 
@@ -190,10 +285,12 @@ sub parent_list() {
 if (!caller) {
 	require Isip::Environnement;
 	my $test=IsipTreeCache->new(Environnement->new("DEV"));
+	$test->clear_dirty_cache("TRAITP");
+	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
 	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920',
         'FNTYPTRAIT' => 'IC',
         'FNCDOGA' => 'ICF' });
-	$test->write_dirty_parent();
+	$test->write_dirty_cache();
 	
 	use Data::Dumper;
 	print Dumper($test->{dirty_child});

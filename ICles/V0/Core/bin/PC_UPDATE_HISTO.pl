@@ -109,6 +109,7 @@ my $bv_severite=0;
 use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
+use Isip::IsipTreeCache;
 
 my $env_sip = Environnement->new($environnement);
 
@@ -153,16 +154,20 @@ foreach my $current_table (@list_table) {
 	my $table_diff=DataDiff->open($source_table, $histo_table, {debug => $debug_level});
 
 	log_info("Debut de la comparaison de $current_table");
-	$table_diff->compare();
+	my $diff_obj=$table_diff->compare();
 
 	if (exists $opts{n}) {
 		log_info("Simulation : les changements n'ont pas été appliqués");
 	} else {
-		my $diff_counter = $table_diff->update_compare_target();
+	
+		#write changes on disk
+		my $diff_counter;
+		$diff_counter= $table_diff->update_compare_target();
 		if ($diff_counter) {
 			$histo_table->{table_histo}->execute("ANALYZE");
 			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
 			
+			#write date in baselines
 			log_info("Sauvegarde de la date de collecte");
 			my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
 			$table_date->insert_row(ENVIRON => $environnement,
@@ -172,6 +177,11 @@ foreach my $current_table (@list_table) {
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}
+		#compute new cache
+		my $cache=IsipTreeCache->new($env_sip);
+		$cache->add_dirty_diff($current_table,$diff_obj);
+		
+		$cache->write_dirty_cache($current_table,$diff_obj);
 	}
 
 }
