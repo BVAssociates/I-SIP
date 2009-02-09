@@ -152,6 +152,7 @@ foreach my $current_table (@list_table) {
 	#$cache->clear_dirty_cache($current_table);
 }
 
+my $total_diff_counter=0;
 my $counter=0;
 my $source_table;
 foreach my $current_table (@list_table) {
@@ -188,6 +189,7 @@ foreach my $current_table (@list_table) {
 		#write changes on disk
 		my $diff_counter;
 		$diff_counter= $table_diff->update_compare_target();
+		$total_diff_counter += $diff_counter;
 		if ($diff_counter) {
 			$histo_table->{table_histo}->execute("ANALYZE");
 			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
@@ -215,5 +217,6 @@ foreach my $current_table (@list_table) {
 
 }
 
+log_info("Nombre de mises à jour effectuées au total : $total_diff_counter");
 
 sortie($bv_severite);

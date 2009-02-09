@@ -87,6 +87,8 @@ sub log_info {
 
 #  Traitement des Options
 ###########################################################
+use Encode;
+map {$_=encode("cp850",$_)} @ARGV;
 
 my @argv_save=@ARGV;
 

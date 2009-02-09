@@ -143,14 +143,14 @@ sub insert_row() {
 sub update_row_array() {
 	my $self=shift;
 	
-	my @row = @_;
+	my @row = map {"\"$_\""} @_;
 	
-	my $insert_cmd="Replace INTO ".$self->table_name()." VALUES ".join($self->output_separator,@row);	
-	my @return=`$insert_cmd`;
+	my $update_cmd="Replace INTO ".$self->table_name()." VALUES ".join(' ',@row);	
+	my @return=`$update_cmd`;
 	my $return = $? >> 8;
 	
 	if ($return) {
-		croak("Error $return while executing : $insert_cmd");
+		croak("Error $return while executing : $update_cmd");
 	}
 	return $return;
 }

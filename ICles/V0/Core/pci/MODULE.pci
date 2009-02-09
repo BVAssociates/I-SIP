@@ -1,2 +1,3 @@
 
 Item~~Tables~expl~~~Explore~ROOT_TABLE~0~~Expand
+Item~~Colecter les données~expl~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -m %Module% %Environnement%~1~~Release
