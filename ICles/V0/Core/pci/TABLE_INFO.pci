@@ -1,7 +1,9 @@
 
+
+Item~~Initialiser Table~expl~~~ExecuteProcedure~PC_INIT_TABLE_DOC.pl %TABLE_NAME%~0~~Method
+Item~~Configurer les Colonnes~adm~~~Administrate~FIELD_INFO~0~~Configure
 Item~~Configurer les Clef primaires~expl~~~Administrate~FIELD_KEY~0~~Configure
 Item~~Configurer les Liens~expl~~~Administrate~FIELD_LINK~0~~Configure
-Item~~Configurer les Colonnes~adm~~~Administrate~FIELD_INFO~0~~Configure
-Item~~Configurer Sources spécifiques~adm~~~Administrate~SOURCE_ENV~0~~Configure
+Item~~Configurer Sources XML par ENV~adm~~~Administrate~SOURCE_ENV~0~~Configure
 
-Item~~Données Par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Configure
+Item~~Initialiser données Par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Expand

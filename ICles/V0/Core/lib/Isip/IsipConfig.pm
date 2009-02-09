@@ -23,7 +23,7 @@ sub new() {
 	
 	# Arguments
 	$self->{options} = shift;
-	
+	croak "bad arguments" if $self->{options} and ref($self->{options}) ne "HASH";
 	
 	
 	# store global info about tables
@@ -106,6 +106,12 @@ sub get_table_info() {
 	my $self = shift;
 	
 	return %{$self->{info_table}};
+}
+
+sub get_env_info() {
+	my $self = shift;
+	
+	return %{$self->{info_env}};
 }
 
 sub get_table_list() {

@@ -11,7 +11,7 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_TABLE - Initalise les tables Historique et Information d'une table
+PC_INIT_TABLE - Initalise la table Historique d'une table
 
 =head1 SYNOPSIS
 
@@ -19,7 +19,7 @@ PC_INIT_TABLE - Initalise les tables Historique et Information d'une table
  
 =head1 DESCRIPTION
 
-Lit les informations de l'environnement et initalise les tables Historique et Information d'une table.
+Lit les informations de l'environnement et initalise la table Historique  d'une table.
 
 Suivant l'implementation, créer égalemement la base associée.
 
@@ -132,7 +132,9 @@ log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abor
 $logger->notice("Create database for table",$table_name);
 my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
 
-eval { $env_sip->initialize_database_documentation($current_table, {debug => $debug_level}) };
+if (not $env_sip->exists_doc_table($table_name)) {
+	log_erreur ("DOC database not initialized");
+}
 
 $env_sip->initialize_database_histo($current_table, {debug => $debug_level}) ;
 

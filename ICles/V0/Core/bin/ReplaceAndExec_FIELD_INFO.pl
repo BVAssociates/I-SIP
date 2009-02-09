@@ -174,7 +174,7 @@ $local_table->query_field(@field);
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 
 use POSIX qw(strftime);
-$row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime if exists $row{DATE_UPDATE};
+$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime if exists $row{DATE_UPDATE};
 $row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
 
 $local_table->update_row( %row );

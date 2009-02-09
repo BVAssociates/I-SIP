@@ -11,15 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_TABLE - Initalise les tables Historique et Information d'une table
+PC_INIT_TABL_DOCE - Initalise les tables Information d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-i [-c nombre]] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] tablename
  
 =head1 DESCRIPTION
 
-Lit les informations de l'environnement et initalise les tables Historique et Information d'une table.
+Lit les informations de l'environnement et initalise les tables Information d'une table.
 
 Suivant l'implementation, créer égalemement la base associée.
 
@@ -40,17 +40,11 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =item -v : Mode verbeux
 
-=item -i : Insert les données de la table IKOS
-
-=item -c nombre : Commit tous les n insertions
-
 =back
 
 =head1 ARGUMENTS
 
 =over
-
-=item environnement : environnement à utiliser
 
 =item tablename : table dont la base sera créé
 
@@ -108,80 +102,37 @@ my $populate=1 if exists $opts{i};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV != 1 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
+
 my $table_name=shift;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
+use Isip::IsipConfig;
 use Isip::Environnement;
 use Isip::ITable::DataDiff;
 
 
-my $env_sip = Environnement->new($environnement);
+my $config_sip = IsipConfig->new();
 
-my %table_info = $env_sip->get_table_info();
+my %table_info = $config_sip->get_table_info();
 log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not exists $table_info{$table_name};
 
-$logger->notice("Create database for table",$table_name);
+my %env_info=$config_sip->get_env_info();
+
+# we take first env arbitrary
+my $environnement=(sort keys %env_info)[0];
+my $env_sip=Environnement->new($environnement);
+
+$logger->notice("Create DOC database for table, based on $environnement informations : ",$table_name);
 my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
 
-eval { $env_sip->initialize_database_documentation($current_table, {debug => $debug_level}) };
-
-$env_sip->initialize_database_histo($current_table, {debug => $debug_level}) ;
-
-
-my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
-
-# set global timestamp for update
-use POSIX qw(strftime);
-my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-log_info("Date de collecte utilisée : $timestamp");
-$histo_table->set_update_timestamp($timestamp);
-
-if ($populate) {
-	#open IKOS table for DATA
-	
-	my $count=0;
-
-	$logger->notice("Populate $table_name\_HISTO with data from IKOS table");
-	$|=1;
-	
-	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
-	$diff->compare();
-	$diff->update_compare_target();
-	undef $diff;
-	#$histo_table->begin_transaction();
-	#while (my %data_line=$current_table->fetch_row() ) {
-	#	if (not ($count % $group_commit)) {
-	#		print "Commit $count lines\n" if $count;
-	#		$histo_table->commit_transaction() ;
-	#		$histo_table->begin_transaction();
-	#		
-	#	}
-	#	$histo_table->insert_row(%data_line);
-	#	$count++
-	#}
-	
-	#print "$count lines inserted\n";
-	#$histo_table->commit_transaction();
-	
-	# execute special query on table backend
-	$logger->notice("Set STATUS to Valide");
-	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
-		SET STATUS='Valide',
-			COMMENT='Creation'");
-}
-			
-$logger->notice("Create indexes");
-$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_KEY ON $table_name\_HISTO (TABLE_KEY ASC)");
-$histo_table->{table_histo}->execute("CREATE INDEX IDX_TABLE_FIELD ON $table_name\_HISTO (FIELD_NAME ASC)");
-$histo_table->{table_histo}->execute("ANALYZE");
+$config_sip->initialize_database_documentation($current_table, {debug => $debug_level});
 
 sortie($bv_severite);
