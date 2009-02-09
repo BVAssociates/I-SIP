@@ -138,7 +138,7 @@ sub add_dirty_line() {
 	# store information in memory
 	
 	my $key_string=join(',',@parent_line{sort $table->key});
-	$logger->notice("set dirty $parent_table:'$key_string'");
+	$logger->notice("set dirty $parent_table:'$key_string' because of ".join(',', @line_hash{@child_field}));
 	push @{$self->{dirty_child}->{$parent_table}}, $key_string;
 	
 	# go deep
@@ -248,8 +248,10 @@ sub write_dirty_cache() {
 			}
 		}
 	}
-
 	$table->commit_transaction();
+	
+	# flush memroy
+	$self->{dirty_child}={};
 }
 
 sub clear_dirty_cache() {
@@ -259,7 +261,26 @@ sub clear_dirty_cache() {
 	
 	my $cache=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
 	
+	$logger->notice("clear cache for $table_name");
 	$cache->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$table_name'");
+	
+}
+
+sub clear_dirty_cache_parent() {
+	my $self=shift;
+
+	my $table_name=shift or croak("usage: parent_list(table)");
+	
+	my @liste_table=$self->parent_list($table_name);
+	
+	#remove leadf table
+	shift @liste_table;
+	
+	my $cache=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	
+	foreach (@liste_table) {
+		$self->clear_dirty_cache($_);
+	}
 	
 }
 
@@ -290,7 +311,7 @@ if (!caller) {
 	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920',
         'FNTYPTRAIT' => 'IC',
         'FNCDOGA' => 'ICF' });
-	$test->write_dirty_cache();
+	#$test->write_dirty_cache();
 	
 	use Data::Dumper;
 	print Dumper($test->{dirty_child});

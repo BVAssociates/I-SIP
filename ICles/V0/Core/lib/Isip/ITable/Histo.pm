@@ -312,7 +312,7 @@ sub fetch_row() {
 		# add the FIELD_VALUE to the return hash
 		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
 		
-		# line is modified if one field have no status
+		# add status
 		push @field_icon,$self->{isip_rules}->get_field_icon($field_line{FIELD_NAME},$field_line{STATUS},$field_line{COMMENT}) if blessed $self->{isip_rules};
 		
 	}
