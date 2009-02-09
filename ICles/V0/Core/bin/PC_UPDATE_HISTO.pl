@@ -15,7 +15,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] environnement tablename
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-m module] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -31,11 +31,19 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
 
-=head2 -n : Mode simulation
+=item -v : Mode verbeux
+
+=item -n : Mode simulation (aucune modification)
+
+=item -d : enregistre la date
+
+=item -m module : n'effectue la collecte que sur les tables de "module"
+
+=back
 
 =head1 ARGUMENTS
 
@@ -84,12 +92,14 @@ sub log_info {
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvn', \%opts);
+getopts('hvnm:d', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+my $module_name=$opts{m};
+my $save_date=$opts{d};
 
 #  Traitement des arguments
 ###########################################################
@@ -122,10 +132,25 @@ if (not $table_name) {
 	@list_table=($table_name);
 }
 
+if ($module_name) {
+	@list_table=grep {$table_info{$_}->{module} eq $module_name} @list_table;
+	log_erreur("no table in module $module_name") if not @list_table;
+}
+
+
 # set global timestamp for update
 use POSIX qw(strftime);
 my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
 log_info("Date de collecte utilisée : $timestamp");
+
+
+# create cache object (save parent state)
+my $cache=IsipTreeCache->new($env_sip);
+# empty disk cache
+foreach my $current_table (@list_table) {
+	# TODO problem here, because of deleting data from other tables
+	#$cache->clear_dirty_cache($current_table);
+}
 
 my $counter=0;
 my $source_table;
@@ -168,22 +193,27 @@ foreach my $current_table (@list_table) {
 			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
 			
 			#write date in baselines
-			log_info("Sauvegarde de la date de collecte");
-			my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
-			$table_date->insert_row(ENVIRON => $environnement,
-									DATE_UPDATE => $timestamp,
-									DESCRIPTION => "",
-									BASELINE => 0);
+			if ($save_date) {
+				log_info("Sauvegarde de la date de collecte");
+				my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
+				$table_date->insert_row(ENVIRON => $environnement,
+										DATE_UPDATE => $timestamp,
+										DESCRIPTION => "",
+										BASELINE => 0);
+			}
+			
+			
+			#compute new cache
+			$cache->add_dirty_diff($current_table,$diff_obj);
+			# flush cache to disk
+			$cache->write_dirty_cache($current_table,$diff_obj);
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}
-		#compute new cache
-		my $cache=IsipTreeCache->new($env_sip);
-		$cache->add_dirty_diff($current_table,$diff_obj);
 		
-		$cache->write_dirty_cache($current_table,$diff_obj);
 	}
 
 }
+
 
 sortie($bv_severite);

@@ -146,7 +146,7 @@ sub add_dirty_line() {
 	
 }
 
-# compute cache from while IsipDiff object
+# compute cache from IsipDiff object
 sub add_dirty_diff() {
 	my $self=shift;
 	
@@ -306,7 +306,7 @@ sub parent_list() {
 if (!caller) {
 	require Isip::Environnement;
 	my $test=IsipTreeCache->new(Environnement->new("DEV"));
-	$test->clear_dirty_cache("TRAITP");
+	#$test->clear_dirty_cache("TRAITP");
 	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
 	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920',
         'FNTYPTRAIT' => 'IC',
