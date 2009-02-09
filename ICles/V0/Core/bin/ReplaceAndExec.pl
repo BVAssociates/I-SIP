@@ -142,8 +142,8 @@ use File::Spec::Functions qw/path splitpath catfile/;
 
 my ($current_vol,$current_dir,$current_script)=splitpath($0);
 
-if ($table_name =~ /^IKOS_FIELD/) {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_IKOS_FIELD.pl",@argv_save);
+if ($table_name =~ /^ISIP_FIELD/) {
+	system "perl",("$current_vol/$current_dir/ReplaceAndExec_ISIP_FIELD.pl",@argv_save);
 	if ($? == -1) {
 		die "failed to execute: $!\n";
 	}

@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -77,14 +79,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	@_=grep {defined $_} @_;
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	@_=grep {defined $_} @_;
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->notice(@_);
 }
 
 
@@ -173,7 +175,8 @@ $local_table->query_field(@field);
 
 use POSIX qw(strftime);
 $row{DATE_UPDATE} = strftime "%Y-%m-%d %H:%M", localtime if exists $row{DATE_UPDATE};
-#$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
+$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
+
 $local_table->update_row( %row );
 
 sortie($bv_severite);
