@@ -118,6 +118,7 @@ public class EditFormProcessor extends ProcessorFrame {
         TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
         GenericTreeObjectNode node = (GenericTreeObjectNode)selectedNode;
         _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
+        def_cache.releaseTableDefinitionLeasing(_tableDefinition);
         
 		setTitle(menuItem.getText());
 		makePanel();
