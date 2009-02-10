@@ -174,7 +174,7 @@ $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000,
 #$local_table->query_field(@field);
 $local_table->dynamic_field("DOCUMENTATION");
 #$local_table->query_field("ID","COMMENT","STATUS","DOCUMENTATION");
-$local_table->query_field("ID","COMMENT","STATUS");
+$local_table->query_field("ID","COMMENT","STATUS","MEMO");
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 
 # keep DOCUMENTATION field

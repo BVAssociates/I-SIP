@@ -158,13 +158,16 @@ if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
 	#};
 }
 elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_$table_name.pl",@argv_save);
-	if ($? == -1) {
-		die "failed to execute: $!\n";
-	}
-	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_$table_name.pl' died with signal %d, %s",($?  >> 8))
-	};
+	my $cmd=catpath($current_vol,$current_dir,"ReplaceAndExec_$table_name.pl");
+	@ARGV=("-d",@argv_save);
+	return do $cmd;
+	#system "perl",("$current_vol/$current_dir/ReplaceAndExec_$table_name.pl",@argv_save);
+	#if ($? == -1) {
+	#	die "failed to execute: $!\n";
+	#}
+	#elsif (($? >> 8) != 0) {
+	#	die sprintf ("'ReplaceAndExec_$table_name.pl' died with signal %d, %s",($?  >> 8))
+	#};
 }
 else {
 	# otherwise,  we use the original script
@@ -177,14 +180,18 @@ else {
 		if (-r $next_script) {
 			if ($count-- <= 0) {
 				log_info("$table_name : exec official script : $next_script ");
-				system "perl",($next_script,@argv_save);
-				if ($? == -1) {
-					die "failed to execute: $!\n";
-				}
-				elsif (($? >> 8) != 0) {
-					die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				};
-				exit 0;
+				my $cmd=$next_script;
+				@ARGV=(@argv_save);
+				return do $cmd;
+				
+				#system "perl",($next_script,@argv_save);
+				#if ($? == -1) {
+				#	die "failed to execute: $!\n";
+				#}
+				#elsif (($? >> 8) != 0) {
+				#	die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
+				#};
+				#exit 0;
 			}
 		}
 	}
