@@ -382,7 +382,7 @@ foreach my $environnement (@environnement_list) {
 		{
 			my $label_desc="";
 			$label_desc= "(".$table_info{description}.")" if $table_info{description};
-			my $label_string = sprintf($_,$source_data_table,$current_table,$table_info{description});
+			my $label_string = sprintf($_,$source_data_table,$current_table,$label_desc);
 			$logger->info("Insert $source_data_table into ICleLabels");
 			system('Insert -f into ICleLabels values',$label_string);
 			if ($? == -1) {

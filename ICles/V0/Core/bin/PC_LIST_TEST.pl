@@ -111,29 +111,18 @@ use Isip::Environnement;
 
 # DEBUG
 use Isip::ITable::ODBC_Query;
-#my $table_query=ODBC_Query->open('SCF1_IKGLFIC','CROEXPP2','Select FNCDTRAIT,FNTYPTRAIT,FNCDOGA,FNNOCRITRT,FKLBLCRITR from CROEXPP,CRITRTP where ( FNCDTRAIT=FKCDTRAIT AND FNNOCRITRT=FKNOCRITRT)', { debug => 1 });
-my $table_query=ODBC_Query->open('SCF1_IKGLFIC',$table_name,
-'SELECT CRITRTP.FKCDTRAIT, CRITRTP.FKNOCRMTRT, CRITRTP.FKNOMPRG, CRITRTP.FKINDCRITG, CRITRTP.FKINDCRITO, CRITRTP.FKLBLCRITR, CRITRTP.FKCDTTYPOP, CRITRTP.FKPGMCTLE, CRITRTP.FKPGMSELEC, CROEXPP.FNTYPTRAIT, CROEXPP.FNCDOGA, CROEXPP.FNINDCRITG, CROEXPP.FNVLCRITRT
-	FROM CRITRTP
-	INNER JOIN CROEXPP
-	ON CRITRTP.FKCDTRAIT = CROEXPP.FNCDTRAIT AND CRITRTP.FKNOCRITRT = CROEXPP.FNNOCRITRT
-');
+
 
 #$table_query->query_field('FNNOCRITRT','FKLBLCRITR');
 #$table_query->query_condition("FNCDTRAIT like 'FACP%'");
 #die $table_query->get_query;
 
-my $count=0;
-while (my @line=$table_query->fetch_row_array()) {
-	#print join('%',@line)."\n";
-	$count++;
-}
-die $count;
-# DEBUG
-
-
 my $sip=Environnement->new($environ);
-my $table=$sip->open_local_table($table_name, {debug => $debug_level });
+
+#my $table_query=ODBC_Query->open('SCF1_IKGLFIC','CROEXPP2','Select FNCDTRAIT,FNTYPTRAIT,FNCDOGA,FNNOCRITRT,FKLBLCRITR from CROEXPP,CRITRTP where ( FNCDTRAIT=FKCDTRAIT AND FNNOCRITRT=FKNOCRITRT)', { debug => 1 });
+#my $table=$sip->open_local_table($table_name, {debug => $debug_level });
+my $table=$sip->open_source_table("NATPROP");
+$table->custom_select_query("select  TABLE_TEXT from QSYS2.SYSTABLES where TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='NATPROP'");
 
 die "unable to open local $table_name in env $environ" if not defined $table;
 
