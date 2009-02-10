@@ -44,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 public class EditFormProcessor extends ProcessorFrame {
@@ -204,6 +205,10 @@ public class EditFormProcessor extends ProcessorFrame {
                 else if(formType.equals("List"))
                 {
                     form_value = new JComboBox(getFieldList(formId));
+                }
+                else if(formType.equals("EditMulti"))
+                {
+                    form_value = new JTextArea("###");
                 } else
                     throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
 
@@ -380,10 +385,13 @@ public class EditFormProcessor extends ProcessorFrame {
                 JComponent textBox = _fieldObject.get(data[i].name);
                 if (textBox instanceof JTextField) {
                     ((JTextField) textBox).setText(data[i].value);
+                } else if (textBox instanceof JTextArea) {
+                    String multiligne=data[i].value.replaceAll("#n","\n");
+                    ((JTextArea) textBox).setText(multiligne);
                 } else if (textBox instanceof JLabel) {
                     ((JLabel) textBox).setText(data[i].value);
                 } else if (textBox instanceof JComboBox) {
-                    ((JComboBox)textBox).setSelectedItem(data[i].value);
+                    ((JComboBox) textBox).setSelectedItem(data[i].value);
                 }
             }
         }
@@ -473,6 +481,11 @@ public class EditFormProcessor extends ProcessorFrame {
             } else if (textBox instanceof JComboBox) {
                 data.add(new IsisParameter(data_from[i].name,
                         (String) ((JComboBox) textBox).getSelectedItem() , sep));
+
+            } else if (textBox instanceof JTextArea) {
+                String text=((JTextArea) textBox).getText();
+                data.add(new IsisParameter(data_from[i].name,
+                         text.replaceAll("\n","#n"), sep));
             }
 
         }
@@ -698,10 +711,8 @@ public class EditFormProcessor extends ProcessorFrame {
     /**
      * Constante stockant la commande d'insertion
      */
-    //TODO recuperer le script général pour la modification
     //TODO prévoir l'ajout/suppression?
-    //private final String replaceCommand="ReplaceAndExec.pl";
-    private final String replaceCommand="ReplaceAndExec_IKOS_FIELD.pl";
+    private final String replaceCommand="ReplaceAndExec.pl";
 
      /**
      * Constante : champ stockant le nom de la clef de la table editée
