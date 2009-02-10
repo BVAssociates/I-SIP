@@ -14,8 +14,8 @@ SEP2,,Separator
 DATE_HISTO,Date Collecte,Label
 DATE_UPDATE,Date commentaire,Label
 USER_UPDATE,User commentaire,Label
-#STATUS,%[ICON],Icon
 STATUS,Etat du commentaire,List
-COMMENT,Commentaire,EditMulti
-SEP3,,Separator
-DOCUMENTATION,Documentation globale,Label
+COMMENT,Commentaire,Edit
+MEMO,description du changement,EditMulti
+#SEP3,,Separator
+#DOCUMENTATION,Documentation globale,Label
