@@ -236,10 +236,10 @@ sub get_query()
 	#push @select_conditions, '('.join(' OR ',@query_conditions).')';
 	
 	# SQL join to get last inserted KEY/NAME/VALUE
-	## INNER or OUTER ??
 	$select_histo= "SELECT ".join(',',$self->{table_histo}->query_field)." FROM
 		$self->{table_name_histo} INNER JOIN (
 			SELECT
+			max(ID) as ID2,
 			TABLE_KEY as TABLE_KEY_2,
 			FIELD_NAME as FIELD_NAME_2,
 			max(DATE_HISTO) AS DATE_MAX
@@ -250,9 +250,9 @@ sub get_query()
 	$select_histo.= " WHERE ".join(" AND ", @select_conditions) if @select_conditions;
 	# GROUP BY
 	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2)
-		ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
+		ON  (ID= ID2)
 		WHERE FIELD_VALUE != '__delete'
-		ORDER BY TABLE_KEY;";
+		ORDER BY TABLE_KEY ASC, FIELD_NAME DESC;";
 
 	return $select_histo;
 }
