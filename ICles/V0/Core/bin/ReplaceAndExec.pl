@@ -140,18 +140,22 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 ###########################################################
 my $bv_severite=0;
 
-use File::Spec::Functions qw/path splitpath catfile/;
+use File::Spec::Functions qw/path splitpath catfile catpath/;
 
 my ($current_vol,$current_dir,$current_script)=splitpath($0);
 
 if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
-	system "perl",("$current_vol/$current_dir/ReplaceAndExec_ISIP_FIELD.pl",@argv_save);
-	if ($? == -1) {
-		die "failed to execute: $!\n";
-	}
-	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_IKOS_FIELD.pl' died with signal %d, %s",($?  >> 8))
-	};
+	my $cmd=catpath($current_vol,$current_dir,"ReplaceAndExec_ISIP_FIELD.pl");
+	@ARGV=("-d",@argv_save);
+	return do $cmd;
+	#log_info("exec: ", $cmd, join (' ',@argv_save));
+	#system "perl", ($cmd, @argv_save);
+	#if ($? == -1) {
+	#	die "failed to execute: $!\n";
+	#}
+	#elsif (($? >> 8) != 0) {
+	#	die sprintf ("'ReplaceAndExec_ISIP_FIELD.pl' died with signal %d, %s",($?  >> 8))
+	#};
 }
 elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
 	system "perl",("$current_vol/$current_dir/ReplaceAndExec_$table_name.pl",@argv_save);
@@ -159,7 +163,7 @@ elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
 		die "failed to execute: $!\n";
 	}
 	elsif (($? >> 8) != 0) {
-		die sprintf ("'ReplaceAndExec_IKOS_FIELD.pl' died with signal %d, %s",($?  >> 8))
+		die sprintf ("'ReplaceAndExec_$table_name.pl' died with signal %d, %s",($?  >> 8))
 	};
 }
 else {

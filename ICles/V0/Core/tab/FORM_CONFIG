@@ -16,6 +16,6 @@ DATE_UPDATE,Date commentaire,Label
 USER_UPDATE,User commentaire,Label
 #STATUS,%[ICON],Icon
 STATUS,Etat du commentaire,List
-COMMENT,Commentaire,Text
+COMMENT,Commentaire,EditMulti
 SEP3,,Separator
 DOCUMENTATION,Documentation globale,Label

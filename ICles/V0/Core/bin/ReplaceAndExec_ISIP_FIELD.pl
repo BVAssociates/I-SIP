@@ -100,12 +100,13 @@ my @argv_save=@ARGV;
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvd', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+my $dont_decode=$opts{d};
 
 #  Traitement des arguments
 ###########################################################
@@ -134,7 +135,7 @@ foreach (@ARGV) {
 }
 
 use Encode;
-$values=encode("cp850",$values);
+$values=encode("cp850",$values) if not $dont_decode;
 
 log_info("VALUES: ",$values);
 log_info("CONDITION: ",$conditions);
