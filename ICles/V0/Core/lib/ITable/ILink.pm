@@ -73,6 +73,23 @@ sub get_parent_tables() {
 
 }
 
+# recursive function
+# return field list linked by foreign key 
+# from child to parents
+sub get_parent_path() {
+	my $self=shift;
+
+	my $current_table=shift or croak("usage: parent_list(table)");
+
+
+	my %parent_hash=%{ $self->{table_parent}->{$current_table} } if exists $self->{table_parent}->{$current_table} ;
+
+	croak("Unable to get ancestor for :$current_table : more than 1 parent") if keys %parent_hash > 1;
+
+	return ($current_table) if keys %parent_hash == 0;
+	return ($current_table,$self->parent_list(keys %parent_hash));
+}
+
 sub get_child_tables() {
 	my $self=shift;
 	my $table=shift or croak ("usage : get_child_tables(table)");

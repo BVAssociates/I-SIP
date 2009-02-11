@@ -32,7 +32,7 @@ sub new() {
 
 	# store list of table keys whom childs are dirty (diff or uncommented...)
 	# format :
-	#   $self->{dirty_child}->{"table_name"}=[key1,key2]
+	#   $self->{dirty_child}->{"table_name"}={key1 => 1,key2 => 1}
 	$self->{dirty_child}={};
 	
 	
@@ -50,6 +50,11 @@ sub add_dirty_key() {
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
 		$logger->error("$table_name does not exists");
 		return 0;
+	}
+	
+	if (exists $self->{dirty_child}->{$table_name}->{$key_string}) {
+		$logger->notice("$table_name => $key_string : already in cache");
+		return;
 	}
 	
 	my @table_key_field=split(',',$self->{isip_env}->{info_table}->{$table_name}->{key});
@@ -83,6 +88,7 @@ sub add_dirty_key() {
 # compute key from parent table dirty by their child
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least foreign key)
+
 sub add_dirty_line() {
 	my $self=shift;
 	
@@ -95,6 +101,15 @@ sub add_dirty_line() {
 		$logger->error("$table_name does not exists");
 		return 0;
 	}
+	
+	my @table_key=sort split(',',$self->{isip_env}->{info_table}->{$table_name}->{key} );
+	my $current_key_string=@line_hash{@table_key};
+	
+	# we are already in the cache, we stop recursion
+	if (exists $self->{dirty_child}->{$table_name}->{$current_key_string}) {
+		$logger->notice("$table_name => $current_key_string : already in cache");
+		return;
+	}	
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
 
@@ -138,10 +153,18 @@ sub add_dirty_line() {
 	# store information in memory
 	
 	my $key_string=join(',',@parent_line{sort $table->key});
-	$logger->notice("set dirty $parent_table:'$key_string' because of ".join(',', @line_hash{@child_field}));
-	push @{$self->{dirty_child}->{$parent_table}}, $key_string;
+	
+	# parent already in the cache, we stop recursion
+	if (exists $self->{dirty_child}->{$parent_table}->{$key_string}) {
+		$logger->notice("$table_name => $key_string : already in cache");
+		return;
+	} else {
+		$logger->notice("set dirty $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+		$self->{dirty_child}->{$parent_table}->{$key_string}=1;
+	}
 	
 	# go deep
+	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
 	$self->add_dirty_line($parent_table,\%parent_line);
 	
 }
@@ -186,6 +209,16 @@ sub add_dirty_diff() {
 	}
 }
 
+sub add_dirty_parent() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $key_string=shift or croak("usage: add_dirty_parent(table_name,key_string)");
+	
+	$self->{dirty_child}->{$table_name}->{$key_string}=1;
+}
+
+
 # return true if line of table is dirty (ie: one of its child was modified)
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least primary key)
@@ -208,9 +241,7 @@ sub is_dirty_line() {
 	my $table_key_value=join(',', @line_hash{@table_key_field});
 	
 	# check in current object
-	foreach my $dirty_key (@{$self->{dirty_child}->{$table_name}}) {
-		return 1 if $table_key_value eq $dirty_key;
-	}
+	return 1 if $self->{dirty_child}->{$table_name}->{$table_key_value};
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
@@ -225,18 +256,21 @@ sub is_dirty_line() {
 }
 
 # write table to disk with informations from $self->{dirty_child}
-sub write_dirty_cache() {
+sub rewrite_dirty_cache() {
 	my $self=shift;
 	
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
 	
 	$table->begin_transaction();
 	
+	$table->execute("DELETE from CHILD_TO_COMMENT");
+	
 	my %dirty_temp=%{$self->{dirty_child}};
 	foreach my $dirty_table (keys %dirty_temp) {
-		foreach my $dirty_key ( @{ $dirty_temp{$dirty_table} }) {
+		my %dirty_keys=%{$dirty_temp{$dirty_table}};
+		foreach my $dirty_key ( keys %dirty_keys ) {
 			# DELETE AND INSERT (aka INSERT OR IGNORE)
-			$table->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$dirty_table' AND TABLE_KEY ='$dirty_key'");
+			#$table->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$dirty_table' AND TABLE_KEY ='$dirty_key'");
 			eval {$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key)};
 			$@ =~ /(are not unique)/;
 			if ($1) {
@@ -257,7 +291,7 @@ sub write_dirty_cache() {
 sub clear_dirty_cache() {
 	my $self=shift;
 
-	my $table_name=shift or croak("usage: parent_list(table)");
+	my $table_name=shift or croak("usage: clear_dirty_cache(table)");
 	
 	my $cache=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
 	
@@ -269,9 +303,9 @@ sub clear_dirty_cache() {
 sub clear_dirty_cache_parent() {
 	my $self=shift;
 
-	my $table_name=shift or croak("usage: parent_list(table)");
+	my $table_name=shift or croak("usage: clear_dirty_cache_parent(table)");
 	
-	my @liste_table=$self->parent_list($table_name);
+	my @liste_table=$self->{links}->parent_list($table_name);
 	
 	#remove leadf table
 	shift @liste_table;
@@ -284,33 +318,14 @@ sub clear_dirty_cache_parent() {
 	
 }
 
-# recursive function
-# return field list linked by foreign key 
-# from child to parents
-sub parent_list() {
-	my $self=shift;
-
-	my $current_table=shift or croak("usage: parent_list(table)");
-
-
-	my %parent_hash=%{ $self->{links}->{table_parent}->{$current_table} } if exists $self->{links}->{table_parent}->{$current_table} ;
-
-	croak("Unable to get ancestor for :$current_table : more than 1 parent") if keys %parent_hash > 1;
-
-	return ($current_table) if keys %parent_hash == 0;
-	return ($current_table,$self->parent_list(keys %parent_hash));
-}
-
-
 # for class testing only
 if (!caller) {
 	require Isip::Environnement;
 	my $test=IsipTreeCache->new(Environnement->new("DEV"));
 	#$test->clear_dirty_cache("TRAITP");
 	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
-	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920',
-        'FNTYPTRAIT' => 'IC',
-        'FNCDOGA' => 'ICF' });
+	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
+	#$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
 	#$test->write_dirty_cache();
 	
 	use Data::Dumper;

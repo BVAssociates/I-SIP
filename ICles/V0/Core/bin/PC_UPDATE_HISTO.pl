@@ -204,11 +204,14 @@ foreach my $current_table (@list_table) {
 										BASELINE => 0);
 			}
 			
-			
+			my ($current_vol,$current_dir,$current_script)=splitpath($0);
+			my $cmd=catpath($current_vol,$current_dir,"PC_UPDATE_CACHE.pl");
+			@ARGV=($environnement);
+			do $cmd or die "erreur pendant la mise à jour du cache";
 			#compute new cache
-			$cache->add_dirty_diff($current_table,$diff_obj);
+			#$cache->add_dirty_diff($current_table,$diff_obj);
 			# flush cache to disk
-			$cache->write_dirty_cache($current_table,$diff_obj);
+			#$cache->write_dirty_cache($current_table,$diff_obj);
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}

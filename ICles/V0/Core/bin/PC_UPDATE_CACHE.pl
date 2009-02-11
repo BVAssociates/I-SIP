@@ -127,12 +127,6 @@ my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
 
-
-foreach my $current_table (@list_table) {
-	$cache->clear_dirty_cache($current_table);
-}
-
-
 foreach my $current_table (@list_table) {
 	
 	if ( not ($env_sip->exists_doc_table($current_table)
@@ -146,8 +140,12 @@ foreach my $current_table (@list_table) {
 	
 	log_erreur("la table $current_table n'est pas connue") if not exists $table_info{$current_table};
 	
+	if ($table_info{$current_table}->{root_table}) {
+		log_info("passe $current_table (root_table)");
+		next;
+	}
 	
-	log_info("Connexion à la base d'historisation");
+	log_info("Connexion à la base d'historisation de $current_table");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 	
 	my $type_rules = IsipRules->new($env_sip->get_sqlite_path($current_table),$current_table, {debug => $debug_level});
@@ -160,7 +158,9 @@ foreach my $current_table (@list_table) {
 	while (my %row=$histo_table->fetch_row) {
 		$cache->add_dirty_line($current_table, \%row) if $row{ICON} ne 'valide';
 	}
-	$cache->write_dirty_cache;
 }
+
+$cache->rewrite_dirty_cache;
+
 
 sortie($bv_severite);

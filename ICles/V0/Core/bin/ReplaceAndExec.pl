@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -64,7 +66,9 @@ BV Associates, 16/10/2008
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	my $exit_value=shift;
+	$logger->notice("Sortie du programme, code $exit_value");
+	exit $exit_value;
 }
 
 sub usage($) {
@@ -74,14 +78,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	@_=grep {defined $_} @_;
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	@_=grep {defined $_} @_;
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->info(@_);
 }
 
 
@@ -147,8 +151,11 @@ my ($current_vol,$current_dir,$current_script)=splitpath($0);
 if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
 	my $cmd=catpath($current_vol,$current_dir,"ReplaceAndExec_ISIP_FIELD.pl");
 	@ARGV=("-d",@argv_save);
-	return do $cmd;
-	#log_info("exec: ", $cmd, join (' ',@argv_save));
+	log_info("exec: ", $cmd, join (' ',@argv_save));
+	my $return=do $cmd;
+	die "couldn't parse $cmd: $@" if $@;
+
+	exit $return;
 	#system "perl", ($cmd, @argv_save);
 	#if ($? == -1) {
 	#	die "failed to execute: $!\n";
@@ -160,7 +167,9 @@ if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
 elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
 	my $cmd=catpath($current_vol,$current_dir,"ReplaceAndExec_$table_name.pl");
 	@ARGV=("-d",@argv_save);
-	return do $cmd;
+	my $return=do $cmd;
+	die "couldn't parse $cmd: $@" if $@;
+	exit $return;
 	#system "perl",("$current_vol/$current_dir/ReplaceAndExec_$table_name.pl",@argv_save);
 	#if ($? == -1) {
 	#	die "failed to execute: $!\n";
@@ -182,7 +191,12 @@ else {
 				log_info("$table_name : exec official script : $next_script ");
 				my $cmd=$next_script;
 				@ARGV=(@argv_save);
-				return do $cmd;
+				my $return=do $cmd;
+				die "couldn't parse $cmd: $@" if $@;
+				die "couldn't do $cmd: $!"    unless defined $return;
+				die "couldn't run $cmd"       unless $return;
+
+				exit $return;
 				
 				#system "perl",($next_script,@argv_save);
 				#if ($? == -1) {

@@ -1,7 +1,7 @@
 #!/bin/perl
 
 use strict;
-use File::Spec::Functions;
+use File::Spec::Functions qw/splitpath catpath canonpath/;
 use File::Basename;
 
 
@@ -75,12 +75,19 @@ my $code=$?>>8;
 
 die "something wrong with : $cmd" if $code;
 
+my $script_template='require PAR;
+use File::Spec::Functions qw/splitpath catpath/;
+my ($lecteur,$path,$script)=splitpath($0);
+my $par=catpath($lecteur,$path,"IsipPackage.par" );
+PAR->import( { file => $par, run => "%s" } );
+';
+
 
 foreach my $script (grep {!/$myself/} grep {/\.pl/} @file_list) {
-	$script=basename($script);
-	print "writing $package_dir/$script\.bat\n";
-	open(BAT,">$package_dir/$script\.bat") or die $!;
-	my $bat_launcher='@perl -MPAR "%~dp0'.$package_name.'" "%~n0" %*';
-	print BAT $bat_launcher;
-	close(BAT);
+	my ($vol,$dir,$script_name)=splitpath($script);
+	print "writing $package_dir/$script_name\n";
+	open(SCRIPT,">$package_dir/$script_name") or die $!;
+	my $script_launcher=sprintf($script_template,$script_name);
+	print SCRIPT $script_launcher;
+	close(SCRIPT);
 }

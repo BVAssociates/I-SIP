@@ -56,7 +56,7 @@ sub new() {
 	
 	# mandatory parameter
 	if (@_ < 2) {
-		croak ('\'new\' take 1 mandatory argument: ${class}->new(database_name, table_name [, { diff => $TableDiff_ref, debug => \$num} ) ] )')
+		croak ('\'new\' take 1 mandatory argument: '.$class.'->new(database_name, table_name [, { diff => $TableDiff_ref, debug => \$num} ) ] )')
 	}
 	
 	$self->{database_name}=shift;

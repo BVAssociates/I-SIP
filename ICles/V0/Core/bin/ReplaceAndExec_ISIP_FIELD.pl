@@ -167,18 +167,19 @@ my $env_sip=Environnement->new($environnement);
 my $local_table;
 my %row;
 
-$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 10000, debug => $debug_level});
+$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 30000, debug => $debug_level});
 
 # add dynamic field. Needed for array_to_hash()
-#$local_table->dynamic_field("TEXT","TYPE","ICON");
-#$local_table->query_field(@field);
-$local_table->dynamic_field("DOCUMENTATION");
+$local_table->dynamic_field("TEXT","TYPE","ICON");
+#$local_table->dynamic_field("DOCUMENTATION");
 #$local_table->query_field("ID","COMMENT","STATUS","DOCUMENTATION");
-$local_table->query_field("ID","COMMENT","STATUS","MEMO");
+#$local_table->query_field("ID","COMMENT","STATUS","MEMO");
+
+$local_table->query_field(@field);
 %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 
 # keep DOCUMENTATION field
-my $description=$row{DOCUMENTATION};
+#my $description=$row{DOCUMENTATION};
 
 #delete dynamic field from line to insert
 foreach ($local_table->dynamic_field()) {
@@ -188,7 +189,6 @@ foreach ($local_table->dynamic_field()) {
 use POSIX qw(strftime);
 my $current_date=strftime "%Y-%m-%dT%H:%M", localtime;
 my $current_user=$ENV{IsisUser};
-
 #Update comment
 $row{DATE_UPDATE} = $current_date;
 $row{USER_UPDATE} = $current_user;
@@ -196,6 +196,5 @@ $local_table->update_row( %row );
 
 #Update documentation
 #$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
-
 
 sortie($bv_severite);
