@@ -335,7 +335,7 @@ public class EditFormProcessor extends ProcessorFrame {
 		// On redimensionne la fenêtre
 		setPreferredSize(new Dimension(400, 400));
 
-        populateFormPanel(false);
+        populateFormPanel(true);
 
 		trace_methods.endOfMethod();
 	}
@@ -470,14 +470,15 @@ public class EditFormProcessor extends ProcessorFrame {
                         sep));
 
             } else if (textBox instanceof JLabel) {
+                //TODO : est-ce nécéssaire?
                 //Les champ ReadOnly n'ont pas besoin d'etre modifiés
                 //Il faut quand meme revoyer les clefs primaires
-                for (int k=0; k<_tableDefinition.key.length ; k++) {
-                    if (data_from[i].name.equals(_tableDefinition.key[k])) {
+                //for (int k=0; k<_tableDefinition.key.length ; k++) {
+                //    if (data_from[i].name.equals(_tableDefinition.key[k])) {
                         data.add(new IsisParameter(data_from[i].name,
                                 ((JLabel) textBox).getText() , sep));
-                    }
-                }
+                //    }
+                //}
                 
             } else if (textBox instanceof JComboBox) {
                 data.add(new IsisParameter(data_from[i].name,
@@ -487,6 +488,8 @@ public class EditFormProcessor extends ProcessorFrame {
                 String text=((JTextArea) textBox).getText();
                 data.add(new IsisParameter(data_from[i].name,
                          text.replaceAll("\n","#n"), sep));
+            } else {
+                data.add(data_from[i]);
             }
 
         }
