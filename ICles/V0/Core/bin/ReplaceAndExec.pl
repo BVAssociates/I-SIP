@@ -123,7 +123,7 @@ my $values;
 my $conditions;
 foreach (@ARGV) {
 	if (uc eq 'WHERE') {
-		$conditions=join(' ',shift);
+		$conditions=join(' ',@ARGV);
 		last;
 	} else {
 		$values .= $_;
@@ -180,36 +180,10 @@ elsif (-r "$current_vol/$current_dir/ReplaceAndExec_$table_name.pl") {
 }
 else {
 	# otherwise,  we use the original script
+	
+	system("Replace INTO $table_name VALUES \"$values\"");
+	exit $? >> 8;
 
-	# routine to find the next ReplaceAndExec in Path
-	my $count=1;
-	my $next_script;
-	foreach my $dir (path()) {
-		$next_script=catfile($dir,$current_script);
-		if (-r $next_script) {
-			if ($count-- <= 0) {
-				log_info("$table_name : exec official script : $next_script ");
-				my $cmd=$next_script;
-				@ARGV=(@argv_save);
-				my $return=do $cmd;
-				die "couldn't parse $cmd: $@" if $@;
-				die "couldn't do $cmd: $!"    unless defined $return;
-				die "couldn't run $cmd"       unless $return;
-
-				exit $return;
-				
-				#system "perl",($next_script,@argv_save);
-				#if ($? == -1) {
-				#	die "failed to execute: $!\n";
-				#}
-				#elsif (($? >> 8) != 0) {
-				#	die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				#};
-				#exit 0;
-			}
-		}
-	}
-	die "Unable to find $current_script in PATH";
 }
 
 

@@ -125,33 +125,9 @@ my $bv_severite=0;
 
 # if we administrate a table other than FIELD_*, we use the original script
 if ($table_name !~ /^IKOS_FIELD/) {
-	
-	# routine to find the next InsertAndExec in Path
-	use File::Spec::Functions qw/path splitpath catfile/;
-	my (undef,undef,$current_script)=splitpath($0);
-	my $count=1;
-	my $next_script;
-	foreach my $dir (path()) {
-		$next_script=catfile($dir,$current_script);
-		if (-r $next_script) {
-			if ($count-- <= 0) {
-				log_info("$table_name : exec official script : $next_script ");
-				my $cmd=$next_script;
-				@ARGV=(@argv_save);
-				exit do $cmd;
-				
-				#system "perl",($next_script,@argv_save);
-				#if ($? == -1) {
-				#	die "failed to execute: $!\n";
-				#}
-				#elsif (($? >> 8) != 0) {
-				#	die sprintf ("'$next_script' died with signal %d, %s",($?  >> 8))
-				#};
-				#exit 0;
-			}
-		}
-	}
-	die "Unable to find $current_script in PATH";
+	my $values=join('',@values);
+	system("Insert INTO $table_name VALUES \"$values\"");
+	exit $? >> 8;
 }
 
 log_info("Cannot insert lines");
