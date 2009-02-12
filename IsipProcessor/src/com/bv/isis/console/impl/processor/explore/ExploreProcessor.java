@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/impl/processor/explore/ExploreProcessor.java,v $
-* $Revision: 1.24 $
+* $Revision: 1.27 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Processeur d'exploration de noeud
@@ -15,6 +15,18 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: ExploreProcessor.java,v $
+* Revision 1.27  2009/02/11 16:33:15  tz
+* Implémentation de la fiche FS#600.
+*
+* Revision 1.26  2009/02/11 15:12:00  tz
+* Plus d'obligation de chargement automatique des menus lors de
+* la suppression des noeuds intermédiaires.
+*
+* Revision 1.25  2009/02/05 16:15:54  tz
+* Correction de la fiche FS#577 : Propagation des données de
+* pré-processing dans les noeuds enfants en cas de suppression du
+* noeud table.
+*
 * Revision 1.24  2009/01/23 17:25:45  tz
 * Correction de la fiche FS#577.
 *
@@ -304,7 +316,8 @@ public class ExploreProcessor
 		if(selected_node instanceof GenericTreeClassNode)
 		{
 			exploreClassNode(windowInterface,
-				(GenericTreeClassNode)selected_node);
+				(GenericTreeClassNode)selected_node, 
+				preprocessing);
 		}
 		else
 		{
@@ -335,22 +348,23 @@ public class ExploreProcessor
 				// de méthode d'exploitation
 				if(MenuFactory.hasMethodItems(class_node_menu) == false) {
 					// On va provoquer l'exploration du noeud table
-					exploreClassNode(windowInterface, child_class_node);
-                    // On va récupérer les données de pré-processing du
-                    // noeud table
-                    IsisParameter[] table_preprocessing =
-                            child_class_node.getPreprocessingData();
-                    // On va déplacer les enfants du noeud Table vers
-                    // le noeud Item parent
-                    while (child_class_node.getChildCount() > 0) {
-                        GenericTreeObjectNode sub_child_node =
-                                (GenericTreeObjectNode) child_class_node.getChildAt(0);
-                        // On positionne au niveau du noeud enfant les
-                        // données de pré-processing du noeud parent
-                        if (table_preprocessing != null) {
-                            sub_child_node.setPreprocessingData(
-                                    table_preprocessing);
-                        }
+					exploreClassNode(windowInterface, child_class_node, null);
+					// On va récupérer les données de pré-processing du
+					// noeud table
+					IsisParameter[] table_preprocessing = 
+						child_class_node.getPreprocessingData();
+					// On va déplacer les enfants du noeud Table vers
+					// le noeud Item parent
+					while(child_class_node.getChildCount() > 0) {
+						GenericTreeObjectNode sub_child_node =
+							(GenericTreeObjectNode)
+							child_class_node.getChildAt(0);
+						// On positionne au niveau du noeud enfant les
+						// données de pré-processing du noeud parent
+						if(table_preprocessing != null) {
+							sub_child_node.setPreprocessingData(
+								table_preprocessing);
+						}
 						selected_node.add(sub_child_node);
 					}
 					// On peut détruire le noeud Table, et le supprimer
@@ -375,12 +389,9 @@ public class ExploreProcessor
 					(GenericTreeObjectNode)selectedNode.getChildAt(index);
 				// On va charger automatiquement le menu contextuel du
 				// noeud
-				if(remove_unnecessary_nodes == true ||
-					preload_menus == true) {
-					
-                    //TODO wait for official patch
-                    //MenuFactory.createContextualMenu(child_node, true,
-					//	windowInterface);
+				if(preload_menus == true) {
+					MenuFactory.createContextualMenu(child_node, true, 
+						windowInterface);
 				}
 				// On va déclencher l'exploration automatique du noeud
 				MenuFactory.doAutomaticExplore(windowInterface,
@@ -696,8 +707,8 @@ public class ExploreProcessor
 				// Il faut récupérer la définition de la table
 				IsisTableDefinition definition =
 					definition_manager.getTableDefinition(selectedNode.getAgentName(),
-				selectedNode.getIClesName(), selectedNode.getServiceType(), 
-				table_name, context, selectedNode.getServiceSession());
+					selectedNode.getIClesName(), selectedNode.getServiceType(), 
+					table_name, context, selectedNode.getServiceSession());
 				// Affichage de l'état
 				windowInterface.setStatus("&Status_BuildingTableNodes",
 					extra_information, loop++);
@@ -761,11 +772,14 @@ public class ExploreProcessor
 	* Arguments:
 	*  - windowInterface: Une référence sur l'interface MainWindowInterface,
 	*    utilisée pour afficher des messages d'erreurs,
-	*  - selectedNode: Une référence sur le noeud à explorer.
+	*  - selectedNode: Une référence sur le noeud à explorer,
+	*  - preprocessing: Une chaîne de caractères contenant des instructions de 
+	*    préprocessing.
 	* ----------------------------------------------------------*/
 	private void exploreClassNode(
 		MainWindowInterface windowInterface,
-		GenericTreeClassNode selectedNode
+		GenericTreeClassNode selectedNode,
+		String preprocessing
 		)
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
@@ -777,6 +791,7 @@ public class ExploreProcessor
 		trace_methods.beginningOfMethod();
 		trace_arguments.writeTrace("windowInterface=" + windowInterface);
 		trace_arguments.writeTrace("selectedNode=" + selectedNode);
+		trace_arguments.writeTrace("preprocessing=" + preprocessing);
 		trace_debug.writeTrace("Exploration du noeud table " +
 			selectedNode.getLabel().label);
 		// On fixe l'état du noeud
@@ -784,6 +799,15 @@ public class ExploreProcessor
 			GenericTreeObjectNode.NodeStateEnum.STATE_CHANGING);
 		try
 		{
+			IndexedList context = selectedNode.getContext(true);
+			// On va traiter le préprocessing
+			IsisParameter[] preprocessing_parameters =
+				ProcessingHandler.handleProcessingStatement(preprocessing,
+				context, windowInterface, 
+				AgentSessionManager.getInstance().getAgentLayerMode(
+				selectedNode.getAgentName()), 
+				selectedNode.getServiceSession(), 
+				(Component)windowInterface, true);
 			// On exécute crée les noeuds résultant de l'exécution d'une
 			// requête
 			TreeNodeFactory.makeTreeObjectNodes(
@@ -792,6 +816,14 @@ public class ExploreProcessor
 				selectedNode.getTableName(), selectedNode.getCondition(),
 				selectedNode, selectedNode.getContext(true),
 				windowInterface, selectedNode.getLabel().label);
+			// On va positionner les données de pré-processing sur les noeuds
+			// enfant
+			for(int index = 0 ; index < selectedNode.getChildCount() ; 
+				index ++) {
+				GenericTreeObjectNode child_node = 
+					(GenericTreeObjectNode)selectedNode.getChildAt(index);
+				child_node.setPreprocessingData(preprocessing_parameters);
+			}
 		}
 		catch(Exception exception)
 		{
