@@ -197,4 +197,29 @@ $local_table->update_row( %row );
 #Update documentation
 #$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
 
+# update cache
+use Isip::IsipTreeCache;
+use Isip::IsipRules;
+
+my $cache=IsipTreeCache->new($env_sip);
+
+log_info("Connexion à la base d'historisation de $table_ikos");
+my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
+
+my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_ikos),$table_ikos, {debug => $debug_level});
+$histo_table->isip_rules($type_rules);
+
+$histo_table->query_key_value($row{TABLE_KEY});
+$histo_table->query_field("ICON",$histo_table->field);
+
+while (my %row=$histo_table->fetch_row) {
+	if ($row{ICON} ne 'valide') {
+		$cache->add_dirty_line($table_ikos, \%row, 1);
+	}
+	else {
+		$cache->add_dirty_line($table_ikos, \%row, -1);
+	}
+}
+$cache->update_dirty_cache();
+
 sortie($bv_severite);

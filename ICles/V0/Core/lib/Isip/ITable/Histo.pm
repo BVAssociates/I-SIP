@@ -229,9 +229,11 @@ sub get_query()
 	}
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!
-	#my @query_conditions;
-	#foreach ($self->query_field()) {
-	#	push @query_conditions, "FIELD_NAME = '".$_."'";
+	my @query_conditions;
+	#if ($self->query_field() ne ($self->field() + $self->dynamic_field())) {
+	#	foreach ($self->query_field()) {
+	#		push @query_conditions, "FIELD_NAME = '".$_."'";
+	#	}
 	#}
 	#push @select_conditions, '('.join(' OR ',@query_conditions).')';
 	
@@ -251,8 +253,12 @@ sub get_query()
 	# GROUP BY
 	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2)
 		ON  (ID= ID2)
-		WHERE FIELD_VALUE != '__delete'
-		ORDER BY TABLE_KEY ASC, FIELD_NAME DESC;";
+		WHERE FIELD_VALUE != '__delete'";
+	# FILTER FIELD_NAME
+	$select_histo.= "	AND (".join(' OR ', @query_conditions).")" if @query_conditions;
+	# ORDER
+	
+	$select_histo.= "	ORDER BY TABLE_KEY ASC, FIELD_NAME DESC;";
 
 	return $select_histo;
 }

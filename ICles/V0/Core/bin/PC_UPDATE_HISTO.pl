@@ -15,7 +15,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-m module] environnement tablename
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-m module] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -155,6 +155,7 @@ foreach my $current_table (@list_table) {
 my $total_diff_counter=0;
 my $counter=0;
 my $source_table;
+my %diff_list;
 foreach my $current_table (@list_table) {
 	
 	if ( not ($env_sip->exists_doc_table($current_table)
@@ -181,6 +182,7 @@ foreach my $current_table (@list_table) {
 
 	log_info("Debut de la comparaison de $current_table");
 	my $diff_obj=$table_diff->compare();
+	log_info("Nombre de différences : ".$diff_obj->count);
 
 	if (exists $opts{n}) {
 		log_info("Simulation : les changements n'ont pas été appliqués");
@@ -204,14 +206,14 @@ foreach my $current_table (@list_table) {
 										BASELINE => 0);
 			}
 			
-			my ($current_vol,$current_dir,$current_script)=splitpath($0);
-			my $cmd=catpath($current_vol,$current_dir,"PC_UPDATE_CACHE.pl");
-			@ARGV=($environnement);
-			do $cmd or die "erreur pendant la mise à jour du cache";
+			#my ($current_vol,$current_dir,$current_script)=splitpath($0);
+			#my $cmd=catpath($current_vol,$current_dir,"PC_UPDATE_CACHE.pl");
+			#@ARGV=($environnement);
+			#do $cmd or die "erreur pendant la mise à jour du cache";
 			#compute new cache
-			#$cache->add_dirty_diff($current_table,$diff_obj);
-			# flush cache to disk
-			#$cache->write_dirty_cache($current_table,$diff_obj);
+			
+			#store diff and continue.
+			$diff_list{$current_table}=$diff_obj;
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}
@@ -219,6 +221,13 @@ foreach my $current_table (@list_table) {
 	}
 
 }
+
+log_info("Mise à jour du cache");
+foreach (keys %diff_list) {	
+	$cache->add_dirty_diff($_,$diff_list{$_});
+}
+# flush cache to disk
+$cache->update_dirty_cache();
 
 log_info("Nombre de mises à jour effectuées au total : $total_diff_counter");
 

@@ -18,7 +18,7 @@ sub new() {
 	
 	my $env_class=blessed($environnement);
 	if (not ($env_class and $env_class eq "Environnement") ) {
-		croak "usage: IsipTreeCache->new(Evnironnement,{options})";
+		croak "usage: IsipTreeCache->new(Environnement,{options})";
 	}
 	
 	my $self = fields::new($class);
@@ -32,7 +32,7 @@ sub new() {
 
 	# store list of table keys whom childs are dirty (diff or uncommented...)
 	# format :
-	#   $self->{dirty_child}->{"table_name"}={key1 => 1,key2 => 1}
+	#   $self->{dirty_child}->{"table_name"}={key1 => 6, key2 => 2}
 	$self->{dirty_child}={};
 	
 	
@@ -45,7 +45,8 @@ sub add_dirty_key() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: add_dirty_key(table_name, key_string)");
+	my $key_string=shift or croak("usage: add_dirty_key(table_name, key_string [, value])");
+	my $dirty_value=shift;
 	
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
 		$logger->error("$table_name does not exists");
@@ -53,8 +54,8 @@ sub add_dirty_key() {
 	}
 	
 	if (exists $self->{dirty_child}->{$table_name}->{$key_string}) {
-		$logger->notice("$table_name => $key_string : already in cache");
-		return;
+		#$logger->notice("$table_name => $key_string : already in cache");
+		#return;
 	}
 	
 	my @table_key_field=split(',',$self->{isip_env}->{info_table}->{$table_name}->{key});
@@ -82,7 +83,7 @@ sub add_dirty_key() {
 	
 	croak("unable to find line for $key_string in $table_name : $count lines found") if not $count;
 	
-	$self->add_dirty_line($table_name,\%return_row);
+	$self->add_dirty_line($table_name,\%return_row,$dirty_value);
 }
 
 # compute key from parent table dirty by their child
@@ -94,12 +95,19 @@ sub add_dirty_line() {
 	
 	my $table_name=shift;
 	
-	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...)");
+	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...} [, int])");
+	my $dirty_value=shift;
+	
+	if (defined $dirty_value and $dirty_value !~ /^[+-]?\d+$/) {
+		croak("value must be an integer in : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...} [, int])");
+	}
+	$dirty_value=1 if not defined $dirty_value;
+	
 	my %line_hash=%{$line_hash_ref};
 	
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
-		$logger->error("$table_name does not exists");
-		return 0;
+		#$logger->error("$table_name does not exists");
+		#return 0;
 	}
 	
 	my @table_key=sort split(',',$self->{isip_env}->{info_table}->{$table_name}->{key} );
@@ -107,8 +115,8 @@ sub add_dirty_line() {
 	
 	# we are already in the cache, we stop recursion
 	if (exists $self->{dirty_child}->{$table_name}->{$current_key_string}) {
-		$logger->notice("$table_name => $current_key_string : already in cache");
-		return;
+		#$logger->notice("$table_name => $current_key_string : already in cache");
+		#return;
 	}	
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
@@ -148,7 +156,10 @@ sub add_dirty_line() {
 		%parent_line=%row;
 		croak ("too many lines linked!") if $count++;
 	}
-	croak ("to line linked") if not $count;
+	if (not $count) {
+		carp("unable to find key in $parent_table for : ",join(',',@condition_array));
+		return;
+	}
 	
 	# store information in memory
 	
@@ -156,16 +167,16 @@ sub add_dirty_line() {
 	
 	# parent already in the cache, we stop recursion
 	if (exists $self->{dirty_child}->{$parent_table}->{$key_string}) {
-		$logger->notice("$table_name => $key_string : already in cache");
-		return;
-	} else {
-		$logger->notice("set dirty $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-		$self->{dirty_child}->{$parent_table}->{$key_string}=1;
+		#$logger->notice("$table_name => $key_string : already in cache");
+		#return;
 	}
+	
+	$logger->notice("add $dirty_value to modified count of $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$self->set_dirty_key($parent_table,$key_string,$dirty_value);
 	
 	# go deep
 	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->add_dirty_line($parent_table,\%parent_line);
+	$self->add_dirty_line($parent_table,\%parent_line,$dirty_value);
 	
 }
 
@@ -209,13 +220,17 @@ sub add_dirty_diff() {
 	}
 }
 
-sub add_dirty_parent() {
+# only set value of a key in memory (not ancestor)
+sub set_dirty_key() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: add_dirty_parent(table_name,key_string)");
+	my $key_string=shift or croak("usage: set_dirty_key(table_name,key_string [, value])");
+	my $dirty_value=shift;
 	
-	$self->{dirty_child}->{$table_name}->{$key_string}=1;
+	$dirty_value=1 if not defined $dirty_value;
+	
+	$self->{dirty_child}->{$table_name}->{$key_string} += $dirty_value;
 }
 
 
@@ -226,7 +241,7 @@ sub is_dirty_line() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $line_hash_ref=shift or croak("usage : is_dirty_line(table_name, {field1 => 'value',field2 => 'value',...)");
+	my $line_hash_ref=shift or croak("usage : is_dirty_line(table_name, {field1 => 'value',field2 => 'value'},...)");
 	my %line_hash=%{$line_hash_ref};
 	
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
@@ -241,15 +256,17 @@ sub is_dirty_line() {
 	my $table_key_value=join(',', @line_hash{@table_key_field});
 	
 	# check in current object
-	return 1 if $self->{dirty_child}->{$table_name}->{$table_key_value};
+	if (exists $self->{dirty_child}->{$table_name}->{$table_key_value}) {
+		return $self->{dirty_child}->{$table_name}->{$table_key_value};
+	}
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
 	$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key_value'");
 	
 	my $count=0;
-	while (my @row=$table->fetch_row_array) {
-		$count++;
+	while (my %row=$table->fetch_row) {
+		$count += $row{NUM_CHILD};
 	}
 
 	return $count;
@@ -271,14 +288,63 @@ sub rewrite_dirty_cache() {
 		foreach my $dirty_key ( keys %dirty_keys ) {
 			# DELETE AND INSERT (aka INSERT OR IGNORE)
 			#$table->execute("DELETE from CHILD_TO_COMMENT where TABLE_NAME='$dirty_table' AND TABLE_KEY ='$dirty_key'");
-			eval {$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key)};
+			eval {$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $dirty_keys{$dirty_key})};
 			$@ =~ /(are not unique)/;
 			if ($1) {
-				$logger->warn("$dirty_table,$dirty_key already in CHILD_TO_COMMENT");
+				$logger->warn("$dirty_table,$dirty_key,$dirty_keys{$dirty_key} already in CHILD_TO_COMMENT");
 			}
 			elsif ($@) {
-				$logger->error("Erreur while inserting $dirty_table,$dirty_key  in CHILD_TO_COMMENT");
+				$logger->error("Erreur while inserting $dirty_table,$dirty_key,$dirty_keys{$dirty_key}  in CHILD_TO_COMMENT");
 				die;
+			}
+		}
+	}
+	$table->commit_transaction();
+	
+	# flush memroy
+	$self->{dirty_child}={};
+}
+
+sub update_dirty_cache() {
+	my $self=shift;
+
+	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	
+	$table->begin_transaction();
+	
+	#$table->execute("DELETE from CHILD_TO_COMMENT");
+	
+	
+	my %dirty_temp=%{$self->{dirty_child}};
+	foreach my $dirty_table (keys %dirty_temp) {
+		my %dirty_keys=%{$dirty_temp{$dirty_table}};
+		
+		
+		foreach my $dirty_key ( keys %dirty_keys ) {
+		
+			$table->query_condition("TABLE_NAME = '$dirty_table'","TABLE_KEY = '$dirty_key'");
+			
+			my $num_child;
+			while (my %row=$table->fetch_row()) {
+				$num_child=$row{NUM_CHILD};
+			}
+			
+			
+			if (not defined $num_child) {
+				$logger->debug("insert $dirty_table,$dirty_key,$dirty_keys{$dirty_key}");
+				$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $dirty_keys{$dirty_key});
+			}
+			else {
+				my $sum_dirty=$num_child+$dirty_keys{$dirty_key};
+				if ($sum_dirty > 0) {
+					$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+					$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $num_child+$dirty_keys{$dirty_key});
+				}
+				else {
+					$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+					$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key);
+				
+				}
 			}
 		}
 	}
@@ -324,9 +390,11 @@ if (!caller) {
 	my $test=IsipTreeCache->new(Environnement->new("DEV"));
 	#$test->clear_dirty_cache("TRAITP");
 	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
-	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
-	#$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
+	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13',-1);
+	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
+	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, -1);
 	#$test->write_dirty_cache();
+	#$test->update_dirty_cache();
 	
 	use Data::Dumper;
 	print Dumper($test->{dirty_child});

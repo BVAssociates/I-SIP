@@ -283,7 +283,7 @@ sub update_row() {
 			push @updated_fields,$field."=".$self->{database_handle}->quote($row{$field});
 		}
 	}
-	my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(',', @conditions));
+	my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(' AND ', @conditions));
 	
 	# prepare query
 	$self->_debug('Prepare SQL : ',$insert_query);
@@ -301,7 +301,66 @@ sub update_row() {
 	return $last_id;
 }
 
-
+sub delete_row() {
+	my $self = shift;
+	
+	my (%row) = @_;
+	
+	#don't add dynamic field
+	foreach ($self->dynamic_field) {
+		delete $row{$_};
+	}
+	
+	# check if fields exist
+	my @error_field;
+	my @fields=$self->field();
+	foreach my $field (keys %row) {
+		if (not grep(/^$field$/, @fields)) {
+			push @error_field, $field;
+		}
+	}
+	croak join(',',@error_field)." don't exist in fields" if @error_field;
+	
+	# check if primary key is valued
+	croak "primary key not defined for ".$self->table_name if not $self->key;
+	@error_field=();
+	foreach my $key_field ($self->key) {
+		if (not defined $row{$key_field}) {
+			push @error_field, $key_field;
+		}
+	}
+	croak join(',',@error_field)." cannot be undef (PRIMARY KEY)" if @error_field;
+	
+	# open base
+	$self->_open_database;
+	
+	# don't update primary keys
+	# 
+	my @primary_keys=$self->key();
+	my @conditions;
+	foreach my $field (keys %row) {
+		if ( grep(/^$field$/,@primary_keys) ) {
+			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
+		}
+	}
+	my $delete_query = sprintf("DELETE FROM %s WHERE %s;",$self->{table_name},join(' AND ', @conditions));
+	
+	# prepare query
+	$self->_debug('Prepare SQL : ',$delete_query);
+	eval { $self->{database_statement}=$self->{database_handle}->prepare( $delete_query ) };
+	croak "Error in : ".$delete_query if $@;	
+	
+	# execute query
+	$self->_debug('Execute SQL');
+	eval { $self->{database_statement}->execute() };
+	croak "Error while : ".$delete_query if $@;
+	
+	my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name}, "ID");
+	
+	$self->_close_database();
+	
+	return $last_id;
+}
 
 
 sub has_fields_old() {
