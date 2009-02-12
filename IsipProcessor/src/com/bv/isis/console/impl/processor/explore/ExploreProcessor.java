@@ -336,12 +336,21 @@ public class ExploreProcessor
 				if(MenuFactory.hasMethodItems(class_node_menu) == false) {
 					// On va provoquer l'exploration du noeud table
 					exploreClassNode(windowInterface, child_class_node);
-					// On va déplacer les enfants du noeud Table vers
-					// le noeud Item parent
-					while(child_class_node.getChildCount() > 0) {
-						GenericTreeObjectNode sub_child_node =
-							(GenericTreeObjectNode)
-							child_class_node.getChildAt(0);
+                    // On va récupérer les données de pré-processing du
+                    // noeud table
+                    IsisParameter[] table_preprocessing =
+                            child_class_node.getPreprocessingData();
+                    // On va déplacer les enfants du noeud Table vers
+                    // le noeud Item parent
+                    while (child_class_node.getChildCount() > 0) {
+                        GenericTreeObjectNode sub_child_node =
+                                (GenericTreeObjectNode) child_class_node.getChildAt(0);
+                        // On positionne au niveau du noeud enfant les
+                        // données de pré-processing du noeud parent
+                        if (table_preprocessing != null) {
+                            sub_child_node.setPreprocessingData(
+                                    table_preprocessing);
+                        }
 						selected_node.add(sub_child_node);
 					}
 					// On peut détruire le noeud Table, et le supprimer
@@ -368,8 +377,10 @@ public class ExploreProcessor
 				// noeud
 				if(remove_unnecessary_nodes == true ||
 					preload_menus == true) {
-					MenuFactory.createContextualMenu(child_node, true, 
-						windowInterface);
+					
+                    //TODO wait for official patch
+                    //MenuFactory.createContextualMenu(child_node, true,
+					//	windowInterface);
 				}
 				// On va déclencher l'exploration automatique du noeud
 				MenuFactory.doAutomaticExplore(windowInterface,
