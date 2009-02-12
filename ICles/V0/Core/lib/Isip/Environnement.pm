@@ -253,7 +253,8 @@ sub initialize_database_histo() {
 	FIELD_NAME VARCHAR(30),
 	FIELD_VALUE VARCHAR(30),
 	COMMENT VARCHAR(50),
-	STATUS VARCHAR(30))");
+	STATUS VARCHAR(30),
+	MEMO VARCHAR(30))");
 	
 	$master_table->close();
 	

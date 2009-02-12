@@ -437,4 +437,7 @@ foreach my $environnement (@environnement_list) {
 log_info("Prise en compte des descriptions sur le portail");
 system('AgentCollect -s PortalICleLabels ICleLabels');
 
+log_info("Suppression Perl cache");
+do 'ME_CLEAN_PAR.pl';
+
 sortie($bv_severite);
