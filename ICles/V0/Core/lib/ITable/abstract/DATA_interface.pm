@@ -338,7 +338,7 @@ sub hash_to_array() {
 	my $self = shift;
 	
 	my %row = @_;
-	croak "Wrong number of fields (has: ".scalar(keys %row).", expected: ".$self->query_field().")" if (keys %row) != $self->query_field() ;
+	croak "Wrong number of fields (has: ".scalar(keys %row).", expected: ".$self->query_field().")" if (keys %row) < $self->query_field() ;
 	
 	# convert array into hash
 	my @row_array;
