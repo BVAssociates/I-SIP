@@ -1,5 +1,5 @@
 package IsipTreeCache;
-use fields qw(isip_env links dirty_child);
+use fields qw(isip_env links dirty_child preload);
 
 use strict;
 use Isip::IsipLog '$logger';
@@ -35,6 +35,8 @@ sub new() {
 	#   $self->{dirty_child}->{"table_name"}={key1 => 6, key2 => 2}
 	$self->{dirty_child}={};
 	
+	# if preloaded table, fields which are not dirty are OK
+	$self->{preload}={};
 	
 	#return bless($self, $class);
 	return $self;
@@ -233,8 +235,31 @@ sub set_dirty_key() {
 	$self->{dirty_child}->{$table_name}->{$key_string} += $dirty_value;
 }
 
+#load dirty information in memory for a table
+# hint: use before many is_dirty_line()
+# arg1 : table_name
+sub preload() {
+	my $self=shift;
+	
+	my $table_name=shift or croak("usage : preload(table_name");
+	
+	# check on disk	
+	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	$table->query_condition("TABLE_NAME ='$table_name'");
+	
+	my $count=0;
+	while (my %row=$table->fetch_row) {
+		$count ++;
+		$self->{dirty_child}->{$table_name}->{$row{TABLE_KEY}}=$row{NUM_CHILD};
+	}
+	
+	$self->{preload}->{$table_name}++;
+	
+	return $count
+}
 
 # return true if line of table is dirty (ie: one of its child was modified)
+# hint : use preload() in script to avoid many request on DB
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least primary key)
 sub is_dirty_line() {
@@ -258,6 +283,11 @@ sub is_dirty_line() {
 	# check in current object
 	if (exists $self->{dirty_child}->{$table_name}->{$table_key_value}) {
 		return $self->{dirty_child}->{$table_name}->{$table_key_value};
+	}
+	
+	# if key was not in dirty childs and table was preloaded, key is OK
+	if ($self->{preload}->{$table_name}) {
+		return 0;
 	}
 	
 	# check on disk	

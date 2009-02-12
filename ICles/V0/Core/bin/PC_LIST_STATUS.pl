@@ -227,6 +227,9 @@ elsif ($explore_mode eq "explore") {
 	
 	$table_explore=$table_current;
 	$dirty_cache=IsipTreeCache->new($env_sip);
+	
+	log_info("pré-charge les informations de modification des sous-tables");
+	$dirty_cache->preload($table_name);
 }
 
 # champs à afficher
