@@ -187,6 +187,7 @@ SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="ID"
 
 FKEY="[STATUS] on ETAT[Name]"
+FKEY="[COMMENT] on PROJECT_TYPE[PROJECT_NAME]"
 ';
 
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
