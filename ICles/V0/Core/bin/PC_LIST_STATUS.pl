@@ -15,7 +15,7 @@ PC_LIST_STATUS - Affiche une table et y ajoute une colonne de ICON
 
 =head1 SYNOPSIS
 
- PC_LIST_STATUS.pl [-x icon] [-c environnement_source@date_source] environnement_cible table_name [date_cible]
+ PC_LIST_STATUS.pl [-c environnement_source@date_source] environnement_cible table_name [date_cible]
  
 =head1 DESCRIPTION
 
@@ -37,6 +37,10 @@ la différence avec un autre environnement ou une autre date.
 =item ENV_COMPARE : Utilise cette valeur pour environnement_source si non spécifié
 
 =item DATE_COMPARE : Utilise cette valeur pour date_source si non spécifié
+
+=item FILTER_FIELD : exclus de l'affichage un type d'icone (format "[table.]champ")
+
+=item FILTER_VALUE : valeur à exclure
 
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
 
@@ -115,14 +119,12 @@ map {s/%\w+%//g} @ARGV;
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('x:hvc:', \%opts) or usage(0);
+getopts('hvc:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
-
-my $exlude_icon=$opts{x};
 
 #  Traitement des arguments
 ###########################################################
@@ -131,6 +133,15 @@ my $exlude_icon=$opts{x};
 my $env_compare=$ENV{ENV_COMPARE};
 my $date_compare=$ENV{DATE_COMPARE};
 my $date_explore=$ENV{DATE_EXPLORE};
+
+my $filter_field=$ENV{FILTER_FIELD};
+my $filter_value=$ENV{FILTER_VALUE};
+my $filter_exclude;
+
+if ($filter_value and $filter_value =~ /^!(.+)/) {
+	$filter_value=$1;
+	$filter_exclude=1;
+}
 
 if ( @ARGV < 2 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
@@ -197,6 +208,12 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	}
 }
 
+if ($filter_field and $filter_field ne 'ICON') {
+	my $comp_operator='=';
+	$comp_operator='!=' if $filter_exclude;
+	push @query_condition, "$filter_field $comp_operator '$filter_value'";
+}
+
 # table qui sera affichée
 my $table_explore;
 my $dirty_cache;
@@ -221,29 +238,43 @@ if ($explore_mode eq "compare") {
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
 	$table_explore->compare();
+	
+	my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
+	$table_explore->isip_rules($type_rules);
 
 }
 elsif ($explore_mode eq "explore") {
 	
 	$table_explore=$table_current;
-	$dirty_cache=IsipTreeCache->new($env_sip);
 	
 	log_info("pré-charge les informations de modification des sous-tables");
-	$dirty_cache->preload($table_name);
+	
+	if (not $date_explore) {
+		$dirty_cache=IsipTreeCache->new($env_sip);
+		$dirty_cache->preload($table_name);
+		my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
+		$table_explore->isip_rules($type_rules);
+	}
 }
 
 # champs à afficher
 $table_explore->query_field(@query_field);
 
-my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_name),$table_name, {debug => $debug_level});
-
-$table_explore->isip_rules($type_rules);
-
 $table_explore->output_separator('@');
 
 while (my %row=$table_explore->fetch_row) {
 	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_line($table_name, \%row);
-	print join($table_explore->output_separator,@row{@query_field})."\n" if not ($exlude_icon and $row{ICON} eq $exlude_icon);
+	if ($filter_field and $filter_field eq 'ICON') {
+		if (($filter_exclude and $row{ICON} ne $filter_value)
+			or (! $filter_exclude and $row{ICON} eq $filter_value) )
+		{
+				print join($table_explore->output_separator,@row{@query_field})."\n"
+		}
+	}
+	else {
+				print join($table_explore->output_separator,@row{@query_field})."\n"
+	}
+	
 }
 
 sortie($bv_severite);

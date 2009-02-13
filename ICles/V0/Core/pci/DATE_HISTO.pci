@@ -7,8 +7,9 @@
 #~Replace~PreAction~~~~ExecuteProcedure~coucou~0~~
 #~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
 
-Item~~Explore Table~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
+#Item~~Explore Table~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 #Item~Comparaison~Comparaison Dernière collecte~expl~~~ExecuteProcedure~PC_COMPARE_HISTO.pl %Environnement% %TABLE_NAME%~0~~Expand
+Item~~Explorer Tables~expl~~~Explore~ROOT_TABLE~0~~Expand
 Item~Mode Comparaison~Explore comparaison Dernière collecte~expl~~ENV_COMPARE=%Environnement%~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@Description@Environnement != %Environnement%)~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement, autre date~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@Description@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_HISTO_COMPARE)}~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
