@@ -3,6 +3,7 @@
 
 Item~~Explorer les données~expl~~~Explore~ENVIRON~0~~Expand
 
+Item~Configuration SIP~Ajouter/Supprimer Projets~adm~~~Administrate~PROJECT_TYPE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Environnements~adm~~~Administrate~CONF_ENVIRON~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure

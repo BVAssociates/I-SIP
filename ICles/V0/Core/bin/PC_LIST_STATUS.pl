@@ -143,6 +143,7 @@ if ($filter_value and $filter_value =~ /^!(.+)/) {
 	$filter_exclude=1;
 }
 
+
 if ( @ARGV < 2 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
@@ -195,6 +196,8 @@ my @query_condition;
 #$ENV{RDNPRCOD}='AFF' ; $bv_severite=202;
 #$ENV{FLCDTRAIT}='ACH750' ; $bv_severite=202;
 #$ENV{FLTYPTRAIT}='17' ; $bv_severite=202;
+#$filter_field='FHCDTRAIT' ; $bv_severite=202;
+#$filter_value='ACH%' ; $bv_severite=202;
 ##DEBUG
 foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);
@@ -209,8 +212,11 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 }
 
 if ($filter_field and $filter_field ne 'ICON') {
-	my $comp_operator='=';
-	$comp_operator='!=' if $filter_exclude;
+	#my $comp_operator='=';
+	#$comp_operator='!=' if $filter_exclude;
+	my $comp_operator='like';
+	$comp_operator='not like' if $filter_exclude;
+	$filter_value =~ s/\*/%/g;
 	push @query_condition, "$filter_field $comp_operator '$filter_value'";
 }
 
