@@ -165,10 +165,12 @@ public class EditFormProcessor extends ProcessorFrame {
             //construction du champ
             if (formType.equals("Invisible")) {
                 //On créé le composant, mais il ne sera pas ajouter au JPanel
-                form_value = new JLabel(formLabel);
+                form_value = new FormComponentLabel();
+                //on stock le champ qui sera affiché puis modifié
+                _fieldObject.put(formId, form_value);
 
             } else if (formType.equals("Separator")) {
-                form_value = new JSeparator();
+                JSeparator form_sep = new JSeparator();
                 //on increment le compteur de position
                 position++;
                 GridBagConstraints constraint = new GridBagConstraints();
@@ -176,7 +178,7 @@ public class EditFormProcessor extends ProcessorFrame {
                 constraint.gridy = position;
                 constraint.gridwidth = 2;
                 constraint.fill = GridBagConstraints.HORIZONTAL;
-                form_panel.add(form_value,constraint);
+                form_panel.add(form_sep,constraint);
             } else {
 
 
@@ -195,23 +197,26 @@ public class EditFormProcessor extends ProcessorFrame {
                 form_panel.add(form_entry, constraintLabel);
 
                 if (formType.equals("Label")) {
-                    //on ajoute la valeur
-                    form_value = new JLabel();
-                    
+                    form_value = new FormComponentLabel();
                 }
                 else if(formType.equals("Edit"))
                 {
-                    form_value = new JTextField("###");
+                    form_value = new FormComponentEdit();
                 }
                 else if(formType.equals("List"))
                 {
-                    form_value = new JComboBox(getFieldList(formId));
+                    form_value = new FormComponentList((GenericTreeObjectNode)getSelectedNode(),formId,false);
+                }
+                else if(formType.equals("ListEdit"))
+                {
+                    form_value = new FormComponentList((GenericTreeObjectNode)getSelectedNode(),formId,true);
                 }
                 else if(formType.equals("EditMulti"))
                 {
-                    form_value = new JTextArea("###");
-                } else
+                    form_value = new FormComponentEditArea();
+                } else {
                     throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
+                }
 
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
@@ -221,10 +226,9 @@ public class EditFormProcessor extends ProcessorFrame {
                 constraintValue.fill = java.awt.GridBagConstraints.HORIZONTAL;
                 constraintValue.insets = new java.awt.Insets(5, 5, 5, 5);
                 form_panel.add(form_value, constraintValue);
-
-            }
                 //on stock le champ qui sera affiché puis modifié
-            _fieldObject.put(formId, form_value);
+                 _fieldObject.put(formId, form_value);
+            }
         }
 
         return form_panel;
@@ -393,6 +397,9 @@ public class EditFormProcessor extends ProcessorFrame {
                     ((JLabel) textBox).setText(data[i].value);
                 } else if (textBox instanceof JComboBox) {
                     ((JComboBox) textBox).setSelectedItem(data[i].value);
+                    
+                } else if (textBox instanceof FormComponentInterface) {
+                    ((FormComponentInterface)textBox).setText(data[i].value);
                 }
             }
         }
@@ -464,30 +471,10 @@ public class EditFormProcessor extends ProcessorFrame {
         for(int i=0; i < data_from.length; i++)
         {
             JComponent textBox = _fieldObject.get(data_from[i].name);
-            if (textBox instanceof JTextField) {
+            if (textBox instanceof FormComponentInterface) {
                 data.add(new IsisParameter(data_from[i].name,
-                        ((JTextField) textBox).getText() ,
+                        ((FormComponentInterface) textBox).getText() ,
                         sep));
-
-            } else if (textBox instanceof JLabel) {
-                //TODO : est-ce nécéssaire?
-                //Les champ ReadOnly n'ont pas besoin d'etre modifiés
-                //Il faut quand meme revoyer les clefs primaires
-                //for (int k=0; k<_tableDefinition.key.length ; k++) {
-                //    if (data_from[i].name.equals(_tableDefinition.key[k])) {
-                        data.add(new IsisParameter(data_from[i].name,
-                                ((JLabel) textBox).getText() , sep));
-                //    }
-                //}
-                
-            } else if (textBox instanceof JComboBox) {
-                data.add(new IsisParameter(data_from[i].name,
-                        (String) ((JComboBox) textBox).getSelectedItem() , sep));
-
-            } else if (textBox instanceof JTextArea) {
-                String text=((JTextArea) textBox).getText();
-                data.add(new IsisParameter(data_from[i].name,
-                         text.replaceAll("\n","#n"), sep));
             } else {
                 data.add(data_from[i]);
             }
