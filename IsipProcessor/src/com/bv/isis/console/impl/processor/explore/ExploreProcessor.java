@@ -814,7 +814,7 @@ public class ExploreProcessor
 				selectedNode.getServiceSession(), selectedNode.getAgentName(),
 				selectedNode.getIClesName(), selectedNode.getServiceType(),
 				selectedNode.getTableName(), selectedNode.getCondition(),
-				selectedNode, selectedNode.getContext(true),
+                selectedNode, context,
 				windowInterface, selectedNode.getLabel().label);
 			// On va positionner les données de pré-processing sur les noeuds
 			// enfant
