@@ -226,7 +226,7 @@ sub define()
 		$self->{row}->{$_} = shift @row_array;
 	}
 	
-	close DEFINE_FILE;
+	close DEFINE_FILE or croak "Error reading Define_Table $self->{name} | : $!";;
 }
 
 
