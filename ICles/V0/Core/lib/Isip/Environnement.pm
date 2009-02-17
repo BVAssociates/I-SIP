@@ -190,8 +190,11 @@ sub open_source_table() {
 		
 		
 		#manually set KEY
-		croak ("PRIMARY KEY not defined for $table_name") if (not $self->{info_table}->{$table_name}->{key});
-		$return_table->key(sort split(/,/,$self->{info_table}->{$table_name}->{key}));
+		if ($self->{info_table}->{$table_name}->{key}) {
+			$return_table->key(sort split(/,/,$self->{info_table}->{$table_name}->{key}));
+		} else {
+			carp ("PRIMARY KEY not defined for $table_name") ;
+		}
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
 		if (not $self->{info_table}->{$table_name}->{source}) {

@@ -120,6 +120,20 @@ sub get_table_list() {
 	return keys %{$self->{info_table}};
 }
 
+sub get_table_list_module() {
+	my $self = shift;
+	
+	my $module_name= shift or croak("usage : get_table_list_module(module_name)");
+
+	my @table_list;
+	my %temp_hash=%{$self->{info_table}};
+	foreach (keys %temp_hash ) {
+		push @table_list, $_ if $self->{info_table}->{$_}->{module} eq $module_name;
+	}
+	
+	return @table_list;
+}
+
 sub get_environnement_list() {
 	my $self = shift;
 
@@ -282,7 +296,7 @@ sub initialize_database_documentation() {
 	
 	my $options=shift;
 	croak "bad arguments" if $options and ref($options) ne "HASH";
-	$logger->error("$itable_obj->table_name() n'a pas de clef primaire définie") if not $itable_obj->{key};
+	#$logger->error("$itable_obj->table_name() n'a pas de clef primaire définie") if not $itable_obj->{key};
 
 	my $tablename_doc=$itable_obj->table_name()."_DOC";
 	my $tablename_info=$itable_obj->table_name()."_INFO";
