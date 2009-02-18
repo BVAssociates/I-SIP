@@ -293,6 +293,7 @@ public abstract class MenuFactory
 			trace_methods.endOfMethod();
 			return null;
 		}
+		
 		windowInterface.setStatus("&Status_BuildingMenu", null, 3);
 		// On positionne le menu sur le noeud
 		selectedNode.setMenu(contextual_menu);
@@ -337,7 +338,7 @@ public abstract class MenuFactory
 		String table_names = "";
 		boolean is_ok = false;
 
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console", 
 			"MenuFactory", "doAutomaticExplore");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 		ContextualMenuItem the_explore_item = null;
@@ -490,10 +491,10 @@ public abstract class MenuFactory
 		}
 		// On regarde si le processeur est capable d'être invoqué depuis
 		// un noeud d'exploration ou depuis un élément de tableau
-		if((isForTree == true &&
+		if((isForTree == true && 
 			ProcessorManager.isProcessorTreeCapable(method.processor) == false) ||
-			(isForTree == false &&
-			ProcessorManager.isProcessorTableCapable(method.processor) == false))
+			(isForTree == false && 
+			ProcessorManager.isProcessorTableCapable(method.processor) == false)) 
 		{
 			trace_debug.writeTrace("Le processeur ne peut pas être invoqué");
 			trace_methods.endOfMethod();
@@ -520,29 +521,29 @@ public abstract class MenuFactory
 
 	/*----------------------------------------------------------
 	* Nom: updateMenuItemsState
-	*
+	* 
 	* Description:
-	* Cette méthode statique permet de rafraîchir les états des éléments du
+	* Cette méthode statique permet de rafraîchir les états des éléments du 
 	* menu contextuel du noeud passé en argument en fonction de son état.
-	* La méthode va commencer par récupérer l'élément de menu "Fermer", les
+	* La méthode va commencer par récupérer l'élément de menu "Fermer", les 
 	* éléments d'exploration et les éléments d'ouverture de session.
 	* Les états des éléments dépendent de l'état du noeud:
-	*  - Noeud fermé: Tous les éléments d'exploration et d'ouverture de
+	*  - Noeud fermé: Tous les éléments d'exploration et d'ouverture de 
 	*    session sont disponibles, et l'élément de fermeture est désactivée,
-	*  - Noeud exploré: Tous les éléments d'exploration, sauf celui
-	*    précédemment utilisé, ainsi que l'élément de fermeture sont
+	*  - Noeud exploré: Tous les éléments d'exploration, sauf celui 
+	*    précédemment utilisé, ainsi que l'élément de fermeture sont 
 	*    disponibles. Les éléments d'ouverture de session sont indisponibles,
 	*  - Autres états: Tous les éléments sont indisponibles.
-	*
+	* 
 	* Arguments:
-	*  - treeNode: Le noeud d'exploration dont le menu contextual doit être
+	*  - treeNode: Le noeud d'exploration dont le menu contextual doit être 
 	*    rafraîchit.
    	* ----------------------------------------------------------*/
  	public static void updateMenuItemsState(
  		GenericTreeObjectNode treeNode
  		)
  	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console", 
 			"MenuFactory", "updateMenuItemsState");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
@@ -568,16 +569,16 @@ public abstract class MenuFactory
 		}
 		// On construit une fausse méthode pour avoir une condition vraie
 		ContextualMenuItem dummy_item = new ContextualMenuItem("",
-			new IsisMethod("", "", "", null, true, "", "", "", false, "",
+			new IsisMethod("", "", "", null, true, "", "", "", false, "", 
 			""), false);
 		// On va rechercher les éléments d'exploration
-		ContextualMenuItem[] explore_items =
+		ContextualMenuItem[] explore_items = 
 			searchExploreItems(contextual_menu);
 		// On va rechercher les éléments d'ouverture de session
-		ContextualMenuItem[] session_items =
+		ContextualMenuItem[] session_items = 
 			searchOpenSessionItems(contextual_menu);
 		// On va rechercher l'élément de fermeture
-		ContextualMenuItem close_item =
+		ContextualMenuItem close_item = 
 			searchCloseItem(contextual_menu);
 		// Suivant l'état du noeud, on va modifier les états des éléments
 		// de menu
@@ -654,30 +655,30 @@ public abstract class MenuFactory
 		}
 		trace_methods.endOfMethod();
  	}
-
+ 	
 	/*----------------------------------------------------------
 	* Nom: isExplorable
-	*
+	* 
 	* Description:
-	* Cette méthode statique permet de savoir si un menu passé en argument
-	* permet une exploration (ou une ouverture de session), donc que le noeud
+	* Cette méthode statique permet de savoir si un menu passé en argument 
+	* permet une exploration (ou une ouverture de session), donc que le noeud 
 	* d'exploration auquel appartient le noeud peut avoir des enfants ou non.
-	* Si le menu ne contient aucune méthode d'exploration ou d'ouverture de
-	* session, la méthode retourne false. Elle retourne true dans le cas
+	* Si le menu ne contient aucune méthode d'exploration ou d'ouverture de 
+	* session, la méthode retourne false. Elle retourne true dans le cas 
 	* contraire.
-	*
+	* 
 	* Arguments:
-	*  - menu: Une référence sur un objet JMenu dans lequel chercher des
+	*  - menu: Une référence sur un objet JMenu dans lequel chercher des 
 	*    méthodes d'exploration ou d'ouverture de session.
-	*
-	* Retourne: true si le menu contient au moins une méthode d'exploration ou
+	* 
+	* Retourne: true si le menu contient au moins une méthode d'exploration ou 
 	* d'ouverture de session, false sinon.
 	* ----------------------------------------------------------*/
 	public static boolean isExplorable(
  		JMenu menu
  		)
  	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console", 
 			"MenuFactory", "isExplorable");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 
@@ -722,26 +723,26 @@ public abstract class MenuFactory
 		trace_methods.endOfMethod();
 		return false;
  	}
-
+ 	
 	/*----------------------------------------------------------
 	* Nom: hasMethodItems
-	*
+	* 
 	* Description:
-	* Cette méthode statique permet de savoir si un menu passé en argument
+	* Cette méthode statique permet de savoir si un menu passé en argument 
 	* contient au moins une méthode d'exploitation.
-	*
+	* 
 	* Arguments:
-	*  - menu: Une référence sur un objet JMenu dans lequel chercher des
+	*  - menu: Une référence sur un objet JMenu dans lequel chercher des 
 	*    méthodes d'exploitation.
-	*
-	* Retourne: true si le menu contient au moins une méthode
+	* 
+	* Retourne: true si le menu contient au moins une méthode 
 	* d'exploitation, false sinon.
 	* ----------------------------------------------------------*/
 	public static boolean hasMethodItems(
 		JMenu menu
 		)
 	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console", 
 			"MenuFactory", "hasMethodItems");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 		boolean has_method_items = false;
@@ -765,7 +766,7 @@ public abstract class MenuFactory
 				has_method_items = hasMethodItems((JMenu)child_item);
 			}
 			else {
-				ContextualMenuItem contextual_menu_item =
+				ContextualMenuItem contextual_menu_item = 
 					(ContextualMenuItem)child_item;
 				has_method_items = contextual_menu_item.isMethodItem();
 			}
@@ -781,19 +782,19 @@ public abstract class MenuFactory
 
 	/*----------------------------------------------------------
 	* Nom: getSingleActiveExploreItem
-	*
+	* 
 	* Description:
-	* Cette méthode statique recherche dans un menu, et ses sous-menus,
+	* Cette méthode statique recherche dans un menu, et ses sous-menus, 
 	* s'il y a un et un seul élement d'exploration qui soit actif.
-	* Elle appelle la méthode searchExploreItems() afin de récupérer
+	* Elle appelle la méthode searchExploreItems() afin de récupérer 
 	* l'ensemble des éléments de menu correspondant à de l'exploration.
-	*
+	* 
 	* Arguments:
-	*  - menu: Une référence sur un JMenu dans lequel rechercher les
+	*  - menu: Une référence sur un JMenu dans lequel rechercher les 
 	*    éléments d'exploration.
-	*
-	* Retourne: Une référence sur un objet ContextualMenuItem
-	* correspondant à l'unique méthode d'exploration active, ou null s'il
+	* 
+	* Retourne: Une référence sur un objet ContextualMenuItem 
+	* correspondant à l'unique méthode d'exploration active, ou null s'il 
 	* y a plusieurs méthodes ou aucune.
 	----------------------------------------------------------*/
 	public static ContextualMenuItem getSingleActiveExploreItem(
@@ -810,18 +811,18 @@ public abstract class MenuFactory
 		trace_arguments.writeTrace("menu=" + menu);
 		// On tente de récupérer la méthode d'exploration du menu
 		ContextualMenuItem[] explore_items = searchExploreItems(menu);
-		// Si la méthode a retourné au moins un élément de menu, on va le
+		// Si la méthode a retourné au moins un élément de menu, on va le 
 		// rechercher si un seul d'entre-eux est actif
 		if(explore_items != null && explore_items.length > 0) {
 			for(int index = 0 ; index < explore_items.length ; index ++) {
 				if(explore_items[index].isEnabled() == false) {
 					continue;
-				}
+				} 
 				if(has_one_explore_item == false) {
 					// C'est le premier élément d'exploration validé
 					// rencontré
 					the_explore_item = explore_items[index];
-					has_one_explore_item = true;
+					has_one_explore_item = true; 
 				}
 				else {
 					// On a rencontré plusieurs éléments d'exploration
@@ -892,7 +893,7 @@ public abstract class MenuFactory
 		menu.add(createMenuItem("&MW_Menu_Open", "Display", open_method,
 			windowInterface, selectedNode));
 		// On ajoute le menu "Requête"
-		IsisMethod query_method = new IsisMethod("", "", "", null, true, "",
+		IsisMethod query_method = new IsisMethod("", "", "", null, true, "", 
 			"Query", "", false, "", "");
 		menu.add(createMenuItem("&MW_Menu_Query", "Query", query_method,
 			windowInterface, selectedNode));
@@ -1017,8 +1018,8 @@ public abstract class MenuFactory
 				index ++)
 			{
 				String condition = null;
-
-				IsisForeignKey foreign_key =
+	
+				IsisForeignKey foreign_key = 
 					table_definition.foreignKeys[index];
 				// Si la clé fait référence à la table parent, on saute
 				if(foreign_key.foreignTableName.equals(
@@ -1034,12 +1035,12 @@ public abstract class MenuFactory
 						selectedNode.getAgentName(), foreign_key,
 						table_definition);
 					// On va créer un élément de menu
-					IsisMethod link_method = new IsisMethod("", "", "", null,
-						true, "", "Detail", foreign_key.foreignTableName +
+					IsisMethod link_method = new IsisMethod("", "", "", null, 
+						true, "", "Detail", foreign_key.foreignTableName + 
 						'@' + condition, false, "", "");
-					JMenuItem detail_item =
-						createMenuItem("&MW_Menu_DetailThisNode",
-						"DetailLinkedNode", link_method, windowInterface,
+					JMenuItem detail_item = 
+						createMenuItem("&MW_Menu_DetailThisNode", 
+						"DetailLinkedNode", link_method, windowInterface, 
 						selectedNode);
 					// On change le libellé de l'élément
 					detail_item.setText(
@@ -1076,7 +1077,7 @@ public abstract class MenuFactory
 		if(isForTree == false)
 		{
 			// On ajoute le menu "Requête"
-			IsisMethod query_method = new IsisMethod("", "", "", null, true, "",
+			IsisMethod query_method = new IsisMethod("", "", "", null, true, "", 
 				"Query", "", false, "", "");
 			menu.add(createMenuItem("&MW_Menu_Query", "Query", query_method,
 				windowInterface, selectedNode));
@@ -1158,7 +1159,7 @@ public abstract class MenuFactory
 				"InstanceObjectType");
 			separator_type = configuration_api.getString("I-SIS",
 				"SeparatorType");
-			hide_false_methods = configuration_api.getBoolean("GUI",
+			hide_false_methods = configuration_api.getBoolean("GUI", 
 				"HideDisabledMethods");
 		}
 		catch(Exception exception)
@@ -1200,7 +1201,7 @@ public abstract class MenuFactory
 		// Est-ce que l'utilisateur a la responsabilité "dev" ?
 		// On crée une fausse méthode
 		String[] developper_responsabilities = { "dev" };
-		IsisMethod dev_method = new IsisMethod(instance_object_type, "", "",
+		IsisMethod dev_method = new IsisMethod(instance_object_type, "", "", 
 			developper_responsabilities, true, "", "Debug", "", false, "", "");
 		if(isMethodMatching(dev_method, responsabilities, instance_object_type,
 			separator_type, isForTree) == true)
@@ -1218,83 +1219,83 @@ public abstract class MenuFactory
 			// On ajoute la méthode de définition de la table
 			IsisMethod define_method = new IsisMethod("", "", "", null, true,
 				"", "DefineTable", "", false, "", "");
-			developper_menu.add(createMenuItem("&MW_Menu_Define", "DefineTable",
+			developper_menu.add(createMenuItem("&MW_Menu_Define", "DefineTable", 
 				define_method, windowInterface, selectedNode));
 			developper_menu.addSeparator();
 			// On ajoute la méthode de vérification de l'intégrité des données
 			// seulement sur les noeuds Table
 			if(selectedNode instanceof GenericTreeClassNode)
 			{
-				command = "Check " +
-					AgentLayerAbstractor.getVariableReference(agent_layer_mode,
+				command = "Check " + 
+					AgentLayerAbstractor.getVariableReference(agent_layer_mode, 
 					"TableName") + " ON";
 				IsisMethod check_method = new IsisMethod("", "", "", null, true, "",
 					"ExecuteProcedure", command, false, "", "");
-				developper_menu.add(createMenuItem("&MW_Menu_CheckTable", "Run",
+				developper_menu.add(createMenuItem("&MW_Menu_CheckTable", "Run", 
 					check_method, windowInterface, selectedNode));
 			}
 			// On ajoute la méthode d'exécution de commande en ligne
 			if(agent_layer_mode.equalsIgnoreCase("WINDOWS") == true)
 			{
-				command =
+				command = 
 					AgentLayerAbstractor.getVariableReference(agent_layer_mode,
 					"_command_");
 			}
 			else
 			{
-				command = "eval \"" +
+				command = "eval \"" +  
 					AgentLayerAbstractor.getVariableReference(agent_layer_mode,
 					"_command_") + "\"";
 			}
 			IsisMethod exec_method = new IsisMethod("", "", "", null, true,
 				"_command_=getValue(\"" + MessageManager.getMessage(
-				"&Dev_CommandPrompt") + "\")", "ExecuteProcedure",
+				"&Dev_CommandPrompt") + "\")", "ExecuteProcedure", 
 				command, false, "", "");
 			developper_menu.add(createMenuItem("&MW_Menu_ExecuteCommand",
 				"Method", exec_method, windowInterface, selectedNode));
 			// On ajoute les méthodes d'édition de fichier et de script
-			IsisMethod file_edit_method = new IsisMethod("", "", "", null,
+			IsisMethod file_edit_method = new IsisMethod("", "", "", null, 
 				true, "File=selectFile()", "EditFile", "%[File]", false, "",
 				"");
 			developper_menu.add(createMenuItem("&MW_Menu_EditFile", "EditFile",
 				file_edit_method, windowInterface, selectedNode));
-			IsisMethod script_edit_method = new IsisMethod("", "", "", null,
-				true, "File=selectFile(NULL,ALL,EXECUTABLES)", "EditScript",
+			IsisMethod script_edit_method = new IsisMethod("", "", "", null, 
+				true, "File=selectFile(NULL,ALL,EXECUTABLES)", "EditScript", 
 				"%[File]", false, "", "");
-			developper_menu.add(createMenuItem("&MW_Menu_EditScript",
-				"EditScript", script_edit_method, windowInterface,
+			developper_menu.add(createMenuItem("&MW_Menu_EditScript", 
+				"EditScript", script_edit_method, windowInterface, 
 				selectedNode));
 			//developper_menu.addSeparator();
 			// On ajoute la méthode d'édition des libellés du noeud
 			/*String label_table = "ICleLabels@Restricted";
 			if(selectedNode.getAgentName().equals(
-				selectedNode.getServiceName()) == true &&
+				selectedNode.getServiceName()) == true && 
 				selectedNode.getIClesName().equals("I-SIS") == true)
 			{
 				// Si (agent) = (service) et (I-CLES) = I-SIS, on est dans
-				// le SIS I-SIS
+				// le SIS I-SIS 
 				label_table = "IsisLabels@Restricted";
 			}
-			IsisMethod label_edit_method = new IsisMethod("", "", "", null,
+			IsisMethod label_edit_method = new IsisMethod("", "", "", null, 
 				true, "", "Administrate", label_table, false, "", "");
 			developper_menu.add(createMenuItem("&MW_Menu_EditNodeLabels",
 				"Configure", label_edit_method, windowInterface,
 				selectedNode));*/
-			menu.add(developper_menu);
             // Enfin, on va ajouter une méthode de rafraîchissement des éléments
             // du menu
             IsisMethod refresh_method = new IsisMethod("", "", "", null, true,
-                    "", "RefreshMenu", "" + isForTree, false, "", "");
+            	"", "RefreshMenu", "" + isForTree, false, "", "");
             developper_menu.addSeparator();
             developper_menu.add(createMenuItem("&MW_Menu_Refresh", "Refresh",
-                    refresh_method, windowInterface, selectedNode));
+            	refresh_method, windowInterface, selectedNode));
+			menu.add(developper_menu);
 		}
 		// On va parcourir toutes les méthodes d'exploitation pour voir
 		// s'il y en a une d'exploration
 		for(int index = 0 ; index < methods.length ; index ++) {
 			// Est-ce que l'utilisateur a la responsabilité nécessaire
 			if(isMethodMatching(methods[index], responsabilities,
-				object_type, separator_type, isForTree) == true &&
+				object_type, separator_type, isForTree) == true && 
 				methods[index].processor.equals("Explore") == true) {
 				explore_method_present = true;
 				break;
@@ -1305,7 +1306,7 @@ public abstract class MenuFactory
 		if(explore_method_present == false) {
 			// On ajoute la méthode d'exploration des noeuds table
 			String[] user_responsabilities = { "user" };
-			IsisMethod explore_method = new IsisMethod(class_object_type, "", "",
+			IsisMethod explore_method = new IsisMethod(class_object_type, "", "", 
 				user_responsabilities, true, "", "Explore", "", false, "", "");
 			if(isMethodMatching(explore_method, responsabilities, object_type,
 				separator_type, isForTree) == true)
@@ -1365,11 +1366,11 @@ public abstract class MenuFactory
 				// élément de menu
 				if(group_menu != null)
 				{
-					// On ajoute le séparateur dans le groupe si et seulement
-					// s'il contient au moins un élément et que l'élément
+					// On ajoute le séparateur dans le groupe si et seulement 
+					// s'il contient au moins un élément et que l'élément 
 					// précédent est un élément de menu
 					if(group_menu.getItemCount() > 0 &&
-						group_menu.getItem(group_menu.getItemCount() - 1)
+						group_menu.getItem(group_menu.getItemCount() - 1) 
 						instanceof ContextualMenuItem)
 					{
 						group_menu.addSeparator();
@@ -1382,7 +1383,7 @@ public abstract class MenuFactory
 						menu.addSeparator();
 						separator_added = true;
 					}
-					else if(menu.getItem(menu.getItemCount() - 1)
+					else if(menu.getItem(menu.getItemCount() - 1) 
 						instanceof ContextualMenuItem)
 					{
 						menu.addSeparator();
@@ -1393,13 +1394,13 @@ public abstract class MenuFactory
 			{
 				// Si la méthode a une condition fausse et qu'il faut la
 				// cacher, on passe à la suivante
-				if(methods[index].condition == false &&
+				if(methods[index].condition == false && 
 					hide_false_methods == true) {
 					continue;
 				}
 				// Il faut créer un élément de menu pour la méthode
 				JMenuItem method_item = createMenuItem(methods[index].label,
-					methods[index].icon, methods[index], windowInterface,
+					methods[index].icon, methods[index], windowInterface, 
 					selectedNode, true);
 				method_item.setText(methods[index].label);
 				method_item.setEnabled(methods[index].condition);
@@ -1463,7 +1464,7 @@ public abstract class MenuFactory
 	* Nom: createMenuItem
 	*
 	* Description:
-	* Cette méthode statique permet de constuire un élément de menu contextuel
+	* Cette méthode statique permet de constuire un élément de menu contextuel 
 	* à partir des informations passées en argument.
 	* Si l'argument itemIcon est non nul, une icône est récupérée et affectée à
 	* l'élément. Dans le cas contraire, une icône vide est affectée.
@@ -1473,12 +1474,12 @@ public abstract class MenuFactory
 	* Arguments:
 	*  - itemLabel: Le libellé de l'élément de menu,
 	*  - itemIcon: Un nom d'icône à affecter à l'élément,
-	*  - method: Une référence sur un objet IsisMethod correspondant à la
+	*  - method: Une référence sur un objet IsisMethod correspondant à la 
 	*    méthode utilisée pour construire l'élément,
 	*  - windowInterface: Une référence sur l'interface MainWindowInterface,
 	*    nécessaire à l'exécution du processeur,
 	*  - selectedNode: Une référence sur le noeud graphique sélectionné,
-	*  - isMethodItem: Un booléen indiquant si l'élément de menu
+	*  - isMethodItem: Un booléen indiquant si l'élément de menu 
 	*    correspond à une méthode d'exploitation.
 	*
 	* Retourne: Une référence sur l'élément de menu créé.
@@ -1509,7 +1510,7 @@ public abstract class MenuFactory
 			itemLabel = MessageManager.getMessage(itemLabel);
 		}
 		// On crée l'item
-		final ContextualMenuItem menu_item =
+		final ContextualMenuItem menu_item = 
 			new ContextualMenuItem(itemLabel, method, isMethodItem);
 		// On positionne l'identifiant de l'élément de menu
 		menu_item.setName(getMenuId());
@@ -1521,10 +1522,10 @@ public abstract class MenuFactory
 			icon = IconLoader.getIcon(itemIcon);
 			// On vérifie les dimensions de l'icône. Elle doivent être
 			// de 24x24
-			if(icon != null && (icon.getIconHeight() != 24 ||
+			if(icon != null && (icon.getIconHeight() != 24 || 
 				icon.getIconWidth() != 24))
 			{
-				trace_errors.writeTrace("Icône invalide pour les méthodes: " +
+				trace_errors.writeTrace("Icône invalide pour les méthodes: " + 
 					itemIcon);
 				icon = null;
 			}
@@ -1552,8 +1553,8 @@ public abstract class MenuFactory
 				{
 					// On exécute le processeur de tâche qui convient
 					ProcessorManager.executeProcessor(method.processor,
-						windowInterface, menu_item, method.arguments,
-						method.preProcessing, method.postProcessing,
+						windowInterface, menu_item, method.arguments, 
+						method.preProcessing, method.postProcessing, 
 						selectedNode, method.confirm, wait);
 				}
 				catch(InnerException exception)
@@ -1579,23 +1580,23 @@ public abstract class MenuFactory
 
 	/*----------------------------------------------------------
 	* Nom: createMenuItem
-	*
+	* 
 	* Description:
-	* Cette méthode statique permet de constuire un élément de menu
-	* contextuel non issu d'une méthode d'exploitation à partir des
+	* Cette méthode statique permet de constuire un élément de menu 
+	* contextuel non issu d'une méthode d'exploitation à partir des 
 	* informations passées en argument.
-	* Elle appelle la méthode de même nom en positionnant l'argument
+	* Elle appelle la méthode de même nom en positionnant l'argument 
 	* isMethodItem à false.
-	*
+	* 
 	* Arguments:
 	*  - itemLabel: Le libellé de l'élément de menu,
 	*  - itemIcon: Un nom d'icône à affecter à l'élément,
-	*  - method: Une référence sur un objet IsisMethod correspondant à la
+	*  - method: Une référence sur un objet IsisMethod correspondant à la 
 	*    méthode utilisée pour construire l'élément,
-	*  - windowInterface: Une référence sur l'interface MainWindowInterface,
+	*  - windowInterface: Une référence sur l'interface MainWindowInterface, 
 	*    nécessaire à l'exécution du processeur,
 	*  - selectedNode: Une référence sur le noeud graphique sélectionné,
-	*
+	* 
 	* Retourne: Une référence sur l'élément de menu créé.
 	* ----------------------------------------------------------*/
 	private static JMenuItem createMenuItem(
@@ -1715,7 +1716,7 @@ public abstract class MenuFactory
 	*  - menu: Une référence sur un JMenu dans lequel rechercher les éléments
 	*    d'exploration.
 	*
-	* Retourne: Un tableau de ContextualMenuItem contenant tous les éléments
+	* Retourne: Un tableau de ContextualMenuItem contenant tous les éléments 
 	* de menu impliquant une exploration.
 	----------------------------------------------------------*/
 	private static ContextualMenuItem[] searchExploreItems(
@@ -1740,7 +1741,7 @@ public abstract class MenuFactory
 			// S'agit-il d'un menu ?
 			if(child_item instanceof JMenu)
 			{
-				ContextualMenuItem[] items =
+				ContextualMenuItem[] items = 
 					searchExploreItems((JMenu)child_item);
 				for(int loop = 0 ; loop < items.length ; loop ++)
 				{
@@ -1761,16 +1762,16 @@ public abstract class MenuFactory
 
 	/*----------------------------------------------------------
 	* Nom: searchCloseItem
-	*
+	* 
 	* Description:
-	* Cette méthode statique recherche dans un menu l'élément impliquant une
+	* Cette méthode statique recherche dans un menu l'élément impliquant une 
 	* fermeture d'un noeud d'exploration (nom de processeur "Close").
-	*
+	* 
 	* Arguments:
-	*  - menu: Une référence sur un JMenu dans lequel rechercher l'élément de
+	*  - menu: Une référence sur un JMenu dans lequel rechercher l'élément de 
 	*    fermeture.
-	*
-	* Retourne: Une référence sur un objet ContextualMenuItem correspondant à
+	* 
+	* Retourne: Une référence sur un objet ContextualMenuItem correspondant à 
 	* l'élément de fermeture du noeud.
 	----------------------------------------------------------*/
 	private static ContextualMenuItem searchCloseItem(
@@ -1811,19 +1812,19 @@ public abstract class MenuFactory
 
 	/*----------------------------------------------------------
 	* Nom: searchOpenSessionItems
-	*
+	* 
 	* Description:
-	* Cette méthode statique recherche dans un menu, et ses sous-menus, tous
-	* les éléments impliquant une ouverture de session (nom de processeur
+	* Cette méthode statique recherche dans un menu, et ses sous-menus, tous 
+	* les éléments impliquant une ouverture de session (nom de processeur 
 	* "OpenAgentSession" ou "OpenServiceSession").
-	* La méthode est récursive: elle s'appelle elle-même pour la recherche
+	* La méthode est récursive: elle s'appelle elle-même pour la recherche 
 	* dans les sous-menus.
-	*
+	* 
 	* Arguments:
-	*  - menu: Une référence sur un JMenu dans lequel rechercher les éléments
+	*  - menu: Une référence sur un JMenu dans lequel rechercher les éléments 
 	*    d'ouverture de session.
-	*
-	* Retourne: Un tableau de ContextualMenuItem contenant tous les éléments
+	* 
+	* Retourne: Un tableau de ContextualMenuItem contenant tous les éléments 
 	* de menu impliquant une ouverture de session.
 	----------------------------------------------------------*/
 	private static ContextualMenuItem[] searchOpenSessionItems(
@@ -1848,7 +1849,7 @@ public abstract class MenuFactory
 			// S'agit-il d'un menu ?
 			if(child_item instanceof JMenu)
 			{
-				ContextualMenuItem[] items =
+				ContextualMenuItem[] items = 
 					searchOpenSessionItems((JMenu)child_item);
 				for(int loop = 0 ; loop < items.length ; loop ++)
 				{
