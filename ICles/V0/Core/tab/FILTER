@@ -1,4 +1,4 @@
 ;;;;Afficher tout
 ICON;!valide;EXPLORE;;Lignes non valides
-ICON;;COMPARE;;Filtrer sur icone
+ICON;;;COMPARE;Filtrer sur icone
 PROJECT;;PROJECT_TYPE;;Filtrer sur Projet
