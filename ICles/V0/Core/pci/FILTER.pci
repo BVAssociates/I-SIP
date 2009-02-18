@@ -1,5 +1,5 @@
 
-Item~Mode Exploration~Dernière collecte~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-Item~Mode Comparaison~Comparaison autre date~expl~~DATE_COMPARE=getListValue("Date source",DATE_UPDATE@DATE_UPDATE,DESCRIPTION@ENVIRON=%Environnement%)~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@Description@Environnement != %Environnement%)~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-Item~Mode Comparaison~Comparaison autre environnement, autre date~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@Description@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_UPDATE@DATE_UPDATE,DESCRIPTION@ENVIRON=%ENV_COMPARE%)}~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
+Item~~Explore~expl~perl -e "exit 1 if $ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE}"~~Explore~ROOT_TABLE~0~~Expand
+Item~~Rapport Complet~expl~perl -e "exit 1 if $ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE}"~~DisplayTable~FIELD_REPORT_HISTO~0~~Display
+Item~~Saisie filtre~expl~perl -e "exit 1 if not $ENV{FILTER_FIELD} or $ENV{FILTER_VALUE}"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~Explore~ROOT_TABLE~0~~Expand
+Item~~Saisie filtre~expl~perl -e "exit 1 if not $ENV{FILTER_FIELD} or $ENV{FILTER_VALUE}"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~DisplayTable~FIELD_REPORT_HISTO~0~~Display
