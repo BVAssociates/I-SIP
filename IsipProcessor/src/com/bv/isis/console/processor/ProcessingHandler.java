@@ -335,6 +335,10 @@ public abstract class ProcessingHandler
 			String params = getValue(value.substring(12), context);
 
             int index=params.indexOf(',');
+            if (index <= 0) {
+                throw new InnerException("&ERR_IncorrectPreprocessingInstruction",
+				instruction, null);
+            }
             // split with ,
             // remove '"' and ')'
             String message=params.substring(2, index-1).trim();
@@ -574,7 +578,8 @@ public abstract class ProcessingHandler
                 table_name=(tokenizer.getToken(0));
                 break;
             default:
-                throw new InnerException("Format non reconnu", parameters, null);
+                throw new InnerException("&ERR_IncorrectPreprocessingInstruction",
+				parameters, null);
         }
 
         // On recupere la definition de la table en cours
