@@ -192,6 +192,12 @@ my $current_user=$ENV{IsisUser};
 #Update comment
 $row{DATE_UPDATE} = $current_date;
 $row{USER_UPDATE} = $current_user;
+
+$local_table->query_field($local_table->field());
+$local_table->query_condition("ID = ".join(',',@row{$local_table->key()}));
+my %old_row=$local_table->fetch_row();
+$local_table->finish();
+
 $local_table->update_row( %row );
 
 #Update documentation
@@ -201,9 +207,14 @@ $local_table->update_row( %row );
 use Isip::IsipTreeCache;
 use Isip::IsipRules;
 
+if ($old_row{STATUS} eq $row{STATUS}) {
+	log_info("Le status n'a pas changé");
+	sortie($bv_severite);
+}
+
 my $cache=IsipTreeCache->new($env_sip);
 
-log_info("Connexion à la base d'historisation de $table_ikos");
+log_info("Calcul de l'icone de la ligne");
 my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
 
 my $type_rules = IsipRules->new($table_ikos);
