@@ -182,6 +182,8 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
+
 use Isip::IsipRulesDiff;
 
 my $env_sip = Environnement->new($environnement);
@@ -274,7 +276,8 @@ elsif ($explore_mode eq "explore") {
 	
 	if (not $date_explore) {
 		$dirty_cache=IsipTreeCache->new($env_sip);
-		$dirty_cache->preload($table_name);
+		$dirty_cache->add_cache_class(CacheStatus->new($env_sip));
+		$dirty_cache->preload_cache($table_name);
 		my $type_rules = IsipRules->new($table_name, {debug => $debug_level});
 		$table_explore->isip_rules($type_rules);
 	}

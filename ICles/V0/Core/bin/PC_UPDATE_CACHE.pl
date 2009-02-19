@@ -110,6 +110,7 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
 
 my $env_sip = Environnement->new($environnement);
 
@@ -126,6 +127,7 @@ my $counter=0;
 my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
+$cache->add_cache_class(CacheStatus->new($env_sip));
 
 foreach my $current_table (@list_table) {
 	
@@ -148,7 +150,7 @@ foreach my $current_table (@list_table) {
 	log_info("Connexion à la base d'historisation de $current_table");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 	
-	my $type_rules = IsipRules->new($env_sip->get_sqlite_path($current_table),$current_table, {debug => $debug_level});
+	my $type_rules = IsipRules->new($current_table, {debug => $debug_level});
 
 	$histo_table->isip_rules($type_rules);
 
@@ -160,7 +162,8 @@ foreach my $current_table (@list_table) {
 	}
 }
 
-$cache->rewrite_dirty_cache;
+$cache->clear_dirty_cache;
+$cache->save_dirty_cache;
 
 
 sortie($bv_severite);
