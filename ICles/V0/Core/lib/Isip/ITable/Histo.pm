@@ -232,12 +232,36 @@ sub get_query()
 	my $provided_date_format = "%Y-%m-%dT%H:%M";
 	
 	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
-	push @select_conditions, "TABLE_KEY like '".$self->{query_key_value}."'" if $self->{query_key_value};
 	
-	foreach ($self->query_condition()) {
-		if (/^\s*(\w+)\s*([=<>]+|like)\s*\'(.*)\'\s*$/) {
-			push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+	my @field_key=$self->key();
+	my %query_key;
+	
+	foreach my $condition ($self->query_condition()) {
+		if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
+		
+			# check if condition is on one of the keys
+			if (grep {$1 eq $_} @field_key ) {
+				$query_key{$1}=$3;
+			}
+			else {
+				# else we use request on FIELD_NAME and FIELD_VALUE
+				push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+			}
 		}
+		else {
+			croak ("something wrong with condition : $condition");
+		}
+	}
+
+	#TODO : is it useful?
+	push @select_conditions, "TABLE_KEY = '".$self->{query_key_value}."'" if $self->{query_key_value};
+	
+	if (%query_key) {
+		# put joker on unknown keys
+		foreach (@field_key) {
+			$query_key{$_}='%' if not $query_key{$_};
+		}
+		push @select_conditions, "TABLE_KEY like '".join(',',@query_key{@field_key})."'" ;
 	}
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!

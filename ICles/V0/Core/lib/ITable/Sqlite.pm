@@ -132,6 +132,11 @@ sub _open_database() {
 	# set the busy timeout
 	$self->_set_timeout();
 	
+	# make async write
+	$self->{database_handle}->do("PRAGMA default_synchronous = OFF");
+	# make "like" case sensitive
+	$self->{database_handle}->do("PRAGMA case_sensitive_like=ON");
+	
 	# register external sqlite function
 	$self->_register_external_function();
 }
