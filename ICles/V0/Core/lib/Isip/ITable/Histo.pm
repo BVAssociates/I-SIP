@@ -71,6 +71,9 @@ sub open() {
 	# rules applied to dynamic fields
 	$self->{isip_rules}= {};
 	
+	# add filtering lines on comments (metadata)
+	$self->{meta_filter} = [];
+	
     return $self;
 }
 
@@ -200,6 +203,15 @@ sub isip_rules() {
     return $self->{isip_rules} ;
 }
 
+sub metadata_condition() {
+	my $self = shift;
+	
+	if (@_) {
+		$self->{meta_filter} = [@_];
+	}
+    return @{$self->{meta_filter}} ;
+}
+
 # set custom SQL query
 sub custom_select_query()
 {
@@ -246,13 +258,16 @@ sub get_query()
 			FIELD_NAME as FIELD_NAME_2,
 			max(DATE_HISTO) AS DATE_MAX
 			FROM
-			$self->{table_name_histo}";
+			$self->{table_name_histo}\n";
 	
 	# Add a condition
-	$select_histo.= " WHERE ".join(" AND ", @select_conditions) if @select_conditions;
+	$select_histo.= " WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
 	# GROUP BY
-	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2)
-		ON  (ID= ID2)
+	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
+	# HAVING metadata
+	$select_histo.= " HAVING ".join(" AND ", @{$self->{meta_filter}}) if @{$self->{meta_filter}};
+	
+	$select_histo.= ")	ON  (ID= ID2)
 		WHERE FIELD_VALUE != '__delete'";
 	# FILTER FIELD_NAME
 	$select_histo.= "	AND (".join(' OR ', @query_conditions).")" if @query_conditions;
@@ -331,12 +346,14 @@ sub fetch_row() {
 	
 	return () if $self->{end_of_data} and not %return_line;
 	
+	my $missing_key;
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
-			$self->_debug("field $_ cannot be null (should be $field_line{TABLE_KEY})");
-			croak "Possible data corruption : NULL PRIMARY KEY";
+			$self->_debug("field $_ cannot be null (should be one of : $field_line{TABLE_KEY})");
+			$missing_key=1;
 		}
 	}
+	@return_line{$self->key()}=split(',',$current_key) if $missing_key;
 	
 	foreach ($self->not_null() ) {
 		if (not exists $return_line{$_}) {

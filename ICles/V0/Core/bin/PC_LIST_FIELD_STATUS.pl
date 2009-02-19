@@ -133,6 +133,15 @@ my $env_compare=$ENV{ENV_COMPARE};
 my $date_compare=$ENV{DATE_COMPARE};
 my $date_explore=$ENV{DATE_EXPLORE};
 
+my $filter_field=$ENV{FILTER_FIELD};
+my $filter_value=$ENV{FILTER_VALUE};
+my $filter_exclude;
+
+if ($filter_value and $filter_value =~ /^!(.+)/) {
+	$filter_value=$1;
+	$filter_exclude=1;
+}
+
 if ( @ARGV < 2 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
@@ -201,6 +210,27 @@ if (not $table_key_value) {
 
 log_info("KEY= $table_key");
 log_info("KEY_VAL=$table_key_value");
+
+# Check if it is an SQL filter
+my @comment_condition;
+if ($filter_field and $filter_field ne 'ICON' ) {
+
+	$filter_value =~ s/\*/%/g;
+	my $comp_operator;
+	if ($filter_exclude) {
+		$comp_operator='<>';
+		$comp_operator='not like' if $filter_value =~ /%/;
+	}
+	else {
+		$comp_operator='=' ;
+		$comp_operator='like' if $filter_value =~ /%/;
+	}
+	
+	# Check where is the clause
+	if ($filter_field eq 'PROJECT') {
+		push @comment_condition, "$filter_field $comp_operator '$filter_value'";
+	}
+}
 
 # recupere à liste de champ à afficher
 use ITable::ITools;
@@ -281,6 +311,8 @@ elsif ($explore_mode eq "explore") {
 	$table_status->query_key_value($table_key_value);
 	$table_status->dynamic_field($table_status->dynamic_field,"DOCUMENTATION");
 	$table_status->query_field(@query_field);
+	
+	$table_status->metadata_condition(@comment_condition);
 	
 	$table_status->output_separator('@');
 	

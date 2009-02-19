@@ -188,7 +188,9 @@ my $env_sip = Environnement->new($environnement);
 
 # recuperation de la structure des liens
 my $links = $env_sip->get_links();
+
 my @query_condition;
+my @comment_condition;
 
 # on essaye de retrouver toutes les clefs etrangere dans l'environnement
 # on ne possède pas l'information de l'arbre d'exploration, donc on cherche
@@ -212,13 +214,27 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 	}
 }
 
-if ($filter_field and $filter_field ne 'ICON') {
-	#my $comp_operator='=';
-	#$comp_operator='!=' if $filter_exclude;
-	my $comp_operator='like';
-	$comp_operator='not like' if $filter_exclude;
+# Check if it is an SQL filter
+if ($filter_field and $filter_field ne 'ICON' ) {
+
 	$filter_value =~ s/\*/%/g;
-	push @query_condition, "$filter_field $comp_operator '$filter_value'";
+	my $comp_operator;
+	if ($filter_exclude) {
+		$comp_operator='<>';
+		$comp_operator='not like' if $filter_value =~ /%/;
+	}
+	else {
+		$comp_operator='=' ;
+		$comp_operator='like' if $filter_value =~ /%/;
+	}
+	
+	# Check where is the clause
+	if ($filter_field eq 'PROJECT') {
+		push @comment_condition, "$filter_field $comp_operator '$filter_value'";
+	}
+	else {
+		push @query_condition, "$filter_field $comp_operator '$filter_value'";
+	}
 }
 
 # table qui sera affichée
@@ -229,6 +245,7 @@ my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $
 $table_current->query_date($date_explore) if $date_explore;
 
 $table_current->query_condition(@query_condition);
+$table_current->metadata_condition(@comment_condition);
 
 # recuperation des colonnes à afficher
 my @query_field=$env_sip->get_table_field($table_name);
@@ -253,7 +270,6 @@ if ($explore_mode eq "compare") {
 elsif ($explore_mode eq "explore") {
 	
 	$table_explore=$table_current;
-	
 	log_info("pré-charge les informations de modification des sous-tables");
 	
 	if (not $date_explore) {

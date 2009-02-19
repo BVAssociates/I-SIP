@@ -40,6 +40,8 @@ sub open() {
 	
 	$self->{isip_rules} = {};
 	
+	$self->{meta_filter}= [];
+	
 	return bless($self,$class);
 }
 
@@ -54,6 +56,15 @@ sub query_date {
     my $self = shift;
     if (@_) { $self->{query_date} = shift }
     return $self->{query_date} ;
+}
+
+sub metadata_condition() {
+	my $self = shift;
+	
+	if (@_) {
+		$self->{meta_filter} = [@_];
+	}
+    return @{$self->{meta_filter}} ;
 }
 
 # Construct SQL query to get last inserted value for each field
@@ -89,7 +100,11 @@ sub get_query()
 	# Add a condition
 	$select_histo.= " WHERE ".join(" AND ", @select_conditions) if @select_conditions;
 	# GROUP BY
-	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2)
+	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
+	# HAVING metadata
+	$select_histo.= " HAVING ".join(" AND ", @{$self->{meta_filter}}) if @{$self->{meta_filter}};
+	
+	$select_histo.= ")
 		ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
 		WHERE FIELD_VALUE != '__delete'
 		ORDER BY TABLE_KEY;";
