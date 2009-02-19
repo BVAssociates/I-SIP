@@ -172,6 +172,24 @@ sub get_field_description() {
 	return $self->{current_description}->{$col_name};
 }
 
+sub is_field_hidden() {
+	my $self=shift;
+	
+	my %line=@_;
+	my $name=$line{FIELD_NAME};
+	
+	my $type=$self->get_field_type($name);
+		
+	if ($type eq "HIDDEN") {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+
+
 # compute the validation status of a field
 # param type : type of the field
 # param status : current status from histo
@@ -206,7 +224,7 @@ sub get_field_icon () {
 		$return_status=$self->{field_icon}{STAMP};
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
-	elsif ($type eq "EXCLUDE" or $type eq "HIDDEN") {
+	elsif ($type eq "EXCLUDE") {
 		$return_status=$self->{field_icon}{OK};
 	}
 	else {
@@ -273,7 +291,6 @@ sub get_line_icon () {
 	return $self->{line_icon}{OK} if $counter{OK} > 0;
 
 }
-
 
 
 1;

@@ -206,7 +206,7 @@ my $cache=IsipTreeCache->new($env_sip);
 log_info("Connexion à la base d'historisation de $table_ikos");
 my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
 
-my $type_rules = IsipRules->new($env_sip->get_sqlite_path($table_ikos),$table_ikos, {debug => $debug_level});
+my $type_rules = IsipRules->new($table_ikos);
 $histo_table->isip_rules($type_rules);
 
 $histo_table->query_key_value($row{TABLE_KEY});

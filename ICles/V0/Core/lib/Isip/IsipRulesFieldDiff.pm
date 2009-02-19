@@ -68,9 +68,6 @@ sub get_field_icon () {
 		if ($type eq "STAMP") {
 			return $self->{field_icon}->{STAMP_UPDATE};
 		}
-		elsif ($type eq "HIDDEN") {
-			return $self->{field_icon}->{OK};
-		}
 		else {
 			return $self->{field_icon}->{$diff};
 		}

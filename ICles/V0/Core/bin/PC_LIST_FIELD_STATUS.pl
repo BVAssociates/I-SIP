@@ -287,17 +287,17 @@ elsif ($explore_mode eq "explore") {
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
 	
+		# don't show hidden fields
+		next if $rules->is_field_hidden(%row);
+		
 		# compute dynamic fields
 		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
 		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
 			
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
-		
-		# don't display ignored fields
-		if ($row{TYPE} ne "exclus") {
-			$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
-		}
+
+		$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
 	}
 }
 

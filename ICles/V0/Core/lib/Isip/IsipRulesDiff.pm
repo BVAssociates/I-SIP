@@ -80,7 +80,7 @@ sub get_field_icon () {
 	my $type=$self->get_field_type($name);
 
 	# TODO write display rules?
-	if ($type eq "STAMP" or $type eq "HIDDEN") {
+	if ($type eq "STAMP") {
 		return $self->{field_icon}->{OK};
 	}
 	else {

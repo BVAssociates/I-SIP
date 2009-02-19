@@ -252,7 +252,9 @@ sub fetch_row() {
 			# compute icon field by field
 			foreach my $field (keys %query_field_row) {
 				#dont check excluded fields
-				if (not grep {$field eq $_} $self->compare_exclude()) {
+				if (not grep {$field eq $_} $self->compare_exclude()
+						and not $self->{isip_rules}->is_field_hidden(FIELD_NAME => $field) )
+				{
 					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $query_field_row{$field}, STATUS => $self->{diff}->get_field_status($key,$field));
 				}
 			}
