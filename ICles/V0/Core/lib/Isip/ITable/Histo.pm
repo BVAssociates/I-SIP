@@ -295,7 +295,7 @@ sub fetch_row() {
 		$return_line{$temp_next_row{FIELD_NAME}}=$temp_next_row{FIELD_VALUE};
 		
 		# line is modified if one field have no status
-		push @field_icon,$self->{isip_rules}->get_field_icon($temp_next_row{FIELD_NAME},$temp_next_row{STATUS},$temp_next_row{COMMENT}) if blessed $self->{isip_rules};;
+		push @field_icon,$self->{isip_rules}->get_field_icon(%temp_next_row) if blessed $self->{isip_rules};;
 		
 		
 		$current_key=$temp_next_row{TABLE_KEY};
@@ -319,7 +319,7 @@ sub fetch_row() {
 		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
 		
 		# add status
-		push @field_icon,$self->{isip_rules}->get_field_icon($field_line{FIELD_NAME},$field_line{STATUS},$field_line{COMMENT}) if blessed $self->{isip_rules};
+		push @field_icon,$self->{isip_rules}->get_field_icon(%field_line) if blessed $self->{isip_rules};
 		
 	}
 	

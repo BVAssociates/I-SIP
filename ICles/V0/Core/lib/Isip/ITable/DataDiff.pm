@@ -9,6 +9,7 @@ use strict;
 use Scalar::Util qw(blessed);
 
 use Isip::IsipDiff;
+use Isip::IsipRulesDiff;
 
 #use Data::Dumper;
 
@@ -228,34 +229,42 @@ sub fetch_row() {
 		$current_row{$_}="";
 	}
 	
+	# get only query fields
+	my %query_field_row;
+	@query_field_row{$self->query_field} = @current_row{$self->query_field};
+	
+	
 	# compute internal dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
 	
 		if (not blessed $self->{isip_rules}) {
 			carp ("no IsipRules set");
-			$current_row{ICON}="isip_error";
+			$query_field_row{ICON}="isip_error";
 		}
 		else {
 		
-			my %line_diff_icon=$self->{isip_rules}->enum_line_diff_icon();
+			my %line_diff_icon=$self->{isip_rules}->enum_line_icon();
 			my $return_status="ERROR";
-			my $key=join(',',@current_row{sort $self->key()});
+			my $key=join(',',@query_field_row{sort $self->key()});
 			
 			my @diff_list;
 			
 			# compute icon field by field
-			foreach my $field (keys %current_row) {
-				push @diff_list,$self->{isip_rules}->get_field_diff_icon($field,$self->{diff}->get_field_status($key,$field));
+			foreach my $field (keys %query_field_row) {
+				#dont check excluded fields
+				if (not grep {$field eq $_} $self->compare_exclude()) {
+					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $query_field_row{$field}, STATUS => $self->{diff}->get_field_status($key,$field));
+				}
 			}
 			
 			# compute icon of whole line
-			$return_status=$self->{isip_rules}->get_line_diff_icon(@diff_list);
+			$return_status=$self->{isip_rules}->get_line_icon(@diff_list);
 			
-			$current_row{ICON}=$return_status;
+			$query_field_row{ICON}=$return_status;
 		}
 	}
 	
-	return %current_row;
+	return %query_field_row;
 }
 
 sub fetch_row_array() {

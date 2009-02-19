@@ -1,5 +1,17 @@
 package IsipRules;
 
+use fields qw(
+	line_icon
+	field_icon
+	
+	field_status
+	current_type
+	current_description
+	current_owner
+	type
+	table_name
+);
+
 
 use Carp qw(carp croak );
 use strict;
@@ -30,45 +42,32 @@ BV Associates, 2008
 sub new() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-	my $self={};
+	
+	my $self= fields::new($class);
 	
 	# member initializations
 	$self->{current_type}={};
 	$self->{current_owner}={};
 	$self->{current_description}={};
 	
-	$self->{debugging}=0;
-	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
 	%{ $self->{type} } = $class->enum_type;
 	%{ $self->{field_status} } = $class->enum_field_status;
 
-	%{ $self->{line_icon} } = $class->enum_line_icon;
-	%{ $self->{field_icon} } = $class->enum_field_icon;
-	
-	%{ $self->{field_diff_icon} } = $class->enum_field_diff_icon;
-	%{ $self->{line_diff_icon} } = $class->enum_line_diff_icon;
+	$self->{line_icon} = { $class->enum_line_icon };
+	$self->{field_icon} = { $class->enum_field_icon };
 
-
-	# Amen
-	bless ($self, $class);
-	
 	# mandatory parameter
-	if (@_ < 2) {
-		croak ('\'new\' take 1 mandatory argument: '.$class.'->new(database_name, table_name [, { diff => $TableDiff_ref, debug => \$num} ) ] )')
+	if (@_ < 1) {
+		croak ('\'new\' take 1 mandatory argument: '.$class.'->new(table [, { diff => $TableDiff_ref, debug => \$num} ) ] )')
 	}
-	
-	$self->{database_name}=shift;
+
 	$self->{table_name}=shift;
 	
-	# To discuss : what table_name is passed to contructor?
-	$self->{table_info_name}=$self->{table_name}."_INFO";
-	
+
 	# options
 	my $options=shift;
-	$self->{table_diff}=$options->{diff} if exists $options->{diff};
-	$self->debugging($options->{debug}) if exists $options->{debug};
 
 
 	# load informations
@@ -87,7 +86,7 @@ sub new() {
 sub _init_info() {
 	my $self=shift;
 	
-	my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_info_name}),$self->{table_info_name}, { debug => $self->debugging() } );
+	my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_name}."_INFO"),$self->{table_name}."_INFO" );
 	
 	# narrow query if needed
 	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
@@ -100,12 +99,6 @@ sub _init_info() {
 	}
 }
 
-sub debugging {
-    my $self = shift;
-    if (@_) { $self->{debugging} = shift}
-    return $self->{debugging};
-}
-
 ##################################################
 ##  static methods to get constants enumeration ##
 ##################################################
@@ -115,7 +108,6 @@ sub enum_type () {
 	
 	return (DATA => "fonctionnel", CONFIG => "technique", MANUAL => "manuel", STAMP => "administratif", HIDDEN => "exclus");
 }
-
 
 sub enum_field_status () {
 	my $self=shift;
@@ -133,18 +125,6 @@ sub enum_line_icon () {
 	my $self=shift;
 	
 	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "invalide", ERROR => "erreur");
-}
-
-sub enum_field_diff_icon() {
-	my $self=shift;
-	
-	return (NEW => "ajoute", UPDATE => "different", OK => "egal", DELETE => "supprime", STAMP_UPDATE => "stamp_update");
-}
-
-sub enum_line_diff_icon() {
-	my $self=shift;
-	
-	return (NEW => "ajoute", UPDATE => "different", OK => "egal", DELETE => "supprime", ERROR => "erreur");
 }
 
 ##################################################
@@ -200,9 +180,10 @@ sub get_field_description() {
 sub get_field_icon () {
 	my $self=shift;
 	
-	my $name=shift;
-	my $status_desc=shift;
-	my $comment=shift;
+	my %line=@_;
+	
+	my $name=$line{FIELD_NAME};
+	my $status_desc=$line{STATUS};
 	
 	my %status_by_name= reverse %{$self->{field_status}};
 	
@@ -294,60 +275,6 @@ sub get_line_icon () {
 }
 
 
-sub get_field_diff_icon () {
-	my $self=shift;
-	
-	my $name=shift;
-	my $diff=shift;
-	
-	my $type=$self->get_field_type($name);
-	
-	if ($type eq "HIDDEN") {
-		return $self->{field_diff_icon}->{OK};
-	}
-	
-	# TODO write display rules?
-	return $self->{field_diff_icon}->{$diff};
-}
-
-sub get_line_diff_icon() {
-	my $self=shift;
-	
-	my @icon_list=@_;
-	my $return_icon;
-	
-	my %icon_by_name= reverse %{$self->{field_diff_icon}};
-	
-	my %counter;
-	foreach (keys %{$self->{field_diff_icon}} ) {
-		$counter{$_}=0;
-	}
-	
-	foreach (@icon_list) {
-		my $icon;
-		if (not defined $_) {
-			$logger->critical("Impossible de determiner l'icone de la ligne, car un champ n'a pas d'icone") ;
-			return $self->{line_diff_icon}{ERROR};
-			last;
-		}
-		elsif (not defined $icon_by_name{$_}) {
-			
-			$logger->critical("Impossible de determiner l'icone de la ligne, car $_ n'est pas un icone valide") ;
-			return $self->{line_diff_icon}{ERROR};
-			last;
-		} else {
-			$icon=$icon_by_name{$_};
-		}
-		
-		$counter{$icon}++;
-		
-	}
-	
-	return $self->{line_diff_icon}{UPDATE} if $counter{UPDATE} > 0;
-	return $self->{line_diff_icon}{NEW} if $counter{NEW} > 0;
-	return $self->{line_diff_icon}{DELETE} if $counter{DELETE} > 0;
-	return $self->{line_diff_icon}{OK} if $counter{OK} > 0;
-}
 
 1;
 

@@ -190,6 +190,7 @@ if (not $env_compare and not $date_compare) {
 
 use Isip::Environnement;
 use ITable::ITools;
+use Isip::IsipRules;
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -229,7 +230,7 @@ my @query_field=$itools_table->field;
 undef $itools_table;
 
 # construit un object IsipRules
-my $rules=$ikos_sip->get_isip_rules($table_name);
+my $rules=IsipRules->new($table_name);
 
 
 # interroge table source

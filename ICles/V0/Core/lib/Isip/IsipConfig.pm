@@ -251,18 +251,6 @@ sub exists_doc_table() {
 }
 
 
-sub get_isip_rules() {
-	my $self = shift;
-	
-	use Isip::IsipRules;
-	
-	my $table_name=shift or croak "open_isip_rules() wait args : 'tablename'";
-	
-	my $tmp_return = eval {IsipRules->new($self->get_sqlite_path($table_name), $table_name, @_)};
-	croak "Error opening $table_name : $@" if $@;
-	return $tmp_return;
-}
-
 sub open_documentation_table() {
 	my $self = shift;
 	

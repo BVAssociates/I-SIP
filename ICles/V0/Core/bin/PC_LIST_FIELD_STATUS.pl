@@ -116,12 +116,14 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('Thvc:', \%opts);
+getopts('k:hvc:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $table_key_value=$opts{k};
 
 #  Traitement des arguments
 ###########################################################
@@ -168,10 +170,7 @@ my $bv_severite=0;
 use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
-
-## DEBUG ONLY
-if (exists $opts{T}) {$ENV{RDNPRCOD}='CDE'; $bv_severite=202 };
-## DEBUG ONLY
+use Isip::IsipRulesFieldDiff;
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -187,16 +186,18 @@ if (not $table_key) {
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
 
-log_info("recherche de la clef primaire $table_key dans l'environnement");
-foreach (@table_key_list) {
-	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
-	if (not $ENV{$_}) {
-		log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
-		sortie(202);
+if (not $table_key_value) {
+	log_info("recherche de la clef primaire $table_key dans l'environnement");
+	foreach (@table_key_list) {
+		push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
+		if (not $ENV{$_}) {
+			log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
+			sortie(202);
+		}
 	}
-}
 
-my $table_key_value=join(',',@table_key_list_value);
+	$table_key_value=join(',',@table_key_list_value);
+}
 
 log_info("KEY= $table_key");
 log_info("KEY_VAL=$table_key_value");
@@ -208,7 +209,7 @@ my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
 
 # Create IsipRule object
-my $rules=$ikos_sip->get_isip_rules($table_name);
+my $rules=IsipRules->new($table_name, {debug => $debug_level});
 
 # fetch documentation of fields for key
 my %field_doc;
@@ -243,25 +244,26 @@ if ($explore_mode eq "compare") {
 	# open DataDiff table from two table
 	my $table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
 	
-	# Only FIELD_VALUE must be compare
-	$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
-	
 	# declare some additionnal blank fields
 	# (ICON field will be computed into DataDiff)
 	$table_status->dynamic_field("ICON","TYPE","TEXT","DOCUMENTATION");
 	$table_status->query_field(@query_field);
 	
+	# Only FIELD_VALUE must be compare
+	$table_status->compare_exclude(grep(!/^FIELD_VALUE|FIELD_NAME$/,@query_field));
+	
 	# compute diff
 	$table_status->compare();
 
 	# Assign a IsipRules to compute ICON field
-	$table_status->isip_rules($rules);
+	my $diff_rules=IsipRulesFieldDiff->new($table_name);
+	$table_status->isip_rules($diff_rules);
 	
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
 		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
-		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
+		$row{TYPE}=$diff_rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+		$row{TEXT}=$diff_rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 		
 		# don't display ignored fields
 		if ($row{TYPE} ne "exclus") {
@@ -287,7 +289,7 @@ elsif ($explore_mode eq "explore") {
 	
 		# compute dynamic fields
 		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
-		$row{ICON}=$rules->get_field_icon($row{FIELD_NAME},$row{STATUS}, $row{COMMENT}) if exists $row{ICON};
+		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
 			
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
