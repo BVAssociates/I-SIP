@@ -16,7 +16,6 @@ sub new() {
 	
 	$self->{isip_env} = shift or croak("usage: CacheInterface->new(env_ref)");
 	
-	$self->{memory_cache}={};
 	$self->{loaded_table}={};
 	
 	return $self;

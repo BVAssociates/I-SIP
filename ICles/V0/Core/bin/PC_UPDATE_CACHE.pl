@@ -110,6 +110,7 @@ use ITable::ITools;
 use Isip::ITable::DataDiff;
 use Isip::IsipTreeCache;
 use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheProject;
 
 my $env_sip = Environnement->new($environnement);
 
@@ -123,6 +124,7 @@ my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
 $cache->add_dispatcher(CacheStatus->new($env_sip));
+$cache->add_dispatcher(CacheProject->new($env_sip));
 
 foreach my $current_table (@list_table) {
 	
@@ -150,10 +152,10 @@ foreach my $current_table (@list_table) {
 	$histo_table->isip_rules($type_rules);
 
 	$histo_table->output_separator('@');
-	$histo_table->query_field("ICON",$histo_table->field);
+	$histo_table->query_field("ICON","PROJECT",$histo_table->field);
 
 	while (my %row=$histo_table->fetch_row) {
-		$cache->recurse_line($current_table, \%row,"add") if $row{ICON} ne 'valide';
+		$cache->recurse_line($current_table, \%row,"add");
 	}
 }
 

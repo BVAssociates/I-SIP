@@ -95,6 +95,21 @@ sub recurse_line() {
 	
 	my $table_name=shift;
 	my $line_hash_ref=shift;
+	my $action=shift or croak("usage : recurse_line(table_name, {field1 => 'value',field2 => 'value',...}, action)");
+	
+	my $checked=0;
+	foreach my $dispatcher (@{$self->{dispacher_list}}) {
+		$checked += $dispatcher->check_before_cache($table_name,$line_hash_ref);
+	}
+	
+	$self->_recurse_line_action($table_name,$line_hash_ref,$action) if $checked; 
+}
+
+sub _recurse_line_action() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $line_hash_ref=shift;
 	my $action=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...}, action)");
 	
 	
@@ -160,7 +175,7 @@ sub recurse_line() {
 	
 	# go deep
 	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->recurse_line($parent_table,\%parent_line,$action);
+	$self->_recurse_line_action($parent_table,\%parent_line,$action);
 	
 }
 
@@ -306,16 +321,22 @@ sub save_cache() {
 if (!caller) {
 	require Isip::Environnement;
 	use Isip::Cache::CacheStatus;
+	use Isip::Cache::CacheProject;
+	
 	my $env=Environnement->new("DEV");
 	my $test=IsipTreeCache->new($env);
 	
-	$test->add_dispatcher(CacheStatus->new($env));
+	#$test->add_dispatcher(CacheStatus->new($env));
+	my $project_cache=CacheProject->new($env);
+	$project_cache->set_dirty_project("test 5");
+	$test->add_dispatcher($project_cache);
 	
-	#$test->clear_cache();
+	$test->clear_cache();
 	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
 	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
 	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "remove");
-	$test->recurse_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
+	$test->recurse_line("CROEXPP2", { PROJECT => 'test 5','FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
+	$test->recurse_line("CROEXPP2", { PROJECT => "",'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
 	#$test->save_cache();
 	#$test->load_cache("CROEXPP2");
 	

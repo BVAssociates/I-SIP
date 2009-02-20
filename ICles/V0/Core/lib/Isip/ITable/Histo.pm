@@ -53,7 +53,9 @@ sub open() {
 	
 	# user query
 	$self->{query_field}  = [ $self->field() ];
-	$self->{dynamic_field}  = [ "ICON" ];
+	
+	# fields that Histo is able to compute
+	$self->{dynamic_field}  = [ "ICON" , "PROJECT" ];
 	# add query option
 	$self->{query_date} = $options->{date};
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
@@ -310,6 +312,7 @@ sub fetch_row() {
 	my %return_line;
 	my $current_key;
 	my @field_icon;
+	my %field_project;
 	
 	# if last fetch was end of DATA, return empty line 
 	if ($self->{end_of_data}) {
@@ -319,7 +322,7 @@ sub fetch_row() {
 	}
 
 	#TO BE OPTIMIZED (should be called only once)
-	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS");
+	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","PROJECT");
 	$self->{table_histo}->custom_select_query ($self->get_query() );
 
 	# store the higher field status
@@ -337,6 +340,7 @@ sub fetch_row() {
 		if (blessed $self->{isip_rules} and not $self->{isip_rules}->is_field_hidden(%temp_next_row)) {
 			push @field_icon,$self->{isip_rules}->get_field_icon(%temp_next_row);
 		}
+		$field_project{$temp_next_row{PROJECT}}++ if $field_line{PROJECT};
 		
 		
 		$current_key=$temp_next_row{TABLE_KEY};
@@ -364,6 +368,9 @@ sub fetch_row() {
 			push @field_icon,$self->{isip_rules}->get_field_icon(%field_line);
 		}
 		
+		#add project
+		$field_project{$field_line{PROJECT}}++ if $field_line{PROJECT};
+		
 	}
 	
 	$self->{end_of_data} = 1 if not %field_line;
@@ -389,6 +396,10 @@ sub fetch_row() {
 	#TODO : use IsipRules
 	if (grep (/^ICON$/, $self->query_field() )) {
 		$return_line{ICON}=$self->{isip_rules}->get_line_icon(@field_icon) if blessed $self->{isip_rules};
+	}
+	
+	if (grep (/^PROJECT$/, $self->query_field() )) {
+		$return_line{PROJECT}=join(',',sort keys %field_project);
 	}
 	
 	#debug
