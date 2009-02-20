@@ -100,7 +100,6 @@ if ( @ARGV < 1 ) {
 	sortie(202);
 }
 my $environnement=shift;
-my $current_table=shift;
 
 #  Corps du script
 ###########################################################
@@ -116,18 +115,14 @@ my $env_sip = Environnement->new($environnement);
 
 my %table_info = $env_sip->get_table_info();
 
-my @list_table;
-if (not $current_table) {
-	@list_table=keys %table_info;
-} else {
-	@list_table=($current_table);
-}
+my @list_table=keys %table_info;
+
 
 my $counter=0;
 my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
-$cache->add_cache_class(CacheStatus->new($env_sip));
+$cache->add_dispatcher(CacheStatus->new($env_sip));
 
 foreach my $current_table (@list_table) {
 	
@@ -158,12 +153,12 @@ foreach my $current_table (@list_table) {
 	$histo_table->query_field("ICON",$histo_table->field);
 
 	while (my %row=$histo_table->fetch_row) {
-		$cache->add_dirty_line($current_table, \%row) if $row{ICON} ne 'valide';
+		$cache->recurse_line($current_table, \%row,"add") if $row{ICON} ne 'valide';
 	}
 }
 
-$cache->clear_dirty_cache;
-$cache->save_dirty_cache;
+$cache->clear_cache;
+$cache->save_cache;
 
 
 sortie($bv_severite);

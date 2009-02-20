@@ -164,10 +164,13 @@ my @field=$itools_table->field;
 
 use Isip::Environnement;
 my $env_sip=Environnement->new($environnement);
-my $local_table;
 my %row;
+my %old_line;
+my %new_line;
 
-$local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 30000, debug => $debug_level});
+my $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 30000, debug => $debug_level});
+my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
+$histo_table->isip_rules(IsipRules->new($table_ikos));
 
 # add dynamic field. Needed for array_to_hash()
 $local_table->dynamic_field("TEXT","TYPE","ICON");
@@ -193,44 +196,51 @@ my $current_user=$ENV{IsisUser};
 $row{DATE_UPDATE} = $current_date;
 $row{USER_UPDATE} = $current_user;
 
-$local_table->query_field($local_table->field());
-$local_table->query_condition("ID = ".join(',',@row{$local_table->key()}));
-my %old_row=$local_table->fetch_row();
-$local_table->finish();
+$histo_table->query_key_value($row{TABLE_KEY});
+$histo_table->query_field("ICON",$histo_table->field);
 
+# check line before
+%old_line=$histo_table->fetch_row;
+$histo_table->finish;
+log_info("Ancien status de la ligne : $old_line{ICON}");
+
+
+# update field
+log_info("Mise à jour du champ no $row{ID}");
 $local_table->update_row( %row );
+
+# check line after
+%new_line=$histo_table->fetch_row;
+$histo_table->finish;
+log_info("Nouveau status de la ligne : $new_line{ICON}");
 
 #Update documentation
 #$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
 
 # update cache
 use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
 use Isip::IsipRules;
 
-if ($old_row{STATUS} eq $row{STATUS}) {
+if ($old_line{ICON} eq $new_line{ICON}) {
 	log_info("Le status n'a pas changé");
 	sortie($bv_severite);
 }
 
 my $cache=IsipTreeCache->new($env_sip);
-
-log_info("Calcul de l'icone de la ligne");
-my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
+$cache->add_dispatcher(CacheStatus->new($env_sip));
 
 my $type_rules = IsipRules->new($table_ikos);
 $histo_table->isip_rules($type_rules);
 
-$histo_table->query_key_value($row{TABLE_KEY});
-$histo_table->query_field("ICON",$histo_table->field);
-
 while (my %row=$histo_table->fetch_row) {
 	if ($row{ICON} ne 'valide') {
-		$cache->add_dirty_line($table_ikos, \%row, 1);
+		$cache->recurse_line($table_ikos, \%row,"add");
 	}
 	else {
-		$cache->add_dirty_line($table_ikos, \%row, -1);
+		$cache->recurse_line($table_ikos, \%row,"remove");
 	}
 }
-$cache->update_dirty_cache();
+$cache->save_cache();
 
 sortie($bv_severite);

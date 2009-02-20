@@ -181,7 +181,6 @@ my $bv_severite=0;
 use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
-use Isip::IsipTreeCache;
 use Isip::Cache::CacheStatus;
 
 use Isip::IsipRulesDiff;
@@ -275,9 +274,8 @@ elsif ($explore_mode eq "explore") {
 	log_info("pré-charge les informations de modification des sous-tables");
 	
 	if (not $date_explore) {
-		$dirty_cache=IsipTreeCache->new($env_sip);
-		$dirty_cache->add_cache_class(CacheStatus->new($env_sip));
-		$dirty_cache->preload_cache($table_name);
+		$dirty_cache=CacheStatus->new($env_sip);
+		$dirty_cache->load_cache($table_name);
 		my $type_rules = IsipRules->new($table_name, {debug => $debug_level});
 		$table_explore->isip_rules($type_rules);
 	}
@@ -288,8 +286,10 @@ $table_explore->query_field(@query_field);
 
 $table_explore->output_separator('@');
 
+my @keys=$table_explore->key;
 while (my %row=$table_explore->fetch_row) {
-	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_line($table_name, \%row);
+	my $string_key=join(',',@row{@keys});
+	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key);
 	if ($filter_field and $filter_field eq 'ICON') {
 		if (($filter_exclude and $row{ICON} ne $filter_value)
 			or (! $filter_exclude and $row{ICON} eq $filter_value) )

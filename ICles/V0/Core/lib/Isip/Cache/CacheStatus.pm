@@ -19,31 +19,34 @@ sub new() {
 	# format :
 	#   $self->{memory_cache}->{"table_name"}={key1 => 6, key2 => 2}
 	
-	$self->{dirty_value}=1;
-	
 	return $self;
 }
 
-sub set_status() {
-	my $self=shift;
-	$self->{dirty_value}=shift;
-}
-
-sub add_row() {
+sub add_row_cache() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: set_dirty_key(table_name,key_string [, value])");
+	my $key_string=shift or croak("usage: add_row_cache(table_name,key_string [, value])");
 	
 	$logger->info("add $key_string in CacheStatus");
-	$self->{memory_cache}->{$table_name}->{$key_string} += $self->{dirty_value};
+	$self->{memory_cache}->{$table_name}->{$key_string} += 1;
 }
 
-sub is_dirty() {
+sub remove_row_cache() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $table_key=shift or croak("usage : is_dirty(table_name, table_key");
+	my $key_string=shift or croak("usage: remove_row_cache(table_name,key_string [, value])");
+	
+	$logger->info("remove $key_string in CacheStatus");
+	$self->{memory_cache}->{$table_name}->{$key_string} -= 1;
+}
+
+sub is_dirty_key() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $table_key=shift or croak("usage : is_dirty_key(table_name, table_key");
 
 
 	
@@ -66,14 +69,19 @@ sub is_dirty() {
 		$count += $row{NUM_CHILD};
 	}
 
-	return $count;
+	if ($count > 0) {
+		return $count;
+	}
+	else {
+		return 0;
+	}
 }
 
 
 sub load_cache() {
 	my $self=shift;
 	
-	my $table_name=shift or croak("usage : preload(table_name");
+	my $table_name=shift or croak("usage : load_cache(table_name");
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
@@ -114,19 +122,25 @@ sub save_cache() {
 				$num_child=$row{NUM_CHILD};
 			}
 			
+			my $memory_num_child=0;
+			if (exists $dirty_keys{$dirty_key}) {
+				$memory_num_child=$dirty_keys{$dirty_key};
+			}
 			
 			if (not defined $num_child) {
-				$logger->debug("insert $dirty_table,$dirty_key,$dirty_keys{$dirty_key}");
-				$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $dirty_keys{$dirty_key});
+				if ($memory_num_child > 0) {
+					$logger->debug("insert $dirty_table,$dirty_key,memory_num_child");
+					$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $memory_num_child);
+				}
 			}
 			else {
-				my $sum_dirty=$num_child+$dirty_keys{$dirty_key};
+				my $sum_dirty=$num_child+$memory_num_child;
 				if ($sum_dirty > 0) {
 					$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
-					$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $num_child+$dirty_keys{$dirty_key});
+					$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $sum_dirty);
 				}
 				else {
-					$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+					$logger->debug("remove $dirty_table,$dirty_key");
 					$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key);
 				
 				}

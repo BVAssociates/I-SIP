@@ -23,11 +23,15 @@ sub new() {
 }
 
 
-sub add_row() {
+sub add_row_cache() {
 	croak("cannot use CacheInterface");
 }
 
-sub is_dirty() {
+sub remove_row_cache() {
+	croak("cannot use CacheInterface");
+}
+
+sub is_dirty_key() {
 	croak("cannot use CacheInterface");
 }
 

@@ -1,5 +1,5 @@
 package IsipTreeCache;
-use fields qw(isip_env links cache_class preload);
+use fields qw(isip_env links dispacher_list);
 
 use strict;
 use Isip::IsipLog '$logger';
@@ -32,32 +32,25 @@ sub new() {
 	#$self->{links}->{table_child}->{$table_foreign}->{$table_name}->{$field_foreign} = $field_name;
 
 	# list of classes to call during the run
-	$self->{cache_class}= [];
+	$self->{dispacher_list}= [];
 	
-	# if preloaded table, fields which are not dirty are OK
-	$self->{preload}={};
 	
 	#return bless($self, $class);
 	return $self;
 }
 
-sub add_cache_class() {
-	my $self=shift;
-	
-	my $action_class=shift;
-	
-	if (not blessed $action_class or not $action_class->isa("CacheInterface")) {
-		croak("usage add_cache_class(CacheInterface)");
-	}
-	
-	push @{$self->{cache_class}}, $action_class;
-}
 
-sub add_dirty_key() {
+##############################
+#  Tree walk through Methods #
+##############################
+
+# from a key, get whole line and apply recurse_line();
+sub recurse_key() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: add_dirty_key(table_name, key_string)");
+	my $key_string=shift;
+	my $action=shift or croak("usage: add_dirty_key(table_name, key_string, action)");
 	
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
 		$logger->error("$table_name does not exists");
@@ -90,18 +83,19 @@ sub add_dirty_key() {
 	
 	croak("unable to find line for $key_string in $table_name : $count lines found") if not $count;
 	
-	$self->add_dirty_line($table_name,\%return_row);
+	$self->recurse_line($table_name,\%return_row,$action);
 }
 
 # compute key from parent table dirty by their child
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least foreign key)
-
-sub add_dirty_line() {
+# arg3 : action to call on each dispatcher
+sub recurse_line() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...})");
+	my $line_hash_ref=shift;
+	my $action=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...}, action)");
 	
 	
 	my %line_hash=%{$line_hash_ref};
@@ -161,17 +155,17 @@ sub add_dirty_line() {
 	my $key_string=join(',',@parent_line{sort $table->key});
 	
 	
-	$logger->notice("add to cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->add_row_cache($parent_table,$key_string,\%parent_line);
+	$logger->notice("$action in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$self->dispatch_action($action,$parent_table,$key_string,\%parent_line);
 	
 	# go deep
 	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->add_dirty_line($parent_table,\%parent_line);
+	$self->recurse_line($parent_table,\%parent_line,$action);
 	
 }
 
 # compute cache from IsipDiff object
-sub add_dirty_diff() {
+sub recurse_diff() {
 	my $self=shift;
 	
 	my $table_name=shift;
@@ -179,20 +173,21 @@ sub add_dirty_diff() {
 	
 	my $diff_class=blessed($diff_ref);
 	if (not ($diff_class and $diff_ref->isa("IsipDiff") )) {
-		croak "usage: IsipTreeCache->add_dirty_diff(IsipDiff class)";
+		croak "usage: add_dirty_diff(IsipDiff class)";
 	}
 	
 	# remove lines only in source
 	my %key_new_hash=$diff_ref->get_target_only();
 	foreach my $key_new (keys %key_new_hash ) {
-		#$self->add_dirty_line($table_name, $key_new_hash{$key_new} );
+		#TODO : what to do of delete lines?
+		#$self->recurse_line($table_name, $key_new_hash{$key_new} );
 	}
 	undef %key_new_hash;
 	
 	# add missing lines
 	my %key_delete_hash=$diff_ref->get_source_only();
 	foreach my $key_delete (keys %key_delete_hash) {
-		$self->add_dirty_line($table_name,$key_delete_hash{$key_delete} );
+		$self->recurse_line($table_name,$key_delete_hash{$key_delete} );
 	}
 	undef %key_delete_hash;
 	
@@ -206,39 +201,65 @@ sub add_dirty_diff() {
 	# update modified lines
 	my %key_update_hash=$diff_ref->get_source_update();
 	foreach my $key_update (keys %key_update_hash ) {
-		$self->add_dirty_key($table_name,$key_update);
+		$self->recurse_key($table_name,$key_update);
 	}
 }
 
-# only set value of a key in memory (not ancestor)
-sub add_row_cache() {
+
+#########################
+#  Dispatching Methods  #
+#########################
+
+sub add_dispatcher() {
 	my $self=shift;
 	
+	my $dispatcher=shift;
+	
+	if (not blessed $dispatcher or not $dispatcher->isa("CacheInterface")) {
+		croak("usage add_dispatcher(CacheInterface)");
+	}
+	
+	push @{$self->{dispacher_list}},$dispatcher;
+}
+
+# only set value of a key in memory (not ancestor)
+sub dispatch_action() {
+	my $self=shift;
+	
+	my $action=shift;
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: set_dirty_key(table_name,key_string [, value])");
+	my $key_string=shift or croak("usage: add_row_cache(action,table_name,key_string [, value])");
 	my $line_ref=shift;
 	
 	if (ref($line_ref) ne "HASH") {
-		croak("usage: action(table_name,key_string,line_hash_ref)");
+		croak("usage: add_row_cache(table_name,key_string,line_hash_ref)");
 	}
 	
-	foreach my $cache (@{$self->{cache_class}}) {
-		$cache->add_row($table_name,$key_string,$line_ref);
+	my $method=$action."_row_cache";
+	foreach my $dispatcher (@{$self->{dispacher_list}}) {
+		if (defined $dispatcher->can($method)) {
+			$dispatcher->$method($table_name,$key_string,$line_ref);
+		}
+		else {
+			$logger->error("Unable to do $method on ".ref($dispatcher));
+		}
 	}
 	
 }
+
+
 
 #load dirty information in memory for a table
 # hint: use before many is_dirty_line()
 # arg1 : table_name
-sub preload_cache() {
+sub load_cache() {
 	my $self=shift;
 	
-	my $table_name=shift or croak("usage : preload(table_name");
+	my $table_name=shift or croak("usage : load_cache(table_name");
 	
 	my $count;
-	foreach my $cache (@{$self->{cache_class}}) {
-		$count += $cache->load_cache($table_name);
+	foreach my $dispatcher (@{$self->{dispacher_list}}) {
+		$count += $dispatcher->load_cache($table_name);
 	}
 	
 	return $count;
@@ -248,34 +269,34 @@ sub preload_cache() {
 # hint : use preload() in script to avoid many request on DB
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least primary key)
-sub is_dirty_line() {
+sub is_dirty_key() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift or croak("usage : is_dirty_line(table_name, key_string");
+	my $key_string=shift or croak("usage : is_dirty_key(table_name, key_string");
 	
 	my $dirty;
-	foreach my $cache (@{$self->{cache_class}}) {
-		$dirty += $cache->is_dirty($table_name,$key_string);
+	foreach my $dispatcher (@{$self->{dispacher_list}}) {
+		$dirty += $dispatcher->is_dirty_key($table_name,$key_string);
 	}
 	
 	return $dirty;
 }
 
 # write table to disk with informations from $self->{dirty_child}
-sub clear_dirty_cache() {
+sub clear_cache() {
 	my $self=shift;
 	
-	foreach my $cache (@{$self->{cache_class}}) {
+	foreach my $cache (@{$self->{dispacher_list}}) {
 		$cache->clear_cache();
 	}
 	
 }
 
-sub save_dirty_cache() {
+sub save_cache() {
 	my $self=shift;
 
-	foreach my $cache (@{$self->{cache_class}}) {
+	foreach my $cache (@{$self->{dispacher_list}}) {
 		$cache->save_cache();
 	}
 }
@@ -288,19 +309,20 @@ if (!caller) {
 	my $env=Environnement->new("DEV");
 	my $test=IsipTreeCache->new($env);
 	
-	my $cache=CacheStatus->new($env);
-	$test->add_cache_class($cache);
+	$test->add_dispatcher(CacheStatus->new($env));
 	
-	#$test->clear_dirty_cache();
-	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
-	$test->add_dirty_key("CROEXPP2", 'SAB,CBLCA,26,13');
-	$test->add_dirty_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
-	$test->save_dirty_cache();
-	$test->preload_cache("CROEXPP2");
+	#$test->clear_cache();
+	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
+	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
+	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "remove");
+	$test->recurse_line("CROEXPP2", { 'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
+	#$test->save_cache();
+	#$test->load_cache("CROEXPP2");
 	
-	print "TEST:".$test->is_dirty_line('TRAITP', 'ACH920' )."\n";
-	print "TEST:".$test->is_dirty_line('TRAITP', 'ACH920x' )."\n";
-	print "TEST:".$test->is_dirty_line('TRAITP2', 'ACH920' )."\n";
+	print "ACH920:".$test->is_dirty_key('TRAITP', 'ACH920' )."\n";
+	print "CBLCA:".$test->is_dirty_key('TRAITP', 'CBLCA' )."\n";
+	print "ACH920x:".$test->is_dirty_key('TRAITP', 'ACH920x' )."\n";
+	print "ACH920(TRAITP2):".$test->is_dirty_key('TRAITP2', 'ACH920' )."\n";
 }
 
 1;
