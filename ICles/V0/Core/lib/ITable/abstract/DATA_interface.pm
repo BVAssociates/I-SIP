@@ -137,15 +137,22 @@ sub query_field {
 	my @fields=@_;
 	if (@fields) {
 		my @field_found=$self->has_fields(@fields);
-		if ( @field_found != @fields) {
-				my @error_fields;
-				foreach my $field (@fields) {
-					push @error_fields, $field if ! grep {$_ eq $field} @field_found;
-				}
-				croak("error querying fields <@error_fields>");
-			} else {
-				@{ $self->{query_field} } =  @fields;
-			}
+		
+		my %seen_field;
+		foreach (@field_found, @fields) {
+			$seen_field{$_}++;
+		}
+		
+		my @error_fields;
+		foreach (keys %seen_field) {
+			push @error_fields, $_ if $seen_field{$_} < 2;
+		}
+		
+		if (@error_fields) {
+			croak("error querying fields <@error_fields>");
+		} else {
+			@{ $self->{query_field} } =  @fields;
+		}
 	}
 	
 	return @{ $self->{query_field} }

@@ -36,7 +36,7 @@ sub open() {
 	$self->{query_date}=$options->{date};
 	
 	# force primary key
-	$self->{key}=["FIELD_NAME"];
+	$self->{key}=["FIELD_NAME","TABLE_KEY"];
 	
 	$self->{isip_rules} = {};
 	
@@ -113,7 +113,7 @@ sub get_query()
 }
 
 
-sub fetch_row() {
+sub __old_fetch_row() {
 	my $self=shift;
 	
 	my %row=$self->SUPER::fetch_row();

@@ -178,6 +178,7 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 use Isip::IsipRules;
+use Isip::IsipRulesFieldDiff;
 
 # New SIP Object instance
 my $env_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -242,14 +243,15 @@ foreach my  $table_name (@table_list) {
 		
 		# declare some additionnal blank fields
 		# (ICON field will be computed into DataDiff)
-		$table_status->dynamic_field("ICON","TYPE","TEXT");
+		$table_status->dynamic_field("ICON","TYPE","TEXT","PROJECT");
 		$table_status->query_field(@query_field);
 		
 		# compute diff
 		$table_status->compare();
 		
 		# Assign a IsipRules to compute ICON field
-		$table_status->isip_rules($rules);
+		my $diff_rules=IsipRulesFieldDiff->new($table_name);
+		$table_status->isip_rules($diff_rules);
 		
 		
 	}
@@ -302,7 +304,7 @@ foreach my  $table_name (@table_list) {
 		}
 
 		if ($display_line) {
-			print join($separator,map {$_} $table_status->hash_to_array(%row))."\n";
+			print join($separator,$table_status->hash_to_array(%row))."\n";
 		}
 	}
 	
