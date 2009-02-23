@@ -232,12 +232,7 @@ if ($filter_field and $filter_field ne 'ICON' ) {
 	}
 	
 	# Check where is the clause
-	if ($filter_field eq 'PROJECT') {
-		$project_cache=CacheProject->new($env_sip);
-		$project_cache->set_dirty_project($filter_value);
-		#push @comment_condition, "$filter_field $comp_operator '$filter_value'";
-	}
-	else {
+	if ($filter_field ne 'PROJECT') {
 		push @query_condition, "$filter_field $comp_operator '$filter_value'";
 	}
 }
@@ -250,7 +245,7 @@ my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $
 $table_current->query_date($date_explore) if $date_explore;
 
 $table_current->query_condition(@query_condition);
-$table_current->metadata_condition(@comment_condition);
+#$table_current->metadata_condition(@comment_condition);
 
 # recuperation des colonnes à afficher
 my @query_field=$env_sip->get_table_field($table_name);
@@ -264,10 +259,13 @@ if ($explore_mode eq "compare") {
 
 	$table_from->query_condition(@query_condition);
 
+	$table_from->query_field("PROJECT",$table_from->query_field);
+	$table_current->query_field("PROJECT",$table_current->query_field);
+	
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
+	$table_explore->compare_exclude("PROJECT");
 	$table_explore->compare();
-	$table_explore->dynamic_field("PROJECT",$table_explore->dynamic_field());
 	
 	my $diff_rules = IsipRulesDiff->new($table_name, {debug => $debug_level});
 	$table_explore->isip_rules($diff_rules);
@@ -283,6 +281,10 @@ elsif ($explore_mode eq "explore") {
 		$dirty_cache->load_cache($table_name);
 		my $type_rules = IsipRules->new($table_name, {debug => $debug_level});
 		$table_explore->isip_rules($type_rules);
+	}
+	if ($filter_field eq 'PROJECT') {
+		$project_cache=CacheProject->new($env_sip);
+		$project_cache->set_dirty_project($filter_value);
 	}
 }
 

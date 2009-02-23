@@ -65,7 +65,7 @@ sub open() {
 	# default query
 	$self->{field}  = [ $self->{table_target}->field() ];
 	$self->{query_field}  = [ $self->{table_target}->query_field() ];
-	$self->{dynamic_field}  = [ "ICON" ];
+	$self->{dynamic_field}  = [ $self->{table_target}->dynamic_field() ];
 	
 	$self->_debug("initialisation");
 	
@@ -226,7 +226,7 @@ sub fetch_row() {
 	
 	# initialize dynamic fields
 	foreach ($self->dynamic_field) {
-		$current_row{$_}="";
+		$current_row{$_}="" if not $current_row{$_};
 	}
 	
 	# get only query fields
