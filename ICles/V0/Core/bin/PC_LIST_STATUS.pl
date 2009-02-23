@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+package PC_LIST_STATUS;
 # Inclusions obligatoires
 use strict;
 use Pod::Usage;
@@ -90,7 +90,7 @@ sub sortie ($) {
 
 sub usage($) {
 	my $verbosity=shift;
-	pod2usage(-verbose => $verbosity, -noperldoc => 1);
+	pod2usage(-verbose => $verbosity, -noperldoc => 1, -exitvat => "NOEXIT");
 	sortie(202); 
 }
 
@@ -267,6 +267,7 @@ if ($explore_mode eq "compare") {
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
 	$table_explore->compare();
+	$table_explore->dynamic_field("PROJECT",$table_explore->dynamic_field());
 	
 	my $diff_rules = IsipRulesDiff->new($table_name, {debug => $debug_level});
 	$table_explore->isip_rules($diff_rules);
@@ -317,4 +318,5 @@ while (my %row=$table_explore->fetch_row) {
 	
 }
 
-sortie($bv_severite);
+sortie($bv_severite) if !caller;
+eval $bv_severite if caller;
