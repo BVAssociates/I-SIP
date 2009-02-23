@@ -24,20 +24,34 @@ class FormComponentEditArea extends JPanel
         super();
         _component = new JTextArea("");
         _component.setRows(5);
+        _component.setColumns(30);
+        _component.setLineWrap(true);
+        _component.setWrapStyleWord(true);
 
         setLayout(new GridLayout(1, 1));
-        add(new JScrollPane(_component));
+        add(new JScrollPane(_component,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
     }
 
     public String getText()
     {
         byte[] text = _component.getText().getBytes();
-        return Base64.encodeBytes(text);
+        if (text.length == 0) {
+            return "";
+        }
+        return Base64.encodeBytes(text,Base64.DONT_BREAK_LINES | Base64.GZIP);
     }
 
     public void setText(String value) throws InnerException
     {
-        _component.setText(new String(Base64.decode(value)));
+        byte[] decoded=Base64.decode(value);
+        if (decoded==null) {
+            throw new InnerException("Impossible d'afficher le champ",
+                    "Problème lors du décodage de la valeur",
+                    null);
+        }
+        _component.setText(new String(decoded));
     }
     private JTextArea _component;
 }

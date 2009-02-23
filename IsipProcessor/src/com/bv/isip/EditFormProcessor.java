@@ -35,7 +35,6 @@ import com.bv.isis.corbacom.IsisForeignKeyLink;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -337,7 +336,7 @@ public class EditFormProcessor extends ProcessorFrame {
 		// On place ce panneau dans la zone sud
 		getContentPane().add(button_panel, BorderLayout.SOUTH);
 		// On redimensionne la fenêtre
-		setPreferredSize(new Dimension(400, 400));
+		//setPreferredSize(new Dimension(400, 400));
 
         populateFormPanel(true);
 
