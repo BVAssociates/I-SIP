@@ -109,8 +109,8 @@ if ( @ARGV < 3 ) {
 }
 my $type_table=shift;
 
-my $type_query=shift;
-my $column_name=shift;
+my $type_query=uc(shift);
+my $column_name=uc(shift);
 
 if ($type_table eq "HISTO") {
 	usage($debug_level) if not $environnement;
