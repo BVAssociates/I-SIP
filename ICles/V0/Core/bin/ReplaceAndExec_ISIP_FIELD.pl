@@ -197,12 +197,12 @@ $row{DATE_UPDATE} = $current_date;
 $row{USER_UPDATE} = $current_user;
 
 $histo_table->query_key_value($row{TABLE_KEY});
-$histo_table->query_field("ICON",$histo_table->field);
+$histo_table->query_field("ICON","PROJECT",$histo_table->field);
 
 # check line before
 %old_line=$histo_table->fetch_row;
 $histo_table->finish;
-log_info("Ancien status de la ligne : $old_line{ICON}");
+log_info("Ancien status de la ligne : $old_line{ICON},$old_line{PROJECT}");
 
 
 # update field
@@ -212,7 +212,7 @@ $local_table->update_row( %row );
 # check line after
 %new_line=$histo_table->fetch_row;
 $histo_table->finish;
-log_info("Nouveau status de la ligne : $new_line{ICON}");
+log_info("Nouveau status de la ligne : $new_line{ICON},$new_line{PROJECT}");
 
 #Update documentation
 #$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
@@ -222,25 +222,16 @@ use Isip::IsipTreeCache;
 use Isip::Cache::CacheStatus;
 use Isip::IsipRules;
 
-if ($old_line{ICON} eq $new_line{ICON}) {
-	log_info("Le status n'a pas changé");
-	sortie($bv_severite);
-}
+# needed for CacheStatus
+$new_line{OLD_ICON}=$old_line{ICON};
+# needed for CacheProject
+$new_line{OLD_PROJECT}=$old_line{PROJECT};
 
 my $cache=IsipTreeCache->new($env_sip);
 $cache->add_dispatcher(CacheStatus->new($env_sip));
+$cache->add_dispatcher(CacheProject->new($env_sip));
 
-my $type_rules = IsipRules->new($table_ikos);
-$histo_table->isip_rules($type_rules);
-
-while (my %row=$histo_table->fetch_row) {
-	if ($row{ICON} ne 'valide') {
-		$cache->recurse_line($table_ikos, \%row,"add");
-	}
-	else {
-		$cache->recurse_line($table_ikos, \%row,"remove");
-	}
-}
+$cache->recurse_line($table_ikos, \%new_line);
 $cache->save_cache();
 
 sortie($bv_severite);
