@@ -202,6 +202,8 @@ sub get_field_icon () {
 	
 	my $name=$line{FIELD_NAME};
 	my $status_desc=$line{STATUS};
+	my $project=$line{PROJECT};
+	my $comment=$line{COMMENT};
 	
 	my %status_by_name= reverse %{$self->{field_status}};
 	
@@ -229,7 +231,12 @@ sub get_field_icon () {
 	}
 	else {
 		if ($status eq "OK") {
-			$return_status=$self->{field_icon}{OK};
+			if ($project or $comment eq "Creation") {
+				$return_status=$self->{field_icon}{OK};
+			}
+			else {
+				$return_status=$self->{field_icon}{UNKNOWN};
+			}
 		}
 		elsif ($status eq "EMPTY") {
 			$return_status=$self->{field_icon}{EMPTY};
