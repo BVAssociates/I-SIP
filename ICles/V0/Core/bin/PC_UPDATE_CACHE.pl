@@ -123,7 +123,7 @@ my $counter=0;
 my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
-$cache->add_dispatcher(CacheStatus->new($env_sip));
+#$cache->add_dispatcher(CacheStatus->new($env_sip));
 $cache->add_dispatcher(CacheProject->new($env_sip));
 
 foreach my $current_table (@list_table) {
@@ -155,7 +155,7 @@ foreach my $current_table (@list_table) {
 	$histo_table->query_field("ICON","PROJECT",$histo_table->field);
 
 	while (my %row=$histo_table->fetch_row) {
-		$cache->recurse_line($current_table, \%row,"add");
+		$cache->recurse_line($current_table, \%row);
 	}
 }
 

@@ -182,6 +182,7 @@ use Isip::Environnement;
 use ITable::ITools;
 use Isip::ITable::DataDiff;
 use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheProject;
 
 use Isip::IsipRulesDiff;
 
@@ -216,6 +217,7 @@ foreach my $parent_table ($links->get_parent_tables($table_name) ) {
 }
 
 # Check if it is an SQL filter
+my $project_cache;
 if ($filter_field and $filter_field ne 'ICON' ) {
 
 	$filter_value =~ s/\*/%/g;
@@ -231,7 +233,9 @@ if ($filter_field and $filter_field ne 'ICON' ) {
 	
 	# Check where is the clause
 	if ($filter_field eq 'PROJECT') {
-		push @comment_condition, "$filter_field $comp_operator '$filter_value'";
+		$project_cache=CacheProject->new($env_sip);
+		$project_cache->set_dirty_project($filter_value);
+		#push @comment_condition, "$filter_field $comp_operator '$filter_value'";
 	}
 	else {
 		push @query_condition, "$filter_field $comp_operator '$filter_value'";
@@ -290,11 +294,21 @@ my @keys=$table_explore->key;
 while (my %row=$table_explore->fetch_row) {
 	my $string_key=join(',',@row{@keys});
 	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key);
-	if ($filter_field and $filter_field eq 'ICON') {
-		if (($filter_exclude and $row{ICON} ne $filter_value)
-			or (! $filter_exclude and $row{ICON} eq $filter_value) )
-		{
-				print join($table_explore->output_separator,@row{@query_field})."\n"
+	$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
+	if ($filter_field) {
+		if ($filter_field eq 'ICON') {
+			if (($filter_exclude and $row{ICON} ne $filter_value)
+				or (! $filter_exclude and $row{ICON} eq $filter_value) )
+			{
+					print join($table_explore->output_separator,@row{@query_field})."\n"
+			}
+		}
+		elsif ($filter_field eq 'PROJECT') {
+			if ($row{PROJECT} eq "dirty"
+				or (grep {/^$filter_value$/} split(',',$row{PROJECT}) ) )
+			{
+					print join($table_explore->output_separator,@row{@query_field})."\n"
+			}
 		}
 	}
 	else {

@@ -21,7 +21,7 @@ sub new() {
 	#   $self->{memory_cache}->{"table_name"}={key1 => {"project 1" => 1}, key2 => {"project 3" => 1}}
 	
 	$self->{dirty_project}=undef;
-	$self->{current_project}=[];
+	$self->{current_project}={};
 	
 	return $self;
 }
@@ -38,9 +38,34 @@ sub check_before_cache() {
 	my $table=shift;
 	my $value_ref=shift;
 	$self->{current_project}=[];
-	@{$self->{current_project}}=split(',',$value_ref->{PROJECT}) if $value_ref->{PROJECT};
+	my @new_project=split(',',$value_ref->{PROJECT}) if $value_ref->{PROJECT};
+	my @old_project=split(',',$value_ref->{OLD_PROJECT}) if $value_ref->{OLD_PROJECT};
 	
-	return @{$self->{current_project}};
+	my %project_action;
+	
+	if (@new_project) {
+		if (@old_project) {
+			#exclusion of 2 lists
+			my %seen_project;
+			foreach (@old_project) {
+				$seen_project{$_}--;
+			}
+			foreach (@new_project) {
+				$seen_project{$_}++;
+			}
+			foreach (keys %seen_project) {
+				# add only project which appear one time
+				$project_action{$_}=$seen_project{$_} if $seen_project{$_} != 0;
+			}
+		}
+		else {
+			%project_action = map {$_ => 1} @new_project;
+		}
+	}
+	
+	$self->{current_project}=\%project_action;
+	
+	return scalar keys(%project_action);
 }
 
 sub add_row_cache() {
@@ -52,22 +77,15 @@ sub add_row_cache() {
 	
 	$logger->info("add $key_string in CacheProject");
 	
-	foreach my $proj (@{$self->{current_project}}) {
-		$self->{memory_cache}->{$table_name}->{$key_string}->{$proj} += 1;
-	}
-}
-
-sub remove_row_cache() {
-	my $self=shift;
-	
-	my $table_name=shift;
-	my $key_string=shift;
-	my $value_ref=shift or croak("usage: add_row_cache(table_name,key_string , {PROJECT => value})");
-	
-
-	$logger->info("add $key_string in CacheProject");
-	foreach my $proj (@{$self->{current_project}}) {
-		$self->{memory_cache}->{$table_name}->{$key_string}->{$proj} -= 1;
+	my %current_project=%{$self->{current_project}};
+	foreach my $proj (keys %current_project) {
+		my $old_value = $self->{memory_cache}->{$table_name}->{$key_string}->{$proj};
+		$old_value=0 if not defined $old_value;
+		
+		my $new_value= $old_value + $current_project{$proj};
+		$new_value=0 if $new_value < 0;
+		
+		$self->{memory_cache}->{$table_name}->{$key_string}->{$proj} = $new_value;
 	}
 }
 

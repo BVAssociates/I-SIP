@@ -165,7 +165,7 @@ my $bv_debug=0;
 
 my $separator='@';
 
-my @virtual_field=("ICON");
+my @virtual_field=("ICON","PROJECT");
 
 #####  BEGIN TEMPLATES ##### 
 
@@ -196,7 +196,7 @@ Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 
 ##Don t work because items "Table" does not process Preprocessing
 #Table~~Afficher tout~expl~~~Explore~IKOS_TABLE_%s~0~~Expand
-Table~~Recherche rapide~expl~~{TABLE_FILTER=%s}{NAME_FILTER=getListValue("Filtrer sur:",FIELD_INFO@TEXT)}{VALUE_FILTER=getValue("Valeur")}~Explore~IKOS_TABLE_%s~0~~Configure
+#Table~~Recherche rapide~expl~~{TABLE_FILTER=%s}{NAME_FILTER=getListValue("Filtrer sur:",FIELD_INFO@TEXT)}{VALUE_FILTER=getValue("Valeur")}~Explore~IKOS_TABLE_%s~0~~Configure
 
 #Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
 ';

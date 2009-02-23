@@ -49,8 +49,7 @@ sub recurse_key() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $key_string=shift;
-	my $action=shift or croak("usage: add_dirty_key(table_name, key_string, action)");
+	my $key_string=shift or croak("usage: add_dirty_key(table_name, key_string, action)");
 	
 	if (not exists $self->{isip_env}->{info_table}->{$table_name}) {
 		$logger->error("$table_name does not exists");
@@ -83,35 +82,32 @@ sub recurse_key() {
 	
 	croak("unable to find line for $key_string in $table_name : $count lines found") if not $count;
 	
-	$self->recurse_line($table_name,\%return_row,$action);
+	$self->recurse_line($table_name,\%return_row);
 }
 
 # compute key from parent table dirty by their child
 # arg1 : table_name
 # arg2 : hash ref of line (contain at least foreign key)
-# arg3 : action to call on each dispatcher
 sub recurse_line() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $line_hash_ref=shift;
-	my $action=shift or croak("usage : recurse_line(table_name, {field1 => 'value',field2 => 'value',...}, action)");
+	my $line_hash_ref=shift or croak("usage : recurse_line(table_name, {field1 => 'value',field2 => 'value',...})");
 	
 	my $checked=0;
 	foreach my $dispatcher (@{$self->{dispacher_list}}) {
 		$checked += $dispatcher->check_before_cache($table_name,$line_hash_ref);
 	}
 	
-	$self->_recurse_line_action($table_name,$line_hash_ref,$action) if $checked; 
+	$self->_recurse_line_action($table_name,$line_hash_ref) if $checked; 
 }
 
 sub _recurse_line_action() {
 	my $self=shift;
 	
 	my $table_name=shift;
-	my $line_hash_ref=shift;
-	my $action=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...}, action)");
-	
+	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...})");
+
 	
 	my %line_hash=%{$line_hash_ref};
 	
@@ -170,12 +166,12 @@ sub _recurse_line_action() {
 	my $key_string=join(',',@parent_line{sort $table->key});
 	
 	
-	$logger->notice("$action in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->dispatch_action($action,$parent_table,$key_string,\%parent_line);
+	$logger->notice("add in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$self->dispatch_action($parent_table,$key_string,\%parent_line);
 	
 	# go deep
 	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
-	$self->_recurse_line_action($parent_table,\%parent_line,$action);
+	$self->_recurse_line_action($parent_table,\%parent_line);
 	
 }
 
@@ -241,22 +237,20 @@ sub add_dispatcher() {
 sub dispatch_action() {
 	my $self=shift;
 	
-	my $action=shift;
 	my $table_name=shift;
-	my $key_string=shift or croak("usage: add_row_cache(action,table_name,key_string [, value])");
+	my $key_string=shift or croak("usage: add_row_cache(table_name,key_string [, value])");
 	my $line_ref=shift;
 	
 	if (ref($line_ref) ne "HASH") {
 		croak("usage: add_row_cache(table_name,key_string,line_hash_ref)");
 	}
-	
-	my $method=$action."_row_cache";
+
 	foreach my $dispatcher (@{$self->{dispacher_list}}) {
-		if (defined $dispatcher->can($method)) {
-			$dispatcher->$method($table_name,$key_string,$line_ref);
+		if (defined $dispatcher->can("add_row_cache")) {
+			$dispatcher->add_row_cache($table_name,$key_string,$line_ref);
 		}
 		else {
-			$logger->error("Unable to do $method on ".ref($dispatcher));
+			$logger->error("Unable to do add_row_cache() on ".ref($dispatcher));
 		}
 	}
 	
@@ -331,12 +325,11 @@ if (!caller) {
 	$project_cache->set_dirty_project("test 5");
 	$test->add_dispatcher($project_cache);
 	
-	$test->clear_cache();
-	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
-	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "add");
-	$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13', "remove");
-	$test->recurse_line("CROEXPP2", { PROJECT => 'test 5','FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
-	$test->recurse_line("CROEXPP2", { PROJECT => "",'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' }, "add");
+	#$test->clear_cache();
+	#$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13');
+	#$test->recurse_key("CROEXPP2", 'SAB,CBLCA,26,13');
+	$test->recurse_line("CROEXPP2", { OLD_ICON => "valide", ICON => "burp" ,OLD_PROJECT=> "test 6", PROJECT => "test 5,test 6",'FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
+	$test->recurse_line("CROEXPP2", { OLD_ICON => "burp", ICON => "valide" , PROJECT => '','FNCDTRAIT' => 'ACH920','FNTYPTRAIT' => 'IC', 'FNCDOGA' => 'ICF' });
 	#$test->save_cache();
 	#$test->load_cache("CROEXPP2");
 	

@@ -2,7 +2,7 @@ package CacheStatus;
 
 use Isip::Cache::CacheInterface;
 use base 'CacheInterface';
-use fields qw(add_next);
+use fields qw(action);
 
 use strict;
 use Carp qw(carp croak );
@@ -20,7 +20,7 @@ sub new() {
 	# format :
 	#   $self->{memory_cache}->{"table_name"}={key1 => 6, key2 => 2}
 	
-	$self->{add_next}=0;
+	$self->{action}=0;
 	
 	return $self;
 }
@@ -31,16 +31,26 @@ sub check_before_cache() {
 	my $table=shift;
 	my $value_ref=shift;
 	
-	$self->{add_next}=0;
-	$self->{add_next}=1 if not $value_ref->{ICON} or $value_ref->{ICON} ne 'valide';
+	$self->{action}=0;
+	if ($value_ref->{ICON}) {
+		if ($value_ref->{OLD_ICON}) {
+			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
+				$self->{action}=1 if $value_ref->{OLD_ICON} eq 'valide';
+				$self->{action}=-1 if $value_ref->{ICON} eq 'valide';
+			}
+		}
+		else {
+			$self->{action}=1 if $value_ref->{ICON} ne 'valide';
+		}
+	}
 		
-	return $self->{add_next};
+	return abs($self->{action});
 }
 
 sub add_row_cache() {
 	my $self=shift;
 	
-	return if not $self->{add_next};
+	return if not $self->{action};
 	
 	my $table_name=shift;
 	my $key_string=shift;
@@ -48,20 +58,17 @@ sub add_row_cache() {
 	
 	
 	$logger->info("add $key_string in CacheStatus");
-	$self->{memory_cache}->{$table_name}->{$key_string} += 1;
-}
-
-sub remove_row_cache() {
-	my $self=shift;
 	
-	return if not $self->{add_next};
+	my $old_value=$self->{memory_cache}->{$table_name}->{$key_string};
+	$old_value=0 if not defined $old_value;
 	
-	my $table_name=shift;
-	my $key_string=shift or croak("usage: remove_row_cache(table_name,key_string [, value])");
-	
-	$logger->info("remove $key_string in CacheStatus");
-	$self->{memory_cache}->{$table_name}->{$key_string} -= 1;
-	$self->{add_next}=0;
+	my $new_value=$old_value + $self->{action};
+	if ($new_value > 0) {
+		$self->{memory_cache}->{$table_name}->{$key_string} = $new_value;
+	}
+	else {
+		$self->{memory_cache}->{$table_name}->{$key_string} = 0;
+	}
 }
 
 sub is_dirty_key() {
