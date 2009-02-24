@@ -222,12 +222,12 @@ foreach my $current_table (@list_table) {
 
 }
 
-log_info("Mise à jour du cache");
-foreach (keys %diff_list) {	
-	$cache->add_dirty_diff($_,$diff_list{$_});
-}
+#log_info("Mise à jour du cache");
+#foreach (keys %diff_list) {	
+#	$cache->add_dirty_diff($_,$diff_list{$_});
+#}
 # flush cache to disk
-$cache->update_dirty_cache();
+#$cache->update_dirty_cache();
 
 log_info("Nombre de mises à jour effectuées au total : $total_diff_counter");
 
