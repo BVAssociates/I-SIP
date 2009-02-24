@@ -11,7 +11,7 @@ ROOT_TABLE.Table;I_Configs;Liste des Tables
 ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[DESCRIPTION])
 DATE_HISTO.Table;I_Configs;Liste des Dates de changement
 DATE_HISTO.Item;T_Configs;%[DATE_EXPLORE] %[DESCRIPTION]
-DATE_HISTO_BASELINE.Item;T_Configs;%[DATE_UPDATE] (%[DESCRIPTION])
+DATE_HISTO_BASELINE.Item;T_Configs;%[DATE_EXPLORE] (%[DESCRIPTION])
 FILTER.Item;I_Transitions;%[FILTER_DESC]
 IKOS_TABLE_PROD_ETPTYPP.Table;key_go;Clefs de ETPTYPP (Etapes Type)
 IKOS_FIELD_PROD_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])

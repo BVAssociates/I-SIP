@@ -196,16 +196,7 @@ foreach my $current_table (@list_table) {
 			$histo_table->{table_histo}->execute("ANALYZE");
 			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
 			
-			#write date in baselines
-			if ($save_date) {
-				log_info("Sauvegarde de la date de collecte");
-				my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
-				$table_date->insert_row(ENVIRON => $environnement,
-										DATE_UPDATE => $timestamp,
-										DESCRIPTION => "",
-										BASELINE => 0);
-			}
-			
+					
 			#my ($current_vol,$current_dir,$current_script)=splitpath($0);
 			#my $cmd=catpath($current_vol,$current_dir,"PC_UPDATE_CACHE.pl");
 			#@ARGV=($environnement);
@@ -220,6 +211,16 @@ foreach my $current_table (@list_table) {
 		
 	}
 
+}
+
+#write date in baselines
+if ($save_date and $total_diff_counter) {
+	log_info("Sauvegarde de la date de collecte");
+	my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
+	$table_date->insert_row(ENVIRON => $environnement,
+							DATE_UPDATE => $timestamp,
+							DESCRIPTION => "",
+							BASELINE => 0);
 }
 
 #log_info("Mise à jour du cache");
