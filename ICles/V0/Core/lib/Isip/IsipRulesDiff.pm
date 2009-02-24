@@ -75,7 +75,7 @@ sub get_field_icon () {
 	
 	my $name=$line{FIELD_NAME};
 	my $value=$line{FIELD_VALUE};
-	my $diff=$line{STATUS};
+	my $diff=$line{DIFF};
 	
 	my $type=$self->get_field_type($name);
 

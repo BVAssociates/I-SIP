@@ -178,8 +178,8 @@ my $bv_severite=0;
 
 use Isip::Environnement;
 use ITable::ITools;
-use Isip::ITable::DataDiff;
-use Isip::IsipRulesFieldDiff;
+use Isip::ITable::FieldDiff;
+use Isip::IsipRulesDiff;
 
 # New SIP Object instance
 my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -272,21 +272,19 @@ if ($explore_mode eq "compare") {
 	$table_to->query_date($date_explore) if $date_explore;
 	
 	# open DataDiff table from two table
-	my $table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
+	my $table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
 	
 	# declare some additionnal blank fields
 	# (ICON field will be computed into DataDiff)
-	$table_status->dynamic_field("ICON","TYPE","TEXT","DOCUMENTATION");
+	$table_status->dynamic_field("ICON","TYPE","TEXT","DOCUMENTATION",$table_status->dynamic_field);
+	#$table_status->query_field(@query_field,"OLD_FIELD_VALUE","DIFF");
 	$table_status->query_field(@query_field);
-	
-	# Only FIELD_VALUE must be compare
-	$table_status->compare_exclude(grep(!/^FIELD_VALUE|FIELD_NAME$/,@query_field));
 	
 	# compute diff
 	$table_status->compare();
 
 	# Assign a IsipRules to compute ICON field
-	my $diff_rules=IsipRulesFieldDiff->new($table_name);
+	my $diff_rules=IsipRulesDiff->new($table_name);
 	$table_status->isip_rules($diff_rules);
 	
 	# put row in memory

@@ -65,7 +65,7 @@ sub open() {
 	# default query
 	$self->{field}  = [ $self->{table_target}->field() ];
 	$self->{query_field}  = [ $self->{table_target}->query_field() ];
-	$self->{dynamic_field}  = [ $self->{table_target}->dynamic_field() ];
+	$self->{dynamic_field}  = [ "DIFF",$self->{table_target}->dynamic_field() ];
 	
 	$self->_debug("initialisation");
 	
@@ -197,7 +197,7 @@ sub _fetch_row_memory() {
 }
 
 # get row  by one based on query
-sub fetch_row() {
+sub _fetch_row_static() {
 	my $self = shift;
 	
 	my %current_row;
@@ -232,7 +232,17 @@ sub fetch_row() {
 	# get only query fields
 	my %query_field_row;
 	@query_field_row{$self->query_field} = @current_row{$self->query_field};
+
+	return %query_field_row;
+}
+
+
+sub fetch_row() {
+	my $self=shift;
+
+	my %query_field_row=$self->_fetch_row_static();
 	
+	return () if not %query_field_row;
 	
 	# compute internal dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
@@ -255,7 +265,7 @@ sub fetch_row() {
 				if (not grep {$field eq $_} $self->compare_exclude()
 						and not $self->{isip_rules}->is_field_hidden(FIELD_NAME => $field) )
 				{
-					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $query_field_row{$field}, STATUS => $self->{diff}->get_field_status($key,$field));
+					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $query_field_row{$field}, DIFF => $self->{diff}->get_field_status($key,$field));
 				}
 			}
 			
