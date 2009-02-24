@@ -80,9 +80,8 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
-
 my %opts;
-getopts('hvns:', \%opts);
+getopts('hvns:b', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -91,6 +90,9 @@ usage($debug_level+1) if $opts{h};
 
 my $print_now=$opts{n};
 my $separator=$opts{s};
+my $baseline=$opts{b};
+
+
 
 #  Traitement des arguments
 ###########################################################
@@ -116,7 +118,8 @@ my $bv_severite=0;
 
 use ITable::ITools;
 my $table=ITools->open("DATE_UPDATE");
-$table->query_condition("ENVIRON = $environ") if $environ;
+$table->query_condition("ENVIRON = $environ",$table->query_condition) if $environ;
+$table->query_condition("BASELINE = 1",$table->query_condition) if $baseline;
 $separator=$table->output_separator if not defined $separator;
 
 die "unable to open local DATE_UPDATE in env $environ" if not defined $table;

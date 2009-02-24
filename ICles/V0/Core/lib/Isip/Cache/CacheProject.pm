@@ -231,8 +231,13 @@ sub save_cache() {
 sub clear_cache() {
 	my $self=shift;
 
+	my @tables=@_;
+	
+	my $where_condition="";
+	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
+	
 	my $table=$self->{isip_env}->open_cache_table("PROJECT_CACHE");
-	$table->execute("DELETE from PROJECT_CACHE");
+	$table->execute("DELETE from PROJECT_CACHE".$where_condition);
 }
 
 1;

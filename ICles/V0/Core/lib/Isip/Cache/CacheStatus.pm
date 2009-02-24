@@ -187,9 +187,14 @@ sub save_cache() {
 
 sub clear_cache() {
 	my $self=shift;
+	
+	my @tables=@_;
+	
+	my $where_condition="";
+	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
 
 	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
-	$table->execute("DELETE from CHILD_TO_COMMENT");
+	$table->execute("DELETE from CHILD_TO_COMMENT".$where_condition);
 }
 
 1;

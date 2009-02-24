@@ -176,9 +176,9 @@ my $bv_severite=0;
 
 use Isip::Environnement;
 use ITable::ITools;
-use Isip::ITable::DataDiff;
+use Isip::ITable::FieldDiff;
 use Isip::IsipRules;
-use Isip::IsipRulesFieldDiff;
+use Isip::IsipRulesDiff;
 
 # New SIP Object instance
 my $env_sip = Environnement->new($environnement, {debug => $debug_level});
@@ -236,21 +236,21 @@ foreach my  $table_name (@table_list) {
 		$table_to->query_date($date_explore) if $date_explore;
 		
 		# open DataDiff table from two table
-		$table_status=DataDiff->open($table_from, $table_to, {debug => $debug_level});
-		
-		# Only FIELD_VALUE must be compare
-		$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
+		$table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
 		
 		# declare some additionnal blank fields
 		# (ICON field will be computed into DataDiff)
 		$table_status->dynamic_field("ICON","TYPE","TEXT","PROJECT");
 		$table_status->query_field(@query_field);
 		
+		# Only FIELD_VALUE must be compare
+		$table_status->compare_exclude(grep(!/^FIELD_VALUE$/,$table_status->query_field));
+		
 		# compute diff
 		$table_status->compare();
 		
 		# Assign a IsipRules to compute ICON field
-		my $diff_rules=IsipRulesFieldDiff->new($table_name);
+		my $diff_rules=IsipRulesDiff->new($table_name);
 		$table_status->isip_rules($diff_rules);
 		
 		
@@ -271,7 +271,7 @@ foreach my  $table_name (@table_list) {
 	
 		# compute dynamic fields
 		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON} and $explore_mode eq "explore";
-			
+		
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if exists $row{TYPE};
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if exists $row{TEXT};
 		
@@ -289,7 +289,7 @@ foreach my  $table_name (@table_list) {
 				
 		# don't display ignored fields
 		my $display_line=1;
-		if (exists $row{$filter_field}) {
+		if ($filter_field and exists $row{$filter_field}) {
 			if ($filter_exclude and $row{$filter_field} eq $filter_value) {
 				$display_line = 0;
 			}
