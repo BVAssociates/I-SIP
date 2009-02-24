@@ -132,8 +132,8 @@ my $date_compare=$ENV{DATE_COMPARE};
 my $date_explore=$ENV{DATE_EXPLORE};
 my $module_explore=$ENV{Module} || $opts{m} || usage($debug_level);
 
-my $filter_field=$ENV{FILTER_FIELD}="ICON";
-my $filter_value=$ENV{FILTER_VALUE}="!valide";
+my $filter_field=$ENV{FILTER_FIELD};
+my $filter_value=$ENV{FILTER_VALUE};
 my $filter_exclude;
 
 if ($filter_value and $filter_value =~ /^!(.+)/) {
@@ -193,7 +193,7 @@ my @query_field=$itools_table->field;
 
 # Check if it is an SQL filter
 my @comment_condition;
-if ($filter_field and $filter_field ne 'ICON' ) {
+if ($filter_field and $filter_field !~ /^ICON|PROJECT$/ ) {
 
 	$filter_value =~ s/\*/%/g;
 	my $comp_operator;
@@ -208,7 +208,7 @@ if ($filter_field and $filter_field ne 'ICON' ) {
 	
 	# Check where is the clause
 	if ($filter_field eq 'PROJECT') {
-		push @comment_condition, "$filter_field $comp_operator '$filter_value'";
+		#push @comment_condition, "$filter_field $comp_operator '$filter_value'";
 	}
 }
 
@@ -289,11 +289,11 @@ foreach my  $table_name (@table_list) {
 				
 		# don't display ignored fields
 		my $display_line=1;
-		if ($filter_field eq 'ICON') {
-			if ($filter_exclude and $row{ICON} eq $filter_value) {
+		if (exists $row{$filter_field}) {
+			if ($filter_exclude and $row{$filter_field} eq $filter_value) {
 				$display_line = 0;
 			}
-			elsif (not $filter_exclude and $row{ICON} ne $filter_value) {
+			elsif (not $filter_exclude and $row{$filter_field} ne $filter_value) {
 				$display_line = 0;
 			}
 		}
