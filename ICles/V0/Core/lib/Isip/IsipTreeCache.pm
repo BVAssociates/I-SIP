@@ -317,7 +317,7 @@ if (!caller) {
 	use Isip::Cache::CacheStatus;
 	use Isip::Cache::CacheProject;
 	
-	my $env=Environnement->new("DEV");
+	my $env=Environnement->new("PRD");
 	my $test=IsipTreeCache->new($env);
 	
 	#$test->add_dispatcher(CacheStatus->new($env));
