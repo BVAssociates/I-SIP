@@ -170,6 +170,10 @@ $env_compare=$environnement if $date_compare and not $env_compare;
 my $explore_mode="explore";
 $explore_mode="compare" if $env_compare or $date_compare;
 
+# pas de filtre en mode "explore" sur une date
+undef $filter_field if $date_explore;
+undef $filter_value if $date_explore;
+
 log_info("Mode d'exploration : $explore_mode");
 
 #  Corps du script
