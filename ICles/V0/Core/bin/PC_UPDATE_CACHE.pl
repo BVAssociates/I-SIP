@@ -15,7 +15,7 @@ PC_UPDATE_CACHE - Met à jour le cache
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] environnement tablename
+ PC_UPDATE_HISTO.pl [-h] [-v] [-m module] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -36,6 +36,8 @@ Met à jour le cache.
 =head2 -v : Mode verbeux
 
 =head2 -n : Mode simulation
+
+=head2 -m : uniquement sur les tables d'un module
 
 =head1 ARGUMENTS
 
@@ -84,10 +86,12 @@ sub log_info {
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvn', \%opts);
+getopts('hvnm:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
+
+my $module=$opts{m};
 
 usage($debug_level+1) if $opts{h};
 
@@ -116,14 +120,20 @@ my $env_sip = Environnement->new($environnement);
 
 my %table_info = $env_sip->get_table_info();
 
-my @list_table=keys %table_info;
+my @list_table;
+if ($module) {
+	@list_table=$env_sip->get_table_list_module($module);
+}
+else {
+	@list_table=keys %table_info;
+}
 
 
 my $counter=0;
 my $source_table;
 
 my $cache=IsipTreeCache->new($env_sip);
-#$cache->add_dispatcher(CacheStatus->new($env_sip));
+$cache->add_dispatcher(CacheStatus->new($env_sip));
 $cache->add_dispatcher(CacheProject->new($env_sip));
 
 foreach my $current_table (@list_table) {
@@ -159,7 +169,7 @@ foreach my $current_table (@list_table) {
 	}
 }
 
-$cache->clear_cache;
+$cache->clear_cache(@list_table);
 $cache->save_cache;
 
 

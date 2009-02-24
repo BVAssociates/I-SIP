@@ -54,18 +54,15 @@ sub fetch_row() {
 		else {
 		
 			my %line_diff_icon=$self->{isip_rules}->enum_line_icon();
-			my $return_status="ERROR";
-			
-			my @diff_list;
+			my $return_status="";
 			
 			#dont check excluded fields
-			if (not grep {$query_field_row{FIELD_NAME} eq $_} $self->compare_exclude()
-					and not $self->{isip_rules}->is_field_hidden(%query_field_row) )
+			if (not grep {$query_field_row{FIELD_NAME} eq $_} $self->compare_exclude())
 			{
 				$query_field_row{DIFF} = $self->{diff}->get_field_status($key,"FIELD_VALUE");
 				$return_status=$self->{isip_rules}->get_field_icon(%query_field_row);
 			}
-						
+			
 			$query_field_row{ICON}=$return_status;
 		}
 	}

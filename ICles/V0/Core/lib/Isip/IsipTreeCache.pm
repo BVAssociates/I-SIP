@@ -296,8 +296,10 @@ sub is_dirty_key() {
 sub clear_cache() {
 	my $self=shift;
 	
+	my @tables=@_;
+	
 	foreach my $cache (@{$self->{dispacher_list}}) {
-		$cache->clear_cache();
+		$cache->clear_cache(@tables);
 	}
 	
 }
