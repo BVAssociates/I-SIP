@@ -83,8 +83,7 @@ sub add_row_cache() {
 		$old_value=0 if not defined $old_value;
 		
 		my $new_value= $old_value + $current_project{$proj};
-		$new_value=0 if $new_value < 0;
-		
+
 		$self->{memory_cache}->{$table_name}->{$key_string}->{$proj} = $new_value;
 	}
 }
@@ -98,12 +97,18 @@ sub is_dirty_key() {
 	if (not defined $self->{dirty_project}) {
 		croak("project must be defined by set_dirty_project(project)");
 	}
-	
+		
 	my $project=$self->{dirty_project};
 	
 	# check in current object
 	if (exists $self->{memory_cache}->{$table_name}->{$table_key}->{$project}) {
-		return $self->{memory_cache}->{$table_name}->{$table_key}->{$project};
+		my $return=$self->{memory_cache}->{$table_name}->{$table_key}->{$project};
+		if ($return > 0 ) {
+			return $return;
+		}
+		else {
+			return 0;
+		}
 	}
 	
 	# if key was not in dirty childs and table was preloaded, key is OK
@@ -199,7 +204,7 @@ sub save_cache() {
 				else {
 					my $sum_dirty=$num_child+$memory_num_child;
 					if ($sum_dirty > 0) {
-						$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+						$logger->debug("insert $dirty_table,$dirty_key,$sum_dirty");
 						$table->update_row(TABLE_NAME => $dirty_table,
 										TABLE_KEY => $dirty_key,
 										PROJECT_CHILD => $project,
