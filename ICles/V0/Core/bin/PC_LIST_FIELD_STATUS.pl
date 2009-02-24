@@ -293,8 +293,23 @@ if ($explore_mode eq "compare") {
 		$row{TYPE}=$diff_rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$diff_rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 		
+		my $display=1;
+		# don't display filtered fields
+		if ($filter_field and exists $row{$filter_field}) {
+			if ($filter_exclude and $row{$filter_field} eq $filter_value) {
+				$display=0;
+			}
+			elsif (not $filter_exclude and $row{$filter_field} ne $filter_value) {
+				$display=0;
+			}
+		}
+		
 		# don't display ignored fields
-		if ($row{TYPE} ne "exclus") {
+		if ($row{TYPE} eq "exclus") {
+			$display=0;
+		}
+
+		if ($display) {
 			$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
 		}
 	}
