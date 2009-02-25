@@ -125,7 +125,12 @@ public class SimpleSelect
      */
     public IsisParameter[] getFirst()
     {
-        return _tableData.get(keysIterator().next());
+        if (keysIterator().hasNext() ) {
+            return _tableData.get(keysIterator().next());
+        }
+        else {
+            return null;
+        }
     }
 
     /**
