@@ -1,4 +1,3 @@
-;;;;Afficher tout
-ICON;!valide;EXPLORE;;Lignes non valides
-ICON;!egal;;COMPARE;Lignes différentes
-PROJECT;;PROJECT_TYPE;;Filtrer sur Projet
+;;;Afficher tout
+ICON;!valide;;Lignes non validés
+PROJECT;;PROJECT_TYPE;Filtrer sur Projet

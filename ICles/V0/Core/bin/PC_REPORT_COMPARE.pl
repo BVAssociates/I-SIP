@@ -12,11 +12,11 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_REPORT_STATUS - Affiche une exploration sous forme CSV
+PC_REPORT_COMPARE - Affiche une exploration sous forme CSV
 
 =head1 SYNOPSIS
 
- PC_REPORT_STATUS.pl [-m module] environnement_cible date_cible
+ PC_REPORT_COMPARE.pl -c environnement_source@date_source [-m module] environnement_cible date_cible
  
 =head1 DESCRIPTION
 
@@ -58,6 +58,8 @@ exemple : RDNPRCOD=VTS
 =item -v : Mode verbeux
 
 =item -m module : uniquement sur les tables de module
+
+=item -c environnement_source@date_source : force le mode COMPARE
 
 =back
 
@@ -116,7 +118,7 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('m:hv', \%opts);
+getopts('m:hvc:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -170,8 +172,8 @@ $explore_mode="compare" if $env_compare or $date_compare;
 
 log_info("Mode d'exploration : $explore_mode");
 
-if ($explore_mode eq "compare") {
-	log_erreur("mode compare impossible");
+if ($explore_mode eq "explore") {
+	log_erreur("mode explore impossible");
 }
 
 #  Corps du script
@@ -190,7 +192,7 @@ my @table_list=($table_name_arg) || $env_sip->get_table_list_module($module_expl
 
 # recupere à liste de champ à afficher
 use ITable::ITools;
-my $itools_table=ITools->open("FIELD_REPORT_HISTO", {debug => $debug_level});
+my $itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
 my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
 
@@ -224,18 +226,40 @@ foreach my  $table_name (@table_list) {
 	my %memory_row;
 
 	my $table_status;
+		
+	my $env_sip_from = Environnement->new($env_compare);
+	my $env_sip_to = $env_sip;
 	
-	# open histo table
-	$table_status = $env_sip->open_histo_field_table($table_name, {debug => $debug_level});
-	$table_status->query_date($date_explore) if $date_explore;
+	# open first table
+	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
+	
+	$table_from->query_date($date_compare) if $date_compare;
+	
+	# open second table
+	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
+	
+	$table_to->query_date($date_explore) if $date_explore;
+	
+	# open DataDiff table from two table
+	$table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
+	
+	# declare some additionnal blank fields
+	# (ICON field will be computed into DataDiff)
+	$table_status->dynamic_field($table_status->dynamic_field,"ICON","TYPE","TEXT");
 	$table_status->query_field(@query_field);
-
+	
+	
+	# compute diff
+	$table_status->compare();
+	
+	# Assign a IsipRules to compute ICON field
+	my $diff_rules=IsipRulesDiff->new($table_name);
+	$table_status->isip_rules($diff_rules);
+	
 	
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
 	
-		# compute dynamic fields
-		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON} and $explore_mode eq "explore";
 		
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if exists $row{TYPE};
 		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if exists $row{TEXT};

@@ -299,10 +299,23 @@ sub compare_exclude() {
 
 	my @fields=@_;
 	if (@fields) {
-		if ( $self->has_fields(@fields) != @fields) {
-			carp("compare_exclude : field not found <@fields>");
+		my @field_found=$self->has_fields(@fields);
+		my %seen_field;
+		foreach (@field_found, @fields) {
+			$seen_field{$_}++;
 		}
-		@{ $self->{diff_exclude} } =  @fields;
+		
+		my @error_fields;
+		foreach (keys %seen_field) {
+			push @error_fields, $_ if $seen_field{$_} < 2;
+		}
+		
+		if (@error_fields) {
+			croak("error querying fields <@error_fields>");
+		} else {
+			@{ $self->{diff_exclude} } =  @fields;
+		}
+		
 	}
 
 	return @{ $self->{diff_exclude} }

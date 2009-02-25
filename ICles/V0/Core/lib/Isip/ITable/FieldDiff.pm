@@ -27,12 +27,16 @@ sub open() {
 	my $self=bless( $class->SUPER::open(@_), $class);
 	
 	
-	$self->{dynamic_field} = ["OLD_FIELD_VALUE","DIFF"];
-	
-	# Only FIELD_VALUE must be compare
-	$self->compare_exclude(grep(!/^FIELD_VALUE|FIELD_NAME$/,$self->query_field));
+	$self->{dynamic_field} = [ $self->dynamic_field ,"OLD_FIELD_VALUE"];
 	
 	return $self;
+}
+
+# Only FIELD_VALUE must be compare
+sub compare_exclude() {
+	my $self=shift;
+	
+	return grep(!/^FIELD_VALUE|FIELD_NAME$/,$self->query_field);
 }
 
 sub fetch_row() {
@@ -72,6 +76,11 @@ sub fetch_row() {
 	if ($query_field_row{ICON} eq "different") {
 		my %update=$self->{diff}->get_source_update($key);
 		$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
+	}
+	elsif ($query_field_row{ICON} eq "supprime") {
+		my %update=$self->{diff}->get_source_only($key);
+		$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
+		$query_field_row{FIELD_VALUE}="";
 	}
 	
 	return %query_field_row;
