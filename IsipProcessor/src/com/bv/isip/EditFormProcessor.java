@@ -113,14 +113,14 @@ public class EditFormProcessor extends ProcessorFrame {
 
         _FormConfiguration = new EditFormConfig((GenericTreeObjectNode)selectedNode,parameters);
 
-        // get the primary keys for current table
-        TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
-        GenericTreeObjectNode node = (GenericTreeObjectNode)selectedNode;
-        _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
-        def_cache.releaseTableDefinitionLeasing(_tableDefinition);
+        initTable();
         
 		setTitle(menuItem.getText());
 		makePanel();
+
+
+        populateFormPanel(true);
+        
         pack();
 		display();
 	}
@@ -132,9 +132,10 @@ public class EditFormProcessor extends ProcessorFrame {
      *
      * @return le JPanel central à inserer
      */
-     protected JPanel makeFormPanel2()
+    @Deprecated
+    protected JPanel makeFormPanel2()
     {
-    return new IsipPanel();
+        return new IsipPanel();
     }
 
 
@@ -149,6 +150,8 @@ public class EditFormProcessor extends ProcessorFrame {
     {
         JPanel form_panel = new JPanel();
         JComponent form_value;
+        
+        FormComponentFactory component_factory=new FormComponentFactory((GenericTreeObjectNode)getSelectedNode());
 
         form_panel.setLayout(new GridBagLayout());
 
@@ -195,27 +198,8 @@ public class EditFormProcessor extends ProcessorFrame {
                 constraintLabel.insets = new java.awt.Insets(5, 5, 5, 5);
                 form_panel.add(form_entry, constraintLabel);
 
-                if (formType.equals("Label")) {
-                    form_value = new FormComponentLabel();
-                }
-                else if(formType.equals("Edit"))
-                {
-                    form_value = new FormComponentEdit();
-                }
-                else if(formType.equals("List"))
-                {
-                    form_value = new FormComponentList((GenericTreeObjectNode)getSelectedNode(),formId,false);
-                }
-                else if(formType.equals("ListEdit"))
-                {
-                    form_value = new FormComponentList((GenericTreeObjectNode)getSelectedNode(),formId,true);
-                }
-                else if(formType.equals("EditMulti"))
-                {
-                    form_value = new FormComponentEditArea();
-                } else {
-                    throw new InnerException("Type " + formType + " non reconnu", "Erreur", null);
-                }
+                //on creer le panel de saisie pour le champ
+                form_value=(JComponent) component_factory.makeComponent(formType, formId);
 
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
@@ -337,8 +321,6 @@ public class EditFormProcessor extends ProcessorFrame {
 		getContentPane().add(button_panel, BorderLayout.SOUTH);
 		// On redimensionne la fenêtre
 		//setPreferredSize(new Dimension(400, 400));
-
-        populateFormPanel(true);
 
 		trace_methods.endOfMethod();
 	}
@@ -549,6 +531,18 @@ public class EditFormProcessor extends ProcessorFrame {
         //averti l'interface que le contenu a changé
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
 
+    }
+
+    /**
+     * Initialise le membre _tableDefinition avec la definition extraite
+     * du node en cours d'exploration
+     */
+    protected void initTable() {
+     // get the primary keys for current table
+        TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
+        GenericTreeObjectNode node = (GenericTreeObjectNode)getSelectedNode();
+        _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
+        def_cache.releaseTableDefinitionLeasing(_tableDefinition);
     }
 
     /**

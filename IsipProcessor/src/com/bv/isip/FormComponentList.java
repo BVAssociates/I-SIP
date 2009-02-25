@@ -36,7 +36,7 @@ public class FormComponentList extends JPanel
         implements FormComponentInterface {
 
 
-    public FormComponentList(GenericTreeObjectNode node, String field,boolean admin)
+    public FormComponentList(GenericTreeObjectNode node, String field)
             throws InnerException
     {
         super();
@@ -54,13 +54,6 @@ public class FormComponentList extends JPanel
         add(_component,contraints);
         init(node,field);
 
-        if (admin) {
-            GridBagConstraints contraints_button = new GridBagConstraints();
-            contraints_button.fill = GridBagConstraints.VERTICAL;
-            contraints_button.gridx = 1;
-            contraints_button.gridy = 0;
-            add(makeAdministrate(),contraints_button);
-        }
     }
 
 
@@ -86,7 +79,7 @@ public class FormComponentList extends JPanel
                     null);
         }
 
-        ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, parameter, definition));
+        ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, definition,field));
         _component.setModel(datamodel);
     }
 
@@ -111,57 +104,6 @@ public class FormComponentList extends JPanel
         _component.setSelectedItem(value);
     }
 
-    private JComponent makeAdministrate()
-    {
-        JButton admin_button=new JButton("+");
-        admin_button.setToolTipText("Ajouter");
-
-        admin_button.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                newOption();
-            }
-        });
-        return admin_button;
-    }
-
-    private void newOption()
-    {
-        String new_option = JOptionPane.showInputDialog(this, "Ajouter l'entrée :");
-
-        boolean found_value = false;
-        for (int i = 0; i < _component.getItemCount(); i++) {
-            if (_component.getItemAt(i).equals(new_option)) {
-                found_value = true;
-            }
-        }
-
-        if (found_value) {
-            //TODO print a warning?
-            _component.setSelectedItem(new_option);
-        }
-        else {
-            try {
-                if (new_option != null) {
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-                    String date_auto = dateFormat.format(new Date());
-                    int result = JOptionPane.showConfirmDialog(this,
-                            "Etes vous sur de vouloir créér le projet : \"" + new_option + "\" ?",
-                            "Creation de projet",
-                            JOptionPane.YES_NO_OPTION);
-                    if (result == JOptionPane.YES_OPTION) {
-                        execute("Insert INTO PROJECT_TYPE VALUES \"" + new_option + "@@" + date_auto + "@\"");
-                        _component.addItem(new_option);
-                        _component.setSelectedItem(new_option);
-                    }
-                }
-            } catch (InnerException ex) {
-                //TODO
-            }
-        }
-    }
-
     
     /**
      * Interroge la table liée par clef étrangère et recupère la liste des
@@ -170,11 +112,9 @@ public class FormComponentList extends JPanel
      * @param le champ
      * @return Liste de clefs
      */
-    private String[] getOptionsForeign(GenericTreeObjectNode selectedNode, IsisParameter parameter, IsisTableDefinition definition)
+    private String[] getOptionsForeign(GenericTreeObjectNode selectedNode, IsisTableDefinition definition,String field_name)
             throws InnerException
     {
-
-        String field_name=parameter.name;
 
         // recherche de la table+champ lié dans la definition
         for (int i=0; i < definition.foreignKeys.length; i++) {
@@ -278,27 +218,27 @@ public class FormComponentList extends JPanel
     /**
      * stocke la reference vers la combobox
      */
-    private JComboBox _component;
+    protected JComboBox _component;
 
     /**
      * stocke la reference vers la combobox
      */
-    private GenericTreeObjectNode _selectedNode;
+    protected GenericTreeObjectNode _selectedNode;
 
     /**
      * stocke la table utilisée pour la liste
      */
-    private String _foreignTable;
+    protected String _foreignTable;
 
     /**
      * stocke les colonnes utilisées pour la liste
      */
-    private String _foreignColumn;
+    protected String _foreignColumn;
 
     /**
      * stocke le champ en cours d'edition
      */
-    private String _field;
+    protected String _field;
 
     
     /**
