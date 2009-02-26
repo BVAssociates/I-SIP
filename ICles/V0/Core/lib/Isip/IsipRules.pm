@@ -106,25 +106,25 @@ sub _init_info() {
 sub enum_type () {
 	my $self=shift;
 	
-	return (DATA => "fonctionnel", CONFIG => "technique", MANUAL => "manuel", STAMP => "administratif", HIDDEN => "exclus");
+	return (KEY => "clef", DATA => "fonctionnel", CONFIG => "technique", MANUAL => "manuel", STAMP => "administratif", HIDDEN => "exclus");
 }
 
 sub enum_field_status () {
 	my $self=shift;
 	
-	return (EMPTY => "",  OK => "Valide", TEST => "Test", SEEN => "Attente", UNKNOWN => "Inconnu");
+	return (UPDATED => "",  OK => "Valide", TEST => "Test", SEEN => "Attente", UNKNOWN => "Inconnu");
 }
 
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (EMPTY => "nouveau",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "invalide", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
+	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "invalide", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
 }
 
 sub enum_line_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau",  OK => "valide", SEEN => "edit", UNKNOWN => "invalide", ERROR => "erreur");
+	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", SEEN => "edit", UNKNOWN => "invalide", ERROR => "erreur");
 }
 
 ##################################################
@@ -226,11 +226,17 @@ sub get_field_icon () {
 		$return_status=$self->{field_icon}{STAMP};
 		#$return_status=$self->{field_status}{HIDDEN};
 	}
+	# case of new line
+	elsif ($type eq "KEY" and $status eq "UPDATED") {
+		$return_status=$self->{field_icon}{NEW};
+	}
 	elsif ($type eq "EXCLUDE") {
 		$return_status=$self->{field_icon}{OK};
 	}
 	else {
 		if ($status eq "OK") {
+			# PROJECT must be filled to be OK
+			# except at base creation
 			if ($project or $comment eq "Creation") {
 				$return_status=$self->{field_icon}{OK};
 			}
@@ -238,8 +244,8 @@ sub get_field_icon () {
 				$return_status=$self->{field_icon}{UNKNOWN};
 			}
 		}
-		elsif ($status eq "EMPTY") {
-			$return_status=$self->{field_icon}{EMPTY};
+		elsif ($status eq "UPDATED") {
+			$return_status=$self->{field_icon}{UPDATED};
 		}
 		elsif ($status eq "TEST") {
 			$return_status=$self->{field_icon}{TEST};
@@ -269,7 +275,7 @@ sub get_line_icon () {
 	
 	my %icon_by_name= reverse %{$self->{field_icon}};
 	
-	my %counter=(EMPTY => 0, UNKNOWN => 0, SEEN => 0, TEST => 0, OK => 0);
+	my %counter=(NEW => 0, UPDATED => 0, UNKNOWN => 0, SEEN => 0, TEST => 0, OK => 0);
 	
 	foreach (@icon_list) {
 		my $icon;
@@ -291,7 +297,8 @@ sub get_line_icon () {
 		
 	}
 	
-	return $self->{line_icon}{NEW} if $counter{EMPTY} > 0;
+	return $self->{line_icon}{NEW} if $counter{NEW} > 0;
+	return $self->{line_icon}{UPDATED} if $counter{UPDATED} > 0;
 	return $self->{line_icon}{UNKNOWN} if $counter{UNKNOWN} > 0;
 	return $self->{line_icon}{SEEN} if $counter{TEST} > 0;
 	return $self->{line_icon}{SEEN} if $counter{SEEN} > 0;

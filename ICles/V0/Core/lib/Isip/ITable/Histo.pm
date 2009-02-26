@@ -331,26 +331,40 @@ sub fetch_row() {
 	
 	# if a temp_next_row exist from previous call, we add the FIELD_VALUE to the return hash
 	if ( %{ $self->{temp_next_row} } ) {
-		my %temp_next_row= %{ $self->{temp_next_row} };
+		my %field_line= %{ $self->{temp_next_row} };
 		
-		# add the FIELD_VALUE to the return hash
-		$return_line{$temp_next_row{FIELD_NAME}}=$temp_next_row{FIELD_VALUE};
+		# split FIELD_NAME when one row contains more than one real field
+		if (grep {/,/} $field_line{FIELD_NAME}) {
+			# case when one row contains several fields
+			my @field_list=split(',',$field_line{FIELD_NAME});
+			my @value_list=split(',',$field_line{FIELD_VALUE});
+			
+			# sanity check
+			croak ("Incorrect value in base for ".$field_line{ID}) if @field_list ne @value_list;
+			
+			foreach my $field_name (@field_list) { 
+				# add the FIELD_VALUE to the return hash
+				$return_line{$field_name}=shift @value_list;
+			}
+			
+		}
+		else {
+				$return_line{$field_line{FIELD_NAME}}=$field_line{FIELD_VALUE};
+		}
 		
 		# line is modified if one field have no status
-		if (blessed $self->{isip_rules} and not $self->{isip_rules}->is_field_hidden(%temp_next_row)) {
-			push @field_icon,$self->{isip_rules}->get_field_icon(%temp_next_row);
+		if (blessed $self->{isip_rules} and not $self->{isip_rules}->is_field_hidden(%field_line)) {
+			push @field_icon,$self->{isip_rules}->get_field_icon(%field_line);
 		}
-		$field_project{$temp_next_row{PROJECT}}++ if $field_line{PROJECT};
+		$field_project{$field_line{PROJECT}}++ if $field_line{PROJECT};
 		
-		
-		$current_key=$temp_next_row{TABLE_KEY};
+		$current_key=$field_line{TABLE_KEY};
 	}
 	
 	#return every row until TABLE_KEY change
 	# ID,DATE_HISTO, TABLE_KEY, FIELD_NAME, FIELD_VALUE
 	while (%field_line = $self->{table_histo}->fetch_row ) {
-		
-			
+				
 		# if no current key, it's a new row
 		$current_key = $field_line{TABLE_KEY} if not defined $current_key;
 		
@@ -360,8 +374,24 @@ sub fetch_row() {
 			last;
 		}
 		
-		# add the FIELD_VALUE to the return hash
-		$return_line{$field_line{FIELD_NAME} } = $field_line{FIELD_VALUE} ;
+		# split FIELD_NAME when one row contains more than one real field
+		if (grep {/,/} $field_line{FIELD_NAME}) {
+			# case when one row contains several fields
+			my @field_list=split(',',$field_line{FIELD_NAME});
+			my @value_list=split(',',$field_line{FIELD_VALUE});
+			
+			# sanity check
+			croak ("Incorrect value in HISTO for ".$field_line{ID}) if @field_list ne @value_list;
+			
+			foreach my $field_name (@field_list) { 
+				# add the FIELD_VALUE to the return hash
+				$return_line{$field_name}=shift @value_list;
+			}
+			
+		}
+		else {
+				$return_line{$field_line{FIELD_NAME}}=$field_line{FIELD_VALUE};
+		}
 		
 		# add status
 		if (blessed $self->{isip_rules} and not $self->{isip_rules}->is_field_hidden(%field_line)) {
@@ -380,11 +410,12 @@ sub fetch_row() {
 	my $missing_key;
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
-			$self->_debug("field $_ cannot be null (should be one of : $field_line{TABLE_KEY})");
+			$self->_error("field $_ cannot be null (should be one of : $field_line{TABLE_KEY})");
 			$missing_key=1;
 		}
 	}
-	@return_line{$self->key()}=split(',',$current_key) if $missing_key;
+	#@return_line{$self->key()}=split(',',$current_key) if $missing_key;
+	croak("unable to get primary key") if $missing_key;
 	
 	foreach ($self->not_null() ) {
 		if (not exists $return_line{$_}) {

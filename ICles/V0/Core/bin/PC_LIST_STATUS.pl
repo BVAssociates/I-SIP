@@ -282,7 +282,7 @@ elsif ($explore_mode eq "explore") {
 		my $type_rules = IsipRules->new($table_name, {debug => $debug_level});
 		$table_explore->isip_rules($type_rules);
 	}
-	if ($filter_field eq 'PROJECT') {
+	if ($filter_field and $filter_field eq 'PROJECT') {
 		$project_cache=CacheProject->new($env_sip);
 		$project_cache->set_dirty_project($filter_value);
 	}

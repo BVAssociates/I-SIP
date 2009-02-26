@@ -353,9 +353,14 @@ elsif ($explore_mode eq "explore") {
 
 
 # order the lines in the order of table field
-my @field_order=$ikos_sip->get_table_field($table_name);
-for (@field_order) {
-	print $memory_row{$_} if exists $memory_row{$_};
+my @field_order=@memory_row{$ikos_sip->get_table_field($table_name)};
+delete @memory_row{$ikos_sip->get_table_field($table_name)};
+for (keys %memory_row) {
+	print $memory_row{$_};
 }
+for (@field_order) {
+	print;
+}
+
 
 sortie($bv_severite);

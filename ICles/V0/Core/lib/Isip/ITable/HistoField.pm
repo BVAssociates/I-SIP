@@ -112,23 +112,6 @@ sub get_query()
 	return $select_histo;
 }
 
-
-sub __old_fetch_row() {
-	my $self=shift;
-	
-	my %row=$self->SUPER::fetch_row();
-	return %row;
-	
-	#obsolete
-	if ( %row and grep($_ eq "DESCRIPTION",$self->query_field()) ) {
-		$row{DESCRIPTION}="";
-	
-		$row{DESCRIPTION}=$self->{field_doc}->{$row{TABLE_KEY}}{$row{FIELD_NAME}}
-			if exists $self->{field_doc}->{$row{TABLE_KEY}}{$row{FIELD_NAME}};
-	}
-	
-}
- 
  
  
 =head1 AUTHOR
