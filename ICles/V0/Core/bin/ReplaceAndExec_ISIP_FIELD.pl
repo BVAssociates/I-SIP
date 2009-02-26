@@ -214,6 +214,15 @@ $local_table->update_row( %row );
 $histo_table->finish;
 log_info("Nouveau status de la ligne : $new_line{ICON},$new_line{PROJECT}");
 
+# on recherche si la ligne en cours contient les clefs primaires
+my $histo_keys=histo_table->key;
+if ( $row{TABLE_KEY} eq $row{FIELD_VALUE} ) {
+	#mise à jour automatique des champ de la ligne qui ne sont pas commentés
+	
+	# TODO
+	#$histo_table->update_row_comment(%row);
+}
+
 #Update documentation
 #$doc_table=$env_sip->open_documentation_table($table_ikos, {timeout => 10000, debug => $debug_level});
 

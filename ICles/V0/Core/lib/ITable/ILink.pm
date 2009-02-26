@@ -16,6 +16,9 @@ sub new() {
 	$self->{table_child}= {};
 	$self->{table_parent}= {};
 	
+	# static var for get_depth_table_path()
+	$self->{depth_path_seen}= {};
+	
 	return bless ($self, $class);
 }
 
@@ -65,6 +68,7 @@ sub get_parent_fields_OBSOLETE() {
 	}
 }
 
+# renvoie la liste des tables dont la table $table possède une clef etrangère
 sub get_parent_tables() {
 	my $self=shift;
 	my $table=shift or croak ("usage : get_parent_tables(table)");
@@ -73,13 +77,22 @@ sub get_parent_tables() {
 
 }
 
+# renvoie la liste des tables qui ont une clef etrangère vers la table $table
+sub get_child_tables() {
+	my $self=shift;
+	my $table=shift or croak ("usage : get_child_tables(table)");
+	
+	return keys %{$self->{table_child}->{$table} };
+
+}
+
 # recursive function
 # return field list linked by foreign key 
 # from child to parents
-sub get_parent_path() {
+sub get_parent_field_path() {
 	my $self=shift;
 
-	my $current_table=shift or croak("usage: parent_list(table)");
+	my $current_table=shift or croak("usage: get_parent_field_path(table)");
 
 
 	my %parent_hash=%{ $self->{table_parent}->{$current_table} } if exists $self->{table_parent}->{$current_table} ;
@@ -90,12 +103,35 @@ sub get_parent_path() {
 	return ($current_table,$self->parent_list(keys %parent_hash));
 }
 
-sub get_child_tables() {
+# recursive function to get a deep path (deepest first)
+# return table list
+sub get_depth_table_path() {
 	my $self=shift;
-	my $table=shift or croak ("usage : get_child_tables(table)");
 	
-	return keys %{$self->{table_child}->{$table} };
+	my $current_table=shift or croak("usage: get_depth_table_path(table)");
+	
+	if (exists $self->{depth_path_seen}->{$current_table}) {
+		croak("Detection de cycle sur la table $current_table.
+Veuiller vérifier ses liens (F_KEY).");
+	}
+	else {
+		$self->{depth_path_seen}->{$current_table}++;
+	}
+	
+	die "TODO!";
+	
+	my %parent_node=%{ $self->{table_child}->{current_table}};
+	my @child_list;
+	foreach my $adjacent (grep {$_ ne $current_table} keys %parent_node) {
+		@child_list=$self->get_depth_table_path($adjacent);
+	}
+	
+	return (@child_list,$current_table);
+}
 
+# return true if graph is a tree (no cycle)
+sub is_tree_graph() {
+	my $self=shift;
 }
 
 
