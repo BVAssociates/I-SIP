@@ -15,7 +15,7 @@ DATE_HISTO,Date Collecte,Label
 DATE_UPDATE,Date commentaire,Label
 USER_UPDATE,User commentaire,Label
 STATUS,Etat du commentaire,List
-PROJECT,Projet lié,ListEdit
+PROJECT,Projet lié,ListProject
 COMMENT,Commentaire,Edit
 MEMO,Description du changement,EditMulti
 #SEP3,,Separator
