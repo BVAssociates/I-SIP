@@ -15,17 +15,9 @@ import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -59,25 +51,10 @@ public class FormComponentList extends JPanel
 
     public void init(GenericTreeObjectNode node,String field) throws InnerException
     {
-        IsisParameter[] parameter_list=node.getObjectParameters();
-        IsisParameter parameter=null;
-        String table_name;
 
-        for (int i=0; i < parameter_list.length; i++) {
-            if (parameter_list[i].name.equals(field)) {
-                parameter=parameter_list[i];
-            }
-        }
-        table_name=node.getTableName();
         TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
         IsisTableDefinition definition = def_cache.getTableDefinition(node.getAgentName(), node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
         def_cache.releaseTableDefinitionLeasing(definition);
-
-        if (parameter == null) {
-            throw new InnerException("Erreur pendant la constuction du panneau",
-                    "Impossible de trouver le champ "+field+" dans le noeud selectionné",
-                    null);
-        }
 
         ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, definition,field));
         _component.setModel(datamodel);

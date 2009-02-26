@@ -47,7 +47,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 public class EditFormProcessor extends ProcessorFrame {
-
+    
     /**
      * Isip contructor
      *
@@ -102,11 +102,6 @@ public class EditFormProcessor extends ProcessorFrame {
 
     	super.run(windowInterface, menuItem, parameters, preprocessing, postprocessing, selectedNode);
 
-        // Ce processeur ne fonctionne pas sur les noeud Table
-        if (selectedNode instanceof GenericTreeClassNode) {
-            throw new InnerException("", "", null);
-        }
-
         if (parameters.equals("")) {
             throw new InnerException("", "Ce processeur prend un parametre : Table", null);
         }
@@ -124,19 +119,6 @@ public class EditFormProcessor extends ProcessorFrame {
         pack();
 		display();
 	}
-
-
-    /**
-     * Methode makeFormPanel deleguant la génération du JPanel à une classe
-     * externe
-     *
-     * @return le JPanel central à inserer
-     */
-    @Deprecated
-    protected JPanel makeFormPanel2()
-    {
-        return new IsipPanel();
-    }
 
 
     /**
@@ -340,29 +322,24 @@ public class EditFormProcessor extends ProcessorFrame {
     {
         // Variable qui stockera les valeurs à afficher
         IsisParameter[] data;
-
-        // Construction de la condition du Select pour ne recuperer que
-        // la ligne correspondante aux clefs
-        GenericTreeObjectNode node=(GenericTreeObjectNode) getSelectedNode();
-        String condition = "";
-        for (int k = 0; k < _tableDefinition.key.length; k++) {
-            if (!condition.equals("")) {
-                condition += " AND ";
-            }
-            condition = _tableDefinition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(_tableDefinition.key[k])).value;
-        }
-
+        
         if (refresh) {
             //recuperation des données depuis la table
             SimpleSelect HistoTable=
-                    new SimpleSelect(getSelectedNode(), node.getTableName(),new String[] {""}, condition);
+                    new SimpleSelect(getSelectedNode(), _tableDefinition.tableName,new String[] {""}, _select_condition);
             data=HistoTable.getFirst();
             if (data == null) {
                 throw new InnerException("Les informations ont changés pendant l'edition", "Veuiller fermer et recommencer ", null);
             }
         } else {
             //recuperation des données dans le noeud courant
-            data = ((GenericTreeObjectNode) getSelectedNode()).getObjectParameters();
+            GenericTreeObjectNode node =(GenericTreeObjectNode) getSelectedNode();
+            if (node.getTableName().equals(_tableDefinition.tableName)) {
+                data = node.getObjectParameters();
+            }
+            else {
+                throw new InnerException("","Impossible d'obtenir les informations du noeud", null);
+            }
         }
 
         for (int i = 0; i < data.length; i++) {
@@ -479,7 +456,7 @@ public class EditFormProcessor extends ProcessorFrame {
         data = getFormPanelData();
         data_node = node.getObjectParameters();
 
-        String tableName=node.getTableName();
+        String tableName=_tableDefinition.tableName;
         StringBuffer command = new StringBuffer();
 
         command.append(replaceCommand+" into "+tableName +" values \"");
@@ -537,12 +514,28 @@ public class EditFormProcessor extends ProcessorFrame {
      * Initialise le membre _tableDefinition avec la definition extraite
      * du node en cours d'exploration
      */
-    protected void initTable() {
-     // get the primary keys for current table
-        TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
+    protected void initTable()
+            throws InnerException
+    {
+        // Ce processeur ne fonctionne pas sur les noeud Table
+        if (getSelectedNode() instanceof GenericTreeClassNode) {
+            throw new InnerException("", "", null);
+        }
+        
+        // get the primary keys for current table
+        TableDefinitionManager def_cache = TableDefinitionManager.getInstance();
         GenericTreeObjectNode node = (GenericTreeObjectNode)getSelectedNode();
         _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
         def_cache.releaseTableDefinitionLeasing(_tableDefinition);
+
+        // Construction de la condition du Select pour ne recuperer que
+        // la ligne correspondante aux clefs
+        for (int k = 0; k < _tableDefinition.key.length; k++) {
+            if (!_select_condition.equals("")) {
+                _select_condition += " AND ";
+            }
+            _select_condition = _tableDefinition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(_tableDefinition.key[k])).value;
+        }
     }
 
     /**
@@ -684,22 +677,28 @@ public class EditFormProcessor extends ProcessorFrame {
 	* Cet référence paramétrée est implémentée sous la forme d'une table de
 	* hash.
 	*/
-	private Hashtable<String,JComponent> _fieldObject;
+	protected Hashtable<String,JComponent> _fieldObject;
 
     /**
      * Membre contenant une definition de la configuration permettant d'afficher
      * les differentes boites de dialogues
      */
-    private EditFormConfig _FormConfiguration;
+    protected EditFormConfig _FormConfiguration;
 
     /**
      * Constante stockant la commande d'insertion
      */
     //TODO prévoir l'ajout/suppression?
-    private final String replaceCommand="ReplaceAndExec.pl";
+    protected final String replaceCommand="ReplaceAndExec.pl";
 
      /**
-     * Constante : champ stockant le nom de la clef de la table editée
+     * Membre stockant la definition de la table en cours d'edition
      */
-    private IsisTableDefinition _tableDefinition;
+    protected IsisTableDefinition _tableDefinition;
+
+    /**
+     * Membre stockant la condition permettant de retrouver la ligne en cours
+     * d'edition
+     */
+    protected  String _select_condition="";
 }
