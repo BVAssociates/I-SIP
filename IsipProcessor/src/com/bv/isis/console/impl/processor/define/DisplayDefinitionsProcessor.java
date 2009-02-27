@@ -1115,6 +1115,14 @@ public class DisplayDefinitionsProcessor
 		trace_methods.endOfMethod();
  	}
 
+	/*----------------------------------------------------------
+	* Nom: remove_unused
+	*
+	* Description:
+	* Supprimer du cache toutes les definitions dont le nombre
+    * d'utilisation est égale à zéro
+	*
+ 	* ----------------------------------------------------------*/
     private void remove_unused()
     {
         for (int row=_model.getRowCount()-1; row >= 0 ; row--) {
