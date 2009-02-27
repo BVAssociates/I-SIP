@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/impl/processor/explore/ExploreProcessor.java,v $
-* $Revision: 1.27 $
+* $Revision: 1.28 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Processeur d'exploration de noeud
@@ -15,6 +15,10 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: ExploreProcessor.java,v $
+* Revision 1.28  2009/02/13 12:43:35  tz
+* Implémentation de la fiche FS#600 : Passage du contexte modifié par
+* le pré-processing lors de la construction des noeuds Item.
+*
 * Revision 1.27  2009/02/11 16:33:15  tz
 * Implémentation de la fiche FS#600.
 *
@@ -814,8 +818,8 @@ public class ExploreProcessor
 				selectedNode.getServiceSession(), selectedNode.getAgentName(),
 				selectedNode.getIClesName(), selectedNode.getServiceType(),
 				selectedNode.getTableName(), selectedNode.getCondition(),
-                selectedNode, context,
-				windowInterface, selectedNode.getLabel().label);
+				selectedNode, context, windowInterface, 
+				selectedNode.getLabel().label);
 			// On va positionner les données de pré-processing sur les noeuds
 			// enfant
 			for(int index = 0 ; index < selectedNode.getChildCount() ; 

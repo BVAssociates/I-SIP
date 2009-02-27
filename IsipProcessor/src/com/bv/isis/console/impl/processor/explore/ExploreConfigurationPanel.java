@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/impl/processor/explore/ExploreConfigurationPanel.java,v $
-* $Revision: 1.5 $
+* $Revision: 1.6 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Boîte de configuration de l'exploration automatique
@@ -15,6 +15,11 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: ExploreConfigurationPanel.java,v $
+* Revision 1.6  2009/02/11 15:11:50  tz
+* Suppression de la méthode removeStateChanged().
+* Plus d'obligation de chargement automatique des menus lors de
+* la suppression des noeuds intermédiaires.
+*
 * Revision 1.5  2009/01/23 17:25:24  tz
 * Correction de la fiche FS#577.
 * Ajout d'une case à cocher d'activation/désactivation de la suppression
@@ -350,8 +355,7 @@ public class ExploreConfigurationPanel
 		// automatique des menus
 		_preloadMenus = new JCheckBox(
 			MessageManager.getMessage("&Explore_PreloadMenus"));
-		_preloadMenus.setSelected(remove_unnecessary_nodes == true || 
-			preload_menus == true);
+		_preloadMenus.setSelected(preload_menus == true);
 		bag_layout.setConstraints(_preloadMenus, constraints);
 		add(_preloadMenus);
 		// Création de la case à cocher d'activation de la suppression des
@@ -359,14 +363,6 @@ public class ExploreConfigurationPanel
 		_removeUnnecessaryNodes = new JCheckBox(
 			MessageManager.getMessage("&Explore_RemoveUnnecessaryNodes"));
 		_removeUnnecessaryNodes.setSelected(remove_unnecessary_nodes);
-		// On ajoute le listener sur la sélection
-		_removeUnnecessaryNodes.addItemListener(new ItemListener()
-		{
-			public void itemStateChanged(ItemEvent e)
-			{
-				//removeStateChanged();
-			}
-		});
 		constraints.gridy ++;
 		bag_layout.setConstraints(_removeUnnecessaryNodes, constraints);
 		add(_removeUnnecessaryNodes);
@@ -450,7 +446,6 @@ public class ExploreConfigurationPanel
 		bag_layout.setConstraints(_removeButton, constraints);
 		add(_removeButton);
 		// On s'assure de l'état de tous les éléments
-		//removeStateChanged();
 		exploreStateChanged();
 		listSelectionChanged();
 		trace_methods.endOfMethod();
@@ -553,35 +548,6 @@ public class ExploreConfigurationPanel
 		DefaultListModel list_model = (DefaultListModel)_tableList.getModel();
 		list_model.remove(_tableList.getSelectedIndex());
 		listSelectionChanged();
-		trace_methods.endOfMethod();
-	}
-
-	/*----------------------------------------------------------
-	* Nom: removeStateChanged
-	* 
-	* Description:
-	* Cette méthode est appelée lorsque l'état de la case à cocher de 
-	* suppression des noeuds intermédiaires a changé. Suivant son état, 
-	* la case à cocher de chargement automatique des menus est activée ou 
-	* non.
-	* ----------------------------------------------------------*/
-	private void removeStateChanged()
-	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"ExploreConfigurationPanel", "removeStateChanged");
-			
-		trace_methods.beginningOfMethod();
-		// Si la case à cocher de suppression des noeuds intermédiaire est
-		// cochée, il faut cocher celle des chargements automatiques de
-		// menus
-		if(_removeUnnecessaryNodes.isSelected() == true) {
-			_preloadMenus.setSelected(true);
-		}
-		// On change l'état de la case à cocher de chargement automatique
-		// des menus suivant l'état de la case à cocher de suppression des
-		// noeuds intermédiaires
-		_preloadMenus.setEnabled(
-			_removeUnnecessaryNodes.isSelected() == false);
 		trace_methods.endOfMethod();
 	}
 }
