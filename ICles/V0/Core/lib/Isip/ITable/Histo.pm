@@ -43,7 +43,6 @@ sub open() {
 	
 	bless ($self, $class);
 	
-	$self->_set_columns_info_histo();
 	$self->_debug("Virtual Fields : ", join("|",$self->field()));
 	$self->_debug("Virtual Keys : ", join("|",$self->key()));
 	$self->_debug("Virtual Not NULL : ", join("|",$self->not_null()));
@@ -83,37 +82,7 @@ sub open() {
 ##  pivate methods  ##
 ##################################################
 
-# Get information from database
-# Need "$self->{database_handle}" to be connected !
-sub _set_columns_info_histo() {
-	my $self = shift;
 
-	# get histo informations
-	#$self->_debug("Get virtual columns info for $self->{table_name} in the HISTO table");
-	#$self->{table_histo}->custom_select_query("select distinct FIELD_NAME from $self->{table_name_histo}");
-	#$self->_info("This table contains 0 line";
-	
-	#while (my ($column_name)=$self->{table_histo}->fetch_row_array) {
-	#	push (@{$self->{field}}, $column_name);
-	#}
-	
-	#$self->{table_histo}->finish();
-	
-	if (not $self->field()) {
-		
-		my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_name}."_INFO"), $self->{table_name}."_INFO", {debug => $self->debugging()});
-		$self->_debug("Get columns info for $self->{table_name}");
-		#$table_info->execute();
-		
-		while (my %field_info=$table_info->fetch_row) {
-			push (@{$self->{field}}, $field_info{FIELD_NAME});
-		}
-	
-		if (not @{$self->{field} }) {
-			croak("Error reading information of table : $self->{table_name}");
-		}
-	}
-}
 
 ##################################################
 ##  public methods  ##
@@ -129,6 +98,16 @@ sub key {
 		$self->_debug("New Virtual Keys : ", join("|",@{$self->{key}}));
 	}
     return @{ $self->{key} };
+}
+
+sub field {
+    my $self = shift;
+    if (@_) { 
+		@{ $self->{field} } = @_ ;
+		@{ $self->{query_field} } = @_ ;
+		$self->_debug("New fields : ", join("|",@{$self->{field}}));
+	}
+    return @{ $self->{field} };
 }
 
 sub query_date {
@@ -468,6 +447,17 @@ sub commit_transaction() {
 	my $self=shift;
 	
 	$self->{table_histo}->commit_transaction();
+}
+
+sub is_empty() {
+	my $self = shift;
+	
+	$self->{table_histo}->custom_select_query("select ID from ".$self->{table_histo}->table_name." LIMIT 1");
+	
+	my $bool=$self->{table_histo}->fetch_row_array();
+	$self->{table_histo}->finish;
+	
+	return not $bool;
 }
 
 # Insert hash  as a rows (one rows per field)

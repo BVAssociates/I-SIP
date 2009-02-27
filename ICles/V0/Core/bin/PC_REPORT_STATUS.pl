@@ -219,7 +219,7 @@ if ($filter_field and $filter_field !~ /^ICON|PROJECT$/ ) {
 
 foreach my  $table_name (@table_list) {
 
-	my $rules=IsipRules->new($table_name);
+	my $rules=IsipRules->new($table_name,$env_sip);
 	my @field_order=$env_sip->get_table_field($table_name);
 	my %memory_row;
 

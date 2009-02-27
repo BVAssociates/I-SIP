@@ -267,7 +267,7 @@ if ($explore_mode eq "compare") {
 	$table_explore->compare_exclude("PROJECT");
 	$table_explore->compare();
 	
-	my $diff_rules = IsipRulesDiff->new($table_name, {debug => $debug_level});
+	my $diff_rules = IsipRulesDiff->new($table_name, $env_sip, {debug => $debug_level});
 	$table_explore->isip_rules($diff_rules);
 
 }
@@ -279,7 +279,7 @@ elsif ($explore_mode eq "explore") {
 	if (not $date_explore) {
 		$dirty_cache=CacheStatus->new($env_sip);
 		$dirty_cache->load_cache($table_name);
-		my $type_rules = IsipRules->new($table_name, {debug => $debug_level});
+		my $type_rules = IsipRules->new($table_name, $env_sip, {debug => $debug_level});
 		$table_explore->isip_rules($type_rules);
 	}
 	if ($filter_field and $filter_field eq 'PROJECT') {

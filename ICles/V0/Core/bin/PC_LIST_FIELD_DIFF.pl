@@ -230,7 +230,7 @@ my @query_field=$itools_table->field;
 undef $itools_table;
 
 # construit un object IsipRules
-my $rules=IsipRules->new($table_name);
+my $rules=IsipRules->new($table_name,$ikos_sip);
 
 
 # interroge table source

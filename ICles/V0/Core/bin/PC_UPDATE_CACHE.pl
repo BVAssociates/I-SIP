@@ -157,7 +157,7 @@ foreach my $current_table (@list_table) {
 	log_info("Connexion à la base d'historisation de $current_table");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 	
-	my $type_rules = IsipRules->new($current_table, {debug => $debug_level});
+	my $type_rules = IsipRules->new($table_name,$env_sip);
 
 	$histo_table->isip_rules($type_rules);
 

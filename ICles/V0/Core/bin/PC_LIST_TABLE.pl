@@ -11,19 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_TABLE - Initalise la table de données d'historique d'une table
+PC_LIST_TABLE - Liste le contenu d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-i [-c nombre]] environnement tablename
+ PC_LIST_TABLE.pl [-h][-v] [-s separateur] environnement tablename
  
 =head1 DESCRIPTION
 
-Ajoute les informations de colonnes d'une table dans l'environnement
-Creer une base de donnée historique.
-
-Si l'option -i est utilisée, une première collecte sera effecutée
-
+Affiche le contenu d'une table de la base de donnée d'information de l'environnement
 
 =head1 ENVIRONNEMENT
 
@@ -41,9 +37,7 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 
 =item -v : Mode verbeux
 
-=item -i : Insert les données de la table IKOS
-
-=item -c nombre : Commit tous les n insertions
+=item -s : modifie le separateur de sortie
 
 =back
 
@@ -51,9 +45,9 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 
 =over
 
-=item environnement : environnement à utiliser
+=item environnement
 
-=item tablename : table dont la base sera créé
+=item tablename : table a ouvrir
 
 =back
 
@@ -84,7 +78,7 @@ sub log_erreur {
 }
 
 sub log_info {
-	#print STDERR "INFO: ".join(" ",@_)."\n";
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
 	$logger->notice(@_);
 }
 
@@ -92,23 +86,22 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
+
 my %opts;
-getopts('hvic:', \%opts) or usage(0);
+getopts('hvs:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-#defaut value
-my $group_commit=1000;
-$group_commit = $opts{c} if exists $opts{c};
-my $populate=1 if exists $opts{i};
+my $separator=',';
+$separator=$opts{s} if exists $opts{s};
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -119,21 +112,17 @@ my $table_name=shift;
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
-
 use Isip::Environnement;
-use Isip::ITable::DataDiff;
+
+my $env=Environnement->new($environnement);
+my $table=$env->open_local_table($table_name);
+
+die "unable to open local $table_name\_INFO " if not defined $table;
+
+while (my @line=$table->fetch_row_array()) {
+	print join($separator,@line)."\n";
+}
 
 
-my $env_sip = Environnement->new($environnement);
 
-my %table_info = $env_sip->get_table_info();
-log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not exists $table_info{$table_name};
 
-$logger->notice("Create database for table",$table_name);
-my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
-
-$env_sip->initialize_column_info($current_table);
-
-$env_sip->create_database_histo($table_name);
-
-sortie($bv_severite);

@@ -4,10 +4,9 @@ use fields qw(
 	line_icon
 	field_icon
 	
+	environnement
 	field_status
-	current_type
-	current_description
-	current_owner
+	column_info
 	type
 	table_name
 );
@@ -15,6 +14,7 @@ use fields qw(
 
 use Carp qw(carp croak );
 use strict;
+use Scalar::Util qw(blessed);
 
 use Isip::IsipLog '$logger';
 use ITable::Sqlite;
@@ -46,9 +46,7 @@ sub new() {
 	my $self= fields::new($class);
 	
 	# member initializations
-	$self->{current_type}={};
-	$self->{current_owner}={};
-	$self->{current_description}={};
+	$self->{column_info}={};
 	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
@@ -60,12 +58,16 @@ sub new() {
 
 	# mandatory parameter
 	if (@_ < 1) {
-		croak ('\'new\' take 1 mandatory argument: '.$class.'->new(table [, { diff => $TableDiff_ref, debug => \$num} ) ] )')
+		croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, environnement )')
 	}
 
 	$self->{table_name}=shift;
+	$self->{environnement}=shift;
+	
+	croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, environnement )') if not blessed $self->{environnement};
 	
 
+	
 	# options
 	my $options=shift;
 
@@ -86,17 +88,12 @@ sub new() {
 sub _init_info() {
 	my $self=shift;
 	
-	my $table_info=Sqlite->open(Environnement->get_sqlite_path($self->{table_name}."_INFO"),$self->{table_name}."_INFO" );
 	
 	# narrow query if needed
 	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
 	
+	$self->{column_info}={ $self->{environnement}->get_column_info($self->{table_name}) };
 	
-	while(my %row=$table_info->fetch_row()) {
-		$self->{current_type}->{$row{FIELD_NAME}}=$row{TYPE};
-		$self->{current_owner}->{$row{FIELD_NAME}}=$row{OWNER};
-		$self->{current_description}->{$row{FIELD_NAME}}=$row{TEXT};
-	}
 }
 
 ##################################################
@@ -160,8 +157,9 @@ sub get_field_type_txt() {
 	
 	my $col_name=shift or croak("usage get_field_type_txt(col_name)");
 	
-	return $self->{current_type}->{$col_name};
-	
+	my $type = $self->{column_info}->{$col_name}->{type};
+	$type="" if not defined $type;
+	return $type;
 }
 
 sub get_field_description() {
@@ -169,7 +167,10 @@ sub get_field_description() {
 	
 	my $col_name=shift or croak("usage get_type(col_name)");
 	
-	return $self->{current_description}->{$col_name};
+	my $desc=$self->{column_info}->{$col_name}->{description};
+	
+	$desc="" if not defined $desc;
+	return $desc;
 }
 
 sub is_field_hidden() {

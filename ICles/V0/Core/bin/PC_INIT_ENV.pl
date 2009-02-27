@@ -11,11 +11,11 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_TABL_DOCE - Initalise les tables Information d'une table
+PC_INIT_ENV - Initalise les tables Information d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] tablename
+ PC_INIT_ENV.pl [-h] [-v ] environnement [table]
  
 =head1 DESCRIPTION
 
@@ -46,7 +46,9 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =over
 
-=item tablename : table dont la base sera créé
+=item environnement : table dont la base sera créé
+
+=item table : table dont la base sera créé
 
 =back
 
@@ -108,7 +110,7 @@ if ( @ARGV != 1 ) {
 	sortie(202);
 }
 
-my $table_name=shift;
+my $environnement=shift;
 
 #  Corps du script
 ###########################################################
@@ -122,40 +124,10 @@ use ITable::ITools;
 
 my $config_sip = IsipConfig->new();
 
-my %table_info = $config_sip->get_table_info();
-log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not exists $table_info{$table_name};
-
 my %env_info=$config_sip->get_env_info();
 
 # we take first env arbitrary
-my $environnement=(sort keys %env_info)[0];
-my $env_sip=Environnement->new($environnement);
 
-$logger->notice("Create DOC database for table, based on $environnement informations : ",$table_name);
-my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
-
-##################################
-# create table FIELD_INFO
-$config_sip->initialize_database_documentation($current_table, {debug => $debug_level});
-
-##################################
-# update description in TABLE_INFO
-
-if (not $table_info{$table_name}{description} and $table_info{$table_name}{type_source} eq "ODBC" ) {
-	log_info("$table_name n'a pas de description, mise à jour depuis IKOS");
-	
-	# get description from source
-	$current_table->custom_select_query("select DISTINCT TABLE_TEXT from QSYS2.SYSTABLES where TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='$table_name'");
-	my ($table_description)=$current_table->fetch_row_array();
-	
-	# get current line
-	my $table_info=ITools->open("TABLE_INFO", {debug => $debug_level});
-	$table_info->query_condition("TABLE_NAME=$table_name");
-	my %row=$table_info->fetch_row;
-	
-	# update modified line
-	$row{DESCRIPTION}=$table_description;
-	$table_info->update_row(%row);
-}
+$config_sip->create_database_environnement($environnement);
 
 sortie($bv_severite);

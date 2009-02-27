@@ -1,13 +1,23 @@
 package Environnement;
 
 use Isip::IsipConfig;
-@ISA=(IsipConfig);
+
+use fields qw(
+	options
+	environnement
+	info_table
+	description
+	defaut_datasource
+	link_table
+	isip_config
+);
 
 use strict;
 
 #use ITable::ITools;
 use Carp qw(carp croak);
 use Isip::IsipLog '$logger';
+use ITable::ILink;
 
 sub new() {
     my $proto = shift;
@@ -18,25 +28,72 @@ sub new() {
 	my $environnement = shift or croak "Environnement->new take 1 argument";
 	my $options= shift;
 	
-	my $self= $class->SUPER::new($options);
+	my Environnement $self= fields::new($class);
+
+	# store global info about tables
+	my ILink $link=ILink->new();
+	$self->{isip_config}= IsipConfig->new();
+	$self->{link_table}=$link;
 	
 	$self->{options}= $options;
 	$self->{environnement} = $environnement;
 	
 	# store global info about environnement 
-	if (not exists $self->{info_env}->{$environnement} ) {
+	if (not exists $self->{isip_config}->{info_env}->{$environnement} ) {
 		croak "Unable to get information of Environnement : $self->{environnement}";
 	}
 	
-	$self->{description}=$self->{info_env}->{$environnement}->{description};
-	$self->{defaut_datasource}=$self->{info_env}->{$environnement}->{defaut_datasource};
+	$self->{description}=$self->{isip_config}->{info_env}->{$environnement}->{description};
+	$self->{defaut_datasource}=$self->{isip_config}->{info_env}->{$environnement}->{defaut_datasource};
 	
 	$logger->warning( "Defaut Datasource should not be null" ) if not $self->{defaut_datasource};
 	
 	
-	# store global info about tables
-	$self->{isip_config}= IsipConfig->new();
+	
+	# populate class members
+	
+	my $table_info=$self->open_local_table("TABLE_INFO", $self->{options});
+	$table_info->query_condition("ACTIVE = 1");
+	while (my %row=$table_info->fetch_row) {		
+		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{root_table}=$row{ROOT_TABLE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{type_source}=$row{TYPE_SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{param_source}=$row{PARAM_SOURCE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
+		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{DESCRIPTION};
 
+		# init
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}={};
+	}
+	
+	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
+	
+	while (my %row=$column_info->fetch_row) {		
+		push @{$self->{info_table}->{$row{TABLE_NAME}}->{key}}, $row{FIELD_NAME} if $row{PRIMARY_KEY};
+
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}=$row{TYPE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{description}=$row{TEXT};
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_type}=$row{DATA_TYPE};
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_size}=$row{DATA_LENGTH};
+		
+		if ($row{FOREIGN_TABLE} and $row{FOREIGN_KEY}) {
+			$self->{link_table}->add_link($row{TABLE_NAME},$row{FIELD_NAME},$row{FOREIGN_TABLE},$row{FOREIGN_KEY});
+		}
+	}
+	
+
+	foreach my $table (keys %{ $self->{info_table} }) {
+		
+		# fixed key for XML sources
+		if ($self->{info_table}->{$table}->{type_source} eq "XML") {
+			$self->{info_table}->{$table}->{key}=[ "xml_path" ];
+		} 
+		
+		if (not $self->{info_table}->{$table}->{key}) {
+			$logger->warning("No PRIMARY KEY for $table") ;
+		}
+	}
+	
 	
 	# add environnement specific info about tables
 	my $source_info=ITools->open("SOURCE_ENV", $self->{options});
@@ -59,9 +116,82 @@ sub new() {
 
 	$logger->info("Environnement $self->{environnement} opened");
 	
-	return bless($self, $class);
+	return $self;
 }
 
+sub set_datasource() {
+	my $self = shift;
+	
+	my $table=shift;
+	my $datasource=shift or croak("usage : set_datasource(table,datasource)");
+	
+	# datasource
+	$self->{info_table}->{$table}->{source}=$datasource;
+}
+
+sub get_column_info() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : get_column_info(table)");
+	
+	return %{$self->{info_table}->{$table_name}->{column}};
+}
+
+sub get_table_info() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : get_column_info(table)");
+	
+	return %{$self->{info_table}->{$table_name} };
+}
+
+
+sub get_table_list() {
+	my $self = shift;
+
+	return keys %{$self->{info_table}};
+}
+
+sub get_table_list_module() {
+	my $self = shift;
+	
+	my $module_name= shift or croak("usage : get_table_list_module(module_name)");
+
+	my @table_list;
+	my %temp_hash=%{$self->{info_table}};
+	foreach (keys %temp_hash ) {
+		push @table_list, $_ if $self->{info_table}->{$_}->{module} eq $module_name;
+	}
+	
+	return @table_list;
+}
+
+sub get_links() {
+	my $self = shift;
+		
+	return $self->{link_table};
+}
+
+#found the table primary key
+sub get_table_key() {
+	my $self = shift;
+	my $tablename = shift or croak "get_table_key() wait args : 'tablename'";
+	my $debug_level = $self->{options}->{debug};
+	my $key_found;
+	
+	# some different way to get the infos :
+	#   - from INFO_TABLE, 
+	#   - from local table
+	#   - from ITools definition file
+	#
+	# For now, we'll use INFO_TABLE
+	if (exists $self->{info_table}->{$tablename}->{key}) {
+		return join(',',sort @{$self->{info_table}->{$tablename}->{key}});
+	}
+	else {
+		croak("no PRIMARY KEY defined for $tablename");
+	}
+}
 
 sub get_table_field() {
 	my $self = shift;
@@ -80,12 +210,14 @@ sub get_table_field() {
 	return $table->field;
 }
 
-# provide file name of Sqlite database depending on table name
+# provide file name of Sqlite database depending on table name and environnement
 sub get_sqlite_filename() {
 	my $self = shift;
 	
 	my $table_name=shift or croak "get_sqlite_filename() wait args : 'tablename[,environnement]'";
 	my $environnement=shift;
+	
+	$environnement=$self->{environnement} if not $environnement;
 	
 	my $filename;
 	my $database_path;
@@ -94,22 +226,52 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|INFO|DOC)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|INFO)$/);
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
-	if (not $table_extension  or $table_extension eq "HISTO") {
+	if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
+		$filename = "ISIP_".$environnement."_INFO.sqlite";
+	}
+	else {
 	
 		croak("no environnement defined for table type : HISTO")
-			if not $self->{environnement};
+			if not $environnement;
 		
-		$filename = "ISIP_".$self->{environnement}."_".$table_real.".sqlite";
-	}
-	elsif ($table_extension and $table_extension eq "DOC" or $table_extension eq "INFO") {
-		$filename = "ISIP_DOC_".$table_real.".sqlite";
+		$filename = "ISIP_".$environnement."_".$table_real.".sqlite";
 	}
 	
 	return $filename;
 }
+
+# provide file path of Sqlite database depending on architecture, environnement and table name
+sub get_sqlite_path() {
+	my $self = shift;
+	
+	my $table_name=shift or croak "get_sqlite_path() wait args : 'tablename[,environnement]'";
+	my $environnement=shift;
+	
+	my $filename=$self->get_sqlite_filename($table_name,$environnement);
+	
+	
+	my $dir=$self->{isip_config}->get_data_dir();
+	
+	my $filepath=$dir."/".$filename;
+	
+	if ($dir) {
+		if (not -e $filepath) {
+			carp("Unable to access to file : $filepath");
+		}
+	}
+	else {
+		# if ISIP_DATA is not provided, we use first dir of BV_TABPATH
+		$filepath=$self->_find_file($ENV{BV_TABPATH},$filename);
+		#not found
+		$logger->error("table $table_name : $filename not found in BV_TABPATH")	if not $filepath;
+	}
+		
+	return $filepath;
+}
+
 
 sub exists_histo_table() {
 	my $self = shift;
@@ -128,11 +290,15 @@ sub open_local_from_histo_table() {
 	
 	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 	
-	my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
+	#my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
+	my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
 	
 	# we must set the primary key manually
-	$table_histo->key(split(/,/,$self->get_table_key($table_name),-1));
+	$table_histo->field($self->get_table_field($table_name));
+	
+	my $key_string=$self->get_table_key($table_name);
+	$table_histo->key(split(/,/,$key_string,-1)) if $key_string;
 
 	return $table_histo
 }
@@ -159,7 +325,46 @@ sub open_cache_table() {
 	
 	my $table_name=shift or croak "open_cache_table() wait args : 'tablename'";
 	
-	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path("GLOBAL"), $table_name, @_)};
+	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name), $table_name, @_)};
+	croak "Error opening $table_name : $@" if $@;
+	return $tmp_return;
+}
+
+
+# change this methods to configure Database Access
+sub exist_local_table() {
+	my $self = shift;
+	
+	use ITable::Sqlite;
+	
+	my $table_name=shift or croak "open_local_table() wait args : 'tablename[,environnement]'";
+	my $environnement=shift;
+	
+	
+	my $database_path=$self->get_sqlite_path($table_name,$environnement);
+	return 0 if not $database_path;
+	
+	# verification on sqlite_master
+	my $master_table=Sqlite->open($database_path, 'sqlite_master', @_);
+	$master_table->query_condition("type='table' AND name='$table_name'");
+	
+	my $return_value=0;
+	if ($master_table->fetch_row_array) {
+		$return_value=1;
+	}
+	$master_table->close();
+	
+	return $return_value;
+}
+
+sub open_local_table() {
+	my $self = shift;
+	
+	use ITable::Sqlite;
+	
+	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
+	
+	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
 	return $tmp_return;
 }
@@ -191,7 +396,7 @@ sub open_source_table() {
 		
 		#manually set KEY
 		if ($self->{info_table}->{$table_name}->{key}) {
-			$return_table->key(sort split(/,/,$self->{info_table}->{$table_name}->{key}));
+			$return_table->key(sort split(/,/,$self->get_table_key($table_name)));
 		} else {
 			carp ("PRIMARY KEY not defined for $table_name") ;
 		}
@@ -210,40 +415,72 @@ sub open_source_table() {
 	return $return_table;
 }
 
-sub initialize_database_histo() {
+sub initialize_column_info() {
 	my $self=shift;
 	
 	my $itable_obj=shift or die "bad arguments";
 	
-	my $options=shift;
-	croak "bad arguments" if $options and ref($options) ne "HASH";
+	if (not blessed $itable_obj or not $itable_obj->isa("DATA_interface")) {
+		croak("usage initialize_column_info(DATA_interface)")
+	}
 
-	my $tablename=$itable_obj->table_name();
-	$logger->error("$tablename n'a pas de clef primaire définie") if not $itable_obj->{key};
+	my $column_info=$self->open_local_table("COLUMN_INFO");
 	
-	# compute path of database file
-	croak("CLES_HOME n'est pas dans l'environnement") if not exists $ENV{CLES_HOME};
-	croak("ICleName n'est pas dans l'environnement") if not exists $ENV{ICleName};
+	my %size_hash=$itable_obj->size();
+	my %field_txt_hash=$itable_obj->field_txt();
+	
+	$logger->notice("Populate TABLE_INFO with information from source table: ".$itable_obj->table_name);	
+	
+	my %column_info=$self->get_column_info($itable_obj->table_name);
+	
+	$column_info->begin_transaction;
+	foreach my $field ($itable_obj->field) {
+		
+		if (exists $column_info{$field}) {
+			$logger->warning("$field already known : PASS");
+			next;
+		}
+		
+		# extract type and size from format "type(size)"
+		my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
+		
+		# construct the line to insert
+		my %row;
+		$row{TABLE_NAME}=$itable_obj->table_name;
+		$row{FIELD_NAME}=$field;
+		$row{DATA_TYPE}=$type;
+		$row{DATA_LENGTH}=$size;
+		$row{DESCRIPTION}=$field_txt_hash{$field};
+		
+		$column_info->insert_row(%row);
+	}
+	$column_info->commit_transaction;
+
+}
+
+sub create_database_histo() {
+	my $self=shift;
+	
+	my $tablename=shift or croak("usage : create_database_histo(tablename)");
 	
 	my $database_filename=$self->get_sqlite_filename($tablename);
 	
 	#get first tab path
-	my $database_dir=$self->_find_file($ENV{BV_TABPATH});
-	croak("$database_dir not writable") if not -w $database_dir;
+	my $database_dir=$self->{isip_config}->get_data_dir();
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
-	die "database already exist at <$database_path>" if -e $database_path;
+	croak "database already exist at <$database_path>" if -e $database_path;
 	
 	$logger->notice("Creating empty file : $database_path");
 	#create empty file
-	open DATABASEFILE,">$database_path" or die "unable to create file : $!";
+	open DATABASEFILE,">$database_path" or croak "unable to create file : $!";
 	close DATABASEFILE;
 	
-	die "Impossible de retrouver le fichier créé" if not $self->get_sqlite_path($tablename);
+	croak "Impossible de retrouver le fichier créé" if not $self->get_sqlite_path($tablename);
 	
 	# opening master table
-	my $master_table=Sqlite->open($database_path, 'sqlite_master', $options);
+	my $master_table=Sqlite->open($database_path, 'sqlite_master');
 	
 	$logger->notice("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE $tablename\_HISTO (
@@ -259,6 +496,11 @@ sub initialize_database_histo() {
 	COMMENT VARCHAR(50),
 	STATUS VARCHAR(30),
 	MEMO VARCHAR(30))");
+	
+	$logger->notice("Create indexes");
+	$master_table->execute("CREATE INDEX IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
+	$master_table->execute("CREATE INDEX IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
+
 	
 	$master_table->close();
 	

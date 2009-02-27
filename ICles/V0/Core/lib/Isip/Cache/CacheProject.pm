@@ -117,7 +117,7 @@ sub is_dirty_key() {
 	}
 	
 	# check on disk	
-	my $table=$self->{isip_env}->open_cache_table("PROJECT_CACHE");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
 	$table->query_condition("TABLE_NAME ='$table_name'",
 							"TABLE_KEY ='$table_key'",
 							"PROJECT_CHILD ='$project'");
@@ -142,7 +142,7 @@ sub load_cache() {
 	my $table_name=shift or croak("usage : load_cache(table_name");
 	
 	# check on disk	
-	my $table=$self->{isip_env}->open_cache_table("PROJECT_CACHE");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
 	$table->query_condition("TABLE_NAME ='$table_name'");
 	
 	my $count=0;
@@ -162,7 +162,7 @@ sub save_cache() {
 
 	return if not $self->{memory_cache};
 	
-	my $table=$self->{isip_env}->open_cache_table("PROJECT_CACHE");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
 	
 	$table->begin_transaction();
 	
@@ -236,8 +236,8 @@ sub clear_cache() {
 	my $where_condition="";
 	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
 	
-	my $table=$self->{isip_env}->open_cache_table("PROJECT_CACHE");
-	$table->execute("DELETE from PROJECT_CACHE".$where_condition);
+	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
+	$table->execute("DELETE from CACHE_PROJECT".$where_condition);
 }
 
 1;

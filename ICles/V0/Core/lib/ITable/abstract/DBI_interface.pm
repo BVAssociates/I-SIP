@@ -187,8 +187,10 @@ sub execute() {
 	
 	$self->_open_database;
 	$self->_info('Excute SQL : ',$query);
-	$self->{database_handle}->do($query);
+	my $row_nb=$self->{database_handle}->do($query);
 	$self->_close_database;
+	
+	return $row_nb,
 }
 
 

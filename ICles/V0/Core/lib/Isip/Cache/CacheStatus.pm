@@ -90,7 +90,7 @@ sub is_dirty_key() {
 	}
 	
 	# check on disk	
-	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
 	
 	my $count=0;
@@ -113,7 +113,7 @@ sub load_cache() {
 	my $table_name=shift or croak("usage : load_cache(table_name");
 	
 	# check on disk	
-	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	$table->query_condition("TABLE_NAME ='$table_name'");
 	
 	my $count=0;
@@ -133,7 +133,7 @@ sub save_cache() {
 	
 	return if not $self->{memory_cache};
 
-	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	
 	$table->begin_transaction();
 	
@@ -193,8 +193,8 @@ sub clear_cache() {
 	my $where_condition="";
 	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
 
-	my $table=$self->{isip_env}->open_cache_table("CHILD_TO_COMMENT");
-	$table->execute("DELETE from CHILD_TO_COMMENT".$where_condition);
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+	$table->execute("DELETE from CACHE_ICON".$where_condition);
 }
 
 1;

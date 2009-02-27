@@ -15,7 +15,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-m module] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-m module] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -40,6 +40,8 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 =item -n : Mode simulation (aucune modification)
 
 =item -d : enregistre la date
+
+=item -c : force l'ajout du commentaire "Creation" (indique une collecte initiale)
 
 =item -m module : n'effectue la collecte que sur les tables de "module"
 
@@ -92,13 +94,14 @@ sub log_info {
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvnm:d', \%opts);
+getopts('hvnm:dc', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 my $module_name=$opts{m};
+my $force_comment=$opts{c};
 my $save_date=$opts{d};
 
 #  Traitement des arguments
@@ -158,8 +161,7 @@ my $source_table;
 my %diff_list;
 foreach my $current_table (@list_table) {
 	
-	if ( not ($env_sip->exists_doc_table($current_table)
-				and $env_sip->exists_histo_table($current_table)) ) {
+	if ( not $env_sip->exists_histo_table($current_table) )  {
 		$logger->error("$current_table n'a pas été initialisée");
 		next;
 	}
@@ -175,6 +177,16 @@ foreach my $current_table (@list_table) {
 	
 	log_info("Connexion à la base d'historisation");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
+	
+	if ($force_comment) {
+		#my $count=$histo_table->{table_histo}->execute("SELECT ID FROM $current_table\_HISTO LIMIT 1");
+		#my ($count) = $histo_table->{table_histo}->{database_handle}->selectrow_array("SELECT COUNT(*) FROM $current_table\_HISTO");
+
+		if (not $histo_table->is_empty) {
+			log_erreur("impossible d'utiliser -c car $current_table n'est pas vide");
+		}
+	}
+	
 	# set timestamp for all update/insert operation
 	$histo_table->set_update_timestamp($timestamp);
 	
@@ -205,6 +217,14 @@ foreach my $current_table (@list_table) {
 			
 			#store diff and continue.
 			$diff_list{$current_table}=$diff_obj;
+			
+			if ($force_comment) {
+				# execute special query on table backend
+				$logger->notice("Set STATUS to Valide");
+				$histo_table->{table_histo}->execute("UPDATE $current_table\_HISTO
+					SET STATUS='Valide',
+						COMMENT='Creation'");
+			}
 		} else {
 			log_info("Aucune mise à jour sur $current_table");
 		}

@@ -231,11 +231,7 @@ die "$pci_path not writable" if not -w $pci_path;
 
 ##### BEGIN GETTING INFO ##### 
 
-log_info("Get tables informations");
 my $config=IsipConfig->new();
-# get table info
-my %table_info_all=$config->get_table_info();
-my $link_obj=$config->get_links();
 
 if (not @environnement_list) {
 	@environnement_list=$config->get_environnement_list();
@@ -245,13 +241,15 @@ if (not @environnement_list) {
 
 
 foreach my $environnement (@environnement_list) {
-	
+
 	# access to SIP data
 	log_info("opening environnement",$environnement);
 	my $env = Environnement->new($environnement);
-
 	
-
+	log_info("Get tables informations");
+	# get table info
+	my $link_obj=$env->get_links();
+	
 	# we are ready, so begin with cleanup old files
 
 
@@ -269,7 +267,7 @@ foreach my $environnement (@environnement_list) {
 
 	my @list_table;
 	if (not $table_name) {
-		@list_table=keys %table_info_all;
+		@list_table=$env->get_table_list;
 	} else {
 		@list_table=($table_name);
 	}
@@ -277,7 +275,9 @@ foreach my $environnement (@environnement_list) {
 
 	foreach my $current_table (@list_table) {
 
-		my %table_info=%{ $table_info_all{$current_table} };
+		my %table_info=$env->get_table_info($current_table);
+		
+		my $table_key=$env->get_table_key($current_table);
 
 		#if ( not $env->exist_local_table($current_table, { debug => $bv_debug }) ) {
 		#	warn "$current_table don't exist in local tables\n";
@@ -304,7 +304,7 @@ foreach my $environnement (@environnement_list) {
 			# reset field list
 			@field_list=(@virtual_field);
 			#add only used fields
-			push @field_list,split(',',$table_info{key});
+			push @field_list,split(',',$table_key);
 			push @field_list,$table_info{label_field} if $table_info{label_field};
 			
 			#push @field_list,split(',',$link_obj->get_foreign_fields());
@@ -320,7 +320,7 @@ foreach my $environnement (@environnement_list) {
 				$separator,
 				$source_data_field,
 				$source_data_size, 
-				$table_info{key});
+				$table_key);
 		
 		# add one FKEY entry per foreign tables
 		foreach my $f_table ($link_obj->get_parent_tables($current_table)) {
@@ -397,7 +397,7 @@ foreach my $environnement (@environnement_list) {
 		#specifique
 		my $label_desc=" ";
 		$label_desc= "(%[".$table_info{label_field}."])" if $table_info{label_field};
-		my @pkey_list=split(',',$table_info{key});
+		my @pkey_list=split(',',$table_key);
 		
 		# suppression de l'affichage des clefs primaire qui sont des clef etrangere d'autres tables
 		my @parent_tables=$link_obj->get_parent_tables($current_table);

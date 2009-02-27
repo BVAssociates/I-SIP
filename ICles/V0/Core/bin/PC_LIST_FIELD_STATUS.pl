@@ -186,10 +186,10 @@ use Isip::ITable::FieldDiff;
 use Isip::IsipRulesDiff;
 
 # New SIP Object instance
-my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
+my $env_sip = Environnement->new($environnement, {debug => $debug_level});
 
 # recuperation de la clef primaine de la table
-my $table_key = $ikos_sip->get_table_key($table_name);
+my $table_key = $env_sip->get_table_key($table_name);
 
 if (not $table_key) {
 	log_erreur("pas de clef primaine configurée pour la table $table_name");
@@ -243,27 +243,14 @@ my $separator=$itools_table->output_separator;
 my @query_field=$itools_table->field;
 
 # Create IsipRule object
-my $rules=IsipRules->new($table_name, {debug => $debug_level});
-
-# fetch documentation of fields for key
-my %field_doc;
-my $table_doc=eval {$ikos_sip->open_documentation_table($table_name, {debug => $debug_level}) };
-if ($@) {
-	warn $@;
-}
-else {
-	$table_doc->query_condition("TABLE_KEY = '$table_key_value'");
-	while (my %row_doc=$table_doc->fetch_row) {
-		$field_doc{$row_doc{FIELD_NAME}}=$row_doc{DOCUMENTATION};
-	}
-}
+my $rules=IsipRules->new($table_name, $env_sip, {debug => $debug_level});
 
 my %memory_row;
 
 if ($explore_mode eq "compare") {
 
 	my $env_sip_from = Environnement->new($env_compare);
-	my $env_sip_to = $ikos_sip;
+	my $env_sip_to = $env_sip;
 	
 	# open first table
 	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
@@ -288,12 +275,11 @@ if ($explore_mode eq "compare") {
 	$table_status->compare();
 
 	# Assign a IsipRules to compute ICON field
-	my $diff_rules=IsipRulesDiff->new($table_name);
+	my $diff_rules=IsipRulesDiff->new($table_name,$env_sip);
 	$table_status->isip_rules($diff_rules);
 	
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
-		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
 		$row{TYPE}=$diff_rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
 		$row{TEXT}=$diff_rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 		
@@ -322,7 +308,7 @@ if ($explore_mode eq "compare") {
 elsif ($explore_mode eq "explore") {
 
 	# open histo table
-	my $table_status = $ikos_sip->open_histo_field_table($table_name, {debug => $debug_level});
+	my $table_status = $env_sip->open_histo_field_table($table_name, {debug => $debug_level});
 	
 	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
@@ -340,7 +326,6 @@ elsif ($explore_mode eq "explore") {
 		next if $rules->is_field_hidden(%row);
 		
 		# compute dynamic fields
-		$row{DOCUMENTATION}=$field_doc{$row{FIELD_NAME}} if exists $field_doc{$row{FIELD_NAME}} and $table_status->has_fields("DOCUMENTATION");
 		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
 			
 		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
@@ -353,8 +338,8 @@ elsif ($explore_mode eq "explore") {
 
 
 # order the lines in the order of table field
-my @field_order=@memory_row{$ikos_sip->get_table_field($table_name)};
-delete @memory_row{$ikos_sip->get_table_field($table_name)};
+my @field_order=@memory_row{$env_sip->get_table_field($table_name)};
+delete @memory_row{$env_sip->get_table_field($table_name)};
 for (keys %memory_row) {
 	print $memory_row{$_};
 }
