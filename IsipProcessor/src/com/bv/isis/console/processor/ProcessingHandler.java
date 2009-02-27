@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/processor/ProcessingHandler.java,v $
-* $Revision: 1.10 $
+* $Revision: 1.11 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Classe de traitement de processing
@@ -15,6 +15,9 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: ProcessingHandler.java,v $
+* Revision 1.11  2009/02/12 14:39:57  tz
+* Ajout de la méthode getPasswordForUser().
+*
 * Revision 1.10  2009/01/14 14:23:03  tz
 * Prise en compte de la modification des packages.
 *
@@ -62,8 +65,11 @@ package com.bv.isis.console.processor;
 import com.bv.core.trace.TraceAPI;
 import com.bv.core.trace.Trace;
 import com.bv.core.util.UtilStringTokenizer;
+import com.bv.core.util.StringCODEC;
 import com.bv.core.message.MessageManager;
 import javax.swing.JOptionPane;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import java.util.Vector;
 import java.awt.Component;
 
@@ -143,7 +149,6 @@ public abstract class ProcessingHandler
 			"ProcessingHandler", "handleProcessingStatement");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 		Vector parameters = new Vector();
-		int start_pos = 0;
 		int inside_occurences = 0;
 
 		trace_methods.beginningOfMethod();
@@ -328,7 +333,7 @@ public abstract class ProcessingHandler
 				context);
 			value = getValueFromUser(prompt, parent);
 		}
-        // Est-ce que la valeur nécessite le choix de l'utilisateur dans une liste?
+         // Est-ce que la valeur nécessite le choix de l'utilisateur dans une liste?
         else if(value.startsWith("getListValue(") == true)
 		{
             // remove getListValue("...)
@@ -345,6 +350,13 @@ public abstract class ProcessingHandler
             String table_name=params.substring(index+1,params.length()-1).trim();
             
 			value = getListValueFromUser(message,table_name , parent,context,serviceSession);
+		}
+		// Est-ce que la valeur nécessite une saisie de mot de passe par
+		// l'utilisateur ?
+		if(value.startsWith("getPassword(") == true) {
+			String prompt = getValue(value.substring(12, value.length() - 1),
+				context);
+			value = getPasswordFromUser(prompt, parent);
 		}
 		// Est-ce que la valeur nécessite une sélection de fichier ou de 
 		// répertoire par l'utilisateur ?
@@ -444,6 +456,66 @@ public abstract class ProcessingHandler
 		return value;
 	}
 
+	/*----------------------------------------------------------
+	* Nom: getPasswordFromUser
+	* 
+	* Description:
+	* Cette méthode statique permet d'afficher une fenêtre à l'utilisateur 
+	* lui permettant de saisir un mot de passe pour un paramètre de 
+	* préprocessing. Le message à afficher comme invite à l'utilisateur est 
+	* le contenu de l'argument prompt.
+	* 
+	* Si un problème survient lors de la saisie du paramètre, ou si 
+	* l'utilisateur annule la saisie, l'exception InnerException est levée.
+	* 
+	* Arguments:
+	*  - prompt: Le message de la fenêtre de saisie,
+	*  - parent: Une référence sur un objet Component.
+	* 
+	* Retourne: Le mot de passe saisi par l'utilisateur crypté grâce à la 
+	* classe StringCODEC.
+	* 
+	* Lève: InnerException.
+	* ----------------------------------------------------------*/
+	private static String getPasswordFromUser(
+		String prompt,
+		Component parent
+		)
+		throws
+			InnerException
+	{
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"ProcessingHandler", "getPasswordFromUser");
+		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
+		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
+		int result;
+		String plain_password = null;
+		String encoded_password = null;
+
+		trace_methods.beginningOfMethod();
+		trace_arguments.writeTrace("prompt=" + prompt);
+		trace_arguments.writeTrace("parent=" + parent);
+		// On va afficher une boîte de dialogue de saisie du mot de
+		// passe
+		JLabel prompt_label = new JLabel(prompt);
+		JPasswordField password_field = new JPasswordField();
+		result = JOptionPane.showConfirmDialog(parent, 
+			new Object[]{prompt_label, password_field}, 
+			MessageManager.getMessage("&YesNoQuestion"),
+			JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if(result == JOptionPane.CANCEL_OPTION) {
+			// L'utilisateur a annulé, on lève une exception
+			trace_methods.endOfMethod();
+			throw new InnerException("&ERR_InputCanceled", null, null);
+		}
+		// On va récupérer le mot de passe en clair
+		plain_password = new String(password_field.getPassword());
+		// On va encrypter le mot de passe
+		encoded_password = StringCODEC.encodeString(plain_password);
+		trace_debug.writeTrace("L'utilisateur a saisi=" + encoded_password);
+		trace_methods.endOfMethod();
+		return encoded_password;
+	}
     /*----------------------------------------------------------
 	* Nom: getListValueFromUser
 	*
