@@ -62,8 +62,11 @@ sub new() {
 		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
 		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{DESCRIPTION};
 
-		# init
+		# init structure for columns 
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}={};
+		
+		# init private structure for method get_table_field()
+		$self->{info_table}->{$row{TABLE_NAME}}->{_column_order}=[];
 	}
 	
 	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
@@ -204,13 +207,18 @@ sub get_table_field() {
 	#   - from local table
 	#   - from ITools definition file
 	#
-	# For now, we'll use ITools definition
+	# For now, we'll use ITools definition beacause it keep order of field
 	
-	#my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
-	#return $table->field;
+	my @cols=@{$self->{info_table}->{$tablename}->{_column_order}};
+	if ( not @cols ) {
+		my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
+		@cols=@{$self->{info_table}->{$tablename}->{_column_order}}=$table->field;
+	}
+		
+	return @cols;
 	
-	my %cols=%{$self->{info_table}->{$tablename}->{column}};
-	return keys %cols;
+	#my %cols=%{$self->{info_table}->{$tablename}->{column}};
+	#return keys %cols;
 }
 
 # provide file name of Sqlite database depending on table name and environnement
