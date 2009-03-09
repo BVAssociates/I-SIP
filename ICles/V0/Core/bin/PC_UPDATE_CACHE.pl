@@ -118,14 +118,12 @@ use Isip::Cache::CacheProject;
 
 my $env_sip = Environnement->new($environnement);
 
-my %table_info = $env_sip->get_table_info();
-
 my @list_table;
 if ($module) {
 	@list_table=$env_sip->get_table_list_module($module);
 }
 else {
-	@list_table=keys %table_info;
+	@list_table=$env_sip->get_table_list();
 }
 
 
@@ -138,26 +136,18 @@ $cache->add_dispatcher(CacheProject->new($env_sip));
 
 foreach my $current_table (@list_table) {
 	
-	if ( not ($env_sip->exists_doc_table($current_table)
-				and $env_sip->exists_histo_table($current_table)) ) {
+	if ( not $env_sip->exists_histo_table($current_table) ) {
 		$logger->error("$current_table n'a pas été initialisée");
 		next;
 	}
 	
 	$counter++;
 	
-	
-	log_erreur("la table $current_table n'est pas connue") if not exists $table_info{$current_table};
-	
-	if ($table_info{$current_table}->{root_table}) {
-		log_info("passe $current_table (root_table)");
-		next;
-	}
-	
+		
 	log_info("Connexion à la base d'historisation de $current_table");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 	
-	my $type_rules = IsipRules->new($table_name,$env_sip);
+	my $type_rules = IsipRules->new($current_table,$env_sip);
 
 	$histo_table->isip_rules($type_rules);
 

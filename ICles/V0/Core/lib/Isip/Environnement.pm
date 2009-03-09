@@ -140,7 +140,7 @@ sub get_column_info() {
 sub get_table_info() {
 	my $self = shift;
 	
-	my $table_name=shift or croak("usage : get_column_info(table)");
+	my $table_name=shift or croak("usage : get_table_info(table)");
 	
 	return %{$self->{info_table}->{$table_name} };
 }
@@ -206,8 +206,11 @@ sub get_table_field() {
 	#
 	# For now, we'll use ITools definition
 	
-	my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
-	return $table->field;
+	#my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
+	#return $table->field;
+	
+	my %cols=%{$self->{info_table}->{$tablename}->{column}};
+	return keys %cols;
 }
 
 # provide file name of Sqlite database depending on table name and environnement

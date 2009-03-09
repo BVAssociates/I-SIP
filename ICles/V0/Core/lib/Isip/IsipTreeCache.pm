@@ -166,7 +166,7 @@ sub _recurse_line_action() {
 	my $key_string=join(',',@parent_line{sort $table->key});
 	
 	
-	$logger->notice("add in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$logger->info("add in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
 	$self->dispatch_action($parent_table,$key_string,\%parent_line);
 	
 	# go deep
