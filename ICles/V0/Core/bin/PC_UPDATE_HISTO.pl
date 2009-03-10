@@ -126,17 +126,20 @@ use Isip::IsipTreeCache;
 
 my $env_sip = Environnement->new($environnement);
 
-my %table_info = $env_sip->get_table_info();
-
 my @list_table;
 if (not $table_name) {
-	@list_table=keys %table_info;
+	@list_table=$env_sip->get_table_list();
 } else {
-	@list_table=($table_name);
+	if ($env_sip->get_table_info($table_name)) {
+		@list_table=($table_name);
+	}
+	else {
+		log_erreur("$table_name n'est pas connue");
+	}
 }
 
 if ($module_name) {
-	@list_table=grep {$table_info{$_}->{module} eq $module_name} @list_table;
+	@list_table=$env_sip->get_table_list_module($module_name);
 	log_erreur("no table in module $module_name") if not @list_table;
 }
 
@@ -168,8 +171,6 @@ foreach my $current_table (@list_table) {
 	
 	$counter++;
 	
-	
-	log_erreur("la table $current_table n'est pas connue") if not exists $table_info{$current_table};
 	log_info("Connexion à la table source : $current_table");
 	# open source table depending on TYPE_SOURCE
 	$source_table=$env_sip->open_source_table($current_table);

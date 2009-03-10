@@ -152,6 +152,9 @@ log_erreur("Conditions non gérées") if $conditions;
 ###########################################################
 my $bv_severite=0;
 
+use Isip::IsipRules;
+
+
 if (not $table_name =~ /^IKOS_FIELD_([[:alpha:]]+)_(\w+)$/) {
 	log_erreur("Table $table_name non géré par $0");
 }
@@ -170,7 +173,7 @@ my %new_line;
 
 my $local_table=$env_sip->open_local_table($table_ikos."_HISTO", {timeout => 30000, debug => $debug_level});
 my $histo_table=$env_sip->open_local_from_histo_table($table_ikos, {debug => $debug_level, timeout => 100000});
-$histo_table->isip_rules(IsipRules->new($table_ikos));
+$histo_table->isip_rules(IsipRules->new($table_ikos,$env_sip));
 
 # add dynamic field. Needed for array_to_hash()
 $local_table->dynamic_field("TEXT","TYPE","ICON");
@@ -215,7 +218,7 @@ $histo_table->finish;
 log_info("Nouveau status de la ligne : $new_line{ICON},$new_line{PROJECT}");
 
 # on recherche si la ligne en cours contient les clefs primaires
-my $histo_keys=histo_table->key;
+my $histo_keys=$histo_table->key;
 if ( $row{TABLE_KEY} eq $row{FIELD_VALUE} ) {
 	#mise à jour automatique des champ de la ligne qui ne sont pas commentés
 	
@@ -229,7 +232,6 @@ if ( $row{TABLE_KEY} eq $row{FIELD_VALUE} ) {
 # update cache
 use Isip::IsipTreeCache;
 use Isip::Cache::CacheStatus;
-use Isip::IsipRules;
 
 # needed for CacheStatus
 $new_line{OLD_ICON}=$old_line{ICON};

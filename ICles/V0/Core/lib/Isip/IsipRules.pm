@@ -58,13 +58,13 @@ sub new() {
 
 	# mandatory parameter
 	if (@_ < 1) {
-		croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, environnement )')
+		croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, Environnement_ref )')
 	}
 
 	$self->{table_name}=shift;
 	$self->{environnement}=shift;
 	
-	croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, environnement )') if not blessed $self->{environnement};
+	croak ('\'new\' take 2 mandatory argument: '.$class.'->new(table, Environnement_ref )') if not blessed $self->{environnement};
 	
 
 	
