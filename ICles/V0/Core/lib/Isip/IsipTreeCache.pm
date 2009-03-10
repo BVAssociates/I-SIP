@@ -116,7 +116,7 @@ sub _recurse_line_action() {
 		#return 0;
 	}
 	
-	my @table_key=sort split(',',$self->{isip_env}->{info_table}->{$table_name}->{key} );
+	my @table_key=$self->{isip_env}->get_table_key($table_name);
 	my $current_key_string=@line_hash{@table_key};
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
@@ -154,7 +154,7 @@ sub _recurse_line_action() {
 	my %parent_line;
 	while (my %row=$table->fetch_row) {
 		%parent_line=%row;
-		croak ("too many lines linked!") if $count++;
+		croak ("too many lines linked in $parent_table for ",join(',',@condition_array),"(key:$current_key_string)") if $count++;
 	}
 	if (not $count) {
 		carp("unable to find key in $parent_table for : ",join(',',@condition_array));

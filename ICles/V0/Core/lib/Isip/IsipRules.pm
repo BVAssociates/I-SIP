@@ -209,7 +209,7 @@ sub get_field_icon () {
 	my %status_by_name= reverse %{$self->{field_status}};
 	
 	#$logger->debug("get type of ",$name);
-	my $type=$self->get_field_type($name);
+	my $type=$self->get_field_type((split(',',$name))[0]);
 	
 	my $status;
 	if (not defined $status_by_name{$status_desc}) {

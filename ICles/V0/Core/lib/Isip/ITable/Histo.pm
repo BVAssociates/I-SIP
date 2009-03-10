@@ -481,18 +481,22 @@ sub insert_row() {
 		$date_current = strftime "%Y-%m-%dT%H:%M", localtime;
 	}
 	
-	# active transaction mode if not already done
+	# activate transaction mode if not already done
 	if ( $self->{table_histo}->active_transaction() > 0 ) {
 		$transaction_running = 1 ;
 	} else {
 		$self->{table_histo}->begin_transaction();
 	}
 	
-	# concat key values
+	# save key values
 	my @key_value;
 	foreach (sort $self->key()) {
 		push @key_value, $row{$_};
+		delete $row{$_};
 	}
+	# group keys on one field
+	my $key_values=join(',',@key_value);
+	$row{join(',',sort $self->key())}=$key_values;
 	
 	# quote the fields with the apropriate 
 	foreach my $field (keys %row) {
@@ -500,7 +504,7 @@ sub insert_row() {
 		my $last_id=$self->{table_histo}->insert_row(
 				"DATE_HISTO" => $date_current,
 				"TABLE_NAME" => $self->table_name,
-				"TABLE_KEY" => join(',',@key_value),
+				"TABLE_KEY" => $key_values,
 				"FIELD_NAME" => $field,
 				"FIELD_VALUE" => $row{$field}
 		);

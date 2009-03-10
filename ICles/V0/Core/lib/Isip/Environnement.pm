@@ -71,13 +71,17 @@ sub new() {
 	
 	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
 	
-	while (my %row=$column_info->fetch_row) {		
-		push @{$self->{info_table}->{$row{TABLE_NAME}}->{key}}, $row{FIELD_NAME} if $row{PRIMARY_KEY};
+	while (my %row=$column_info->fetch_row) {
 
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}=$row{TYPE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{description}=$row{TEXT};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_type}=$row{DATA_TYPE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_size}=$row{DATA_LENGTH};
+
+		if ($row{PRIMARY_KEY}) {
+			push @{$self->{info_table}->{$row{TABLE_NAME}}->{key}}, $row{FIELD_NAME} ;
+			$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}="clef";
+		}
 		
 		if ($row{FOREIGN_TABLE} and $row{FOREIGN_KEY}) {
 			$self->{link_table}->add_link($row{TABLE_NAME},$row{FIELD_NAME},$row{FOREIGN_TABLE},$row{FOREIGN_KEY});
@@ -189,7 +193,12 @@ sub get_table_key() {
 	#
 	# For now, we'll use INFO_TABLE
 	if (exists $self->{info_table}->{$tablename}->{key}) {
-		return join(',',sort @{$self->{info_table}->{$tablename}->{key}});
+		if (wantarray) {
+			return sort @{$self->{info_table}->{$tablename}->{key}};
+		}
+		else {
+			return join(',',sort @{$self->{info_table}->{$tablename}->{key}});
+		}
 	}
 	else {
 		croak("no PRIMARY KEY defined for $tablename");
@@ -497,9 +506,9 @@ sub create_database_histo() {
 	$logger->notice("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE $tablename\_HISTO (
 	ID INTEGER PRIMARY KEY,
-	DATE_HISTO VARCHAR(30),
+	DATE_HISTO DATETIME,
 	USER_UPDATE VARCHAR(30),
-	DATE_UPDATE VARCHAR(30),
+	DATE_UPDATE DATETIME,
 	TABLE_NAME VARCHAR(30),
 	TABLE_KEY VARCHAR(30),
 	FIELD_NAME VARCHAR(30),
