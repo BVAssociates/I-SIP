@@ -126,8 +126,8 @@ use Isip::ITable::DataDiff;
 
 my $env_sip = Environnement->new($environnement);
 
-my %table_info = $env_sip->get_table_info();
-log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not exists $table_info{$table_name};
+my %table_info = $env_sip->get_table_info($table_name);
+log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not %table_info;
 
 $logger->notice("Create database for table",$table_name);
 my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
@@ -135,5 +135,53 @@ my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_leve
 $env_sip->initialize_column_info($current_table);
 
 $env_sip->create_database_histo($table_name);
+
+
+
+
+if ($populate) {
+
+	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
+	my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level}); 
+	
+	# set global timestamp for update
+	use POSIX qw(strftime);
+	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+	log_info("Date de collecte utilisée : $timestamp");
+	$histo_table->set_update_timestamp($timestamp);
+	
+	#open IKOS table for DATA
+	
+	my $count=0;
+
+	$logger->notice("Populate $table_name\_HISTO with data from IKOS table");
+	$|=1;
+	
+	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
+	$diff->compare();
+	$diff->update_compare_target();
+	undef $diff;
+	#$histo_table->begin_transaction();
+	#while (my %data_line=$current_table->fetch_row() ) {
+	#       if (not ($count % $group_commit)) {
+	#               print "Commit $count lines\n" if $count;
+	#               $histo_table->commit_transaction() ;
+	#               $histo_table->begin_transaction();
+	#               
+	#       }
+	#       $histo_table->insert_row(%data_line);
+	#       $count++
+	#}
+	
+	#print "$count lines inserted\n";
+	#$histo_table->commit_transaction();
+	
+	# execute special query on table backend
+	$logger->notice("Set STATUS to Valide");
+	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
+			SET STATUS='Valide',
+					COMMENT='Creation'");
+}
+
 
 sortie($bv_severite);

@@ -481,6 +481,7 @@ sub create_database_histo() {
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
+	croak "please set PRIMARY KEY for $tablename and run this command again" if not $self->get_table_key($tablename);
 	croak "database already exist at <$database_path>" if -e $database_path;
 	
 	$logger->notice("Creating empty file : $database_path");

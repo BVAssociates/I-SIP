@@ -120,14 +120,18 @@ if (uc($FROM_WORD) ne 'FROM' or uc($VALUES_WORD) ne 'VALUES') {
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
+use ReplaceAndExec_ISIP;
 
-# if we administrate a table other than FIELD_*, we use the original script
-if ($table_name !~ /^IKOS_FIELD/) {
-	my $values=join('',@values);
+my $values=join('',@values);
+
+# use lib to access Sqlite
+if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
+	delete_info($table_name,$values);
+}
+else {
+	# otherwise, we use the original script
 	system("Remove FROM $table_name VALUES \"$values\"");
 	exit $? >> 8;
 }
 
-log_info("Cannot remove lines");
-
-sortie(202);
+sortie(0);

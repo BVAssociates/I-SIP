@@ -123,13 +123,18 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 ###########################################################
 my $bv_severite=0;
 
+use ReplaceAndExec_ISIP;
+
+my $values=join('',@values);
+
 # if we administrate a table other than FIELD_*, we use the original script
-if ($table_name !~ /^IKOS_FIELD/) {
-	my $values=join('',@values);
+if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
+	insert_info($table_name,$values);
+}
+else {
 	system("Insert INTO $table_name VALUES \"$values\"");
 	exit $? >> 8;
 }
 
-log_info("Cannot insert lines");
 
-sortie(202);
+sortie(0);
