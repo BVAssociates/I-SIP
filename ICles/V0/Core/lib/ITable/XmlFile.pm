@@ -89,6 +89,11 @@ sub _push_node() {
 	# we are on a leaf
 	if (!ref($node)) {
 		$node =~ s/\n\s+//g;
+		
+		# Simple::Xml use UTF-8 as internal representation
+		# So we must decode back it before use
+		utf8::decode($node) ;
+		
 		$self->{node_hash}->{$current_tree}=$node;
 	}
 	# we are on a node
@@ -123,6 +128,10 @@ sub fetch_row_array() {
 	} else {
 	
 		my $fetch_key=shift @{ $self->{remaining_keys} };
-		return ($fetch_key,$self->{node_hash}->{$fetch_key});
+		my $fetch_value=$self->{node_hash}->{$fetch_key};
+		chomp ($fetch_key);
+		chomp ($fetch_value);
+
+		return ($fetch_key, $fetch_value);
 	}
 }
