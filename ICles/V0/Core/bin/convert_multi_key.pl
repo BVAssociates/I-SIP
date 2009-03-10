@@ -142,5 +142,8 @@ foreach $table_name ( $sip->get_table_list() ) {
 	$table->execute("DELETE FROM ".$table_name."_HISTO WHERE FIELD_NAME IN ('".join("','",@key)."')");
 
 	$table->commit_transaction();
+	$logger->notice("compact database $table_name");
+	$table->execute("VACUUM");
+	$table->execute("ANALYZE ".$table_name."_HISTO");
 	$logger->notice("end for $table_name");
 }
