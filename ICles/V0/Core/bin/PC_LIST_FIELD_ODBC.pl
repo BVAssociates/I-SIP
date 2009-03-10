@@ -110,12 +110,12 @@ use Isip::Environnement;
 
 my $isip_env=Environnement->new($environ);
 
-my $table_info = $isip_env->open_ikos_table($table, {debug => $debug_level });
+my $table_info = $isip_env->open_source_table($table, {debug => $debug_level });
 
 if (not defined $table_info) {
 	die "error opening $table";
 }
 
-while (my %line=$table_info->fetch_row() ) {
-	print join(',',values %line)."\n";
+while (my @line=$table_info->fetch_row_array() ) {
+	print join(',', @line)."\n";
 }

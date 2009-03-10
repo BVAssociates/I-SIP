@@ -470,7 +470,7 @@ sub initialize_column_info() {
 		$row{FIELD_NAME}=$field;
 		$row{DATA_TYPE}=$type;
 		$row{DATA_LENGTH}=$size;
-		$row{DESCRIPTION}=$field_txt_hash{$field};
+		$row{TEXT}=$field_txt_hash{$field};
 		
 		$column_info->insert_row(%row);
 	}

@@ -2,8 +2,7 @@
 
 
 Item~~Modules~expl~~~Explore~CONF_MODULE~0~~Expand
-Item~~Creer la Table~adm~perl -e "exit 1 if not exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_INIT_ENV.pl %Environnement%~1~~Save
-
+Item~~Recalculer liens entre tables~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
 
 #Item~~Resynchroniser les schemas avec IKOS~adm~perl -e "exit 1 if exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
 #Item~~Mettre à jour les données~adm~perl -e "exit 1 if not exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_UPDATE_HISTO.pl -d %Environnement% %TABLE_NAME%~1~~Release

@@ -3,12 +3,11 @@
 
 Item~~Explorer les données~expl~~~Explore~ENVIRON~0~~Expand
 
+Item~Configuration SIP~Administrer Tables par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Expand
 Item~Configuration SIP~Ajouter/Supprimer Projets~adm~~~Administrate~PROJECT_TYPE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Environnements~adm~~~Administrate~CONF_ENVIRON~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
-Item~Configuration SIP~Administrer Tables par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Expand
-Item~Configuration SIP~Recalculer liens entre tables~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl -a~0~~Method
 
 
 #Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand

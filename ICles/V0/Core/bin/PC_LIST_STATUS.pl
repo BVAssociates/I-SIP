@@ -296,7 +296,7 @@ $table_explore->output_separator('@');
 my @keys=$table_explore->key;
 while (my %row=$table_explore->fetch_row) {
 	my $string_key=join(',',@row{@keys});
-	$row{ICON}="dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key);
+	$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key);
 	$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
 	if ($filter_field) {
 		if ($filter_field eq 'ICON') {

@@ -178,6 +178,7 @@ foreach my $current_table (@list_table) {
 	
 	log_info("Connexion à la base d'historisation");
 	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
+	 $histo_table->query_field($source_table->query_field);
 	
 	if ($force_comment) {
 		#my $count=$histo_table->{table_histo}->execute("SELECT ID FROM $current_table\_HISTO LIMIT 1");

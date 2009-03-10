@@ -133,11 +133,11 @@ foreach $table_name ( $sip->get_table_list() ) {
 	$table->begin_transaction();
 
 	$logger->notice("merge primary keys into first primary key");
-	$table->execute("UPDATE ".$table_name."_HISTO SET FIELD_NAME='$key_string' 
-		WHERE FIELD_NAME='$first_key'");
 	$table->execute("UPDATE ".$table_name."_HISTO SET FIELD_VALUE=TABLE_KEY 
 		WHERE FIELD_NAME='$first_key' AND FIELD_VALUE != '__delete'");
-
+	$table->execute("UPDATE ".$table_name."_HISTO SET FIELD_NAME='$key_string' 
+		WHERE FIELD_NAME='$first_key'");
+	
 	$logger->notice("delete other primary keys");
 	$table->execute("DELETE FROM ".$table_name."_HISTO WHERE FIELD_NAME IN ('".join("','",@key)."')");
 

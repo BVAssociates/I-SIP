@@ -1,6 +1,7 @@
 
-Item~~Initialiser la Table~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl -i %Environnement% %TABLE_NAME%~1~~Save
 Item~~Configuer colonnes~adm~~~Administrate~COLUMN_INFO~0~~Configure
+Item~~Reinitialiser structure de donnée~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl %Environnement% %TABLE_NAME%~1~~Save
+Item~~Première collecte~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -c %Environnement% %TABLE_NAME%~1~~Save
 
 #Item~~Initialiser Table~expl~~~ExecuteProcedure~PC_INIT_TABLE_DOC.pl %TABLE_NAME%~0~~Method
 #Item~~Configurer les Colonnes~adm~~~Administrate~FIELD_INFO~0~~Configure
