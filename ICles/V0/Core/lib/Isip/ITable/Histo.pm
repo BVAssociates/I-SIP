@@ -625,14 +625,18 @@ sub delete_row() {
 	my @key_value;
 	foreach (sort $self->key()) {
 		push @key_value, $row{$_};
+		delete $row{$_};
 	}
+	# group keys on one field
+	my $key_values=join(',',@key_value);
+	$row{join(',',sort $self->key())}=$key_values;
 	
 	foreach my $field (keys %row) {
 		
 		my $last_id=$self->{table_histo}->insert_row(
 				"DATE_HISTO" => $date_current,
 				"TABLE_NAME" => $self->table_name,
-				"TABLE_KEY" => join(',',@key_value),
+				"TABLE_KEY" => $key_values,
 				"FIELD_NAME" => $field,
 				"FIELD_VALUE" => "__delete"
 		);
