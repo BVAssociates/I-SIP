@@ -86,7 +86,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts) or usage(0);
+getopts('hvc', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -143,7 +143,7 @@ foreach $table_name ( $sip->get_table_list() ) {
 
 	$table->commit_transaction();
 	$logger->notice("compact database $table_name");
-	$table->execute("VACUUM");
+	$table->execute("VACUUM") if $opt{c};
 	$table->execute("ANALYZE ".$table_name."_HISTO");
 	$logger->notice("end for $table_name");
 }
