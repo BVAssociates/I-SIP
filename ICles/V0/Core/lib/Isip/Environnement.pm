@@ -246,7 +246,8 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^([0-9a-zA-Z]+)_(CATEGORY|HISTO.*|INFO)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
 	if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {

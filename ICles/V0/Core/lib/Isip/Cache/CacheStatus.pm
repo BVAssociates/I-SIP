@@ -40,7 +40,7 @@ sub check_before_cache() {
 			}
 		}
 		else {
-			$self->{action}=1 if $value_ref->{ICON} ne 'valide';
+			$self->{action}=1 if $value_ref->{ICON} !~ /^valide|exclus$/;
 		}
 	}
 		

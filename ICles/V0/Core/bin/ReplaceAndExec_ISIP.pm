@@ -136,7 +136,7 @@ sub update_field($$) {
 	my %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 	
 	#delete dynamic field from line to insert
-	foreach ($local_table->dynamic_field()) {
+	foreach ($local_table->dynamic_field(),"DATE_HISTO","FIELD_NAME","FIELD_VALUE") {
 		delete $row{$_};
 	}
 	
