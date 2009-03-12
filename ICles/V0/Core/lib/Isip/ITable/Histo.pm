@@ -36,6 +36,7 @@ sub open() {
 	
 	# real informations (Aggregation)
 	$self->{table_name_histo} = $self->{table_name}."_HISTO";
+	$self->{table_name_histo_view} = $self->{table_name}."_HISTO";
 	$self->{database_name} = $database_name;
 	
 	## We suppose TABLE_INFO and TABLE_HISTO are in the same database  /!\
@@ -229,6 +230,10 @@ sub get_query()
 				push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
 			}
 		}
+		elsif ($condition =~ /^\s*CATEGORY/) {
+			push @select_conditions, $condition;
+			$self->{table_name_histo_view} = $self->{table_name_histo}."_CATEGORY";
+		}
 		else {
 			croak ("something wrong with condition : $condition");
 		}
@@ -263,7 +268,7 @@ sub get_query()
 			FIELD_NAME as FIELD_NAME_2,
 			max(DATE_HISTO) AS DATE_MAX
 			FROM
-			$self->{table_name_histo}\n";
+			$self->{table_name_histo_view}\n";
 	
 	# Add a condition
 	$select_histo.= " WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
@@ -297,12 +302,13 @@ sub fetch_row() {
 	if ($self->{end_of_data}) {
 		$self->{temp_next_row} = {};
 		$self->{end_of_data} = 0;
+		$self->{table_histo}->custom_select_query (undef);
 		return ();
 	}
 
 	#TO BE OPTIMIZED (should be called only once)
 	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","PROJECT","COMMENT");
-	$self->{table_histo}->custom_select_query ($self->get_query() );
+	$self->{table_histo}->custom_select_query ($self->get_query()) if not $self->{table_histo}->{custom_select_query};
 
 	# store the higher field status
 	#my $line_has_new=0;
@@ -360,7 +366,7 @@ sub fetch_row() {
 			my @value_list=split(',',$field_line{FIELD_VALUE});
 			
 			# sanity check
-			croak ("Incorrect value in HISTO for ".$field_line{ID}) if @field_list ne @value_list;
+			croak ("FIELD_VALUE and FIELD_NAME does not match in HISTO for ID=".$field_line{ID}) if @field_list ne @value_list;
 			
 			foreach my $field_name (@field_list) { 
 				# add the FIELD_VALUE to the return hash
@@ -384,7 +390,10 @@ sub fetch_row() {
 	
 	$self->{end_of_data} = 1 if not %field_line;
 	
-	return () if $self->{end_of_data} and not %return_line;
+	if ($self->{end_of_data} and not %return_line) {
+		$self->{table_histo}->custom_select_query (undef);
+		return () ;
+	}
 	
 	my $missing_key;
 	foreach ($self->key() ) {

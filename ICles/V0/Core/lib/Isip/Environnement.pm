@@ -246,7 +246,7 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|INFO)$/);
+	($table_real,$table_extension) = ($table_name =~ /^([0-9a-zA-Z]+)_(CATEGORY|HISTO.*|INFO)$/);
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
 	if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
@@ -491,12 +491,14 @@ sub create_database_histo() {
 	my $database_path=$database_dir."/".$database_filename;
 	
 	croak "please set PRIMARY KEY for $tablename and run this command again" if not $self->get_table_key($tablename);
-	croak "database already exist at <$database_path>" if -e $database_path;
+	carp "database already exist at <$database_path>" if -e $database_path;
 	
-	$logger->notice("Creating empty file : $database_path");
-	#create empty file
-	open DATABASEFILE,">$database_path" or croak "unable to create file : $!";
-	close DATABASEFILE;
+	if (! -e $database_path) {
+		$logger->notice("Creating empty file : $database_path");
+		#create empty file
+		open DATABASEFILE,">$database_path" or croak "unable to create file : $!";
+		close DATABASEFILE;
+	}
 	
 	croak "Impossible de retrouver le fichier créé" if not $self->get_sqlite_path($tablename);
 	
@@ -504,7 +506,7 @@ sub create_database_histo() {
 	my $master_table=Sqlite->open($database_path, 'sqlite_master');
 	
 	$logger->notice("Create table $tablename\_HISTO");
-	$master_table->execute("CREATE TABLE $tablename\_HISTO (
+	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_HISTO (
 	ID INTEGER PRIMARY KEY,
 	DATE_HISTO DATETIME,
 	USER_UPDATE VARCHAR(30),
@@ -518,9 +520,34 @@ sub create_database_histo() {
 	STATUS VARCHAR(30),
 	MEMO VARCHAR(30))");
 	
+	$logger->notice("Create table $tablename\_CATEGORY");
+	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_CATEGORY (
+	TABLE_KEY VARCHAR(30) PRIMARY KEY,
+	CATEGORY VARCHAR(30))");
+	
+	$logger->notice("Replace view $tablename\_HISTO_CATEGORY");
+	$master_table->execute("DROP VIEW IF EXISTS $tablename\_HISTO_CATEGORY");
+	$master_table->execute("CREATE VIEW $tablename\_HISTO_CATEGORY AS
+	SELECT ID,
+		DATE_HISTO,
+		USER_UPDATE,
+		DATE_UPDATE,
+		TABLE_NAME,
+		$tablename\_HISTO.TABLE_KEY as TABLE_KEY,
+		FIELD_NAME,
+		FIELD_VALUE,
+		COMMENT,
+		STATUS,
+		MEMO,
+		PROJECT,
+		$tablename\_CATEGORY.CATEGORY as CATEGORY
+	FROM $tablename\_HISTO
+	LEFT JOIN $tablename\_CATEGORY
+		ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )");
+	
 	$logger->notice("Create indexes");
-	$master_table->execute("CREATE INDEX IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
-	$master_table->execute("CREATE INDEX IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
+	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
+	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
 
 	
 	$master_table->close();
