@@ -151,20 +151,7 @@ use ReplaceAndExec_ISIP;
 my ($current_vol,$current_dir,$current_script)=splitpath($0);
 
 if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
-	my $cmd=catpath($current_vol,$current_dir,"ReplaceAndExec_ISIP_FIELD.pl");
-	@ARGV=("-d",@argv_save);
-	log_info("exec: ", $cmd, join (' ',@argv_save));
-	my $return=do $cmd;
-	die "couldn't parse $cmd: $@" if $@;
-
-	exit $return;
-	#system "perl", ($cmd, @argv_save);
-	#if ($? == -1) {
-	#	die "failed to execute: $!\n";
-	#}
-	#elsif (($? >> 8) != 0) {
-	#	die sprintf ("'ReplaceAndExec_ISIP_FIELD.pl' died with signal %d, %s",($?  >> 8))
-	#};
+	update_field($table_name,$values);
 }
 elsif ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
 	update_info($table_name,$values);
