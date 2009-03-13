@@ -338,7 +338,7 @@ elsif ($explore_mode eq "explore") {
 
 
 # order the lines in the order of table field
-my @field_order=@memory_row{$env_sip->get_table_field($table_name)};
+my @field_order=grep {$_} @memory_row{$env_sip->get_table_field($table_name)};
 delete @memory_row{$env_sip->get_table_field($table_name)};
 for (keys %memory_row) {
 	print $memory_row{$_};

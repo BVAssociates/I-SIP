@@ -135,9 +135,10 @@ sub update_field($$) {
 	
 	my %row=$local_table->array_to_hash(split(/$separator/, $values, -1));
 	
-	#delete dynamic field from line to insert
-	foreach ($local_table->dynamic_field(),"DATE_HISTO","FIELD_NAME","FIELD_VALUE") {
-		delete $row{$_};
+	my %row_update=%row;
+	#delete non-updatable field from line to update
+	foreach ($local_table->dynamic_field(),"DATE_HISTO","DATE_UPDATE","USER_UPDATE","TABLE_NAME","FIELD_NAME","FIELD_VALUE") {
+		delete $row_update{$_};
 	}
 	
 	use POSIX qw(strftime);
@@ -145,20 +146,21 @@ sub update_field($$) {
 	my $current_user=$ENV{IsisUser};
 	
 	#on prepare la date
-	$row{DATE_UPDATE} = $current_date;
-	$row{USER_UPDATE} = $current_user;
+	$row_update{DATE_UPDATE} = $current_date;
+	$row_update{USER_UPDATE} = $current_user;
 	
 	# on met à jour le champ seulement
-	update_field_comment($env_sip,$local_table,$table_ikos,\%row);
+	update_field_comment($env_sip,$local_table,$table_ikos,\%row_update);
 	
 	# on recherche si la ligne en cours contient les clefs primaires
-	if ( $row{TABLE_KEY} eq $row{FIELD_VALUE} ) {
-		
-		# don't update this fields
-		foreach ("DATE_HISTO","DATE_UPDATE","USER_UPDATE","FIELD_NAME","FIELD_VALUE") {
-			delete $row{$_};
+	my $key_field=$env_sip->get_table_key($table_ikos);
+	if ( ( $row{FIELD_NAME} eq $key_field ) and ($row{TABLE_KEY} eq $row{FIELD_VALUE} )) {
+
+		# for other field, we don't update timestamp
+		foreach ("DATE_UPDATE","USER_UPDATE") {
+			delete $row_update{$_};
 		}
-		
+	
 		# look for field with same key, which was never updated
 		my $field_table=$env_sip->open_histo_field_table($table_ikos);
 		$field_table->query_key_value($row{TABLE_KEY});
@@ -171,8 +173,8 @@ sub update_field($$) {
 		
 		#mise à jour automatique des champ de la ligne qui ne sont pas commentés
 		foreach my $id (@id_list) {
-			$row{ID}=$id;
-			update_field_comment($env_sip,$local_table,$table_ikos,\%row);
+			$row_update{ID}=$id;
+			update_field_comment($env_sip,$local_table,$table_ikos,\%row_update);
 		}
 	}
 
