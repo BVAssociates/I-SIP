@@ -534,37 +534,40 @@ public class EditFormProcessor extends ProcessorFrame {
         def_cache.releaseTableDefinitionLeasing(definition);
         StringBuilder select_condition = new StringBuilder();
         
-        // Construction de la condition du Select pour ne recuperer que
-        // la ligne correspondante aux clefs
-        for (int k = 0; k < _tableDefinition.key.length; k++) {
-            if (!select_condition.toString().equals("")) {
-                select_condition.append(" AND ");
-            }
-            select_condition.append(definition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(definition.key[k])).value);
-        }
+        
 
         IsisParameter[] data;
         
         if (refresh) {
+            // Construction de la condition du Select pour ne recuperer que
+            // la ligne correspondante aux clefs
+            for (int k = 0; k < definition.key.length; k++) {
+                if (!select_condition.toString().equals("")) {
+                    select_condition.append(" AND ");
+                }
+                select_condition.append(definition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(definition.key[k])).value);
+            }
+            
             SimpleSelect HistoTable =
                     new SimpleSelect(getSelectedNode(), definition.tableName, new String[]{""}, select_condition.toString());
             data = HistoTable.getFirst();
-        } else {
-            data = node.getObjectParameters();
+
+            if (data != null) {
+                IsisParameter[] data_node = node.getObjectParameters();
+                //On met les nouvelles données dans le node
+                for (int i = 0; i < data.length; i++) {
+                    data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
+                }
+            }
+            else {
+                //TODO : should show to the user that node does not exists anymore
+                return;
+            }
         }
 
-        if (data == null) {
-            throw new InnerException("Problème lors de la mise à jour du Label", "Impossible de recuperer les données du noeud", null);
-        }
-
-        IsisParameter[] data_node = node.getObjectParameters();
-        //On met les nouvelles données dans le node
-        for (int i=0; i < data.length; i++)
-        {
-            data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
-        }
-        
+               
         try {
+            
             // recalcul du label avec le nouveau context
             LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
                     node.getServiceType(), node, node.getContext(true));
