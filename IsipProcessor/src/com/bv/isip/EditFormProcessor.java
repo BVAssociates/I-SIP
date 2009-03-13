@@ -211,14 +211,18 @@ public class EditFormProcessor extends ProcessorFrame {
 		// On ajoute le callback sur le bouton
 		validate_button.addActionListener(new ActionListener()
 		{
-			public void actionPerformed(ActionEvent event)
-			{
-				// On appelle la méthode de validation
-                //sablier pendant le traitement
-                getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, getContentPane());
-                validateInput();
-                //sablier pendant le traitement
-                getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
+			         public void actionPerformed(ActionEvent event)
+            {
+                try {
+                    getMainWindowInterface().setCurrentCursor(Cursor.WAIT_CURSOR, getContentPane());
+                    // On appelle la méthode de validation
+                    validateInput();
+                } catch (InnerException execption) {
+                    getMainWindowInterface().showPopupForException(
+                            "Erreur lors de la mise à jour", execption);
+                } finally {
+                    getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
+                }
             }
 		});
 		// On crée un panneau avec un GridBagLayout
@@ -317,7 +321,7 @@ public class EditFormProcessor extends ProcessorFrame {
      *
      * @throws com.bv.isis.console.common.InnerException
      */
-    private IsisParameter[] populateFormPanel(boolean refresh)
+    protected IsisParameter[] populateFormPanel(boolean refresh)
             throws InnerException
     {
         // Variable qui stockera les valeurs à afficher
@@ -445,6 +449,7 @@ public class EditFormProcessor extends ProcessorFrame {
     * Elle est appelée lorsque l'utilisateur a cliqué sur le bouton "Valider".
 	*/
     public void validateInput()
+            throws InnerException
     {
         IsisParameter[] data;
         IsisParameter[] data_node;
@@ -494,9 +499,11 @@ public class EditFormProcessor extends ProcessorFrame {
 
 
         try {
+            refreshLabel(node,false);
+            refreshLabel((GenericTreeObjectNode)node.getParent().getParent(),true);
             // recalcul du label avec le nouveau context
-            LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
-                    node.getServiceType(), node, node.getContext(true));
+            //LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
+            //        node.getServiceType(), node, node.getContext(true));
 
         } catch (InnerException exception) {
             Trace trace_errors = TraceAPI.declareTraceErrors("Console");
@@ -504,12 +511,76 @@ public class EditFormProcessor extends ProcessorFrame {
 			trace_errors.writeTrace(
 				"Erreur lors de la modification du Label: " +
 				exception.getMessage());
+            throw new InnerException("Erreur lors de la modification du Label", exception.getMessage(), exception);
         }
         //averti l'interface que le contenu a changé
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
 
+        
     }
 
+    /**
+     * Recuprere les donnée d'un noeud Item. Si ce noeud à changé, on met
+     * à jour le Label et on rafraichi l'arbre.
+     *
+     * @param node
+     */
+    protected void refreshLabel(GenericTreeObjectNode node, boolean refresh)
+            throws InnerException
+    {
+        // get the primary keys for current table
+        TableDefinitionManager def_cache = TableDefinitionManager.getInstance();
+        IsisTableDefinition definition = def_cache.getTableDefinition(node.getAgentName(), node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
+        def_cache.releaseTableDefinitionLeasing(definition);
+        StringBuilder select_condition = new StringBuilder();
+        
+        // Construction de la condition du Select pour ne recuperer que
+        // la ligne correspondante aux clefs
+        for (int k = 0; k < _tableDefinition.key.length; k++) {
+            if (!select_condition.toString().equals("")) {
+                select_condition.append(" AND ");
+            }
+            select_condition.append(definition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(definition.key[k])).value);
+        }
+
+        IsisParameter[] data;
+        
+        if (refresh) {
+            SimpleSelect HistoTable =
+                    new SimpleSelect(getSelectedNode(), definition.tableName, new String[]{""}, select_condition.toString());
+            data = HistoTable.getFirst();
+        } else {
+            data = node.getObjectParameters();
+        }
+
+        if (data == null) {
+            throw new InnerException("Problème lors de la mise à jour du Label", "Impossible de recuperer les données du noeud", null);
+        }
+
+        IsisParameter[] data_node = node.getObjectParameters();
+        //On met les nouvelles données dans le node
+        for (int i=0; i < data.length; i++)
+        {
+            data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
+        }
+        
+        try {
+            // recalcul du label avec le nouveau context
+            LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
+                    node.getServiceType(), node, node.getContext(true));
+
+        } catch (InnerException exception) {
+            Trace trace_errors = TraceAPI.declareTraceErrors("Console");
+
+            trace_errors.writeTrace(
+                    "Erreur lors de la modification du Label: " +
+                    exception.getMessage());
+            throw new InnerException("Erreur lors de la modification du Label", exception.getMessage(), exception);
+        }
+        
+    }
+
+    
     /**
      * Initialise le membre _tableDefinition avec la definition extraite
      * du node en cours d'exploration
@@ -534,7 +605,7 @@ public class EditFormProcessor extends ProcessorFrame {
             if (!_select_condition.equals("")) {
                 _select_condition += " AND ";
             }
-            _select_condition = _tableDefinition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(_tableDefinition.key[k])).value;
+            _select_condition += _tableDefinition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(_tableDefinition.key[k])).value;
         }
     }
 
