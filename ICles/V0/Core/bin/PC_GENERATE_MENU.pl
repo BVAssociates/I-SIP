@@ -193,7 +193,7 @@ FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
-Item~Administration~Modifier groupe~adm~perl -e "exit 1 if not $ENV{ROOT_TABLE}"~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
+Item~Administration~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 Item~Administration~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 ';
 my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
