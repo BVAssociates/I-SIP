@@ -141,6 +141,12 @@ if (not $table_name) {
 if ($module_name) {
 	@list_table=$env_sip->get_table_list_module($module_name);
 	log_erreur("no table in module $module_name") if not @list_table;
+	if ($table_name) {
+		if (!grep {$_ eq $table_name} @list_table) {
+			log_erreur("no table $table_name in module $module_name");
+		}
+		@list_table=($table_name);
+	}
 }
 
 
@@ -208,7 +214,7 @@ foreach my $current_table (@list_table) {
 		$total_diff_counter += $diff_counter;
 		if ($diff_counter) {
 			$histo_table->{table_histo}->execute("ANALYZE");
-			log_info("Les changements ont ete appliqués sur $current_table ($diff_counter)");
+			log_info("Les changements ont ete appliqués sur $current_table (lignes mises à jour : $diff_counter)");
 			
 					
 			#my ($current_vol,$current_dir,$current_script)=splitpath($0);
@@ -252,6 +258,6 @@ if ($save_date and $total_diff_counter) {
 # flush cache to disk
 #$cache->update_dirty_cache();
 
-log_info("Nombre de mises à jour effectuées au total : $total_diff_counter");
+log_info("Nombre de lignes mises à jour effectuées au total : $total_diff_counter");
 
 sortie($bv_severite);

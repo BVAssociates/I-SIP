@@ -245,7 +245,6 @@ my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $
 $table_current->query_date($date_explore) if $date_explore;
 
 $table_current->query_condition(@query_condition);
-#$table_current->metadata_condition(@comment_condition);
 
 # recuperation des colonnes à afficher
 my @query_field=$env_sip->get_table_field($table_name);

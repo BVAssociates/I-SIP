@@ -73,10 +73,7 @@ sub open() {
 	# rules applied to dynamic fields
 	$self->{isip_rules}= {};
 	
-	# add filtering lines on comments (metadata)
-	$self->{meta_filter} = [];
-	
-    return $self;
+	return $self;
 }
 
 ##################################################
@@ -185,14 +182,6 @@ sub isip_rules() {
     return $self->{isip_rules} ;
 }
 
-sub metadata_condition() {
-	my $self = shift;
-	
-	if (@_) {
-		$self->{meta_filter} = [@_];
-	}
-    return @{$self->{meta_filter}} ;
-}
 
 # set custom SQL query
 sub custom_select_query()
@@ -274,8 +263,6 @@ sub get_query()
 	$select_histo.= " WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
 	# GROUP BY
 	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
-	# HAVING metadata
-	$select_histo.= " HAVING ".join(" AND ", @{$self->{meta_filter}}) if @{$self->{meta_filter}};
 	
 	$select_histo.= ")	ON  (ID= ID2)
 		WHERE FIELD_VALUE != '__delete'";

@@ -149,6 +149,7 @@ sub get_table_info() {
 	
 	my $table_name=shift or croak("usage : get_table_info(table)");
 	
+	return undef if not $self->{info_table}->{$table_name};
 	return %{$self->{info_table}->{$table_name} };
 }
 
