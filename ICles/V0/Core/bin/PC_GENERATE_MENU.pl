@@ -193,12 +193,8 @@ FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
-
-##Don t work because items "Table" does not process Preprocessing
-#Table~~Afficher tout~expl~~~Explore~IKOS_TABLE_%s~0~~Expand
-#Table~~Recherche rapide~expl~~{TABLE_FILTER=%s}{NAME_FILTER=getListValue("Filtrer sur:",FIELD_INFO@TEXT)}{VALUE_FILTER=getValue("Valeur")}~Explore~IKOS_TABLE_%s~0~~Configure
-
-#Item~Special~Valider la ligne~expl~~~ExecuteProcedure~PC_VALIDATE_LINE.pl %%Environnement%% %s~1~~Run
+Item~Administration~Modifier groupe~adm~perl -e "exit 1 if not $ENV{ROOT_TABLE}"~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
+Item~Administration~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 ';
 my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
 ';
@@ -351,10 +347,10 @@ foreach my $environnement (@environnement_list) {
 
 	##### CREATE PCI
 		
+		my $key_var=join(',',map {'%'.$_.'%'} $env->get_table_key($current_table));
 		$string = sprintf ($pci_template,
-				($source_data_table) x 2,
-				$current_table,
-				($source_data_table) x 2 );
+				$source_data_table,
+				($current_table,$key_var) x 2 );
 		
 		# get all table having current table as F_KEY
 		my @child_table=$link_obj->get_child_tables($current_table);

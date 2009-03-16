@@ -271,7 +271,6 @@ if ($explore_mode eq "compare") {
 
 }
 elsif ($explore_mode eq "explore") {
-	
 	$table_explore=$table_current;
 	log_info("pré-charge les informations de modification des sous-tables");
 	
@@ -284,6 +283,14 @@ elsif ($explore_mode eq "explore") {
 	if ($filter_field and $filter_field eq 'PROJECT') {
 		$project_cache=CacheProject->new($env_sip);
 		$project_cache->set_dirty_project($filter_value);
+	}
+
+	if ($ENV{CATEGORY}) {
+		my %info=$env_sip->get_table_info($table_name);
+		if ($ENV{TABLE_NAME} eq $table_name) {
+			log_info("affiche les lignes de la categorie $ENV{CATEGORY}");
+			$table_explore->query_condition("CATEGORY = '$ENV{CATEGORY}'",$table_explore->query_condition());
+		}
 	}
 }
 

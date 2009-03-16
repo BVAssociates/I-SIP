@@ -43,6 +43,7 @@ sub open() {
 	$self->{query_field}  = [];
 	$self->{query_condition} = [];
 	$self->{query_sort}  = [];
+	$self->{query_distinct}  = 0;
 	$self->{output_separator}  = ',';
 	$self->{custom_select_query} = undef;
 	
@@ -180,6 +181,15 @@ sub query_sort {
     return @{ $self->{query_sort} };
 }
 
+sub query_distinct {
+	my $self = shift;
+	
+	my $enable=shift;
+	$self->{query_distinct}=$enable if $enable and $enable =~ /^1|0$/;
+	
+	return $self->{query_distinct};
+}
+
 # other accessors
 
 sub debugging {
@@ -246,9 +256,12 @@ sub get_query()
 	# return the user's SQL query
 	return $self->{custom_select_query} if $self->{custom_select_query};
 	
+	my $distinct="";
+	$distinct="DISTINCT" if $self->query_distinct;
+	
 	# construct SQL from "query_*" members
 	my $query;
-	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->table_name();
+	$query = "SELECT ".$distinct." ".join(', ',$self->query_field())." FROM ".$self->table_name();
 	$query = $query." WHERE ".join(' AND ',$self->query_condition()) if $self->query_condition() != 0;
 	$query = $query." ORDER BY ".join(', ',$self->query_sort()) if $self->query_sort() != 0;
 	

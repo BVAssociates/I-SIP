@@ -3,102 +3,12 @@
 PortalAccess.Item;I_Home;Portail (%[Role])
 ETAT.Table;;Etats disponibles
 ETAT.Item;field_%[Name];%[Name]
-ENVIRON.Table;T_Group;Liste des environnements
 ENVIRON.Item;I_Group;%[Environnement] (%[Description])
-MODULE.Table;I_AgentICles;Liste des Modules
-MODULE.Item;T_AgentICles;%[Module] (%[Description])
-ROOT_TABLE.Table;I_Configs;Liste des Tables
-ROOT_TABLE.Item;T_Configs;%[TABLE_NAME] (%[DESCRIPTION])
-DATE_HISTO.Table;I_Configs;Liste des Dates de changement
+MODULE.Item;I_AgentICles;%[Module] (%[Description])
+ROOT_TABLE.Item;I_Configs;%[TABLE_NAME] (%[DESCRIPTION])
 DATE_HISTO.Item;T_Configs;%[DATE_EXPLORE] %[DESCRIPTION]
 DATE_HISTO_BASELINE.Item;T_Configs;%[DATE_EXPLORE] (%[DESCRIPTION])
 FILTER.Item;I_Transitions;%[FILTER_DESC]
 FILTER_COMPARE.Item;I_Transitions;%[FILTER_DESC]
-IKOS_TABLE_PROD_ETPTYPP.Table;key_go;Clefs de ETPTYPP (Etapes Type)
-IKOS_FIELD_PROD_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_ETPTYPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
-IKOS_TABLE_PROD_NATPROP.Table;key_go;Clefs de NATPROP (Nature des processus)
-IKOS_FIELD_PROD_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_NATPROP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
-IKOS_TABLE_PROD_PROTYPP.Table;key_go;Clefs de PROTYPP (Processus Type)
-IKOS_FIELD_PROD_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_PROTYPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
-IKOS_TABLE_PROD_ORDEXPP.Table;key_go;Clefs de ORDEXPP (Programme Type)
-IKOS_FIELD_PROD_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_ORDEXPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
-IKOS_TABLE_DEV_ETPTYPP.Table;key_go;Clefs de ETPTYPP (Etapes Type)
-IKOS_FIELD_DEV_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_ETPTYPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
-IKOS_TABLE_DEV_NATPROP.Table;key_go;Clefs de NATPROP (Nature des processus)
-IKOS_FIELD_DEV_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_NATPROP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
-IKOS_TABLE_DEV_PROTYPP.Table;key_go;Clefs de PROTYPP (Processus Type)
-IKOS_FIELD_DEV_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_PROTYPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
-IKOS_TABLE_PROD_TPROGP.Table;key_go;Clefs de TPROGP (Production)
-IKOS_FIELD_PROD_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_TPROGP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_TPROGP.Item;isip_%[ICON];%[LKCDTPROG]  
-IKOS_TABLE_DEV_ORDEXPP.Table;key_go;Clefs de ORDEXPP (Programme Type)
-IKOS_FIELD_DEV_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_ORDEXPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
-IKOS_TABLE_DEV_TPROGP.Table;key_go;Clefs de TPROGP (Production)
-IKOS_FIELD_DEV_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_TPROGP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_TPROGP.Item;isip_%[ICON];%[LKCDTPROG]  
-IKOS_TABLE_PROD_CROEXPP.Table;key_go;Clefs de CROEXPP (Parametres par organisme)
-IKOS_FIELD_PROD_CROEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_CROEXPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_CROEXPP.Item;isip_%[ICON];%[FNNOCRITRT] (%[FNVLCRITRT])
-IKOS_TABLE_PROD_config_web.Table;key_go;Clefs de config_web (fichier TOMCAT)
-IKOS_FIELD_PROD_config_web.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_config_web.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_config_web.Item;isip_%[ICON];%[xml_path]  
-IKOS_TABLE_PROD_CRITRTP.Table;key_go;Clefs de CRITRTP (Types parametres)
-IKOS_FIELD_PROD_CRITRTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_CRITRTP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_CRITRTP.Item;isip_%[ICON]; (%[FKLBLCRITR])
-IKOS_TABLE_PROD_TRAITP.Table;key_go;Clefs de TRAITP (Programmes)
-IKOS_FIELD_PROD_TRAITP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_TRAITP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]  
-IKOS_TABLE_PROD_OREXOGP.Table;key_go;Clefs de OREXOGP (Programme Type Organisme)
-IKOS_FIELD_PROD_OREXOGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_OREXOGP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_OREXOGP.Item;isip_%[ICON];%[IKCDOGA]  
-IKOS_TABLE_PROD_OGAP.Table;key_go;Clefs de OGAP (Organisme)
-IKOS_FIELD_PROD_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_OGAP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
-IKOS_TABLE_DEV_CROEXPP.Table;key_go;Clefs de CROEXPP (Parametres par organisme)
-IKOS_FIELD_DEV_CROEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_CROEXPP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_CROEXPP.Item;isip_%[ICON];%[FNNOCRITRT] (%[FNVLCRITRT])
-IKOS_TABLE_DEV_OREXOGP.Table;key_go;Clefs de OREXOGP (Programme Type Organisme)
-IKOS_FIELD_DEV_OREXOGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_OREXOGP.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_OREXOGP.Item;isip_%[ICON];%[IKCDOGA]  
-IKOS_TABLE_DEV_config_web.Table;key_go;Clefs de config_web (fichier TOMCAT)
-IKOS_FIELD_DEV_config_web.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_config_web.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_config_web.Item;isip_%[ICON];%[xml_path]  
-IKOS_TABLE_PROD_VALPARP.Table;key_go;Clefs de VALPARP (Valeurs particulières)
-IKOS_FIELD_PROD_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_VALPARP.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
-IKOS_TABLE_PROD_OREXOGP2.Table;key_go;Clefs de OREXOGP2 (Organismes)
-IKOS_FIELD_PROD_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_PROD_OREXOGP2.Table;page_white_key;Liste des champs
-IKOS_TABLE_PROD_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
-IKOS_TABLE_DEV_OREXOGP2.Table;key_go;Clefs de OREXOGP2 (Organismes)
-IKOS_FIELD_DEV_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
-IKOS_FIELD_DEV_OREXOGP2.Table;page_white_key;Liste des champs
-IKOS_TABLE_DEV_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
+CATEGORY.Item;I_Versions;
+

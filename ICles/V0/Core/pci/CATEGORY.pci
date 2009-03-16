@@ -8,5 +8,3 @@
 #~Replace~PostAction~~~~ExecuteProcedure~coucou~0~~
 
 Item~~Explore~expl~~~Explore~IKOS_TABLE_%Environnement%_%TABLE_NAME%~0~~Expand
-
-Item~~Explorer Categories~adm~perl -e "exit 1 if $ENV{ENV_COMPARE} or $ENV{DATE_COMPARE}"~~Explore~CATEGORY~0~~Expand

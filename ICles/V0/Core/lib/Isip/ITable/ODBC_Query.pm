@@ -167,6 +167,10 @@ sub get_query() {
 		$query =~ s/SELECT\s+(.+)\s+FROM/SELECT $query_fields FROM/i;
 	}
 	
+	if ($self->query_distinct) {
+		$query =~ s/SELECT\s/SELECT DISTINCT /;
+	}
+	
 	if ( $self->query_condition()) {
 		if ($self->{sql_statement_obj}->where() ) {
 			if ($self->{sql_statement_obj}->order()) {

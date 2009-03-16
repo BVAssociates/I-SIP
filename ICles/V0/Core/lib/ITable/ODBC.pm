@@ -238,9 +238,12 @@ sub get_query()
 	# return the user's SQL query
 	return $self->{custom_select_query} if defined $self->{custom_select_query};
 	
+	my $distinct="";
+	$distinct="DISTINCT" if $self->query_distinct;
+	
 	# construct SQL from "query_*" members
 	my $query;
-	$query = "SELECT ".join(', ',$self->query_field())." FROM ".$self->{table_name};
+	$query = "SELECT ".$distinct." ".join(', ',$self->query_field())." FROM ".$self->{table_name};
 	$query = $query." WHERE ".join(' AND ',$self->query_condition()) if $self->query_condition() != 0;
 	$query = $query." ORDER BY ".join(', ',$self->query_sort()) if $self->query_sort() != 0;
 	

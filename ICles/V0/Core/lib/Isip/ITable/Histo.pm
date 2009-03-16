@@ -110,7 +110,15 @@ sub field {
 
 sub query_date {
     my $self = shift;
-    if (@_) { $self->{query_date} = shift }
+    if (@_) {
+		my $datetime=shift;
+		# ISO 8601 format : 1977-04-22T06:00
+		if ( $datetime !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
+			$self->_error("datetime must be like 1977-04-22T06:00 (ISO 8601)");
+			croak("usage : query_date(datetime)")
+		}	
+		$self->{query_date} = $datetime;
+	}
     return $self->{query_date} ;
 }
 
@@ -209,19 +217,20 @@ sub get_query()
 	
 	foreach my $condition ($self->query_condition()) {
 		if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
-		
-			# check if condition is on one of the keys
-			if (grep {$1 eq $_} @field_key ) {
-				$query_key{$1}=$3;
+			if ($1 eq "CATEGORY") {
+				push @select_conditions, $condition;
+				$self->{table_name_histo_view} = $self->{table_name_histo}."_CATEGORY";
 			}
 			else {
-				# else we use request on FIELD_NAME and FIELD_VALUE
-				push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+			# check if condition is on one of the keys
+				if (grep {$1 eq $_} @field_key ) {
+					$query_key{$1}=$3;
+				}
+				else {
+					# else we use request on FIELD_NAME and FIELD_VALUE
+					push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+				}
 			}
-		}
-		elsif ($condition =~ /^\s*CATEGORY/) {
-			push @select_conditions, $condition;
-			$self->{table_name_histo_view} = $self->{table_name_histo}."_CATEGORY";
 		}
 		else {
 			croak ("something wrong with condition : $condition");
@@ -248,8 +257,11 @@ sub get_query()
 	#}
 	#push @select_conditions, '('.join(' OR ',@query_conditions).')';
 	
+	my $distinct="";
+	$distinct="DISTINCT" if $self->query_distinct;
+	
 	# SQL join to get last inserted KEY/NAME/VALUE
-	$select_histo= "SELECT ".join(',',$self->{table_histo}->query_field)." FROM
+	$select_histo= "SELECT ".$distinct." ".join(',',$self->{table_histo}->query_field)." FROM
 		$self->{table_name_histo} INNER JOIN (
 			SELECT
 			max(ID) as ID2,

@@ -524,7 +524,7 @@ sub create_database_histo() {
 	
 	$logger->notice("Create table $tablename\_CATEGORY");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_CATEGORY (
-	TABLE_KEY VARCHAR(30) PRIMARY KEY,
+	TABLE_KEY VARCHAR(30) PRIMARY KEY NOT NULL,
 	CATEGORY VARCHAR(30))");
 	
 	$logger->notice("Replace view $tablename\_HISTO_CATEGORY");
@@ -542,10 +542,11 @@ sub create_database_histo() {
 		STATUS,
 		MEMO,
 		PROJECT,
-		$tablename\_CATEGORY.CATEGORY as CATEGORY
+		coalesce($tablename\_CATEGORY.CATEGORY,'vide') as CATEGORY
 	FROM $tablename\_HISTO
 	LEFT JOIN $tablename\_CATEGORY
-		ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )");
+		ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )
+	WHERE CATEGORY IS NULL OR CATEGORY != 'HIDDEN'");
 	
 	$logger->notice("Create indexes");
 	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
