@@ -384,6 +384,12 @@ sub add_field() {
 	croak("add_field() not implemented in ".ref($self));
 }
 
+sub remove_field() {
+	my $self = shift;
+	
+	croak("remove_field() not implemented in ".ref($self));
+}
+
 # update a row on a primary key
 sub update_row_array() {
 	my $self = shift;

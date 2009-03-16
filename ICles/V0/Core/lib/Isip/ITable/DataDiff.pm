@@ -182,7 +182,9 @@ sub _fetch_source_only() {
 		@{$self->{current_source_only_key}} = sort (keys %temp);
 	}
 	
-	my $return_key=shift @{ $self->{current_source_only_key} }
+	my $return_key=shift @{ $self->{current_source_only_key} };
+	
+	return $return_key;
 }
 
 sub _fetch_row_memory() {
@@ -552,13 +554,22 @@ sub compare() {
 		else {
 			my %row_table1=%{ $in_memory_table1{$current_keys} };
 			my %row_table2=%{ $in_memory_table2{$current_keys} };
-
-			foreach my $field1 (keys %row_table2) {
+			
+			my %all_fields;
+			foreach my $field (keys %row_table1,keys %row_table2) {
+				$all_fields{$field}++;
+			}
+			
+			foreach my $field1 (keys %all_fields) {
 			
 				next if grep(/^$field1$/, $self->compare_exclude);
 				
 				if (not exists $row_table1{$field1}) {
-					$self->_debug("Column only in target : Key (".$current_keys.") $field1 : $row_table1{$field1}");
+					$self->_debug("Column only in target : Key (".$current_keys.") $field1 : $row_table2{$field1}");
+					$self->{diff}->add_target_only_field($field1);
+				
+				} elsif (not exists $row_table2{$field1}) {
+					$self->_debug("Column only in source : Key (".$current_keys.") $field1 : $row_table1{$field1}");
 					$self->{diff}->add_source_only_field($field1);
 					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
 				
@@ -601,13 +612,21 @@ sub update_compare_target() {
 	}
 	undef %key_delete_hash;
 	
-	# add new field
+	# add new field on line
 	my @key_new_field_hash=$diff_object->get_source_only_field();
 	foreach my $new_field (@key_new_field_hash) {
 		$self->{table_target}->add_field($new_field);
 		$request_number++;
 	}
 	undef @key_new_field_hash;
+	
+	# remove missing field on line
+	my @key_delete_field_hash=$diff_object->get_target_only_field();
+	foreach my $delete_field (@key_delete_field_hash) {
+		$self->{table_target}->remove_field($delete_field);
+		$request_number++;
+	}
+	undef @key_delete_field_hash;
 	
 	# update modified lines
 	my @table_key=sort $self->key();
