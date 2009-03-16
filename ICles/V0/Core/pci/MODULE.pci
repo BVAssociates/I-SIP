@@ -5,4 +5,4 @@ Item~Mode Exploration~Autre date~expl~~~Explore~DATE_HISTO~0~~Expand
 Item~Mode Comparaison~Comparaison autre date~expl~~DATE_COMPARE=getListValue("Date source",DATE_UPDATE@DATE_UPDATE,DESCRIPTION@ENVIRON=%Environnement%)~Explore~FILTER_COMPARE~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@Description@Environnement != %Environnement%)~Explore~FILTER_COMPARE~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement, autre date~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@Description@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_UPDATE@DATE_UPDATE,DESCRIPTION@ENVIRON=%ENV_COMPARE%)}~Explore~FILTER_COMPARE~0~~Expand
-Item~Administration~Collecter les données~expl~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -m %Module% %Environnement%~1~~Release
+Item~Administration~Collecter les données~expl~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -m %Module% %Environnement% && PC_UPDATE_CACHE.pl -m %Module% %Environnement%~1~~Release
