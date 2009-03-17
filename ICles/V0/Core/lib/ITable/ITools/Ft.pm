@@ -121,12 +121,13 @@ sub insert_row_array() {
 	
 	my @row = @_;
 	
-	my $insert_cmd="Insert INTO ".$self->table_name()." VALUES ".join($self->output_separator,@row);	
-	my @return=`$insert_cmd`;
+	my $insert_cmd="Insert INTO ".$self->table_name()." VALUES \"".join($self->output_separator,@row).'"';	
+	my @return=`$insert_cmd 2>&1`;
 	my $return = $? >> 8;
 	
 	if ($return) {
-		croak("Error $return while executing : $insert_cmd");
+		warn $_ foreach grep {s/^Message ://} @return;
+		croak("Error $return while insert");
 	}
 	return $return;
 }

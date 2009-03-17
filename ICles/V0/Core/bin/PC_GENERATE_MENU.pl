@@ -283,6 +283,7 @@ foreach my $environnement (@environnement_list) {
 		log_info("Traitement de ",$current_table);
 		my $source_data = eval { $env->open_source_table($current_table, { debug => $bv_debug }) };
 		if ($@) {
+			warn $@;
 			$bv_severite=202;
 			next;
 		}
