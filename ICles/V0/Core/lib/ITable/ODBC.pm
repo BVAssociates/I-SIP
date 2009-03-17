@@ -84,6 +84,12 @@ sub open() {
 	############
 	
 	#$self->{timeout}=$options->{timeout} if exists $options->{timeout};
+	$self->{odbc_username} = "";
+	$self->{odbc_password} = "";
+	$self->{odbc_name} = "";
+	$self->{odbc_username} = $options->{username} if exists $options->{username};
+	$self->{odbc_password} = $options->{password} if exists $options->{password};
+	$self->{odbc_name} = $options->{odbc_name} if exists $options->{odbc_name};
 
 	############
 	# Opening Database
@@ -159,8 +165,8 @@ sub _set_columns_info() {
 	
 	my $table_info;
 	
-	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
-	croak "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='IKGLFIC' AND TABLE_NAME='".$self->{table_name}."'" if $@;
+	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='$self->{database_name}' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
+	croak "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='$self->{database_name}' AND TABLE_NAME='".$self->{table_name}."'" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");
 	eval {  $table_info->execute() };
@@ -192,10 +198,11 @@ sub _open_database() {
 	
 	croak '$self->{database_name} not defined' if not defined $self->{database_name};
 	
-	$self->_debug("Open database DSN : ",$self->{database_name});
+	my $odbc_dsn="dbi:ODBC:DSN=$self->{odbc_name};DBQ=$self->{database_name}";
+	
+	$self->_debug("Open database DSN : ",$odbc_dsn);
 	# use RaiseError exception to stop the script at first error
-	$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=$self->{database_name}","TGILLON","TGILLON",{ RaiseError => 1});
-	#$self->{database_handle} = DBI->connect("dbi:ODBC:DSN=SCF1","T1581","aptvd",{ RaiseError => 1});
+	$self->{database_handle} = DBI->connect($odbc_dsn,$self->{odbc_username} ,$self->{odbc_password} ,{ RaiseError => 1});
 
 	# remove trailing spaces in CHAR fields
 	$self->{database_handle}->{ChopBlanks}=1;

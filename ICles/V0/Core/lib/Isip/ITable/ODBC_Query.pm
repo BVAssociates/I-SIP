@@ -9,6 +9,7 @@ use strict;
 use Scalar::Util qw(blessed);
 
 use SQL::Statement;
+use ITable::ODBC;
 
 
 #use Data::Dumper;
@@ -36,6 +37,7 @@ sub open() {
 	my $self=$class->SUPER::open($table_name, $options);
 
 	$self->{database_name}=$database_name;
+	$self->{ODBC_options}=$options;
 	
 	# array : tables
 	$self->{table_list}=[];
@@ -112,7 +114,7 @@ sub _set_columns_info() {
 	
 	my $tablename=shift or croak("usage : __PACKAGE__->_set_columns_info(tablename)");
 	
-	my $table_obj=ODBC->open($self->{database_name},$tablename, {debug => $self->debugging} );
+	my $table_obj=ODBC->open($self->{database_name},$tablename, $self->{ODBC_options});
 	my %table_size=$table_obj->size();
 	my %table_field_txt=$table_obj->field_txt();
 	

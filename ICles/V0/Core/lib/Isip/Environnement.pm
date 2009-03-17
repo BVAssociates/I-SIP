@@ -7,9 +7,10 @@ use fields qw(
 	environnement
 	info_table
 	description
-	defaut_datasource
+	defaut_library
 	link_table
 	isip_config
+	defaut_odbc_options
 );
 
 use strict;
@@ -44,9 +45,12 @@ sub new() {
 	}
 	
 	$self->{description}=$self->{isip_config}->{info_env}->{$environnement}->{description};
-	$self->{defaut_datasource}=$self->{isip_config}->{info_env}->{$environnement}->{defaut_datasource};
+	$self->{defaut_library}=$self->{isip_config}->{info_env}->{$environnement}->{defaut_library};
 	
-	$logger->warning( "Defaut Datasource should not be null" ) if not $self->{defaut_datasource};
+	# constants
+	#TODO : use confuguration file
+	
+	$logger->warning( "Defaut Datasource should not be null" ) if not $self->{defaut_library};
 	
 	
 	
@@ -117,7 +121,7 @@ sub new() {
 		if (exists $sources{$table}) {
 			$self->set_datasource($table,$sources{$table});
 		} else {
-			$self->set_datasource($table,$self->{defaut_datasource});
+			$self->set_datasource($table,$self->{defaut_library});
 		}
 	}
 
@@ -394,7 +398,14 @@ sub open_local_table() {
 sub open_source_table() {
 	my $self=shift;
 	my $table_name=shift or croak "open_source_table() wait args : 'table_name'";
-	my @options=@_;
+	my $options=shift;
+	
+	# merge odbc_options with additionnal options
+	my $odbc_options=$self->{isip_config}->get_odbc_option($self->{environnement});
+	foreach (keys %$options) {
+		$odbc_options->{$_}=$options->{$_};
+	}
+	$options=$odbc_options;
 	
 	my $return_table;
 	
@@ -407,12 +418,12 @@ sub open_source_table() {
 		if ($self->{info_table}->{$table_name}->{param_source}) {
 			use Isip::ITable::ODBC_Query;
 			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
-			$return_table=ODBC_Query->open($self->{info_table}->{$table_name}->{source}, $table_name, $self->{info_table}->{$table_name}->{param_source}, @options);
+			$return_table=ODBC_Query->open($self->{info_table}->{$table_name}->{source}, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
 		}
 		else {
 			use ITable::ODBC;
 			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
-			$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+			$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, $options);
 		}
 		
 		
@@ -431,7 +442,7 @@ sub open_source_table() {
 		use ITable::XmlFile;
 		
 		$logger->info("Connexion à XML : $self->{info_table}->{$table_name}->{source}");
-		$return_table=XmlFile->open($self->{info_table}->{$table_name}->{source}, $table_name, @options);
+		$return_table=XmlFile->open($self->{info_table}->{$table_name}->{source}, $table_name, $options);
 	}
 	
 	return $return_table;

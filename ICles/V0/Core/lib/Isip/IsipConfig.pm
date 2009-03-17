@@ -2,6 +2,7 @@ package IsipConfig;
 use fields qw(
 	options
 	info_env
+	defaut_odbc_options
 );
 
 use strict;
@@ -29,6 +30,10 @@ sub new() {
 	$self->{options} = shift;
 	croak "bad arguments" if $self->{options} and ref($self->{options}) ne "HASH";
 	
+	$self->{defaut_odbc_options}={
+		username => "ETUDEGF",
+		password => "GFETUDE05",
+	};
 	
 	# store global info about tables
 	$self->{info_env}= {};
@@ -38,12 +43,25 @@ sub new() {
 	while (my %row=$table_environ->fetch_row) {
 		$self->{info_env}->{$row{Environnement}}->{description}=$row{Description};
 		$self->{info_env}->{$row{Environnement}}->{defaut_datasource}=$row{DEFAUT_ODBC};
+		$self->{info_env}->{$row{Environnement}}->{defaut_library}=$row{DEFAUT_LIBRARY};
 	}
 	
 	
 	return $self;
 }
 
+sub get_odbc_option() {
+	my $self = shift;
+	
+	my $environnement=shift or die "bad arguments";
+	
+	my $options;
+	$options->{username}=$self->{defaut_odbc_options}->{username};
+	$options->{password}=$self->{defaut_odbc_options}->{password};
+	$options->{odbc_name}=$self->{info_env}->{$environnement}->{defaut_datasource};
+	
+	return $options;
+}
 
 sub get_env_info() {
 	my $self = shift;

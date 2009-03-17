@@ -1,5 +1,5 @@
 COMMAND="Select -s from CONF_ENVIRON"
-SEP=":"
-FORMAT="Environnement:Description:DEFAUT_ODBC"
-SIZE="20s:20s:20s"
+SEP="§"
+FORMAT="Environnement§Description§DEFAUT_ODBC§DEFAUT_LIBRARY"
+SIZE="20s§20s§20s§20s"
 KEY="Environnement"

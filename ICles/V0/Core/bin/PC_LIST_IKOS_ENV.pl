@@ -11,18 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_ENV - Initalise les tables Information d'une table
+PC_LIST_IKOS_ENV - Liste les environnements disponibles dans IKOS
 
 =head1 SYNOPSIS
 
- PC_INIT_ENV.pl [-h] [-v ] environnement [table]
+ PC_LIST_IKOS_ENV.pl [-h][-v] odbc_name
  
 =head1 DESCRIPTION
 
-Lit les informations de l'environnement et initalise les tables Information d'une table.
-
-Suivant l'implementation, créer égalemement la base associée.
-
+Liste les datasources ODBC connues
 
 =head1 ENVIRONNEMENT
 
@@ -46,9 +43,7 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =over
 
-=item environnement : table dont la base sera créé
-
-=item table : table dont la base sera créé
+=item odbc_name : nom odbc
 
 =back
 
@@ -79,7 +74,7 @@ sub log_erreur {
 }
 
 sub log_info {
-	#print STDERR "INFO: ".join(" ",@_)."\n";
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
 	$logger->notice(@_);
 }
 
@@ -89,57 +84,52 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts) or usage(0);
+getopts('hvs:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-#defaut value
-
+my $separator=',';
+$separator=$opts{s} if exists $opts{s};
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 
 my $odbc_name=shift;
-my $environnement=shift;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
+#use ITable::ODBC;
+use Isip::ITable::ODBC_Query;
 use Isip::IsipConfig;
-use Isip::Environnement;
-use ITable::ITools;
 
-log_info("Recupération des informations de l'environnement $environnement");
+my $config=IsipConfig->new();
 
-$ENV{ODBC_NAME}=$odbc_name;
-my $source_environ=ITools->open("SOURCE_ENVIRON");
-$source_environ->query_condition("ENVIRON = '$environnement'");
+# manually set options
+my $options={
+	%{$config->{defaut_odbc_options}} ,
+	odbc_name => $odbc_name
+	};
 
-my %env_row=$source_environ->fetch_row();
-undef $source_environ;
+my $table=ODBC_Query->open("IKGSENV","ENVIRON","SELECT ENVENVP.ABCDENV, ENVENVP.ABLBLENV, ENVBIBP.ADBIBLIOT
+FROM ENVBIBP INNER JOIN ENVENVP ON ENVBIBP.ADCDENV = ENVENVP.ABCDENV
+WHERE ENVBIBP.ADTYPBIB='FL'",$options);
 
-log_info("Ajout de l'environnement $environnement");
-my %new_row;
-@new_row{"Environnement","Description","DEFAUT_LIBRARY"}=(
-		@env_row{"ENVIRON","DESCRIPTION","ODBC_SOURCE"} );
-$new_row{DEFAUT_ODBC}=$odbc_name;
 
-my $conf_environ=ITools->open("CONF_ENVIRON");
-$conf_environ->insert_row(%new_row);
+use Data::Dumper;
+#die Dumper($table->field);
 
-# we take first env arbitrary
 
-my $config_sip = IsipConfig->new();
-$config_sip->create_database_environnement($environnement);
-
-sortie($bv_severite);
+while (my @line=$table->fetch_row_array()) {
+	print join($separator,@line)."\n";
+}

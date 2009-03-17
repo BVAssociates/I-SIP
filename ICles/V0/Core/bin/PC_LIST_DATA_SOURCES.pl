@@ -11,18 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_INIT_ENV - Initalise les tables Information d'une table
+PC_LIST_DATA_SOURCES - Liste les datasources ODBC connues
 
 =head1 SYNOPSIS
 
- PC_INIT_ENV.pl [-h] [-v ] environnement [table]
+ PC_LIST_DATA_SOURCES.pl [-h][-v]
  
 =head1 DESCRIPTION
 
-Lit les informations de l'environnement et initalise les tables Information d'une table.
-
-Suivant l'implementation, créer égalemement la base associée.
-
+Liste les datasources ODBC connues
 
 =head1 ENVIRONNEMENT
 
@@ -46,9 +43,7 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =over
 
-=item environnement : table dont la base sera créé
-
-=item table : table dont la base sera créé
+=item nope
 
 =back
 
@@ -79,7 +74,7 @@ sub log_erreur {
 }
 
 sub log_info {
-	#print STDERR "INFO: ".join(" ",@_)."\n";
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
 	$logger->notice(@_);
 }
 
@@ -96,50 +91,24 @@ $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-#defaut value
-
-
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 
-my $odbc_name=shift;
-my $environnement=shift;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
-use Isip::IsipConfig;
-use Isip::Environnement;
-use ITable::ITools;
 
-log_info("Recupération des informations de l'environnement $environnement");
+use DBI;
 
-$ENV{ODBC_NAME}=$odbc_name;
-my $source_environ=ITools->open("SOURCE_ENVIRON");
-$source_environ->query_condition("ENVIRON = '$environnement'");
-
-my %env_row=$source_environ->fetch_row();
-undef $source_environ;
-
-log_info("Ajout de l'environnement $environnement");
-my %new_row;
-@new_row{"Environnement","Description","DEFAUT_LIBRARY"}=(
-		@env_row{"ENVIRON","DESCRIPTION","ODBC_SOURCE"} );
-$new_row{DEFAUT_ODBC}=$odbc_name;
-
-my $conf_environ=ITools->open("CONF_ENVIRON");
-$conf_environ->insert_row(%new_row);
-
-# we take first env arbitrary
-
-my $config_sip = IsipConfig->new();
-$config_sip->create_database_environnement($environnement);
-
-sortie($bv_severite);
+foreach (DBI->data_sources("ODBC")) {
+	s/dbi:ODBC://;
+	print $_."\n";
+}
