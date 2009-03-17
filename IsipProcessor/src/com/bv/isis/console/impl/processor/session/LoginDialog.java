@@ -221,9 +221,23 @@ class LoginDialog
 				usersNames[index]);
 			_userNames.addItem(usersNames[index]);
 		}
-		// Sélectionner le premier identifiant, s'il y en au moins un
+		// Sélectionner l'identifiant, s'il y en au moins un
 		if(usersNames.length > 0) {
-			_userNames.setSelectedIndex(0);
+            String real_username=System.getProperty("user.name");
+            String real_domain=System.getenv("USERDOMAIN");
+            if (real_domain != null) {
+                real_username = real_domain + "\\" + real_username;
+            }
+
+            // recherche du user dans la liste disponible
+            int selected_index=0;
+            for (int index = 0; index < _userNames.getItemCount(); index++) {
+                if (_userNames.getItemAt(index).toString().compareToIgnoreCase(real_username) == 0) {
+                    selected_index=index;
+                }
+            }
+
+            _userNames.setSelectedIndex(selected_index);
 		}
 		// Si un mot de passe est fourni, on positionne sa valeur dans la zone
 		// de texte
