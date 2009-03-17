@@ -206,9 +206,9 @@ Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exi
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 ';
 
-my $label_table_template='IKOS_TABLE_%s.Table;key_go;Clefs de %s %s';
+my $label_table_template='IKOS_TABLE_%s.Table;isip_table_open;Clefs de %s %s';
 my $label_item_template='IKOS_TABLE_%s.Item;isip_%%[ICON];%s %s';
-my $label_field_table_template='IKOS_FIELD_%s.Table;page_white_key;Liste des champs';
+my $label_field_table_template='IKOS_FIELD_%s.Table;isip_table_key;Liste des champs';
 my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (%%[TEXT])';
 
 

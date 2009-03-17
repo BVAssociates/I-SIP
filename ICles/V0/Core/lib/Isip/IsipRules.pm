@@ -109,19 +109,19 @@ sub enum_type () {
 sub enum_field_status () {
 	my $self=shift;
 	
-	return (UPDATED => "",  OK => "Valide", TEST => "Test", SEEN => "Attente", UNKNOWN => "Inconnu");
+	return (UPDATED => "",  OK => "Valide", TEST => "Test");
 }
 
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", SEEN => "attente", UNKNOWN => "invalide", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
+	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
 }
 
 sub enum_line_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", SEEN => "edit", UNKNOWN => "invalide", ERROR => "erreur");
+	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", ERROR => "erreur");
 }
 
 ##################################################
@@ -251,12 +251,6 @@ sub get_field_icon () {
 		elsif ($status eq "TEST") {
 			$return_status=$self->{field_icon}{TEST};
 		}
-		elsif ($status eq "SEEN") {
-			$return_status=$self->{field_icon}{SEEN};
-		}
-		elsif ($status eq "UNKNOWN") {
-			$return_status=$self->{field_icon}{UNKNOWN};
-		}
 	}
 	
 	return $return_status;
@@ -276,7 +270,7 @@ sub get_line_icon () {
 	
 	my %icon_by_name= reverse %{$self->{field_icon}};
 	
-	my %counter=(NEW => 0, UPDATED => 0, UNKNOWN => 0, SEEN => 0, TEST => 0, OK => 0);
+	my %counter=(NEW => 0, UPDATED => 0, TEST => 0, OK => 0);
 	
 	foreach (@icon_list) {
 		my $icon;
@@ -300,9 +294,7 @@ sub get_line_icon () {
 	
 	return $self->{line_icon}{NEW} if $counter{NEW} > 0;
 	return $self->{line_icon}{UPDATED} if $counter{UPDATED} > 0;
-	return $self->{line_icon}{UNKNOWN} if $counter{UNKNOWN} > 0;
-	return $self->{line_icon}{SEEN} if $counter{TEST} > 0;
-	return $self->{line_icon}{SEEN} if $counter{SEEN} > 0;
+	return $self->{line_icon}{TEST} if $counter{TEST} > 0;
 	return $self->{line_icon}{OK} if $counter{OK} > 0;
 
 }

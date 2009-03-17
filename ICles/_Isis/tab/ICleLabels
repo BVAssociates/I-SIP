@@ -5,9 +5,9 @@ ETAT.Table;;Etats disponibles
 ETAT.Item;field_%[Name];%[Name]
 ENVIRON.Item;I_Group;%[Environnement] (%[Description])
 MODULE.Item;I_AgentICles;%[Module] (%[Description])
-ROOT_TABLE.Item;I_Configs;%[TABLE_NAME] (%[DESCRIPTION])
-DATE_HISTO.Item;T_Configs;%[DATE_EXPLORE] %[DESCRIPTION]
-DATE_HISTO_BASELINE.Item;T_Configs;%[DATE_EXPLORE] (%[DESCRIPTION])
+ROOT_TABLE.Item;isip_table;%[TABLE_NAME] (%[DESCRIPTION])
+DATE_HISTO.Item;isip_date;%[DATE_EXPLORE] %[DESCRIPTION]
+DATE_HISTO_BASELINE.Item;isip_date;%[DATE_EXPLORE] (%[DESCRIPTION])
 FILTER.Item;I_Transitions;%[FILTER_DESC]
 FILTER_COMPARE.Item;I_Transitions;%[FILTER_DESC]
 CATEGORY.Item;I_Versions;
