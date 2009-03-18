@@ -287,7 +287,7 @@ elsif ($explore_mode eq "explore") {
 
 	if ($ENV{CATEGORY}) {
 		my %info=$env_sip->get_table_info($table_name);
-		if ($ENV{TABLE_NAME} eq $table_name) {
+		if ($info{root_table} and $ENV{TABLE_NAME} eq $table_name) {
 			log_info("affiche les lignes de la categorie $ENV{CATEGORY}");
 			$table_explore->query_condition("CATEGORY = '$ENV{CATEGORY}'",$table_explore->query_condition());
 		}
