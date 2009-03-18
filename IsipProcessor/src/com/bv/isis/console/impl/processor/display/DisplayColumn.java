@@ -3,7 +3,7 @@
 * ------------------------------------------------------------
 *
 * $Source: /cvs/inuit/ClientHMI/src/com/bv/isis/console/impl/processor/display/DisplayColumn.java,v $
-* $Revision: 1.9 $
+* $Revision: 1.10 $
 *
 * ------------------------------------------------------------
 * DESCRIPTION: Classe de définition des colonnes du tableau
@@ -15,6 +15,9 @@
 * CONTROLE DES MODIFICATIONS
 *
 * $Log: DisplayColumn.java,v $
+* Revision 1.10  2009/03/05 09:32:41  jy
+* Remplacer DefaultTableCellRenderer par DisplayCellRenderer.
+*
 * Revision 1.9  2006/03/20 15:57:15  tz
 * Passage d'un gestionnaire de rendu de cellule au constructeur.
 *
@@ -134,7 +137,8 @@ class DisplayColumn
 			{
 				case 's':
 					// On positionne le gestionnaire de texte
-					cellRenderer = new DefaultTableCellRenderer();
+					//cellRenderer = new DefaultTableCellRenderer();
+					cellRenderer = new DisplayCellRenderer();
 					break;
 				case 'n':
 					// On positionne le gestionnaire numérique
