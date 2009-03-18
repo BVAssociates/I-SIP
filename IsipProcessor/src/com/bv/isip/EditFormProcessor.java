@@ -8,6 +8,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -36,6 +38,7 @@ import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.JComponent;
@@ -45,6 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import org.jacorb.transaction.Sleeper;
 
 public class EditFormProcessor extends ProcessorFrame {
     
@@ -222,6 +226,7 @@ public class EditFormProcessor extends ProcessorFrame {
                             "Erreur lors de la mise à jour", execption);
                 } finally {
                     getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
+                    close();
                 }
             }
 		});
@@ -491,20 +496,19 @@ public class EditFormProcessor extends ProcessorFrame {
              return;
         }
 
-        //On met les nouvelles données dans le node
-        for (int i=0; i < data.length; i++)
-        {
-            data_node[i].value = TreeNodeFactory.getValueOfParameter(data, data[i].name);
-        }
-
-
         try {
-            refreshLabel(node,false);
             refreshLabel((GenericTreeObjectNode)node.getParent().getParent(),true);
-            // recalcul du label avec le nouveau context
-            //LabelFactory.createLabel(node.getAgentName(), node.getIClesName(),
-            //        node.getServiceType(), node, node.getContext(true));
 
+            // rafraichi les noeuds "frères" si on met à jour une clef
+            if (TreeNodeFactory.getValueOfParameter(data, "TABLE_KEY").equals(
+                    TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE"))) {
+
+                Enumeration enum_node = ((GenericTreeObjectNode) node.getParent()).children();
+                while (enum_node.hasMoreElements()) {
+                    refreshLabel((GenericTreeObjectNode) enum_node.nextElement(), true);
+                }
+            }
+            
         } catch (InnerException exception) {
             Trace trace_errors = TraceAPI.declareTraceErrors("Console");
 
