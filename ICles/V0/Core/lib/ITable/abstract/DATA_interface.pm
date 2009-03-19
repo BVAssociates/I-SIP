@@ -38,6 +38,7 @@ sub open() {
 	$self->{size}= {};
 	$self->{not_null}= [];
 	$self->{dynamic_field} = [];
+	$self->{_dynamic_field_re} = qr/^$/;
 	
 	# user query
 	$self->{query_field}  = [];
@@ -83,7 +84,11 @@ sub field {
 
 sub dynamic_field {
     my $self = shift;
-    if (@_) { @{ $self->{dynamic_field} } = @_ };
+    if (@_) {
+		@{ $self->{dynamic_field} } = @_;
+		my $dyn_list=join('|',@_);
+		$self->{_dynamic_field_re} = qr/^$dyn_list$/
+	};
     return @{ $self->{dynamic_field} };
 }
 
@@ -296,32 +301,31 @@ sub fetch_row()
 {
 	my $self = shift;
 
-	my %row_object;
 	my @row=$self->fetch_row_array();
-	my @real_fields;
-	my @dyna_fields;
+	my %row_object;
 	
-	
-	foreach my $temp_field ($self->query_field()) {
-		if (grep (/^$temp_field$/, $self->dynamic_field()) ) {
-			push @dyna_fields,$temp_field;
-		}
-		else {
-			push @real_fields,$temp_field;
-		}
-	}
-
 	return () if not @row;
 	
+	my $regex=$self->{_dynamic_field_re};
+	foreach my $temp_field ($self->query_field()) {
+		if ($temp_field =~ $regex) {
+			$row_object{$temp_field}="";
+		}
+		else {
+			croak "fetch_row_array returned wrong number of values (need more field)" if not @row;
+			$row_object{$temp_field}=shift @row;
+		}
+	}
+	
 	# internal test
-	croak "fetch_row_array returned wrong number of values (got ".@row." instead of ".@real_fields.")" if  @row != @real_fields;
+	croak "fetch_row_array returned wrong number of values (too much field)" if  @row;
 
-	for (my $i=0; $i < @real_fields; $i++) {
-		$row_object{$real_fields[$i]}=$row[$i];
-	}
-	for (@dyna_fields) {
-		$row_object{$_}="";
-	}
+	#for (my $i=0; $i < @real_fields; $i++) {
+	#	$row_object{$real_fields[$i]}=$row[$i];
+	#}
+	#for (@dyna_fields) {
+	#	$row_object{$_}="";
+	#}
 		
 	return %row_object;
 }
