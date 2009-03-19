@@ -479,10 +479,22 @@ public class TableDefinitionManager
 				trace_debug.writeTrace("icles_name=" + icles_name);
 				trace_debug.writeTrace("service_type=" + service_type);
 				trace_debug.writeTrace("file_path=" + file_path);
-				fireTableDefinitionUseChanged(agent_name, icles_name, 
-					service_type, file_path, 
-					leasing_holder.getNumberOfLeasings());
-				trace_methods.endOfMethod();
+                fireTableDefinitionUseChanged(agent_name, icles_name,
+                        service_type, file_path,
+                        leasing_holder.getNumberOfLeasings());
+
+                // Si plus personne ne l'utilise, on la supprime du cache
+                if (leasing_holder.isFreeOfLeasing()) {
+                    try {
+                        dumpTableDefinition(agent_name, icles_name, service_type, file_path);
+                        fireTableDefinitionRemoved(agent_name, icles_name, service_type, file_path);
+                    } catch (InnerException ex) {
+                        // C'est normalement impossible car on verifie avant
+                    }
+                }
+
+
+                trace_methods.endOfMethod();
 				return;
 			}
 		}
@@ -555,9 +567,20 @@ public class TableDefinitionManager
 		leasing_holder.releaseLeasing();
 		trace_debug.writeTrace("Nombre d'utilisations de la " +
 			"définition " + cache_key + ": " + leasing_holder.getNumberOfLeasings());
-		// On va déclencher un événement
+        // On va déclencher un événement
 		fireTableDefinitionUseChanged(agentName, iClesName, serviceType, 
 			definitionFilePath, leasing_holder.getNumberOfLeasings());
+
+        // Si plus personne ne l'utilise, on la supprime du cache
+        if (leasing_holder.isFreeOfLeasing()) {
+            try {
+                dumpTableDefinition(agentName, iClesName, serviceType, definitionFilePath);
+                fireTableDefinitionRemoved(agentName, iClesName, serviceType, definitionFilePath);
+            } catch (InnerException ex) {
+                // C'est normalement impossible car on verifie avant
+            }
+        }
+
 		trace_methods.endOfMethod();
  	}
 
