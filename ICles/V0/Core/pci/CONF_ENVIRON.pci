@@ -2,5 +2,5 @@
 
 
 Item~~Modules~expl~~~Explore~CONF_MODULE~0~~Expand
-Item~~Ajouter Table~adm~~{TABLE_NAME=getListValue("Nom de la table",TABLE_ODBC@TABLE_NAME,TABLE_TEXT)}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE=getListValue("Type",TYPE_SOURCE)}{TABLE_LABEL=getListValue("Champ utilisé comme label",FIELD_ODBC@FIELD_NAME,TEXT)}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~~Add
+Item~~Ajouter Table~adm~~{TABLE_NAME=getValue("Nom de la table")}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE=getListValue("Type",TYPE_SOURCE)}{TABLE_LABEL=getListValue("Champ utilisé comme label",FIELD_ODBC@FIELD_NAME,TEXT)}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~~Add
 
