@@ -8,8 +8,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -38,7 +36,6 @@ import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.JComponent;
@@ -48,7 +45,6 @@ import javax.swing.JComboBox;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import org.jacorb.transaction.Sleeper;
 
 public class EditFormProcessor extends ProcessorFrame {
     
@@ -496,27 +492,8 @@ public class EditFormProcessor extends ProcessorFrame {
              return;
         }
 
-        try {
-            refreshLabel((GenericTreeObjectNode)node.getParent().getParent(),true);
-
-            // rafraichi les noeuds "frères" si on met à jour une clef
-            if (TreeNodeFactory.getValueOfParameter(data, "TABLE_KEY").equals(
-                    TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE"))) {
-
-                Enumeration enum_node = ((GenericTreeObjectNode) node.getParent()).children();
-                while (enum_node.hasMoreElements()) {
-                    refreshLabel((GenericTreeObjectNode) enum_node.nextElement(), true);
-                }
-            }
-            
-        } catch (InnerException exception) {
-            Trace trace_errors = TraceAPI.declareTraceErrors("Console");
-
-			trace_errors.writeTrace(
-				"Erreur lors de la modification du Label: " +
-				exception.getMessage());
-            throw new InnerException("Erreur lors de la modification du Label", exception.getMessage(), exception);
-        }
+        refreshLabel(node, true);
+        
         //averti l'interface que le contenu a changé
         getMainWindowInterface().getTreeInterface().nodeStructureChanged(node);
 
