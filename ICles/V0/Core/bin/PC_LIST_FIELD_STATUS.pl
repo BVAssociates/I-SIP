@@ -322,15 +322,17 @@ elsif ($explore_mode eq "explore") {
 	# put row in memory
 	while (my %row=$table_status->fetch_row) {
 	
-		# don't show hidden fields
-		next if $rules->is_field_hidden(%row);
-		
-		# compute dynamic fields
-		$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
+		if (not $date_explore) {
+			# don't show hidden fields
+			next if $rules->is_field_hidden(%row);
 			
-		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
-
+			# compute dynamic fields
+			$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
+				
+			$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+			$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
+		}
+		
 		$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
 	}
 }
