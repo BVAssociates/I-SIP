@@ -9,7 +9,7 @@ use strict;
 
 use ITable::ITools;
 # commented lines, because modules loaded on demand
-#use ITable::ODBC;
+use ITable::ODBC;
 #use ITable::Sqlite;
 #use Isip::ITable::Histo;
 #use Isip::ITable::HistoField;
@@ -50,10 +50,28 @@ sub new() {
 	return $self;
 }
 
+#return odbc datasource name
+sub get_odbc_database_name() {
+	my $self = shift;
+	
+	my $environnement=shift or die "bad arguments";
+	
+	if (not exists $self->{info_env}->{$environnement}) {
+		croak("Environnement $environnement non configuré");
+	}
+	
+	return $self->{info_env}->{$environnement}->{defaut_library};
+}
+
+# return odbc option reference in format intended by ODBC->open()
 sub get_odbc_option() {
 	my $self = shift;
 	
 	my $environnement=shift or die "bad arguments";
+	
+	if (not exists $self->{info_env}->{$environnement}) {
+		croak("Environnement $environnement non configuré");
+	}
 	
 	my $options;
 	$options->{username}=$self->{defaut_odbc_options}->{username};
@@ -61,6 +79,14 @@ sub get_odbc_option() {
 	$options->{odbc_name}=$self->{info_env}->{$environnement}->{defaut_datasource};
 	
 	return $options;
+}
+
+sub exists_odbc_table() {
+	my $self = shift;
+	
+	my $environnement=shift or die "bad arguments";
+	
+	die "not implemented yet";
 }
 
 sub get_env_info() {

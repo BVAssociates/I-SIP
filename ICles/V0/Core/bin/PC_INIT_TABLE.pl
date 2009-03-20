@@ -15,7 +15,7 @@ PC_INIT_TABLE - Initalise la table de données d'historique d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-i [-c nombre]] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] [-c] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -41,9 +41,7 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 
 =item -v : Mode verbeux
 
-=item -i : Insert les données de la table IKOS
-
-=item -c nombre : Commit tous les n insertions
+=item -c : Creation complète
 
 =back
 
@@ -93,20 +91,19 @@ sub log_info {
 ###########################################################
 
 my %opts;
-getopts('hvic:', \%opts) or usage(0);
+getopts('hvc', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-#defaut value
-my $group_commit=1000;
-$group_commit = $opts{c} if exists $opts{c};
-my $populate=1 if exists $opts{i};
+my $create=$opts{c};
 
 #  Traitement des arguments
 ###########################################################
+
+log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 if ( @ARGV != 2 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
@@ -126,62 +123,54 @@ use Isip::ITable::DataDiff;
 
 my $env_sip = Environnement->new($environnement);
 
-my %table_info = $env_sip->get_table_info($table_name);
-log_erreur("la table $table_name n'est pas connue, veuiller la configurer d'abord") if not %table_info;
-
-$logger->notice("Create database for table",$table_name);
-my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
-
-$env_sip->initialize_column_info($current_table);
-
-$env_sip->create_database_histo($table_name);
-
-
-
-
-if ($populate) {
-
-	my $histo_table=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
-	my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level}); 
+if ($create) {
+	$ENV{"Environnement"}=$environnement;
+	my $table_list=ITools->open("TABLE_ODBC");
+	$table_list->query_condition("TABLE_NAME = '$table_name'");
+	$table_list->query_field("TABLE_TEXT");
+	my ($table_desc)=$table_list->fetch_row_array()) {
 	
-	# set global timestamp for update
-	use POSIX qw(strftime);
-	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-	log_info("Date de collecte utilisée : $timestamp");
-	$histo_table->set_update_timestamp($timestamp);
+	if (not ($ENV{TABLE_MODULE}
+			and $ENV{TABLE_TYPE}
+			and $ENV{TABLE_LABEL}))
+	{
+		log_erreur("L'environnement n'est pas positionner pour l'ajout de table");
+	}
 	
-	#open IKOS table for DATA
 	
-	my $count=0;
-
-	$logger->notice("Populate $table_name\_HISTO with data from IKOS table");
-	$|=1;
 	
-	my $diff=DataDiff->open($current_table, $histo_table, {debug => $debug_level});
-	$diff->compare();
-	$diff->update_compare_target();
-	undef $diff;
-	#$histo_table->begin_transaction();
-	#while (my %data_line=$current_table->fetch_row() ) {
-	#       if (not ($count % $group_commit)) {
-	#               print "Commit $count lines\n" if $count;
-	#               $histo_table->commit_transaction() ;
-	#               $histo_table->begin_transaction();
-	#               
-	#       }
-	#       $histo_table->insert_row(%data_line);
-	#       $count++
-	#}
+	my %new_line;
+	$new_line{TABLE_NAME}=$table_name;
+	$new_line{MODULE}=$ENV{TABLE_MODULE};
+	$new_line{TYPE_SOURCE}=$ENV{TABLE_TYPE};
+	$new_line{LABEL_FIELD}=$ENV{TABLE_LABEL};
+	$new_line{DESCRIPTION}=$table_desc;
+	$new_line{ACTIVE}=1;
+	$new_line{ROOT_TABLE}=1;
 	
-	#print "$count lines inserted\n";
-	#$histo_table->commit_transaction();
-	
-	# execute special query on table backend
-	$logger->notice("Set STATUS to Valide");
-	$histo_table->{table_histo}->execute("UPDATE $table_name\_HISTO
-			SET STATUS='Valide',
-					COMMENT='Creation'");
+	my $table=$env_sip->open_local_table("TABLE_INFO");
+	foreach ($table->field) {
+		$new_line{$_}="" if not exists $new_line{$_};
+	}
+	$table->insert_row(%new_line);
 }
 
+$env_sip = Environnement->new($environnement);
+my %table_info = $env_sip->get_table_info($table_name);
+
+if (not %table_info) {
+	log_info("la table $table_name n'est pas connue ou désactivée");
+	$bv_severite=202;
+}
+else {
+	$logger->notice("Create database for table",$table_name);
+	my $current_table=$env_sip->open_source_table($table_name, {debug => $debug_level});
+	
+	$env_sip->initialize_column_info($current_table);
+
+	$env_sip->create_database_histo($table_name);
+}
+require "PC_GENERATE_MENU.pl";
+pc_generate_menu::run($environnement,$table_name);
 
 sortie($bv_severite);

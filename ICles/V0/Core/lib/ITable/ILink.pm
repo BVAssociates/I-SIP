@@ -72,9 +72,25 @@ sub get_parent_fields_OBSOLETE() {
 sub get_parent_tables() {
 	my $self=shift;
 	my $table=shift or croak ("usage : get_parent_tables(table)");
+	my $depth=shift;
 	
-	return keys %{ $self->{table_parent}->{$table} };
-
+	return () if not exists $self->{table_parent}->{$table};
+	
+	my @return;
+	
+	my %parent_table=%{ $self->{table_parent}->{$table}};
+	
+	if ($depth) {
+		foreach (keys %parent_table) {
+			push @return, $_;
+			push @return, $self->get_parent_tables($_,$depth);
+		}
+	}
+	else {
+		@return = keys %parent_table;
+	}
+	
+	return @return;
 }
 
 # renvoie la liste des tables qui ont une clef etrangère vers la table $table

@@ -175,13 +175,15 @@ sub _set_columns_info() {
 	while (my @col=$table_info->fetchrow_array) {
 		#print Dumper @col;
 		push (@{$self->{field}},       $col[0]);
-		my $size ="VARCHAR($col[5])" if $col[4] =~ /^CHAR\s*/;
-		$size="INTEGER($col[5])"     if $col[4] =~ /^NUMERIC\s*/;
+		my $size ="";
+		$size="VARCHAR($col[5])"        if $col[4] =~ /^(VAR)?CHAR\s*/;
+		$size="INTEGER($col[5])"        if $col[4] =~ /^(NUMERIC|INTEGER|TIMESTMP|SMALLINT)\s*/;
 		$size="DECIMAL($col[5])"        if $col[4] =~ /^DECIMAL\s*/;
 		$self->{size}->{$col[0]}=       $size;
-		
+		warn "unknown SIZE format : $col[4]" if not $size;
 		#$col[21] =~ s/\s+/_/g;
-		$self->{field_txt}->{$col[0]}=       $col[21];
+		$self->{field_txt}->{$col[0]}="";
+		$self->{field_txt}->{$col[0]}=       $col[21] if $col[21];
 		
 		push (@{$self->{not_null}},     $col[0]) if $col[7] eq 'Y';
 		push (@{$self->{key}},          $col[0]) if $col[27] eq 'Y';

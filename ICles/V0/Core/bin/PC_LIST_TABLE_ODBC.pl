@@ -11,15 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_ODBC - Liste les champs d'une table IKOS par ODBC
+PC_LIST_TABLE_ODBC - Liste les tables IKOS par ODBC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_ODBC.pl environnement tablename
+ PC_LIST_TABLE_ODBC.pl environnement
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table IKOS à la date courante en utilisant le driver ODBC
+Liste les tables IKOS en utilisant le driver ODBC
 
 =head2 ENVIRONNEMENT
 
@@ -44,8 +44,6 @@ Liste les champs d'une table IKOS à la date courante en utilisant le driver ODBC
 =over
 
 =item environnement : environnement à utiliser
-
-=item tablename : table a décrire
 
 =back
 
@@ -99,13 +97,14 @@ $separator=$opts{s} if exists $opts{s};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2) {
+log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
+
+if ( @ARGV != 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift;
-my $table=shift;
 
 #  Corps du script
 ###########################################################
@@ -113,23 +112,21 @@ use Isip::IsipConfig;
 use ITable::ITools;
 use ITable::ODBC;
 
+die "TEST";
 my $config=IsipConfig->new();
-my $table_info = ODBC->open($config->get_odbc_database_name($environnement),
-				$table,
+my $table_info = ODBC->open("QSYS2",
+				"SYSTABLES",
 				$config->get_odbc_option($environnement) );
 
 if (not defined $table_info) {
-	die "error opening $table";
+	die "error opening SYSTABLES";
 }
 
-my $field_def=ITools->open("FIELD_ODBC");
+my $schema=$config->get_odbc_database_name($environnement);
+$table_info->query_condition("TABLE_SCHEMA='$schema' AND TABLE_TYPE='P'");
 
-print join($separator,("") x $field_def->field),"\n";
-my %field_txt=$table_info->field_txt;
-foreach ($table_info->field) {
-	my %row;
-	@row{$field_def->field}=("") x $field_def->field;
-	$row{FIELD_NAME}=$_;
-	$row{TEXT}=$field_txt{$_};
+my $field_def=ITools->open("TABLE_ODBC");
+
+while (my %row=$table_info->fetch_row) {
 	print join($separator,@row{$field_def->field}),"\n";
 }

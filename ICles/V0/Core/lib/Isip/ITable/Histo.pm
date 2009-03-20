@@ -465,6 +465,8 @@ sub is_empty() {
 	my $bool=$self->{table_histo}->fetch_row_array();
 	$self->{table_histo}->finish;
 	
+	$self->{table_histo}->custom_select_query (undef);
+	
 	return not $bool;
 }
 

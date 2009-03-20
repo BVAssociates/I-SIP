@@ -76,7 +76,8 @@ sub new() {
 	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
 	
 	while (my %row=$column_info->fetch_row) {
-
+		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
+		
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}=$row{TYPE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{description}=$row{TEXT};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_type}=$row{DATA_TYPE};
@@ -87,7 +88,7 @@ sub new() {
 			$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}="clef";
 		}
 		
-		if ($row{FOREIGN_TABLE} and $row{FOREIGN_KEY}) {
+		if ($row{FOREIGN_TABLE} and $row{FOREIGN_KEY} and exists $self->{info_table}->{$row{FOREIGN_KEY}}) {
 			$self->{link_table}->add_link($row{TABLE_NAME},$row{FIELD_NAME},$row{FOREIGN_TABLE},$row{FOREIGN_KEY});
 		}
 	}
@@ -112,6 +113,8 @@ sub new() {
 	
 	my %sources;
 	while (my %row=$source_info->fetch_row) {
+		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
+	
 		#overide datasource with specific
 		$sources{$row{TABLE_NAME}}=$row{SOURCE};
 
@@ -153,7 +156,7 @@ sub get_table_info() {
 	
 	my $table_name=shift or croak("usage : get_table_info(table)");
 	
-	return undef if not $self->{info_table}->{$table_name};
+	return () if not exists $self->{info_table}->{$table_name};
 	return %{$self->{info_table}->{$table_name} };
 }
 
@@ -451,7 +454,7 @@ sub open_source_table() {
 sub initialize_column_info() {
 	my $self=shift;
 	
-	my $itable_obj=shift or die "bad arguments";
+	my $itable_obj=shift or croak "bad arguments";
 	
 	if (not blessed $itable_obj or not $itable_obj->isa("DATA_interface")) {
 		croak("usage initialize_column_info(DATA_interface)")
@@ -503,7 +506,7 @@ sub create_database_histo() {
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
-	croak "please set PRIMARY KEY for $tablename and run this command again" if not $self->get_table_key($tablename);
+	carp "veuillez configurer les PRIMARY KEY" if not $self->get_table_key($tablename);
 	carp "database already exist at <$database_path>" if -e $database_path;
 	
 	if (! -e $database_path) {

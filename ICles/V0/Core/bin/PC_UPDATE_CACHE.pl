@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package pc_update_cache;
+
 # Inclusions obligatoires
 use strict;
 use Pod::Usage;
@@ -82,85 +84,89 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
+sub run {
+	local @ARGV=@_;
 
-log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
+	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
-my %opts;
-getopts('hvnm:', \%opts);
+	my %opts;
+	getopts('hvnm:', \%opts);
 
-my $debug_level = 0;
-$debug_level = 1 if $opts{v};
+	my $debug_level = 0;
+	$debug_level = 1 if $opts{v};
 
-my $module=$opts{m};
+	my $module=$opts{m};
 
-usage($debug_level+1) if $opts{h};
+	usage($debug_level+1) if $opts{h};
 
-#  Traitement des arguments
-###########################################################
+	#  Traitement des arguments
+	###########################################################
 
-if ( @ARGV < 1 ) {
-	log_info("Nombre d'argument incorrect (".@ARGV.")");
-	usage($debug_level);
-	sortie(202);
-}
-my $environnement=shift;
-
-#  Corps du script
-###########################################################
-my $bv_severite=0;
-
-use Isip::Environnement;
-use ITable::ITools;
-use Isip::ITable::DataDiff;
-use Isip::IsipTreeCache;
-use Isip::Cache::CacheStatus;
-use Isip::Cache::CacheProject;
-
-my $env_sip = Environnement->new($environnement);
-
-my @list_table;
-if ($module) {
-	@list_table=$env_sip->get_table_list_module($module);
-}
-else {
-	@list_table=$env_sip->get_table_list();
-}
-
-
-my $counter=0;
-my $source_table;
-
-my $cache=IsipTreeCache->new($env_sip);
-$cache->add_dispatcher(CacheStatus->new($env_sip));
-$cache->add_dispatcher(CacheProject->new($env_sip));
-
-foreach my $current_table (@list_table) {
-	
-	if ( not $env_sip->exists_histo_table($current_table) ) {
-		$logger->error("$current_table n'a pas été initialisée");
-		next;
+	if ( @ARGV < 1 ) {
+		log_info("Nombre d'argument incorrect (".@ARGV.")");
+		usage($debug_level);
+		sortie(202);
 	}
-	
-	$counter++;
-	
+	my $environnement=shift @ARGV;
+
+	#  Corps du script
+	###########################################################
+	my $bv_severite=0;
+
+	use Isip::Environnement;
+	use ITable::ITools;
+	use Isip::ITable::DataDiff;
+	use Isip::IsipTreeCache;
+	use Isip::Cache::CacheStatus;
+	use Isip::Cache::CacheProject;
+
+	my $env_sip = Environnement->new($environnement);
+
+	my @list_table;
+	if ($module) {
+		@list_table=$env_sip->get_table_list_module($module);
+	}
+	else {
+		@list_table=$env_sip->get_table_list();
+	}
+
+
+	my $counter=0;
+	my $source_table;
+
+	my $cache=IsipTreeCache->new($env_sip);
+	$cache->add_dispatcher(CacheStatus->new($env_sip));
+	$cache->add_dispatcher(CacheProject->new($env_sip));
+
+	foreach my $current_table (@list_table) {
 		
-	log_info("Connexion à la base d'historisation de $current_table");
-	my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
-	
-	my $type_rules = IsipRules->new($current_table,$env_sip);
+		if ( not $env_sip->exists_histo_table($current_table) ) {
+			$logger->error("$current_table n'a pas été initialisée");
+			next;
+		}
+		
+		$counter++;
+		
+			
+		log_info("Connexion à la base d'historisation de $current_table");
+		my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
+		
+		my $type_rules = IsipRules->new($current_table,$env_sip);
 
-	$histo_table->isip_rules($type_rules);
+		$histo_table->isip_rules($type_rules);
 
-	$histo_table->output_separator('@');
-	$histo_table->query_field("ICON","PROJECT",$histo_table->field);
+		$histo_table->output_separator('@');
+		$histo_table->query_field("ICON","PROJECT",$histo_table->field);
 
-	while (my %row=$histo_table->fetch_row) {
-		$cache->recurse_line($current_table, \%row);
+		while (my %row=$histo_table->fetch_row) {
+			$cache->recurse_line($current_table, \%row);
+		}
 	}
+
+	$cache->clear_cache(@list_table);
+	$cache->save_cache;
 }
 
-$cache->clear_cache(@list_table);
-$cache->save_cache;
 
-
-sortie($bv_severite);
+exit run(@ARGV) if !caller;
+1;

@@ -2,7 +2,5 @@
 
 
 Item~~Modules~expl~~~Explore~CONF_MODULE~0~~Expand
-Item~~Recalculer liens entre tables~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
+Item~~Ajouter Table~adm~~{TABLE_NAME=getListValue("Nom de la table",TABLE_ODBC@TABLE_NAME,TABLE_TEXT)}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE=getListValue("Type",TYPE_SOURCE)}{TABLE_LABEL=getListValue("Champ utilisé comme label",FIELD_ODBC@FIELD_NAME,TEXT)}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~~Add
 
-#Item~~Resynchroniser les schemas avec IKOS~adm~perl -e "exit 1 if exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
-#Item~~Mettre à jour les données~adm~perl -e "exit 1 if not exists $ENV{TABLE_NAME}"~~ExecuteProcedure~PC_UPDATE_HISTO.pl -d %Environnement% %TABLE_NAME%~1~~Release
