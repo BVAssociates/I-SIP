@@ -128,13 +128,13 @@ if ($create) {
 	my $table_list=ITools->open("TABLE_ODBC");
 	$table_list->query_condition("TABLE_NAME = '$table_name'");
 	$table_list->query_field("TABLE_TEXT");
-	my ($table_desc)=$table_list->fetch_row_array()) {
+	my ($table_desc)=$table_list->fetch_row_array();
 	
 	if (not ($ENV{TABLE_MODULE}
 			and $ENV{TABLE_TYPE}
 			and $ENV{TABLE_LABEL}))
 	{
-		log_erreur("L'environnement n'est pas positionner pour l'ajout de table");
+		log_erreur("L'environnement n'est pas positionné (TABLE_MODULE,TABLE_TYPE,TABLE_LABEL) pour l'ajout de table");
 	}
 	
 	
@@ -170,7 +170,10 @@ else {
 
 	$env_sip->create_database_histo($table_name);
 }
-require "PC_GENERATE_MENU.pl";
-pc_generate_menu::run($environnement,$table_name);
+
+if (not $create) {
+	require "PC_GENERATE_MENU.pl";
+	pc_generate_menu::run($environnement,$table_name);
+}
 
 sortie($bv_severite);

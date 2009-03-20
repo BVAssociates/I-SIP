@@ -446,7 +446,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 	my @collect_messages=`AgentCollect -s PortalICleLabels ICleLabels`;
 	log_info($_) foreach @collect_messages;
 	
-	return 1;
+	return 0;
 }
 
 exit run(@ARGV) if !caller;

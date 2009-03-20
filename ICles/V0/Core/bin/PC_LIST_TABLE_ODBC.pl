@@ -112,7 +112,6 @@ use Isip::IsipConfig;
 use ITable::ITools;
 use ITable::ODBC;
 
-die "TEST";
 my $config=IsipConfig->new();
 my $table_info = ODBC->open("QSYS2",
 				"SYSTABLES",
