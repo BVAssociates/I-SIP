@@ -113,6 +113,10 @@ if ( @ARGV != 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 
+if ($table_name =~ /_/) {
+	log_erreur("Le nom de la table ne peut pas contenir le caractere underscore ('_')");
+}
+
 #  Corps du script
 ###########################################################
 my $bv_severite=0;

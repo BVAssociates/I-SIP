@@ -252,21 +252,40 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 		
 		log_info("Get tables informations");
 		# get table info
-		my $link_obj=$env->get_links();
+		my $link_obj=$env->get_links_menu();
 		
-		# we are ready, so begin with cleanup old files
-		
+		# first, compute which table will be process	
 		my @list_table;
 		if (not $table_name) {
 			if ($module) {
-				@list_table=$env->get_table_list_module($module);
+				# @list_table= module's tables + their parents
+				my %list_table_uniq;
+				foreach my $table ($env->get_table_list_module($module)) {
+					$list_table_uniq{$table}++;
+					foreach my $parent ($link_obj->get_parent_tables($table,1)) {
+						$list_table_uniq{$parent}++;
+					}
+				}
+				@list_table=keys %list_table_uniq;
 			}
 			else {
-				@list_table=$env->get_table_list;
+				# @list_table= all tables + their parents
+				my %list_table_uniq;
+				foreach my $table ($env->get_table_list()) {
+					$list_table_uniq{$table}++;
+					foreach my $parent ($link_obj->get_parent_tables($table,1)) {
+						$list_table_uniq{$parent}++;
+					}
+				}
+				@list_table=keys %list_table_uniq;
 			}
 		} else {
-			@list_table=($table_name,$link_obj->get_parent_tables($table_name,0));
+			@list_table=($table_name,$link_obj->get_parent_tables($table_name,1));
 		}
+		
+		
+		
+		
 
 		if (@list_table) {
 			foreach (@list_table) {
@@ -281,7 +300,11 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 		}
 
 		foreach my $current_table (@list_table) {
-
+		
+			# check if table is a menu table (virtual)
+			my $display_table=$current_table;
+			$current_table =~ s/.+_([^_]+)$/$1/;
+			
 			my %table_info=$env->get_table_info($current_table);
 			
 			my $table_key=$env->get_table_key($current_table);
@@ -291,7 +314,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			#	next;
 			#}
 			# open DATA table
-			log_info("Mise à jour des menus de ",$current_table);
+			log_info("Mise à jour des menus de ",$display_table);
 			my $source_data = eval { $env->open_source_table($current_table, { debug => $bv_debug }) };
 			if ($@) {
 				warn $@;
@@ -301,23 +324,12 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 			my @field_list=(@virtual_field,$source_data->field() );
 			
-			my $source_data_table=$environnement."_".$current_table;
+			my $source_data_table=$environnement."_".$display_table;
 			
 			my $string;	
 			my $filename;
 
 		##### CREATE DEF
-			
-			if ($only_used_fields) {
-				# reset field list
-				@field_list=(@virtual_field);
-				#add only used fields
-				push @field_list,split(',',$table_key);
-				push @field_list,$table_info{label_field} if $table_info{label_field};
-				
-				#push @field_list,split(',',$link_obj->get_foreign_fields());
-				die "TODO";
-			}
 			
 			# fill standards value of DEF
 			my $source_data_size = join($separator,('20s') x @field_list ) ;
@@ -331,9 +343,9 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 					$table_key);
 			
 			# add one FKEY entry per foreign tables
-			foreach my $f_table ($link_obj->get_parent_tables($current_table)) {
+			foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
 			
-				my %foreign_field=$link_obj->get_foreign_fields($current_table,$f_table);
+				my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
 				my @sorted_keys=sort keys %foreign_field;
 				
 				# create FKEY entry
@@ -369,9 +381,10 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			}
 			
 			# get all table having current table as F_KEY
-			my @child_table=$link_obj->get_child_tables($current_table);
+			my @child_table=$link_obj->get_child_tables($display_table);
 
 			my @table_list=map {"IKOS_TABLE_$environnement\_$_"} @child_table;
+			map { s/.+_([^_]+)$/$1/ } @child_table;
 			$string .= sprintf($pci_fkey_template,join(' , ',@child_table),join (',',@table_list)) if @child_table;
 
 			
