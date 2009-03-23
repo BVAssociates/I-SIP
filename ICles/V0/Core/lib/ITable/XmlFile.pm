@@ -132,6 +132,9 @@ sub fetch_row_array() {
 		chomp ($fetch_key);
 		chomp ($fetch_value);
 
+		use Data::Dumper;
+		#die Dumper($fetch_value) if $fetch_key eq '/immobilier/service/business/transformers/serviceCriterionTextTransformer/convertCharacters/from';
+		
 		return ($fetch_key, $fetch_value);
 	}
 }

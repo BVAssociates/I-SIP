@@ -200,7 +200,8 @@ FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
-Item~Administration~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
+';
+my $pci_template_root='Item~Administration~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 Item~Administration~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 ';
 my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
@@ -360,8 +361,12 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 			my $key_var=join(',',map {'%'.$_.'%'} $env->get_table_key($current_table));
 			$string = sprintf ($pci_template,
-					$source_data_table,
-					($current_table,$key_var) x 2 );
+					$source_data_table);
+			
+			if ($env->is_root_table($current_table)) {
+				$string .= sprintf ($pci_template_root, ($current_table,$key_var) x 2);
+					
+			}
 			
 			# get all table having current table as F_KEY
 			my @child_table=$link_obj->get_child_tables($current_table);

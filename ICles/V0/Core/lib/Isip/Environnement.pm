@@ -108,22 +108,21 @@ sub new() {
 	
 	
 	# add environnement specific info about tables
-	my $source_info=ITools->open("SOURCE_ENV", $self->{options});
-	$source_info->query_condition("ENVIRONNEMENT = $self->{environnement}");
+	my $source_info=$self->open_local_table("XML_INFO", $self->{options});
 	
 	my %sources;
 	while (my %row=$source_info->fetch_row) {
-		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
+		next if not exists $self->{info_table}->{$row{XML_NAME}};
 	
 		#overide datasource with specific
-		$sources{$row{TABLE_NAME}}=$row{SOURCE};
+		#$sources{$row{XML_NAME}}=$row{XML_PATH};
+		$self->set_datasource($row{XML_NAME},$row{XML_PATH});
 
 	}
 	
+	# set defaut value if datasource not specified
 	foreach my $table ($self->get_table_list) {
-		if (exists $sources{$table}) {
-			$self->set_datasource($table,$sources{$table});
-		} else {
+		if (not $self->{info_table}->{$table}->{source}) {
 			$self->set_datasource($table,$self->{defaut_library});
 		}
 	}
@@ -149,6 +148,15 @@ sub get_column_info() {
 	my $table_name=shift or croak("usage : get_column_info(table)");
 	
 	return %{$self->{info_table}->{$table_name}->{column}};
+}
+
+sub is_root_table() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : is_root_table(table)");
+	
+	return undef if not exists $self->{info_table}->{$table_name};
+	return $self->{info_table}->{$table_name}->{root_table};
 }
 
 sub get_table_info() {
@@ -181,10 +189,33 @@ sub get_table_list_module() {
 	return @table_list;
 }
 
+# return ILink object
 sub get_links() {
 	my $self = shift;
 		
 	return $self->{link_table};
+}
+
+# return new ILink object with new virtual ROOT tables 
+sub get_links_virtual() {
+	my $self = shift;
+		
+	my ILink $link_clone = $self->{link_table}->clone();
+	
+	foreach my $table ($self->get_table_list) {
+		next if not $self->{info_table}->{$table}->{root_table};
+		
+		my @parents=$link_clone->get_parent_tables($table,1);
+		next if not @parents;
+		
+		my $child=$table;
+		foreach my $parent (@parents) {
+			die "TODO";
+			$link_clone->add_link();
+		}
+	}
+	
+	return $link_clone;
 }
 
 #found the table primary key
@@ -258,7 +289,7 @@ sub get_sqlite_filename() {
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
-	if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
+	if ($table_name =~ /^TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {
@@ -393,7 +424,11 @@ sub open_local_table() {
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
-	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
+	my $sqlite_path=$self->get_sqlite_path($table_name,$self->{environnement});
+	if (not -e $sqlite_path) {
+		croak ("Unable to access $table_name for $self->{environnement}");
+	}
+	my $tmp_return = eval {Sqlite->open($sqlite_path, $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
 	return $tmp_return;
 }
@@ -464,6 +499,7 @@ sub initialize_column_info() {
 	
 	my %size_hash=$itable_obj->size();
 	my %field_txt_hash=$itable_obj->field_txt();
+	my @key=$itable_obj->key();
 	
 	$logger->notice("Populate TABLE_INFO with information from source table: ".$itable_obj->table_name);	
 	
@@ -487,6 +523,8 @@ sub initialize_column_info() {
 		$row{DATA_TYPE}=$type;
 		$row{DATA_LENGTH}=$size;
 		$row{TEXT}=$field_txt_hash{$field};
+		
+		$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
 		
 		$column_info->insert_row(%row);
 	}

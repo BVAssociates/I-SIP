@@ -123,21 +123,54 @@ use Isip::ITable::DataDiff;
 
 my $env_sip = Environnement->new($environnement);
 
+my $table_desc="";
+
 if ($create) {
-	$ENV{"Environnement"}=$environnement;
-	my $table_list=ITools->open("TABLE_ODBC");
-	$table_list->query_condition("TABLE_NAME = '$table_name'");
-	$table_list->query_field("TABLE_TEXT");
-	my ($table_desc)=$table_list->fetch_row_array();
+
+	if ($ENV{TABLE_TYPE} eq "ODBC") {
 	
-	if (not ($ENV{TABLE_MODULE}
-			and $ENV{TABLE_TYPE}
-			and $ENV{TABLE_LABEL}))
-	{
-		log_erreur("L'environnement n'est pas positionné (TABLE_MODULE,TABLE_TYPE,TABLE_LABEL) pour l'ajout de table");
+		log_info("verification de l'environnement");
+		if (not ($ENV{TABLE_MODULE}
+				and $ENV{TABLE_TYPE}
+				and $ENV{TABLE_LABEL}))
+		{
+			log_erreur("L'environnement n'est pas positionné (TABLE_MODULE,TABLE_TYPE,TABLE_LABEL) pour l'ajout de table");
+		}
+	
+		$ENV{"Environnement"}=$environnement;
+		my $table_list=ITools->open("TABLE_ODBC");
+		$table_list->query_condition("TABLE_NAME = '$table_name'");
+		$table_list->query_field("TABLE_TEXT");
+		($table_desc)=$table_list->fetch_row_array();
 	}
-	
-	
+	elsif ($ENV{TABLE_TYPE} eq "XML") {
+		
+		log_info("verification de l'environnement");
+		if (not ($ENV{TABLE_MODULE}
+				and $ENV{TABLE_TYPE}
+				and $ENV{XML_PATH}))
+		{
+			log_erreur("L'environnement n'est pas positionné (TABLE_MODULE,TABLE_TYPE,XML_PATH) pour l'ajout de table");
+		}
+		
+		$table_desc="Fichier XML $table_name";
+		
+		if (not -r $ENV{XML_PATH}) {
+			log_erreur("impossible d'acceder au fichier XML <$ENV{XML_PATH}>");
+		}
+		
+		my $xml_info=$env_sip->open_local_table("XML_INFO");
+		my %xml_entry;
+		$xml_entry{XML_NAME}=$table_name;
+		$xml_entry{XML_PATH}=$ENV{XML_PATH};
+				
+		# defaut to 1 if first entry
+		$xml_entry{MASTER}=1;
+		$xml_info->insert_row(%xml_entry);
+	}
+	else {
+		log_erreur("<TABLE_TYPE=$ENV{TABLE_TYPE}> non reconnu");
+	}
 	
 	my %new_line;
 	$new_line{TABLE_NAME}=$table_name;

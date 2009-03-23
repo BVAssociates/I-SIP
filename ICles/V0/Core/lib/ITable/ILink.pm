@@ -2,6 +2,9 @@ package ILink;
 
 use strict;
 use Carp ('croak');
+use Storable qw(dclone);
+
+
 
 sub new() {
     my $proto = shift;
@@ -20,6 +23,12 @@ sub new() {
 	$self->{depth_path_seen}= {};
 	
 	return bless ($self, $class);
+}
+
+sub clone() {
+	my $self=shift;
+	
+	return dclone($self);
 }
 
 # Add a foreign key link :
