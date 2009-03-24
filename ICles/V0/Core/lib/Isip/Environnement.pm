@@ -202,11 +202,13 @@ sub get_links_menu() {
 		
 	my ILink $link_clone = $self->{link_table}->clone();
 	
+	my $separator='__';
+	
 	foreach my $table ($self->get_table_list) {
 		next if not $self->{info_table}->{$table}->{root_table};
 		
 		# on recherche la liste des parents d'une table ROOT
-		my @parents=grep {!/_/} $link_clone->get_parent_tables($table,1);
+		my @parents=grep {!/$separator/} $link_clone->get_parent_tables($table,1);
 		next if not @parents;
 		
 		my $child=$table;
@@ -215,9 +217,9 @@ sub get_links_menu() {
 			my %field=$link_clone->get_foreign_fields($child,$parent);
 			foreach my $pkey (keys %field) {
 				# on construit une nouvelle relation avec une table parente dédiée
-				$link_clone->add_link($child_ext.$child,$pkey,$table."_".$parent,$field{$pkey});
+				$link_clone->add_link($child_ext.$child,$pkey,$table.$separator.$parent,$field{$pkey});
 			}
-			$child_ext=$table."_" if not $child_ext;
+			$child_ext=$table.$separator if not $child_ext;
 			$child=$parent;
 		}
 	}

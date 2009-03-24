@@ -303,7 +303,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 		
 			# check if table is a menu table (virtual)
 			my $display_table=$current_table;
-			$current_table =~ s/.+_([^_]+)$/$1/;
+			$current_table =~ s/.+__(.+)$/$1/;
 			
 			my %table_info=$env->get_table_info($current_table);
 			
@@ -373,7 +373,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 			my $key_var=join(',',map {'%'.$_.'%'} $env->get_table_key($current_table));
 			$string = sprintf ($pci_template,
-					$source_data_table);
+					"$environnement\_$current_table");
 			
 			if ($env->is_root_table($current_table)) {
 				$string .= sprintf ($pci_template_root, ($current_table,$key_var) x 2);
@@ -396,7 +396,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 			$string = sprintf ($pci_field_template,$current_table);
 			
-			$filename=sprintf($pci_field_filename,$pci_path,$source_data_table);
+			$filename=sprintf($pci_field_filename,$pci_path,"$environnement\_$current_table");
 			
 			write_file($filename,$string);
 			

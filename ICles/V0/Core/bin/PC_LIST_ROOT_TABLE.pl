@@ -114,8 +114,11 @@ my $module=shift;
 ###########################################################
 my $bv_severite=0;
 use Isip::Environnement;
+use Isip::Cache::CacheStatus;
 
 my $env=Environnement->new($environnement);
+
+my $cache=CacheStatus->new($env);
 
 my $link_obj=$env->get_links_menu();
 
@@ -133,8 +136,11 @@ foreach my $table ($env->get_table_list_module($module)) {
 
 foreach my $table (keys %list_table_uniq) {
 	my $def_name=$table;
-	$table =~ s/^([^_]+)_.+/$1/;
-	print join($separator,($table,$def_name,$module,$env->get_table_description($table)))."\n";
+	$table =~ s/^(.+)__.+/$1/;
+	my %table_info=$env->get_table_info($table);
+	my $icon="valide";
+	#$icon="dirty" if $cache->is_dirty_table($table);
+	print join($separator,($icon,$table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 }
 
 
