@@ -64,7 +64,8 @@ sub open() {
 sub _load_xml() {
 	my $self=shift;
 	
-	my $xml_simple_hash=XML::Simple::XMLin($self->{xml_file});
+	my $xml_simple_hash=eval { XML::Simple::XMLin($self->{xml_file}) };
+	croak("Impossible de charger le fichier XML <$self->{xml_file}>. Erreur:",$@) if($@);
 	
 	$self->_push_node($xml_simple_hash,"");
 }
