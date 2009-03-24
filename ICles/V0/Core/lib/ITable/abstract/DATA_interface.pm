@@ -87,7 +87,7 @@ sub dynamic_field {
     if (@_) {
 		@{ $self->{dynamic_field} } = @_;
 		my $dyn_list=join('|',@_);
-		$self->{_dynamic_field_re} = qr/^$dyn_list$/
+		$self->{_dynamic_field_re} = qr/^($dyn_list)$/
 	};
     return @{ $self->{dynamic_field} };
 }
@@ -307,7 +307,7 @@ sub fetch_row()
 	return () if not @row;
 	
 	my $regex=$self->{_dynamic_field_re};
-	foreach my $temp_field ($self->query_field()) {
+	foreach my $temp_field (@{ $self->{query_field} }) {
 		if ($temp_field =~ $regex) {
 			$row_object{$temp_field}="";
 		}

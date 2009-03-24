@@ -15,7 +15,7 @@ PC_INIT_TABLE - Initalise la table de données d'historique d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-c] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] [-m master] [-c] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -42,6 +42,8 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 =item -v : Mode verbeux
 
 =item -c : Creation complète
+
+=item -m master : Le fichier est une copie d'un fichier "maître"
 
 =back
 
@@ -91,7 +93,7 @@ sub log_info {
 ###########################################################
 
 my %opts;
-getopts('hvc', \%opts) or usage(0);
+getopts('hvcm:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -99,6 +101,7 @@ $debug_level = 1 if $opts{v};
 usage($debug_level+1) if $opts{h};
 
 my $create=$opts{c};
+my $master=$opts{m};
 
 #  Traitement des arguments
 ###########################################################
@@ -113,8 +116,8 @@ if ( @ARGV != 2 ) {
 my $environnement=shift;
 my $table_name=shift;
 
-if ($table_name =~ /_/) {
-	log_erreur("Le nom de la table ne peut pas contenir le caractere underscore ('_')");
+if ($table_name =~ /__/) {
+	log_erreur("Le nom de la table ne peut pas contenir la suite de caracteres '__'");
 }
 
 #  Corps du script
@@ -163,13 +166,17 @@ if ($create) {
 			log_erreur("impossible d'acceder au fichier XML <$ENV{XML_PATH}>");
 		}
 		
+		# test loading file
+		use ITable::XmlFile;
+		my $test_xml=XmlFile->open($ENV{XML_PATH},$table_name);
+		
 		my $xml_info=$env_sip->open_local_table("XML_INFO");
 		my %xml_entry;
 		$xml_entry{XML_NAME}=$table_name;
 		$xml_entry{XML_PATH}=$ENV{XML_PATH};
 				
-		# defaut to 1 if first entry
-		$xml_entry{MASTER}=1;
+		# defaut to 1 if master table
+		$xml_entry{MASTER}=$master;
 		$xml_info->insert_row(%xml_entry);
 	}
 	else {
@@ -183,7 +190,7 @@ if ($create) {
 	$new_line{LABEL_FIELD}=$ENV{TABLE_LABEL};
 	$new_line{DESCRIPTION}=$table_desc;
 	$new_line{ACTIVE}=1;
-	$new_line{ROOT_TABLE}=1;
+	$new_line{ROOT_TABLE}=1 if not $master;
 	
 	my $table=$env_sip->open_local_table("TABLE_INFO");
 	foreach ($table->field) {

@@ -57,7 +57,8 @@ BEGIN {
 			$logger->critical( @_ );
 		}
 		
-		$DIE ? $DIE->() : CORE::die();
+		#$DIE ? $DIE->() : CORE::die();
+		exit 202;
 	};
 
 	$Carp::Internal{__PACKAGE__} = 1;
@@ -77,7 +78,7 @@ if ($@) {
 		newline  => 1,
 		maxlevel => 'notice',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%L:%m',
+		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
 		});
 	$logger->add(file => {
