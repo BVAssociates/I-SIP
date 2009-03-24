@@ -17,6 +17,7 @@ use ITable::ODBC;
 
 use Carp qw(carp croak );
 use Scalar::Util qw(blessed);
+use File::Copy;
 
 use Isip::IsipLog '$logger';
 
@@ -128,6 +129,29 @@ sub exists_database_environnement() {
 	my $database_path=$self->get_data_dir()."ISIP_".$environnement."_INFO.sqlite";
 	
 	return -r $database_path;
+}
+
+# copy environnement datafiles from existing one to new one
+sub copy_environnement() {
+	my $self=shift;
+	
+	my $environnement_from=shift;
+	my $environnement_to=shift or die "bad arguments";
+	
+	if (! grep {$environnement_from eq $_} $self->get_environnement_list) {
+		croak("$environnement_from is not a valid environnement");
+	}
+	
+	if (! grep {$environnement_to eq $_} $self->get_environnement_list) {
+		croak("$environnement_to is not a valid environnement");
+	}
+	
+	my $database_path_from=$self->get_data_dir()."/ISIP_".$environnement_from."_INFO.sqlite";
+	my $database_path_to=$self->get_data_dir()."/ISIP_".$environnement_to."_INFO.sqlite";
+	
+	$logger->notice("recopie de l'environnement $environnement_from vers $environnement_to");
+	#copy($database_path_from,$database_path_to) or croak("Problème lors de la recopie de l'environnement $environnement_from vers $environnement_to :",$!);
+
 }
 
 sub create_database_environnement() {

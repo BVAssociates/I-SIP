@@ -15,7 +15,7 @@ PC_INIT_ENV - Initalise les tables Information d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_ENV.pl [-h] [-v ] environnement [table]
+ PC_INIT_ENV.pl [-h] [-v ][-c environnement_source] datasource environnement
  
 =head1 DESCRIPTION
 
@@ -40,15 +40,17 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =item -v : Mode verbeux
 
+=item -c environnement_source : recopie les informations des tables d'un environnement existant
+
 =back
 
 =head1 ARGUMENTS
 
 =over
 
-=item environnement : table dont la base sera créé
+=item datasource : nom de la source ODBC
 
-=item table : table dont la base sera créé
+=item environnement : table dont la base sera créé
 
 =back
 
@@ -89,14 +91,14 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts) or usage(0);
+getopts('hvc:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-#defaut value
+my $environnement_from=$opts{c};
 
 
 #  Traitement des arguments
@@ -137,9 +139,23 @@ $new_row{DEFAUT_ODBC}=$odbc_name;
 my $conf_environ=ITools->open("CONF_ENVIRON");
 $conf_environ->insert_row(%new_row);
 
-# we take first env arbitrary
-
 my $config_sip = IsipConfig->new();
-$config_sip->create_database_environnement($environnement);
+
+if ($environnement_from) {
+	$config_sip->copy_environnement($environnement_from,$environnement);
+	
+	my Environnement $env=Environnement->new($environnement);
+	my $table_info=$env->open_local_table("TABLE_INFO");
+	
+	while (my %table=$table_info->fetch_row) {
+		$env->create_database_histo($table{TABLE_NAME});
+	}
+	
+	require 'PC_GENERATE_MENU.pl';
+	pc_generate_menu::run($environnement);
+}
+else {
+	$config_sip->create_database_environnement($environnement);
+}
 
 sortie($bv_severite);
