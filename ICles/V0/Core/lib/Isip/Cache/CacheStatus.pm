@@ -2,7 +2,7 @@ package CacheStatus;
 
 use Isip::Cache::CacheInterface;
 use base 'CacheInterface';
-use fields qw(action);
+use fields qw(action current_table);
 
 use strict;
 use Carp qw(carp croak );
@@ -21,6 +21,7 @@ sub new() {
 	#   $self->{memory_cache}->{"table_name"}={key1 => 6, key2 => 2}
 	
 	$self->{action}=0;
+	$self->{current_table}="";
 	
 	return $self;
 }
@@ -44,7 +45,10 @@ sub check_before_cache() {
 		}
 	}
 		
-	return abs($self->{action});
+	my $dirty=abs($self->{action});
+	$self->{current_table}=$table if $dirty;
+	
+	return $dirty;
 }
 
 sub add_row_cache() {
@@ -58,16 +62,17 @@ sub add_row_cache() {
 	
 	
 	$logger->info("add $key_string in CacheStatus");
+	my $table_fired=$self->{current_table};
 	
-	my $old_value=$self->{memory_cache}->{$table_name}->{$key_string};
+	my $old_value=$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string};
 	$old_value=0 if not defined $old_value;
 	
 	my $new_value=$old_value + $self->{action};
 	if ($new_value > 0) {
-		$self->{memory_cache}->{$table_name}->{$key_string} = $new_value;
+		$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 	}
 	else {
-		$self->{memory_cache}->{$table_name}->{$key_string} = 0;
+		$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = 0;
 	}
 }
 
@@ -76,12 +81,32 @@ sub is_dirty_key() {
 	
 	my $table_name=shift;
 	my $table_key=shift or croak("usage : is_dirty_key(table_name, table_key");
-
-
+	my $table_source=shift;
 	
 	# check in current object
-	if (exists $self->{memory_cache}->{$table_name}->{$table_key}) {
-		return $self->{memory_cache}->{$table_name}->{$table_key};
+	if (exists $self->{memory_cache}->{$table_name}) {
+		# if source provided, we check only for this table
+		if ($table_source) {
+			if (exists $self->{memory_cache}->{$table_name}->{$table_source}->{$table_key}) {
+				return $self->{memory_cache}->{$table_name}->{$table_source}->{$table_key};
+			}
+		}
+		# else we check for all table
+		else {
+			my $found=0;
+			my $counter=0;
+			my %tables=%{$self->{memory_cache}->{$table_name}};
+			foreach my $source_name (keys %tables) {
+				if (exists $self->{memory_cache}->{$table_name}->{$source_name}->{$table_key}) {
+					$found=1;
+					$counter+=$self->{memory_cache}->{$table_name}->{$source_name}->{$table_key};
+				}
+			}
+			
+			if ($found) {
+				return $counter;
+			}
+		}
 	}
 	
 	# if key was not in dirty childs and table was preloaded, key is OK
@@ -91,7 +116,11 @@ sub is_dirty_key() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
+	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
+	$table->custom_select_query("SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
+			FROM CACHE_ICON
+			GROUP BY TABLE_NAME,TABLE_KEY
+			WHERE TABLE_NAME=$table_name' AND TABLE_KEY='$table_key'");
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -119,7 +148,7 @@ sub load_cache() {
 	my $count=0;
 	while (my %row=$table->fetch_row) {
 		$count ++;
-		$self->{memory_cache}->{$table_name}->{$row{TABLE_KEY}}=$row{NUM_CHILD};
+		$self->{memory_cache}->{$table_name}->{$row{TABLE_SOURCE}}->{$row{TABLE_KEY}}=$row{NUM_CHILD};
 	}
 	
 	$self->{loaded_table}->{$table_name}++;
@@ -141,43 +170,47 @@ sub save_cache() {
 	
 	my %dirty_temp=%{$self->{memory_cache}};
 	foreach my $dirty_table (keys %dirty_temp) {
-		my %dirty_keys=%{$dirty_temp{$dirty_table}};
+		my %dirty_source=%{$dirty_temp{$dirty_table}};
 		
+		foreach my $table_source (keys %dirty_source) {
+		my %dirty_keys=%{$dirty_source{$table_source}};
 		
-		foreach my $dirty_key ( keys %dirty_keys ) {
-		
-			$table->query_condition("TABLE_NAME = '$dirty_table'","TABLE_KEY = '$dirty_key'");
+			foreach my $dirty_key ( keys %dirty_keys ) {
 			
-			my $num_child;
-			while (my %row=$table->fetch_row()) {
-				$num_child=$row{NUM_CHILD};
-			}
-			
-			my $memory_num_child=0;
-			if (exists $dirty_keys{$dirty_key}) {
-				$memory_num_child=$dirty_keys{$dirty_key};
-			}
-			
-			if (not defined $num_child) {
-				if ($memory_num_child > 0) {
-					$logger->debug("insert $dirty_table,$dirty_key,memory_num_child");
-					$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $memory_num_child);
+				$table->query_condition("TABLE_NAME = '$dirty_table'","TABLE_KEY = '$dirty_key'","TABLE_SOURCE = '$table_source'");
+				
+				my $num_child;
+				while (my %row=$table->fetch_row()) {
+					$num_child=$row{NUM_CHILD};
 				}
-			}
-			else {
-				my $sum_dirty=$num_child+$memory_num_child;
-				if ($sum_dirty > 0) {
-					$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
-					$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $sum_dirty);
+				
+				my $memory_num_child=0;
+				if (exists $dirty_keys{$dirty_key}) {
+					$memory_num_child=$dirty_keys{$dirty_key};
+				}
+				
+				if (not defined $num_child) {
+					if ($memory_num_child > 0) {
+						$logger->debug("insert $dirty_table,$dirty_key,memory_num_child");
+						$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $memory_num_child, TABLE_SOURCE => $table_source);
+					}
 				}
 				else {
-					$logger->debug("remove $dirty_table,$dirty_key");
-					$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key);
-				
+					my $sum_dirty=$num_child+$memory_num_child;
+					if ($sum_dirty > 0) {
+						$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+						$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $sum_dirty, TABLE_SOURCE => $table_source);
+					}
+					else {
+						$logger->debug("remove $dirty_table,$dirty_key");
+						$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, TABLE_SOURCE => $table_source);
+					
+					}
 				}
 			}
 		}
 	}
+	
 	$table->commit_transaction();
 	
 	# flush memroy

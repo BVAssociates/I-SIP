@@ -184,9 +184,10 @@ sub create_database_environnement() {
 	$logger->notice("Create table CACHE_ICON");
 	$master_table->execute('CREATE TABLE "CACHE_ICON" (
 		"TABLE_NAME" VARCHAR,
+		"TABLE_SOURCE" VARCHAR,
 		"TABLE_KEY" VARCHAR,
 		"NUM_CHILD" INTEGER,
-		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME")
+		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "TABLE_SOURCE")
 	)');
 	
 	$logger->notice("Create table CACHE_PROJECT");

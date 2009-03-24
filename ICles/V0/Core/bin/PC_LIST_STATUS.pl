@@ -174,6 +174,12 @@ $explore_mode="compare" if $env_compare or $date_compare;
 
 log_info("mode $explore_mode activé");
 
+# on déduit la "ROOT_TABLE"
+# $ENV{TableName}=fichier de definition
+# $ENV{TABLE_NAME}=table ROOT
+my $table_source;
+$table_source=$1 if $ENV{TableName} =~ /$environnement\_(.+)__/;
+
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
@@ -302,7 +308,7 @@ $table_explore->output_separator('@');
 my @keys=$table_explore->key;
 while (my %row=$table_explore->fetch_row) {
 	my $string_key=join(',',@row{@keys});
-	$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key);
+	$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source);
 	$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
 	if ($filter_field) {
 		if ($filter_field eq 'ICON') {
