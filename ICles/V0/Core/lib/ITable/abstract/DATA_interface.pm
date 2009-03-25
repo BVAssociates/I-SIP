@@ -124,7 +124,7 @@ sub sort {
 
 sub size {
     my $self = shift;
-    if (@_) { @{ $self->{size} } = @_ }
+    if (@_) { %{ $self->{size} } = @_ }
     return %{ $self->{size} };
 }
 

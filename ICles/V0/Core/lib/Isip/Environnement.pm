@@ -14,6 +14,7 @@ use fields qw(
 );
 
 use strict;
+use Scalar::Util qw/blessed/;
 
 #use ITable::ITools;
 use Carp qw(carp croak);
@@ -249,7 +250,8 @@ sub get_table_key() {
 		}
 	}
 	else {
-		croak("no PRIMARY KEY defined for $tablename");
+		carp("no PRIMARY KEY defined for $tablename");
+		return undef;
 	}
 }
 
@@ -259,6 +261,22 @@ sub get_table_description() {
 
 	return undef if not exists $self->{info_table}->{$tablename};
 	return $self->{info_table}->{$tablename}->{description};
+}
+
+sub get_table_size() {
+	my $self = shift;
+	my $tablename = shift or croak "get_table_description() wait args : 'tablename'";
+
+	return undef if not exists $self->{info_table}->{$tablename};
+	
+	my %column_info=%{$self->{info_table}->{$tablename}->{column}};
+	
+	my %size_info;
+	foreach my $col (keys %column_info) {
+		$size_info{$col}=$column_info{$col}->{data_type}."(".$column_info{$col}->{data_size}.")";
+	}
+	
+	return %size_info;
 }
 
 sub get_table_field() {
@@ -372,10 +390,13 @@ sub open_local_from_histo_table() {
 	croak "Error opening $table_name : $@" if $@;
 	
 	# we must set the primary key manually
-	$table_histo->field($self->get_table_field($table_name));
+	my $dyn_exluded_re = join '|', $table_histo->dynamic_field;
+	$table_histo->field(grep {!/\b$dyn_exluded_re\b/} $self->get_table_field($table_name));
 	
-	my $key_string=$self->get_table_key($table_name);
-	$table_histo->key(split(/,/,$key_string,-1)) if $key_string;
+	$table_histo->size($self->get_table_size($table_name));
+	
+	my @key_string=$self->get_table_key($table_name);
+	$table_histo->key(@key_string) if @key_string;
 
 	return $table_histo
 }
@@ -507,8 +528,9 @@ sub initialize_column_info() {
 	my $self=shift;
 	
 	my $itable_obj=shift or croak "bad arguments";
+	my $links=shift;
 	
-	if (not blessed $itable_obj or not $itable_obj->isa("DATA_interface")) {
+	if (not blessed($itable_obj) or not $itable_obj->isa("DATA_interface")) {
 		croak("usage initialize_column_info(DATA_interface)")
 	}
 
@@ -521,6 +543,25 @@ sub initialize_column_info() {
 	$logger->notice("Populate TABLE_INFO with information from source table: ".$itable_obj->table_name);	
 	
 	my %column_info=$self->get_column_info($itable_obj->table_name);
+	
+	# caclul des clefs étrangère pour cette table si un 2e argument est passé
+	my %foreign_key_info;
+	my %foreign_table_info;
+	if ($links) {
+		croak "bad arguments" if not blessed($links) and not $links->isa("ILink");
+		my @foreign_table=$links->get_parent_tables($itable_obj->table_name);
+		foreach my $f_tab (@foreign_table) {
+			my %foreign_key=$links->get_foreign_fields($itable_obj->table_name,$f_tab);
+			
+			foreach my $f_key (keys  %foreign_key) {
+				if (exists $foreign_key_info{$f_key}) {
+					croak "Problème avec les liens : un champ ne peux avoir qu'une clef étrangère";
+				}
+				$foreign_key_info{$f_key}=$foreign_key{$f_key};
+				$foreign_table_info{$f_key}=$f_tab;
+			}
+		}
+	}		
 	
 	$column_info->begin_transaction;
 	foreach my $field ($itable_obj->field) {
@@ -540,6 +581,9 @@ sub initialize_column_info() {
 		$row{DATA_TYPE}=$type;
 		$row{DATA_LENGTH}=$size;
 		$row{TEXT}=$field_txt_hash{$field};
+		
+		$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
+		$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
 		
 		$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
 		
@@ -561,7 +605,7 @@ sub create_database_histo() {
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
-	carp "veuillez configurer les PRIMARY KEY" if not $self->get_table_key($tablename);
+	$logger->info("no PRIMARY KEY defined for $tablename") if not $self->get_table_key($tablename);
 	carp "database already exist at <$database_path>" if -e $database_path;
 	
 	if (! -e $database_path) {

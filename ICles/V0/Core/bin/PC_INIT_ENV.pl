@@ -15,7 +15,7 @@ PC_INIT_ENV - Initalise les tables Information d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_ENV.pl [-h] [-v ][-c environnement_source] datasource environnement
+ PC_INIT_ENV.pl [-h] [-v ][-i environnement_source] datasource environnement
  
 =head1 DESCRIPTION
 
@@ -40,7 +40,7 @@ Suivant l'implementation, créer égalemement la base associée.
 
 =item -v : Mode verbeux
 
-=item -c environnement_source : recopie les informations des tables d'un environnement existant
+=item -i environnement_source : importe les informations des tables d'un environnement existant
 
 =back
 
@@ -91,14 +91,14 @@ sub log_info {
 
 
 my %opts;
-getopts('hvc:', \%opts) or usage(0);
+getopts('hvi:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $environnement_from=$opts{c};
+my $environnement_from=$opts{i};
 
 
 #  Traitement des arguments

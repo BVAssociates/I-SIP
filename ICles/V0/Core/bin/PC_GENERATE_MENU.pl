@@ -201,8 +201,8 @@ my $pci_filename="%s/IKOS_TABLE_%s.pci";
 my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
 ';
-my $pci_template_root='Item~Administration~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
-Item~Administration~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
+my $pci_template_root='Item~Groupe~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
+Item~Groupe~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
 ';
 my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
 ';
@@ -308,6 +308,10 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			my %table_info=$env->get_table_info($current_table);
 			
 			my $table_key=$env->get_table_key($current_table);
+			
+			if (not $table_key) {
+				log_erreur("Aucune PRIMARY_KEY n'est définie pour la table $current_table. Vous devez les definir dans le menu \"Configurer Colonnes\"");
+			}
 
 			#if ( not $env->exist_local_table($current_table, { debug => $bv_debug }) ) {
 			#	warn "$current_table don't exist in local tables\n";

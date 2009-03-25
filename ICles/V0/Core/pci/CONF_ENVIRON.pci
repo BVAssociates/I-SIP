@@ -2,6 +2,7 @@
 
 
 Item~~Modules~expl~~~Explore~CONF_MODULE~0~~Expand
-Item~~Ajouter Table IKOS~adm~~{TABLE_NAME=getValue("Nom de la table IKOS")}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE="ODBC"}{TABLE_LABEL=getListValue("Champ utilisé comme label",FIELD_ODBC@FIELD_NAME,TEXT)}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~displayMessage("La table a été ajoutée.\nVeuiller maintenant configurer les clefs primaires et lancer une verification.")~Add
+Item~~Ajouter/modifier Table~adm~~{TABLE_NAME=getValue("Nom de la table IKOS")}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE="ODBC"}{TABLE_LABEL=getListValue("Champ utilisé comme label",FIELD_ODBC@FIELD_NAME,TEXT)}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~displayMessage("La table a été ajoutée.\nVeuiller maintenant configurer les clefs primaires et lancer une verification.")~Add
+Item~~Importer Table d'un autre environnement~adm~~{TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)}{TABLE_IMPORT=getListValue("Nom de la table à importer",TABLE_INFO_ENV)}~ExecuteProcedure~PC_INIT_TABLE.pl -c -i %TABLE_ENV% %Environnement% %TABLE_IMPORT%~0~displayMessage("La table a été ajoutée.\nVeuiller maintenant configurer les clefs primaires et lancer une verification.")~Add
 Item~~Ajouter fichier XML~adm~~{XML_PATH=selectFile()}{TABLE_NAME=getValue("Nom dans I-SIP")}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE="XML"}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~~Add
 
