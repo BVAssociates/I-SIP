@@ -2,4 +2,5 @@
 Item~~Configuer colonnes~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~Administrate~COLUMN_INFO~0~~Configure
 Item~~Ajouter un fichier XML repliqué~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML""~{TABLE_MODULE=%[Module]}{TABLE_TYPE="XML"}{XML_NAME=getValue("Nom du replicat (ex: serveur.nom)")}{XML_PATH=selectFile()}~ExecuteProcedure~PC_INIT_TABLE.pl -c -m%TABLE_NAME% %Environnement% %XML_NAME%~0~~Configure
 Item~~Vérifier et mettre à jour structure~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl %Environnement% %TABLE_NAME%~0~~Save
-#Item~~Première collecte~adm~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -c %Environnement% %TABLE_NAME%~1~~Save
+Item~Suppression~Supprimer la définition de la table~adm~~~ExecuteProcedure~PC_REMOVE_TABLE.pl %Environnement% %TABLE_NAME%~0~~Remove
+Item~Suppression~Supprimer la table et ses données~dev~~~ExecuteProcedure~PC_REMOVE_TABLE.pl -f %Environnement% %TABLE_NAME%~0~~Remove

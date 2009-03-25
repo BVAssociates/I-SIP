@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+package pc_init_table;
 
 # Inclusions obligatoires
 use strict;
@@ -15,7 +16,7 @@ PC_INIT_TABLE - Initalise la table de données d'historique d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-m master] [-c] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] [-m master] [-c [-i environnement_source]] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -42,6 +43,8 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 =item -v : Mode verbeux
 
 =item -c : Creation complète
+
+=item -i environnement_source : import la définition de la table depuis un environnement existant
 
 =item -m master : Le fichier est une copie d'un fichier "maître"
 
@@ -88,11 +91,14 @@ sub log_info {
 	$logger->notice(@_);
 }
 
+sub run {
+local @ARGV=@_;
+# BEGIN RUN
 
 #  Traitement des Options
 ###########################################################
 
-log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
+log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 my %opts;
 getopts('hvcm:i:', \%opts) or usage(0);
@@ -114,8 +120,8 @@ if ( @ARGV != 2 ) {
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
-my $table_name=shift;
+my $environnement=shift @ARGV;
+my $table_name=shift @ARGV;
 
 if ($table_name =~ /__/) {
 	log_erreur("Le nom de la table ne peut pas contenir la suite de caracteres '__'");
@@ -145,6 +151,7 @@ if ($create) {
 		my %table_info_from=$env_sip_from->get_table_info($table_name);
 		
 		$new_line{TABLE_NAME}=$table_name;
+		$new_line{PARAM_SOURCE}=$table_info_from{param_source};
 		$new_line{MODULE}=$table_info_from{module};
 		$new_line{TYPE_SOURCE}=$table_info_from{type_source};
 		$new_line{LABEL_FIELD}=$table_info_from{label_field};
@@ -153,7 +160,8 @@ if ($create) {
 		$new_line{ROOT_TABLE}=$table_info_from{root_table};
 	}
 	else {
-	
+		$ENV{TABLE_MODULE}="GLCTAB";
+		$ENV{TABLE_TYPE}="ODBC";
 		log_info("verification de l'environnement");
 		if (not ($ENV{TABLE_MODULE}
 				and $ENV{TABLE_TYPE}))
@@ -164,10 +172,16 @@ if ($create) {
 		if ($ENV{TABLE_TYPE} eq "ODBC") {
 			
 			$ENV{"Environnement"}=$environnement;
-			my $table_list=ITools->open("TABLE_ODBC");
-			$table_list->query_condition("TABLE_NAME = '$table_name'");
-			$table_list->query_field("TABLE_TEXT");
-			($table_desc)=$table_list->fetch_row_array();
+			
+			if (not $ENV{DESCRIPTION} or not $ENV{Environnement}) {
+				my $table_list=ITools->open("TABLE_ODBC");
+				$table_list->query_condition("TABLE_NAME = '$table_name'");
+				$table_list->query_field("TABLE_TEXT");
+				($table_desc)=$table_list->fetch_row_array();
+			}
+			else {
+				$table_desc=$ENV{DESCRIPTION};
+			}
 		}
 		elsif ($ENV{TABLE_TYPE} eq "XML") {
 			
@@ -206,7 +220,10 @@ if ($create) {
 		$new_line{LABEL_FIELD}=$ENV{TABLE_LABEL};
 		$new_line{DESCRIPTION}=$table_desc;
 		$new_line{ACTIVE}=1;
+		
+		# optionnal fields
 		$new_line{ROOT_TABLE}=1 if not $master;
+		$new_line{PARAM_SOURCE}=$ENV{PARAM_SOURCE} if $ENV{PARAM_SOURCE};
 	}
 	my $table=$env_sip->open_local_table("TABLE_INFO");
 	foreach ($table->field) {
@@ -270,4 +287,10 @@ if (not $create or $import) {
 	pc_generate_menu::run($environnement,$table_name);
 }
 
-sortie($bv_severite);
+return 0;
+# END RUN
+}
+
+exit run(@ARGV) if !caller;
+
+1;
