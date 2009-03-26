@@ -121,7 +121,7 @@ sub insert_row_array() {
 	
 	my @row = @_;
 	
-	my $insert_cmd="Insert INTO ".$self->table_name()." VALUES \"".join($self->output_separator,@row).'"';	
+	my $insert_cmd="Insert -f INTO ".$self->table_name()." VALUES \"".join($self->output_separator,@row).'"';	
 	my @return=`$insert_cmd 2>&1`;
 	my $return = $? >> 8;
 	
