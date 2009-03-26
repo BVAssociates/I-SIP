@@ -101,7 +101,7 @@ local @ARGV=@_;
 log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvcm:i:', \%opts) or usage(0);
+getopts('hvcm:i:M', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -111,6 +111,9 @@ usage($debug_level+1) if $opts{h};
 my $create=$opts{c};
 my $master=$opts{m};
 my $import=$opts{i};
+my $no_generate_menu=$opts{M};
+
+usage($debug_level+1) if $import and not $create;
 
 #  Traitement des arguments
 ###########################################################
@@ -266,25 +269,26 @@ else {
 	$logger->notice("La table $table_name a été ajoutée dans l'environnement $environnement");
 }
 
-if ($create) {
-	# reload environnement
-	$env_sip = Environnement->new($environnement);
-	
-	if (not $env_sip->get_table_key($table_name)) {
-		$logger->notice("###############################################");
-		$logger->notice("Il n'y a pas de CLEF PRIMAIRE configurée pour $table_name");
-		$logger->notice("Veuillez configurer les colonnes (menu \"Configurer Colonnes\"), puis lancer une vérification");
-		$logger->notice("###############################################");
-	}
-}
-
 #######################
 # mise à jour MENU
 #######################
 
-if (not $create or $import) {
-	require "PC_GENERATE_MENU.pl";
-	pc_generate_menu::run($environnement,$table_name);
+# reload environnement
+$env_sip = Environnement->new($environnement);
+
+if (not $env_sip->get_table_key($table_name)) {
+	$logger->notice("###############################################");
+	$logger->notice("Il n'y a pas de CLEF PRIMAIRE configurée pour $table_name");
+	$logger->notice("Veuillez configurer les colonnes (menu \"Configurer Colonnes\"), puis lancer une vérification");
+	$logger->notice("###############################################");
+	
+	return 1;
+}
+else {
+	if (not $no_generate_menu) {
+		require "PC_GENERATE_MENU.pl";
+		pc_generate_menu::run($environnement,$table_name);
+	}
 }
 
 return 0;

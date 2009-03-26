@@ -22,7 +22,7 @@ sub open() {
 	my $self  = $class->SUPER::open(@_, $options);
 	
 	$self->{database_path} = $self->database_name;
-	$self->{timeout}=10000;
+	$self->{timeout}=5000;
 	
 	############
 	# Options to overide default settings

@@ -1,0 +1,18 @@
+# Common configuration Table for IsipSaisie
+#
+# FORM_FIELD,FORM_LABEL,FORM_TYPE
+
+ID,Identifiant unique,Invisible
+
+TABLE_NAME,Table en cours,Label
+FIELD_NAME,Colonne en cours,Label
+SEP1,,Separator
+
+DATE_UPDATE,Date dernière modification,Label
+DATA_TYPE,Type donnée,Label
+DATA_LENGTH,Taille donnée,Label
+TEXT,Description,Edit
+TYPE,Regle d'affichage,List
+PRIMARY_KEY,Clef Primaire?,Edit
+FOREIGN_TABLE,Table Parente,List
+FOREIGN_KEY,Champ Parente,List

@@ -11,11 +11,11 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_TABLE - Liste le contenu d'une table
+PC_LIST_SQLITE - Liste le contenu d'une table sqlite
 
 =head1 SYNOPSIS
 
- PC_LIST_TABLE.pl [-h][-v] [-s separateur] environnement tablename
+ PC_LIST_SQLITE.pl [-h][-v] [-s separateur] environnement tablename
  
 =head1 DESCRIPTION
 

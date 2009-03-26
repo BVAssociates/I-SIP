@@ -310,7 +310,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			my $table_key=$env->get_table_key($current_table);
 			
 			if (not $table_key) {
-				log_erreur("Aucune PRIMARY_KEY n'est définie pour la table $current_table. Vous devez les definir dans le menu \"Configurer Colonnes\"");
+				log_erreur("Aucune PRIMARY_KEY n'est définie pour la table $current_table (environnement $environnement). Vous devez les definir dans le menu \"Configurer Colonnes\"");
 			}
 
 			#if ( not $env->exist_local_table($current_table, { debug => $bv_debug }) ) {

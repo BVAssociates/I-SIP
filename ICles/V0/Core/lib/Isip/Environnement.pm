@@ -148,6 +148,7 @@ sub get_column_info() {
 	
 	my $table_name=shift or croak("usage : get_column_info(table)");
 	
+	return undef if not exists $self->{info_table}->{$table_name}->{column};
 	return %{$self->{info_table}->{$table_name}->{column}};
 }
 
@@ -542,7 +543,6 @@ sub initialize_column_info() {
 	
 	$logger->notice("Populate TABLE_INFO with information from source table: ".$itable_obj->table_name);	
 	
-	my %column_info=$self->get_column_info($itable_obj->table_name);
 	
 	# caclul des clefs étrangère pour cette table si un 2e argument est passé
 	my %foreign_key_info;
@@ -563,13 +563,16 @@ sub initialize_column_info() {
 		}
 	}		
 	
+	my %column_info=$self->get_column_info($itable_obj->table_name);
 	$column_info->begin_transaction;
 	foreach my $field ($itable_obj->field) {
 		
 		if (exists $column_info{$field}) {
-			$logger->warning("$field already known : PASS");
+			$logger->warning("$field déjà présent : PASSE");
 			next;
 		}
+		
+		$logger->warning("$field inconnu : AJOUT");
 		
 		# extract type and size from format "type(size)"
 		my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
@@ -606,7 +609,7 @@ sub create_database_histo() {
 	my $database_path=$database_dir."/".$database_filename;
 	
 	$logger->info("no PRIMARY KEY defined for $tablename") if not $self->get_table_key($tablename);
-	carp "database already exist at <$database_path>" if -e $database_path;
+	carp "database already exist at <$database_path>" if -s $database_path;
 	
 	if (! -e $database_path) {
 		$logger->notice("Creating empty file : $database_path");

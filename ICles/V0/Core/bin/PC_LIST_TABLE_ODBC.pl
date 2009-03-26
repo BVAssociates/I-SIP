@@ -124,8 +124,11 @@ if (not defined $table_info) {
 my $schema=$config->get_odbc_database_name($environnement);
 $table_info->query_condition("TABLE_SCHEMA='$schema' AND TABLE_TYPE='P'");
 
-my $field_def=ITools->open("TABLE_ODBC");
+#my $field_def=ITools->open("TABLE_ODBC");
 
 while (my %row=$table_info->fetch_row) {
-	print join($separator,@row{$field_def->field}),"\n";
+	$row{TABLE_TEXT} =~ s/\s+(Fichier Physique|Physical File).*$//i;
+	print join($separator,@row{"TABLE_NAME","TABLE_TEXT"}),"\n";
 }
+
+sortie(0);

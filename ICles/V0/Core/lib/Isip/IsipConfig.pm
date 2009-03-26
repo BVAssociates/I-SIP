@@ -128,7 +128,7 @@ sub exists_database_environnement() {
 	
 	my $database_path=$self->get_data_dir()."ISIP_".$environnement."_INFO.sqlite";
 	
-	return -r $database_path;
+	return -s $database_path;
 }
 
 # copy environnement datafiles from existing one to new one
@@ -165,7 +165,7 @@ sub create_database_environnement() {
 	
 	my $database_path=$self->get_data_dir()."/ISIP_".$environnement."_INFO.sqlite";
 	
-	croak "database already exist at <$database_path>" if -e $database_path;
+	carp "database already exist at <$database_path>" if -s $database_path;
 	
 	$logger->notice("Creating empty file : $database_path");
 	#create empty file
@@ -177,7 +177,7 @@ sub create_database_environnement() {
 	
 	
 	$logger->notice("Create table TABLE_INFO");
-	$master_table->execute('CREATE TABLE TABLE_INFO (
+	$master_table->execute('CREATE TABLE IF NOT EXISTS TABLE_INFO (
 	"ROOT_TABLE" NUMERIC,
 	"ACTIVE" NUMERIC,
 	"TABLE_NAME" VARCHAR(30),
@@ -190,7 +190,7 @@ sub create_database_environnement() {
 	)');
 
 	$logger->notice("Create table COLUMN_INFO");
-	$master_table->execute('CREATE TABLE "COLUMN_INFO" (
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "COLUMN_INFO" (
 		"TABLE_NAME" VARCHAR(30),
 		"FIELD_NAME" VARCHAR(30),
 		"DATE_UPDATE" VARCHAR(30),
@@ -205,8 +205,15 @@ sub create_database_environnement() {
 		PRIMARY KEY ("TABLE_NAME","FIELD_NAME")
 	)');
 	
+	$logger->notice("Create table XML_INFO");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "XML_INFO" (
+		"XML_NAME" TEXT PRIMARY KEY  NOT NULL ,
+		"XML_PATH" TEXT NOT NULL ,
+		"MASTER" TEXT
+	)');
+	
 	$logger->notice("Create table CACHE_ICON");
-	$master_table->execute('CREATE TABLE "CACHE_ICON" (
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_ICON" (
 		"TABLE_NAME" VARCHAR,
 		"TABLE_SOURCE" VARCHAR,
 		"TABLE_KEY" VARCHAR,
@@ -215,7 +222,7 @@ sub create_database_environnement() {
 	)');
 	
 	$logger->notice("Create table CACHE_PROJECT");
-	$master_table->execute('CREATE TABLE "CACHE_PROJECT" (
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_PROJECT" (
 		"TABLE_NAME" VARCHAR,
 		"TABLE_KEY" VARCHAR,
 		"PROJECT_CHILD" VARCHAR,

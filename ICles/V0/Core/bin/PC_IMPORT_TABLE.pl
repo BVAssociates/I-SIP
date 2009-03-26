@@ -124,14 +124,20 @@ my $bv_severite=0;
 
 use Isip::Environnement;
 require 'pc_init_table.pl';
+require 'pc_generate_menu.pl';
 
 my $env_sip_from=Environnement->new($import);
 
 my @table_list=$env_sip_from->get_table_list();
 
 foreach my $table (@table_list) {
-	$bv_severite=+pc_init_table::run("-ci".$import,$environnement,$table);
+	my %table_info=$env_sip_from->get_table_info($table);
+	next if $table_info{type_source} eq "XML";
+	
+	$bv_severite+=pc_init_table::run("-Mci".$import,$environnement,$table);
 }
+
+$bv_severite+=pc_generate_menu::run($environnement);
 
 return $bv_severite;
 # END RUN

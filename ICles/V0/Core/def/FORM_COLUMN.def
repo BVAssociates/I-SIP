@@ -1,0 +1,7 @@
+# Common configuration Table for IsipSaisie
+
+SEP=","
+FORMAT="FORM_FIELD,FORM_LABEL,FORM_TYPE"
+SIZE="20s,20s, 20s"
+KEY="FORM_FIELD"
+

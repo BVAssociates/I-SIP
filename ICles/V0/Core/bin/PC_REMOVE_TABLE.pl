@@ -133,6 +133,26 @@ log_erreur("$table_name est inconnue dans $environnement") if not %table_info_sa
 
 
 #######################
+# suppression fichier physique
+#######################
+
+if ($force) {
+	my $file_to_remove=$env_sip->get_sqlite_path($table_name."_HISTO");
+	log_info("suppression du fichier de données : $file_to_remove");
+	unlink $file_to_remove or die "Impossible de supprimer $file_to_remove : $!";
+}
+
+
+#######################
+# mise à jour COLUMN_INFO
+#######################
+
+my $column=$env_sip->open_local_table("COLUMN_INFO");
+
+$column->execute("DELETE FROM COLUMN_INFO WHERE TABLE_NAME='$table_name'");
+
+
+#######################
 # mise à jour TABLE_INFO
 #######################
 
@@ -144,24 +164,6 @@ $line_to_remove{TABLE_NAME}=$table_name;
 log_info("suppression définition de $table_name dans l'environnement $environnement");
 $table->delete_row(%line_to_remove);
 
-
-#######################
-# mise à jour COLUMN_INFO
-#######################
-
-my $column=$env_sip->open_local_table("COLUMN_INFO");
-
-$column->execute("DELETE FROM COLUMN_INFO WHERE TABLE_NAME='$table_name'");
-
-#######################
-# suppression fichier physique
-#######################
-
-if ($force) {
-	my $file_to_remove=$env_sip->get_sqlite_path($table_name."_HISTO");
-	log_info("suppression du fichier de données : $file_to_remove");
-	unlink $file_to_remove;
-}
 
 #######################
 # mise à jour MENU

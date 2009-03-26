@@ -109,27 +109,35 @@ my $table=shift;
 
 #  Corps du script
 ###########################################################
+
 use Isip::IsipConfig;
-use ITable::ITools;
+use Isip::ITable::ODBC_Query;
 use ITable::ODBC;
 
 my $config=IsipConfig->new();
-my $table_info = ODBC->open($config->get_odbc_database_name($environnement),
+
+my $table_source;
+if ($ENV{param_source}) {
+	$logger->info("Connexion à ODBC : $ENV{param_source}");
+	$table_source = ODBC_Query->open($config->get_odbc_database_name($environnement),
+				$table,
+				$ENV{param_source},
+				$config->get_odbc_option($environnement) );
+}
+else {
+	$logger->info("Connexion à ODBC : $table");
+	$table_source = ODBC->open($config->get_odbc_database_name($environnement),
 				$table,
 				$config->get_odbc_option($environnement) );
+}
 
-if (not defined $table_info) {
+if (not defined $table_source) {
 	die "error opening $table";
 }
 
-my $field_def=ITools->open("FIELD_ODBC");
+print join($separator,("","aucun")),"\n";
 
-print join($separator,("") x $field_def->field),"\n";
-my %field_txt=$table_info->field_txt;
-foreach ($table_info->field) {
-	my %row;
-	@row{$field_def->field}=("") x $field_def->field;
-	$row{FIELD_NAME}=$_;
-	$row{TEXT}=$field_txt{$_};
-	print join($separator,@row{$field_def->field}),"\n";
-}
+my %field_txt=$table_source->field_txt();
+foreach ($table_source->field) {
+	print join($separator,($_,$field_txt{$_})),"\n";
+};
