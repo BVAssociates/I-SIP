@@ -124,7 +124,13 @@ sub new() {
 	# set defaut value if datasource not specified
 	foreach my $table ($self->get_table_list) {
 		if (not $self->{info_table}->{$table}->{source}) {
-			$self->set_datasource($table,$self->{defaut_library});
+			if ($self->{info_table}->{$table}->{type_source} eq "XML") {
+				$logger->error("$table est de type XML, mais n'a pas de fichier associé");
+				delete $self->{info_table}->{$table};
+			}
+			else {
+				$self->set_datasource($table,$self->{defaut_library});
+			}
 		}
 	}
 
