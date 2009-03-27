@@ -16,7 +16,7 @@ BEGIN {
 
 
 	@ISA         = qw(Exporter);
-	@EXPORT      = qw();
+	@EXPORT      = qw(log_screen_only);
 	%EXPORT_TAGS = ( );     # eg: TAG => [ qw!name1 name2! ],
 
 	# your exported package globals go here,
@@ -82,6 +82,7 @@ if ($@) {
 		alias    => 'screen-out',
 		});
 	$logger->add(file => {
+		autoflush => 1,
 		newline  => 1,
 		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
@@ -95,6 +96,18 @@ if ($@) {
 	#Log::WarnDie may be used, but it put everything from STDERR
 	#in $logger->error() on STDOUT. So we must be aware of bad effect on output...
 	##Log::WarnDie->dispatcher( $logger );
+}
+
+sub log_screen_only() {
+	$logger=Log::Handler->create_logger('logger');
+	$logger->add(screen => {
+		log_to   => 'STDERR',
+		newline  => 1,
+		maxlevel => 'notice',
+		timeformat      => '%Y/%m/%d %H:%M:%S',
+		message_layout  => '%T:%L:%m',
+		alias    => 'screen-out',
+		});
 }
 
 1;

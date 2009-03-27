@@ -5,7 +5,7 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use Isip::IsipLog '$logger';
+use Isip::IsipLog qw($logger log_screen_only);
 
 #  Documentation
 ###########################################################
@@ -105,10 +105,24 @@ require "PC_UPDATE_HISTO.pl";
 my $config=IsipConfig->new();
 my @env_list=$config->get_environnement_list();
 
+log_screen_only();
+
 my $return_code;
+my $pid;
 foreach my $env (@env_list) {
-	log_info("Collecte de l'environnement $env");
-	$return_code += pc_update_histo::run("-d",$env);
+	$pid = fork();
+	if (!$pid) {
+		# child process
+		log_info("Collecte de l'environnement $env");
+		$return_code += pc_update_histo::run("-d",$env);
+		log_info("Terminé pour l'environnement $env");
+		last;
+	}
+}
+
+if ($pid) {
+	log_info("Attente que tous les process se termine");
+	$return_code=wait;
 }
 
 exit $return_code;

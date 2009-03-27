@@ -158,7 +158,7 @@ sub run {
 	# set global timestamp for update
 	use POSIX qw(strftime);
 	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-	log_info("Date de collecte utilisée : $timestamp");
+	log_info("$environnement Date de collecte utilisée : $timestamp");
 
 
 	# create cache object (save parent state)
@@ -173,6 +173,11 @@ sub run {
 	my $counter=0;
 	my $source_table;
 	my %diff_list;
+	
+	# shuffle table for load balancing when forking
+	use List::Util 'shuffle';
+	@list_table = shuffle(@list_table);
+	
 	foreach my $current_table (@list_table) {
 		
 		if ( not $env_sip->exists_histo_table($current_table) )  {
@@ -182,12 +187,12 @@ sub run {
 		
 		$counter++;
 		
-		log_info("Connexion à la table source : $current_table");
+		log_info("Connexion à la table source dans $environnement : $current_table");
 		# open source table depending on TYPE_SOURCE
 		$source_table=$env_sip->open_source_table($current_table);
 		
 		
-		log_info("Connexion à la base d'historisation");
+		log_info("Connexion à la base d'historisation dans $environnement : $current_table");
 		my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 		 $histo_table->query_field($source_table->query_field);
 		
@@ -195,7 +200,7 @@ sub run {
 		if ($histo_table->is_empty) {
 			
 			$force_comment=1;
-			log_info("la table $current_table n'a jamais été collectée");
+			log_info("la table $current_table n'a jamais été collectée pour $environnement");
 		}
 		
 		# set timestamp for all update/insert operation
@@ -217,7 +222,7 @@ sub run {
 			$total_diff_counter += $diff_counter;
 			if ($diff_counter) {
 				$histo_table->{table_histo}->execute("ANALYZE");
-				log_info("Les changements ont ete appliqués sur $current_table (lignes mises à jour : $diff_counter)");
+				log_info("Les changements ont ete appliqués sur $current_table dans $environnement (lignes mises à jour : $diff_counter)");
 				
 						
 				#my ($current_vol,$current_dir,$current_script)=splitpath($0);
@@ -237,7 +242,7 @@ sub run {
 							COMMENT='Creation'");
 				}
 			} else {
-				log_info("Aucune mise à jour sur $current_table");
+				log_info("Aucune mise à jour sur $current_table dans $environnement");
 			}
 			
 		}
@@ -246,7 +251,7 @@ sub run {
 
 	#write date in baselines
 	if ($save_date and $total_diff_counter) {
-		log_info("Sauvegarde de la date de collecte");
+		log_info("Sauvegarde de la date de collecte dans $environnement");
 		my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
 		$table_date->insert_row(ENVIRON => $environnement,
 								DATE_UPDATE => $timestamp,
@@ -261,10 +266,10 @@ sub run {
 	# flush cache to disk
 	#$cache->update_dirty_cache();
 
-	log_info("Nombre de lignes mises à jour effectuées au total : $total_diff_counter");
+	log_info("Nombre de lignes mises à jour effectuées au total dans $environnement : $total_diff_counter");
 
 	if (not exists $opts{n}) {
-		log_info("mise à jour du cache");
+		log_info("mise à jour du cache pour $environnement");
 		require "pc_update_cache.pl";
 		my @args=($environnement,$table_name);
 		unshift @args,("-m",$module_name) if $module_name;
