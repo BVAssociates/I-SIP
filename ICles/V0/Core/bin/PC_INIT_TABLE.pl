@@ -163,8 +163,6 @@ if ($create) {
 		$new_line{ROOT_TABLE}=$table_info_from{root_table};
 	}
 	else {
-		$ENV{TABLE_MODULE}="GLCTAB";
-		$ENV{TABLE_TYPE}="ODBC";
 		log_info("verification de l'environnement");
 		if (not ($ENV{TABLE_MODULE}
 				and $ENV{TABLE_TYPE}))
