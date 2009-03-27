@@ -492,6 +492,10 @@ sub open_source_table() {
 	
 	my $return_table;
 	
+	if (not exists $self->{info_table}->{$table_name}) {
+		croak("La table table_name est inconnue");
+	}
+	
 	# open source table depending on TYPE_SOURCE
 	if ($self->{info_table}->{$table_name}->{type_source} eq "ODBC") {
 		if (not $self->{info_table}->{$table_name}->{source}) {
@@ -502,20 +506,41 @@ sub open_source_table() {
 			use Isip::ITable::ODBC_Query;
 			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
 			$return_table=ODBC_Query->open($self->{info_table}->{$table_name}->{source}, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
+
+			#manually set KEY
+			if ($self->{info_table}->{$table_name}->{key}) {
+				$return_table->key($self->get_table_key($table_name));
+			} else {
+				carp ("PRIMARY KEY not defined for $table_name.") ;
+			}
 		}
 		else {
 			use ITable::ODBC;
 			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
 			$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, $options);
+			
+			#manually set KEY
+			if ($self->{info_table}->{$table_name}->{key}) {
+				$return_table->key($self->get_table_key($table_name));
+			} else {
+				my $table_logical=$table_name;
+				$table_logical =~ s/P$/L0/;
+				carp ("PRIMARY KEY not defined for $table_name. Try to get it from $table_logical.") ;
+				
+				# connect to DB2 catalog
+				my $sys_table=ODBC->open("QSYS","QADBKFLD",$self->{isip_config}->get_odbc_option($self->{environnement}));
+				$sys_table->query_condition("DBKLIB='IKGLFIC' AND DBKFIL = '$table_logical'");
+				$sys_table->query_field("DBKFLD");
+				my @keys;
+				while (my ($key)=$sys_table->fetch_row_array) {
+					push @keys,$key
+				}
+				$return_table->key(sort @keys);
+			}
 		}
 		
 		
-		#manually set KEY
-		if ($self->{info_table}->{$table_name}->{key}) {
-			$return_table->key(sort split(/,/,$self->get_table_key($table_name)));
-		} else {
-			carp ("PRIMARY KEY not defined for $table_name") ;
-		}
+		
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
 		if (not $self->{info_table}->{$table_name}->{source}) {
@@ -615,7 +640,7 @@ sub create_database_histo() {
 	my $database_path=$database_dir."/".$database_filename;
 	
 	$logger->info("no PRIMARY KEY defined for $tablename") if not $self->get_table_key($tablename);
-	carp "database already exist at <$database_path>" if -s $database_path;
+	$logger->notice("database already exist at <$database_path>") if -s $database_path;
 	
 	if (! -e $database_path) {
 		$logger->notice("Creating empty file : $database_path");
