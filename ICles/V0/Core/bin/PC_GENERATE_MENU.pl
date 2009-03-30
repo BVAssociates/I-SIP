@@ -115,6 +115,283 @@ sub find_file($$) {
 	return undef;
 }
 
+sub get_display_table($) {
+	my $current_table=shift;
+
+	$current_table =~ s/.+__(.+)$/$1/;
+	
+	return $current_table;
+}
+
+
+sub get_def_table_string($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $environnement=$env_obj->{environnement};
+	my $table_name=$table_obj->table_name();
+	my $link_obj=$env_obj->get_links();
+	my $display_table=get_display_table($table_name);
+	my $keys=$env_obj->get_table_key($table_name);
+	
+	my $separator='@';
+	my @virtual_field=("ICON","PROJECT");
+	
+	my $string;
+
+	my $def_template = 'COMMAND="PC_LIST_STATUS.pl -c %ENV_COMPARE%@%DATE_COMPARE% [% environnement %] [% table %] %DATE_EXPLORE%"
+SEP="[% separator %]"
+FORMAT="[% format %]"
+SIZE="[% size %]"
+KEY="[% keys %]"
+';
+	my $fkey_def_template='FKEY="[[% fkeys %]] on [% foreign_table %][[% foreign_field %]]"
+';
+
+	# fill standards value of DEF
+	my @field_list=(@virtual_field,$table_obj->field() );
+	my $format = join($separator, @field_list);
+	my $size = join($separator,('20s') x @field_list ) ;
+	
+	$string .= $def_template;
+	
+	$string =~ s/\[% environnement %\]/$environnement/g;
+	$string =~ s/\[% table %\]/$table_name/g;
+	$string =~ s/\[% separator %\]/$separator/g;
+	$string =~ s/\[% format %\]/$format/g;
+	$string =~ s/\[% size %\]/$size/g;
+	$string =~ s/\[% keys %\]/$keys/g;
+	
+	# add one FKEY entry per foreign tables
+	foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
+	
+		my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
+		my @sorted_keys=sort keys %foreign_field;
+		
+		# create FKEY entry
+		my $fkeys=join(',', @sorted_keys);
+		my $foreign_table="IKOS_TABLE_$environnement\_".$f_table;
+		my $foreign_field=join(',', @foreign_field{@sorted_keys} );
+		
+		my $string_fkey = $fkey_def_template;
+		$string_fkey =~ s/\[% fkeys %\]/$fkeys/g;
+		$string_fkey =~ s/\[% foreign_table %\]/$foreign_table/g;
+		$string_fkey =~ s/\[% foreign_field %\]/$foreign_field/g;
+		
+		$string .= $string_fkey;
+	}
+	
+	
+	return $string;
+	
+}
+sub get_def_field_string($$) {
+	
+	my $env_obj=shift;
+	my $table_obj=shift;
+
+	my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl [% environnement %] [% table %] %DATE_EXPLORE%"
+SEP="@"
+FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@MEMO@PROJECT"
+SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
+KEY="ID"
+
+FKEY="[STATUS] on ETAT[Name]"
+FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
+';
+
+	my $environnement=$env_obj->{environnement};
+	my $table=$table_obj->table_name;
+	
+	my $string=$def_field_template;
+	$string =~ s/\[% environnement %\]/$environnement/g;
+	$string =~ s/\[% table %\]/$table/g;
+	
+	return $string;
+}
+sub get_pci_table_string($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $table=$table_obj->table_name();
+	
+	# TEMPLATES
+	my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
+Item~Ligne~Explorer les champs~expl~~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
+';
+	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
+Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
+';
+	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
+	my $pci_fkey_template='Item~~Explorer sous-tables~expl~~~Explore~[% table_list %]~0~~Expand
+';
+	
+	# TEMPLATE ASSEMBLY
+	my $string = $pci_template;
+	
+	if ($env_obj->is_root_table($table)) {
+		$string .= $pci_template_root;
+	}
+	
+	# get all table having current table as F_KEY
+	my $link_obj=$env_obj->get_links();
+	my @child_table=$link_obj->get_child_tables(get_display_table($table));
+	
+	$string .= $pci_fkey_template if @child_table;
+	
+	# TEMPLATE REPLACEMENT
+
+	my $environnement=$env_obj->{environnement};
+	my $key_var=join(',',map {'%'.$_.'%'} $env_obj->get_table_key($table));
+	my $child_table=join (',',map { s/.+_([^_]+)$/$1/ } @child_table);
+	my $table_list=join (',',map {"IKOS_TABLE_$environnement\_$_"} @child_table);
+	
+	$string =~ s/\[% environnement %\]/$environnement/g;
+	$string =~ s/\[% table %\]/$table/g;
+	$string =~ s/\[% key_var %\]/$key_var/g;
+	$string =~ s/\[% child_table %\]/$child_table/g;
+	$string =~ s/\[% table_list %\]/$table_list/g;
+	
+	return $string;
+}
+
+sub get_pci_field_string($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $pci_field_template='Table~~Explore~expl~~~Explore~~0~~Expand
+Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
+Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
+Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
+
+Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME% OK~0~~Configure
+Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME%~0~~Configure
+';
+
+	my $environnement=$env_obj->{environnement};
+	my $table=$table_obj->table_name();
+	
+	my $string = $pci_field_template;
+	$string =~ s/\[% environnement %\]/$environnement/g;
+	$string =~ s/\[% table %\]/$table/g;
+	
+	return $string;
+}
+
+sub get_label_table_hash($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $table_name=$table_obj->table_name();
+
+	my $label_table_name='IKOS_TABLE_[% table %].Table';
+	my $label_table_icon='isip_table_open';
+	my $label_table_desc='Clefs de [% table %] [% description %]';
+	
+	my $label_desc=$env_obj->get_table_description($table_name);
+	$label_desc= "(".$label_desc.")" if $label_desc;
+	
+	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	
+	$label_table_desc =~ s/\[% table %\]/$table_name/g;
+	$label_table_desc =~ s/\[% description %\]/$label_desc/g;
+	
+	return (NodeId => $label_table_name,
+		Icon => $label_table_icon,
+		Label => $label_table_desc);
+}
+
+sub get_label_table_item_hash($$) {
+	
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $table_name=$table_obj->table_name();
+	my @pkey_list=$env_obj->get_table_key($table_name);
+
+	my %table_info=$env_obj->get_table_info($table_name);
+	my $label_field=$table_info{label_field};
+	
+	my $link_obj=$env_obj->get_links();
+
+	my $label_table_name='IKOS_TABLE_[% table %].Item';
+	my $label_table_icon='isip_%[ICON]';
+	my $label_table_desc='[% keys %] [% description %]';
+	
+	my $label_desc=" ";
+	$label_desc= "(%[".$label_field."])" if $label_field;
+	
+	
+	# suppression de l'affichage des clefs primaire qui sont des clef etrangere d'autres tables
+	my @parent_tables=$link_obj->get_parent_tables($table_name);
+	my %fkey_seen;
+	foreach my $parent (@parent_tables) {
+		my %foreign_key=$link_obj->get_foreign_fields($table_name,$parent);
+		foreach (keys %foreign_key) {
+			$fkey_seen{$_}++;
+		}
+	}
+	
+	my @new_pkey_list;
+	foreach my $pkey (@pkey_list) {
+		push @new_pkey_list, $pkey if not exists $fkey_seen{$pkey} ;
+	}
+	
+	map {$_='%['.$_.']'} @new_pkey_list;
+	my $keys=join(',',@new_pkey_list);
+	
+	
+	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	
+	$label_table_desc =~ s/\[% keys %\]/$keys/g;
+	$label_table_desc =~ s/\[% description %\]/$label_desc/g;
+	
+	return (NodeId => $label_table_name,
+		Icon => $label_table_icon,
+		Label => $label_table_desc);
+}
+
+sub get_label_field_hash($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $table_name=$table_obj->table_name();
+
+	my $label_table_name='IKOS_FIELD_[% table %].Table';
+	my $label_table_icon='isip_table_key';
+	my $label_table_desc='Liste des champs';
+		
+	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	
+	
+	return (NodeId => $label_table_name,
+		Icon => $label_table_icon,
+		Label => $label_table_desc);
+}
+
+sub get_label_field_item_hash($$) {
+
+	my $env_obj=shift;
+	my $table_obj=shift;
+	
+	my $table_name=$table_obj->table_name();
+
+	my $label_table_name='IKOS_FIELD_[% table %].Item';
+	my $label_table_icon='isip_%[ICON]';
+	my $label_table_desc='%[FIELD_NAME] (%[TEXT])';
+	
+	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	
+	return (NodeId => $label_table_name,
+		Icon => $label_table_icon,
+		Label => $label_table_desc);
+}
+
 #  Traitement des Options
 ###########################################################
 
@@ -169,56 +446,15 @@ sub run {
 	my $bv_severite=0;
 	my $bv_debug=0;
 
-
-	my $separator='@';
-
-	my @virtual_field=("ICON","PROJECT");
-
-	#####  BEGIN TEMPLATES ##### 
+	#####  BEGIN FILENAME TEMPLATES ##### 
 
 my $def_filename="%s/IKOS_TABLE_%s.def";
-my $def_template = 'COMMAND="PC_LIST_STATUS.pl -c %%ENV_COMPARE%%@%%DATE_COMPARE%% %s %s %%DATE_EXPLORE%%"
-SEP="%s"
-FORMAT="%s"
-SIZE="%s"
-KEY="%s"
-';
-my $fkey_def_template='FKEY="[%s] on %s[%s]"
-';
 
 my $def_field_filename="%s/IKOS_FIELD_%s.def";
-my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl %s %s %%DATE_EXPLORE%%"
-SEP="@"
-FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@MEMO@PROJECT"
-SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
-KEY="ID"
-
-FKEY="[STATUS] on ETAT[Name]"
-FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
-';
 
 my $pci_filename="%s/IKOS_TABLE_%s.pci";
-my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
-Item~Champs~Explore~expl~~~Explore~IKOS_FIELD_%s~0~~Expand
-';
-my $pci_template_root='Item~Groupe~Modifier groupe~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
-Item~Groupe~Ajouter à nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY %%Environnement%% %s %s %%NEW_CATEGORY%%~0~~Configure
-';
-my $pci_fkey_template='Item~~%s~expl~~~Explore~%s~0~~Expand
-';
 
 my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
-my $pci_field_template='Table~~Explore~expl~~~Explore~~0~~Expand
-Item~~Historique Complet~expl~~GSL_FILE=%s~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
-Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
-Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
-';
-
-my $label_table_template='IKOS_TABLE_%s.Table;isip_table_open;Clefs de %s %s';
-my $label_item_template='IKOS_TABLE_%s.Item;isip_%%[ICON];%s %s';
-my $label_field_table_template='IKOS_FIELD_%s.Table;isip_table_key;Liste des champs';
-my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (%%[TEXT])';
-
 
 
 	##### BEGIN CLEANUP ##### 
@@ -299,7 +535,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
 		}
 
-		foreach my $current_table (@list_table) {
+		foreach my $current_table (sort @list_table) {
 		
 			# check if table is a menu table (virtual)
 			my $display_table=$current_table;
@@ -326,7 +562,6 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 				next;
 			}
 			
-			my @field_list=(@virtual_field,$source_data->field() );
 			
 			my $source_data_table=$environnement."_".$display_table;
 			
@@ -335,30 +570,8 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 
 		##### CREATE DEF
 			
-			# fill standards value of DEF
-			my $source_data_size = join($separator,('20s') x @field_list ) ;
-			my $source_data_field = join($separator, @field_list);
-			$string = sprintf ($def_template,
-					$environnement,
-					$current_table,
-					$separator,
-					$source_data_field,
-					$source_data_size, 
-					$table_key);
-			
-			# add one FKEY entry per foreign tables
-			foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
-			
-				my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
-				my @sorted_keys=sort keys %foreign_field;
-				
-				# create FKEY entry
-				$string .= sprintf($fkey_def_template,
-					join(',', @sorted_keys) ,
-					"IKOS_TABLE_$environnement\_".$f_table,
-					join(',', @foreign_field{@sorted_keys} ));
-			}
-			
+			$string=get_def_table_string($env,$source_data);
+						
 			$filename=sprintf($def_filename,$def_path,$source_data_table);
 			
 			write_file($filename,$string);
@@ -366,7 +579,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 
 		##### CREATE DEF FIELD
 			
-			$string = sprintf ($def_field_template,$environnement,$current_table);
+			$string = get_def_field_string($env,$source_data);
 						
 			$filename=sprintf($def_field_filename,$def_path,$source_data_table);
 			
@@ -375,22 +588,8 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 
 		##### CREATE PCI
 			
-			my $key_var=join(',',map {'%'.$_.'%'} $env->get_table_key($current_table));
-			$string = sprintf ($pci_template,
-					"$environnement\_$current_table");
 			
-			if ($env->is_root_table($current_table)) {
-				$string .= sprintf ($pci_template_root, ($current_table,$key_var) x 2);
-					
-			}
-			
-			# get all table having current table as F_KEY
-			my @child_table=$link_obj->get_child_tables($display_table);
-
-			my @table_list=map {"IKOS_TABLE_$environnement\_$_"} @child_table;
-			map { s/.+_([^_]+)$/$1/ } @child_table;
-			$string .= sprintf($pci_fkey_template,join(' , ',@child_table),join (',',@table_list)) if @child_table;
-
+			$string = get_pci_table_string($env,$source_data);
 			
 			$filename=sprintf($pci_filename,$pci_path,$source_data_table);
 			
@@ -398,7 +597,7 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 		##### CREATE PCI FIELD
 			
-			$string = sprintf ($pci_field_template,$current_table);
+			$string = get_pci_field_string($env,$source_data);
 			
 			$filename=sprintf($pci_field_filename,$pci_path,"$environnement\_$current_table");
 			
@@ -406,60 +605,20 @@ my $label_field_item_template='IKOS_FIELD_%s.Item;isip_%%[ICON];%%[FIELD_NAME] (
 			
 		##### CREATE/update Label
 
-			foreach ($label_table_template,
-						$label_field_item_template,
-						$label_field_table_template)
-			{
-				my $label_desc="";
-				$label_desc= "(".$table_info{description}.")" if $table_info{description};
-				my $label_string = sprintf($_,$source_data_table,$current_table,$label_desc);
-				$logger->info("Insert $source_data_table into ICleLabels");
-				system('Insert -f into ICleLabels values',$label_string);
-				if ($? == -1) {
-					die "failed to execute: $!\n";
-				}
-				elsif (($? >> 8) != 0) {
-					die sprintf ("'Insert' died with signal %d, %s",($?  >> 8))
-				};
-			}
+			my $labels=ITools->open("ICleLabels");
+			my %label_hash;
 			
-			#specifique
-			my $label_desc=" ";
-			$label_desc= "(%[".$table_info{label_field}."])" if $table_info{label_field};
-			my @pkey_list=split(',',$table_key);
+			%label_hash=get_label_table_hash($env,$source_data);
+			$labels->insert_row(%label_hash);
 			
-			# suppression de l'affichage des clefs primaire qui sont des clef etrangere d'autres tables
-			my @parent_tables=$link_obj->get_parent_tables($current_table);
-			my %fkey_seen;
-			foreach my $parent (@parent_tables) {
-				my %foreign_key=$link_obj->get_foreign_fields($current_table,$parent);
-				foreach (keys %foreign_key) {
-					$fkey_seen{$_}++;
-				}
-			}
+			%label_hash=get_label_table_item_hash($env,$source_data);
+			$labels->insert_row(%label_hash);
 			
-			my @new_pkey_list;
-			foreach my $pkey (@pkey_list) {
-				push @new_pkey_list, $pkey if not exists $fkey_seen{$pkey} ;
-			}
+			%label_hash=get_label_field_hash($env,$source_data);
+			$labels->insert_row(%label_hash);
 			
-			
-			map {$_='%['.$_.']'} @new_pkey_list;
-			my $label_string = sprintf($label_item_template,$source_data_table,join(',',@new_pkey_list),$label_desc);
-			$logger->info("Insert $source_data_table into ICleLabels");
-			system('Insert -f into ICleLabels values',$label_string);
-			if ($? == -1) {
-				log_erreur("failed to execute:",$!);
-			}
-			elsif (($? >> 8) != 0) {
-				log_erreur(sprintf ("'Insert' died with signal %d, %s",($?  >> 8)));
-			};
-			
-			# CREATE/update table INFO
-			##TODO
-
-			# CREATE/update table HISTO
-			##TODO
+			%label_hash=get_label_field_item_hash($env,$source_data);
+			$labels->insert_row(%label_hash);			
 		}
 
 	}
