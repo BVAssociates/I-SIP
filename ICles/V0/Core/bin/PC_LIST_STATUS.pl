@@ -178,7 +178,7 @@ log_info("mode $explore_mode activé");
 # $ENV{TableName}=fichier de definition
 # $ENV{TABLE_NAME}=table ROOT
 my $table_source;
-$table_source=$1 if $ENV{TableName} =~ /$environnement\_(.+)__/;
+$table_source=$1 if $ENV{TableName} and $ENV{TableName} =~ /$environnement\_(.+)__/;
 
 #  Corps du script
 ###########################################################

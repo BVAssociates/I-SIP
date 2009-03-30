@@ -150,25 +150,6 @@ sub set_update_timestamp() {
 	$self->{update_timestamp}=$timestamp;
 }
 
-# quirk to get only key which contains number (or not)
-# arg :
-# true  (arg>0) : return only keys with numbers
-# false (arg=0) : return only keys without numbers
-
-# @OBSOLETE
-sub query_condition_has_numeric() {
-	my $self = shift;
-	
-	my $bool_is_numeric=shift;
-	croak "query_condition_has_numeric take 1 arg : boolean" if not defined $bool_is_numeric;
-	
-	if ($bool_is_numeric) {
-		push @{$self->{query_condition}},"(has_numeric(TABLE_KEY))";
-	} else {
-		push @{$self->{query_condition}},"(NOT has_numeric(TABLE_KEY))";
-	}
-	
-}
 
 # special case of query_condition
 # can use internal field TABLE_KEY to speed up queries
@@ -684,6 +665,8 @@ sub add_field() {
 	# just add field name in field member
 	push ( @{$self->{field}} , $field_name);
 	push ( @{$self->{query_field}} , $field_name);
+	
+	#TODO : add field definition in TABLE_INFO
 }
 
 sub finish() {

@@ -280,7 +280,7 @@ if (not $env_sip->get_table_key($table_name)) {
 	$logger->notice("Veuillez configurer les colonnes (menu \"Configurer Colonnes\"), puis lancer une vérification");
 	$logger->notice("###############################################");
 	
-	return 1;
+	return 0;
 }
 else {
 	if (not $no_generate_menu) {
