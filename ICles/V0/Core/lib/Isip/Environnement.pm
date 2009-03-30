@@ -45,6 +45,8 @@ sub new() {
 		croak "Unable to get information of Environnement : $self->{environnement}";
 	}
 	
+	$logger->notice("Chargement de l'environnement $environnement");
+	
 	$self->{description}=$self->{isip_config}->{info_env}->{$environnement}->{description};
 	$self->{defaut_library}=$self->{isip_config}->{info_env}->{$environnement}->{defaut_library};
 	
@@ -125,7 +127,7 @@ sub new() {
 	foreach my $table ($self->get_table_list) {
 		if (not $self->{info_table}->{$table}->{source}) {
 			if ($self->{info_table}->{$table}->{type_source} eq "XML") {
-				$logger->error("$table est de type XML, mais n'a pas de fichier associé");
+				$logger->warning("$table est de type XML, mais n'a pas de fichier associé");
 				delete $self->{info_table}->{$table};
 			}
 			else {
@@ -327,7 +329,7 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO|LABEL)$/);
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
@@ -668,6 +670,13 @@ sub create_database_histo() {
 	COMMENT VARCHAR(50),
 	STATUS VARCHAR(30),
 	MEMO VARCHAR(30))");
+	
+	$logger->notice("Create table $tablename\_LABEL");
+	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_LABEL (
+		TABLE_KEY VARCHAR NOT NULL ,
+		FIELD_NAME VARCHAR NOT NULL ,
+		LABEL VARCHAR NOT NULL ,
+		PRIMARY KEY (TABLE_KEY,FIELD_NAME))");
 	
 	$logger->notice("Create table $tablename\_CATEGORY");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_CATEGORY (

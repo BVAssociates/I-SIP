@@ -7,6 +7,7 @@ use fields qw(
 	environnement
 	field_status
 	column_info
+	label
 	type
 	table_name
 );
@@ -47,6 +48,7 @@ sub new() {
 	
 	# member initializations
 	$self->{column_info}={};
+	$self->{label}={};
 	
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
@@ -88,11 +90,16 @@ sub new() {
 sub _init_info() {
 	my $self=shift;
 	
-	
-	# narrow query if needed
-	#$table_info->query_field("FIELD_NAME","DATE_UPDATE","DATA_TYPE","DATA_LENGTH","TABLE_SCHEMA","TEXT","DESCRIPTION","OWNER","TYPE");
-	
+	# store table columns and their informationns (desc,type..)
 	$self->{column_info}={ $self->{environnement}->get_column_info($self->{table_name}) };
+	
+	if ($self->{environnement}->exist_local_table($self->{table_name}."_LABEL")) {
+		my $table_status=$self->{environnement}->open_local_table($self->{table_name}."_LABEL");
+		while (my %row=$table_status->fetch_row()) {
+			my $line=join(',',@row{"TABLE_KEY","FIELD_NAME"});
+			$self->{label}->{$line}=$row{"LABEL"};
+		}
+	}
 	
 }
 
@@ -201,6 +208,7 @@ sub get_field_icon () {
 	
 	my %line=@_;
 	
+	my $key=$line{TABLE_KEY};
 	my $name=$line{FIELD_NAME};
 	my $status_desc=$line{STATUS};
 	my $project=$line{PROJECT};
@@ -222,7 +230,15 @@ sub get_field_icon () {
 	# new status
 	my $return_status;
 	
-	if ($type eq "STAMP") {
+	my $field_key=join(',',($key,$name));
+	if (exists $self->{label}->{$field_key}) {
+	# Use label from table _LABEL
+		my $return_name=$self->{label}->{$field_key};
+		
+		$return_status=$self->{field_icon}{$return_name}."_label";
+	}
+	# case of new line
+	elsif ($type eq "STAMP") {
 	# "Administratif always OK
 		$return_status=$self->{field_icon}{STAMP};
 		#$return_status=$self->{field_status}{HIDDEN};
@@ -273,6 +289,10 @@ sub get_line_icon () {
 	my %counter=(NEW => 0, UPDATED => 0, TEST => 0, OK => 0);
 	
 	foreach (@icon_list) {
+	
+		# remove label information
+		s/_label//;
+	
 		my $icon;
 		if (not defined $_) {
 			$logger->critical("Impossible de determiner l'icone de la ligne, car un champ n'a pas d'icone") ;
