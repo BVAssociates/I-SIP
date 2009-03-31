@@ -64,6 +64,19 @@ sub get_odbc_database_name() {
 	return $self->{info_env}->{$environnement}->{defaut_library};
 }
 
+#return odbc datasource name
+sub get_odbc_datasource_name() {
+	my $self = shift;
+	
+	my $environnement=shift or die "bad arguments";
+	
+	if (not exists $self->{info_env}->{$environnement}) {
+		croak("Environnement $environnement non configuré");
+	}
+	
+	return $self->{info_env}->{$environnement}->{defaut_datasource};
+}
+
 # return odbc option reference in format intended by ODBC->open()
 sub get_odbc_option() {
 	my $self = shift;
@@ -214,8 +227,10 @@ sub create_database_environnement() {
 		"MASTER" TEXT
 	)');
 	
+	$logger->notice("Drop table CACHE_ICON");
+	$master_table->execute('DROP TABLE "CACHE_ICON"');
 	$logger->notice("Create table CACHE_ICON");
-	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_ICON" (
+	$master_table->execute('CREATE TABLE "CACHE_ICON" (
 		"TABLE_NAME" VARCHAR,
 		"TABLE_SOURCE" VARCHAR,
 		"TABLE_KEY" VARCHAR,
@@ -223,8 +238,10 @@ sub create_database_environnement() {
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "TABLE_SOURCE")
 	)');
 	
+	$logger->notice("Drop table CACHE_PROJECT");
+	$master_table->execute('DROP TABLE "CACHE_PROJECT"');
 	$logger->notice("Create table CACHE_PROJECT");
-	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_PROJECT" (
+	$master_table->execute('CREATE TABLE "CACHE_PROJECT" (
 		"TABLE_NAME" VARCHAR,
 		"TABLE_KEY" VARCHAR,
 		"PROJECT_CHILD" VARCHAR,
