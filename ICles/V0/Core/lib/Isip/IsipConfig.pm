@@ -167,10 +167,12 @@ sub create_database_environnement() {
 	
 	carp "database already exist at <$database_path>" if -s $database_path;
 	
-	$logger->notice("Creating empty file : $database_path");
-	#create empty file
-	open DATABASEFILE,">$database_path" or die "unable to create file : $!";
-	close DATABASEFILE;
+	if (! -e $database_path) {
+		$logger->notice("Creating empty file : $database_path");
+		#create empty file
+		open DATABASEFILE,">$database_path" or die "unable to create file : $!";
+		close DATABASEFILE;
+	}
 	
 	# opening master table
 	my $master_table=Sqlite->open($database_path, 'sqlite_master');
