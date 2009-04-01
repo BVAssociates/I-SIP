@@ -4,6 +4,7 @@ package com.bv.isip;
 
 import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
+import com.bv.isis.console.core.abs.gui.MainWindowInterface;
 import com.bv.isis.console.core.abs.processor.ProcessorInterface;
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
@@ -54,12 +55,22 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
 
             // rafraichi les noeuds "frères" si on met à jour une clef
             if (TreeNodeFactory.getValueOfParameter(data, "TABLE_KEY").equals(
-                    TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE"))) {
-
+                    TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE")))
+            {
+                MainWindowInterface window=getMainWindowInterface();
+                int count=((GenericTreeObjectNode) node.getParent()).getChildCount();
                 Enumeration enum_node = ((GenericTreeObjectNode) node.getParent()).children();
+                getMainWindowInterface().setProgressMaximum(count);
+
+                count=0;
                 while (enum_node.hasMoreElements()) {
+                    //window.setStatus("Mise à jour de tous les noeuds ", null, count);
+                    count++;
                     super.refreshLabel((GenericTreeObjectNode) enum_node.nextElement(), refresh);
                 }
+            }
+            else {
+                super.refreshLabel((GenericTreeObjectNode) node, refresh);
             }
 
         } catch (InnerException exception) {
