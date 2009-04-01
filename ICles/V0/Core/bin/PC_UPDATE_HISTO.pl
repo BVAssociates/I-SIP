@@ -17,7 +17,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-m module] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-m module] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -42,6 +42,8 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 =item -n : Mode simulation (aucune modification)
 
 =item -d : enregistre la date
+
+=item -c : compacte la base après collecte
 
 =item -m module : n'effectue la collecte que sur les tables de "module"
 
@@ -97,7 +99,7 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:d', \%opts) or usage(0);
+	getopts('hvnm:dc', \%opts) or usage(0);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -105,6 +107,7 @@ sub run {
 	usage($debug_level+1) if $opts{h};
 	my $module_name=$opts{m};
 	my $save_date=$opts{d};
+	my $force_vacuum=$opts{c};
 
 	#  Traitement des arguments
 	###########################################################
@@ -193,7 +196,7 @@ sub run {
 		
 		
 		log_info("Connexion à la base d'historisation dans $environnement : $current_table");
-		my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
+		my $histo_table=$env_sip->open_local_from_histo_table($current_table);
 		 $histo_table->query_field($source_table->query_field);
 		
 		my $force_comment;
@@ -206,7 +209,7 @@ sub run {
 		# set timestamp for all update/insert operation
 		$histo_table->set_update_timestamp($timestamp);
 		
-		my $table_diff=DataDiff->open($source_table, $histo_table, {debug => $debug_level});
+		my $table_diff=DataDiff->open($source_table, $histo_table);
 
 		log_info("Debut de la comparaison de $current_table");
 		my $diff_obj=$table_diff->compare();
@@ -240,6 +243,9 @@ sub run {
 					$histo_table->{table_histo}->execute("UPDATE $current_table\_HISTO
 						SET STATUS='Valide',
 							COMMENT='Creation'");
+				}
+				if ($force_vacuum) {
+					$histo_table->{table_histo}->execute("VACUUM");
 				}
 			} else {
 				log_info("Aucune mise à jour sur $current_table dans $environnement");

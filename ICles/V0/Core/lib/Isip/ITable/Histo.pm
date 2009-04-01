@@ -1,7 +1,7 @@
 package Histo;
 
 
-require ITable::abstract::DATA_interface;
+use ITable::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
 use ITable::Sqlite;

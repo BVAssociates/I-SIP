@@ -253,14 +253,12 @@ if ($explore_mode eq "compare") {
 	my $env_sip_to = $env_sip;
 	
 	# open first table
-	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
+	my $table_from = $env_sip_from->open_histo_field_table($table_name, $date_compare,{debug => $debug_level});
 	$table_from->query_key_value($table_key_value);
-	$table_from->query_date($date_compare) if $date_compare;
 	
 	# open second table
-	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
+	my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
 	$table_to->query_key_value($table_key_value);
-	$table_to->query_date($date_explore) if $date_explore;
 	
 	# open DataDiff table from two table
 	my $table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
@@ -308,9 +306,8 @@ if ($explore_mode eq "compare") {
 elsif ($explore_mode eq "explore") {
 
 	# open histo table
-	my $table_status = $env_sip->open_histo_field_table($table_name, {debug => $debug_level});
+	my $table_status = $env_sip->open_histo_field_table($table_name, $date_explore, {debug => $debug_level});
 	
-	$table_status->query_date($date_explore) if $date_explore;
 	$table_status->query_key_value($table_key_value);
 	$table_status->dynamic_field($table_status->dynamic_field,"DOCUMENTATION");
 	$table_status->query_field(@query_field);

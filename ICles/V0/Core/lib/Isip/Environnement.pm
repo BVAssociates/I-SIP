@@ -329,9 +329,11 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO|LABEL)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
+	
+	croak("$table_name n'est pas un nom de table valide") if not $table_real;
 	
 	if ($table_name =~ /^TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
@@ -385,25 +387,78 @@ sub exists_histo_table() {
 	return 1 if $self->get_sqlite_path($table_name."_HISTO");
 }
 
+# retourne vrai si la date est déclarée comme une baseline
+sub is_baseline_date() {
+	my $self=shift;
+	
+	my $date=shift;
+	
+	if ( $date !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
+			croak("$date:La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
+	}
+	
+	my $baseline_list=ITools->open("DATE_UPDATE");
+	$baseline_list->query_condition("DATE_UPDATE=".$date,"ENVIRON=".$self->{environnement});
+	
+	my %baseline_info=$baseline_list->fetch_row();
+	$baseline_list->finish;
+	
+	if (not %baseline_info) {
+		$logger->debug("$date:La date n'est pas une date de collecte");
+		return 0;
+	}
+	
+	if ($baseline_info{BASELINE}) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+# return an object on Histo or HistoBaseline
 sub open_local_from_histo_table() {
 	my $self = shift;
 	
 	use Isip::ITable::Histo;
+	use Isip::ITable::HistoBaseline;
 	
-	my $table_name=shift or croak "open_histo_table() wait args : 'tablename'";
+	my $table_name=shift or croak "usage : open_histo_table( table_name [,date_explore] )";
+	my $date_explore=shift;
 	
-	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+	# needed for backwards compatibility
+	if (ref $date_explore eq "HASH") {
+		unshift @_, $date_explore;
+		undef $date_explore;
+	}
 	
-	#my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
-	my $table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
-	croak "Error opening $table_name : $@" if $@;
+	my $table_histo;
 	
-	# we must set the primary key manually
+	if ($date_explore and $self->is_baseline_date($date_explore)) {
+		my $baseline_name=HistoBaseline->get_baseline_name($table_name,$date_explore);
+		if ($self->exist_local_table($baseline_name)) {
+			$table_histo = eval {HistoBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
+			croak("Impossible d'ouvrir $table_name : $@") if $@;
+		}
+		else {
+			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas");
+		}
+	}
+	else {
+		croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+		
+		$table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
+		croak "Error opening $table_name : $@" if $@;
+
+		$table_histo->query_date($date_explore) if $date_explore;
+	}
+	
 	my $dyn_exluded_re = join '|', $table_histo->dynamic_field;
 	$table_histo->field(grep {!/\b$dyn_exluded_re\b/} $self->get_table_field($table_name));
 	
 	$table_histo->size($self->get_table_size($table_name));
 	
+	# we must set the primary key manually
 	my @key_string=$self->get_table_key($table_name);
 	$table_histo->key(@key_string) if @key_string;
 
@@ -414,12 +469,41 @@ sub open_histo_field_table() {
 	my $self = shift;
 	
 	use Isip::ITable::HistoField;
+	use Isip::ITable::HistoFieldBaseline;
 	
-	my $table_name=shift or croak "open_histo_field_table() wait args : 'tablename'";
+	my $table_name=shift or croak "usage : open_histo_field_table(tablename [,date_explore])";
+	my $date_explore=shift;
+	
+	# needed for backwards compatibility
+	if (ref $date_explore eq "HASH") {
+		unshift @_, $date_explore;
+		undef $date_explore;
+	}
+	
+	my $table_histo;
+	
+	if ($date_explore and $self->is_baseline_date($date_explore)) {
+		my $baseline_name=HistoFieldBaseline->get_baseline_name($table_name,$date_explore);
+		if ($self->exist_local_table($baseline_name)) {
+			$table_histo = eval {HistoFieldBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
+			croak("Impossible d'ouvrir $table_name : $@") if $@;
+		}
+		else {
+			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas");
+		}
+	}
+	else {
+		croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+		
+		$table_histo = eval {HistoField->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
+		croak "Error opening $table_name : $@" if $@;
+
+		$table_histo->query_date($date_explore) if $date_explore;
+	}
+	
 	
 	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 	
-	my $table_histo = eval {HistoField->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
 	croak "Error opening $table_name : $@" if $@;
 	
 	return $table_histo
@@ -685,24 +769,24 @@ sub create_database_histo() {
 	
 	$logger->notice("Replace view $tablename\_HISTO_CATEGORY");
 	$master_table->execute("DROP VIEW IF EXISTS $tablename\_HISTO_CATEGORY");
-	$master_table->execute("CREATE VIEW $tablename\_HISTO_CATEGORY AS
-	SELECT ID,
-		DATE_HISTO,
-		USER_UPDATE,
-		DATE_UPDATE,
-		TABLE_NAME,
-		$tablename\_HISTO.TABLE_KEY as TABLE_KEY,
-		FIELD_NAME,
-		FIELD_VALUE,
-		COMMENT,
-		STATUS,
-		MEMO,
-		PROJECT,
-		coalesce($tablename\_CATEGORY.CATEGORY,'vide') as CATEGORY
-	FROM $tablename\_HISTO
-	LEFT JOIN $tablename\_CATEGORY
-		ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )
-	WHERE CATEGORY IS NULL OR CATEGORY != 'HIDDEN'");
+	#$master_table->execute("CREATE VIEW $tablename\_HISTO_CATEGORY AS
+	#SELECT ID,
+	#	DATE_HISTO,
+	#	USER_UPDATE,
+	#	DATE_UPDATE,
+	#	TABLE_NAME,
+	#	$tablename\_HISTO.TABLE_KEY as TABLE_KEY,
+	#	FIELD_NAME,
+	#	FIELD_VALUE,
+	#	COMMENT,
+	#	STATUS,
+	#	MEMO,
+	#	PROJECT,
+	#	coalesce($tablename\_CATEGORY.CATEGORY,'vide') as CATEGORY
+	#FROM $tablename\_HISTO
+	#LEFT JOIN $tablename\_CATEGORY
+	#	ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )
+	#WHERE CATEGORY IS NULL OR CATEGORY != 'HIDDEN'");
 	
 	$logger->notice("Create indexes");
 	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
@@ -711,6 +795,51 @@ sub create_database_histo() {
 	
 	$master_table->close();
 	
+}
+
+sub create_histo_baseline() {
+	my $self=shift;
+
+	my $table_name=shift;
+	my $baseline_date=shift or croak("usage : create_histo_baseline(table_name,baseline_date)");
+	
+	my $explore_date=$baseline_date;
+	$baseline_date =~ tr/-://d;
+	
+	my $baseline_name=$table_name.'_'.$baseline_date;
+	
+	my $table_histo = $self->open_local_from_histo_table($table_name);
+	$table_histo->query_date($explore_date);
+	
+	
+	
+	my $select_query=$table_histo->get_query();
+	undef $table_histo;
+	
+	my $baseline_table=$self->open_local_table($table_name."_HISTO");
+	
+	$logger->info("Create $baseline_name");
+	$baseline_table->execute("CREATE TABLE IF NOT EXISTS $baseline_name as ".$select_query);
+	$logger->info("Create indexes on $baseline_name");
+	$baseline_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY_$baseline_date ON $baseline_name (TABLE_KEY ASC)");
+	
+}
+
+sub drop_histo_baseline() {
+	my $self=shift;
+
+	my $table_name=shift;
+	my $baseline_date=shift or croak("usage : create_histo_baseline(table_name,baseline_date)");
+	
+	my $explore_date=$baseline_date;
+	$baseline_date =~ tr/-://d;
+	
+	my $baseline_name=$table_name.'_'.$baseline_date;
+	
+	my $baseline_table=$self->open_local_table($table_name."_HISTO");
+	
+	$baseline_table->execute("DROP TABLE $baseline_name");
+	#$baseline_table->execute("VACUUM");
 }
 
 1;

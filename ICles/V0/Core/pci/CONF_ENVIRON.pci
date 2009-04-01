@@ -9,4 +9,6 @@ Item~Importer~Importer Table d'un autre environnement~adm~~{TABLE_ENV=getListVal
 Item~Importer~Importer toutes les Tables d'un autre environnement~adm~~TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)~ExecuteProcedure~PC_IMPORT_TABLE.pl -i %TABLE_ENV% %Environnement%~1~~Add
 Item~Test~test STDOUT~dev~~~ExecuteProcedure~test.pl~0~~Add
 Item~Test~test STDOUT~dev~~~ExecuteProcedure~test~0~~Add
+Item~Test~URL~dev~~~OpenURL~C:\Documents and Settings\bauchart\Mes documents~0~~Add
+Item~Test~execute~dev~~~OpenURL~http://www.google.com~0~~Add
 

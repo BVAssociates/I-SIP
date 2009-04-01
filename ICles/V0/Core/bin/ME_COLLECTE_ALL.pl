@@ -101,6 +101,7 @@ my $bv_severite=0;
 
 use Isip::IsipConfig;
 require "PC_UPDATE_HISTO.pl";
+require "PC_CLEAN_BASELINE.pl";
 
 my $config=IsipConfig->new();
 my @env_list=$config->get_environnement_list();
@@ -113,6 +114,8 @@ foreach my $env (@env_list) {
 	$pid = fork();
 	if (!$pid) {
 		# child process
+		log_info("nettoyage avant collecte de l'environnement $env");
+		$return_code += pc_clean_baseline::run($env);
 		log_info("Collecte de l'environnement $env");
 		$return_code += pc_update_histo::run("-d",$env);
 		log_info("Terminé pour l'environnement $env");

@@ -247,8 +247,7 @@ if ($filter_field and $filter_field ne 'ICON' ) {
 my $table_explore;
 my $dirty_cache;
 # ouverture de la table en cours d'exploration
-my $table_current=$env_sip->open_local_from_histo_table($table_name, {debug => $debug_level});
-$table_current->query_date($date_explore) if $date_explore;
+my $table_current=$env_sip->open_local_from_histo_table($table_name,$date_explore);
 
 $table_current->query_condition(@query_condition);
 
@@ -259,8 +258,7 @@ if ($explore_mode eq "compare") {
 	my $env_sip_from = Environnement->new($env_compare);
 		
 	#open IKOS table for DATA
-	my $table_from=$env_sip_from->open_local_from_histo_table($table_name, {debug => $debug_level});
-	$table_from->query_date($date_compare) if $date_compare;
+	my $table_from=$env_sip_from->open_local_from_histo_table($table_name,$date_compare);
 
 	$table_from->query_condition(@query_condition);
 
@@ -293,7 +291,7 @@ elsif ($explore_mode eq "explore") {
 
 	if ($ENV{CATEGORY}) {
 		my %info=$env_sip->get_table_info($table_name);
-		if ($info{root_table} and $ENV{TABLE_NAME} eq $table_name) {
+		if ($info{root_table} and $ENV{TABLE_NAME} and $ENV{TABLE_NAME} eq $table_name) {
 			log_info("affiche les lignes de la categorie $ENV{CATEGORY}");
 			$table_explore->query_condition("CATEGORY = '$ENV{CATEGORY}'",$table_explore->query_condition());
 		}
