@@ -39,7 +39,7 @@ sub open() {
 	$self->{table_name_histo_view} = $self->{table_name}."_HISTO";
 	$self->{database_name} = $database_name;
 	
-	## We suppose TABLE_INFO and TABLE_HISTO are in the same database  /!\
+	# Open real table on database
 	$self->{table_histo} = Sqlite->open($self->{database_name}, $self->{table_name_histo}, $options);
 	
 	bless ($self, $class);
@@ -184,8 +184,8 @@ sub custom_select_query()
 # Construct SQL query to get last inserted value for each field
 sub get_query()
 {
-	my $self = shift;
-	
+	my $self=shift;
+
 	my $select_histo;
 	my @select_conditions;
 	
@@ -199,8 +199,12 @@ sub get_query()
 	foreach my $condition ($self->query_condition()) {
 		if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
 			if ($1 eq "CATEGORY") {
-				push @select_conditions, $condition;
-				$self->{table_name_histo_view} = $self->{table_name_histo}."_CATEGORY";
+				#Special case of CATEGORY filter
+				if ($3 eq 'vide') {
+					push @select_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE CATEGORY IS NOT NULL )\n"
+				} else {
+					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE $condition )\n"
+				}
 			}
 			else {
 			# check if condition is on one of the keys
@@ -242,28 +246,28 @@ sub get_query()
 	$distinct="DISTINCT" if $self->query_distinct;
 	
 	# SQL join to get last inserted KEY/NAME/VALUE
-	$select_histo= "SELECT ".$distinct." ".join(',',$self->{table_histo}->query_field)." FROM
-		$self->{table_name_histo} INNER JOIN (
-			SELECT
-			max(ID) as ID2,
-			TABLE_KEY as TABLE_KEY_2,
-			FIELD_NAME as FIELD_NAME_2,
-			max(DATE_HISTO) AS DATE_MAX
-			FROM
-			$self->{table_name_histo_view}\n";
+	$select_histo= "SELECT ".$distinct." ".join(',',$self->{table_histo}->query_field)."\n";
+	$select_histo.= "FROM $self->{table_name_histo} as HISTO1\n";
+	$select_histo.= "INNER JOIN (
+	SELECT
+	max(ID) as ID2,
+	HISTO2.TABLE_KEY as TABLE_KEY_2,
+	HISTO2.FIELD_NAME as FIELD_NAME_2,
+	max(DATE_HISTO) AS DATE_MAX
+	FROM
+	$self->{table_name_histo_view} as HISTO2\n";
 	
 	# Add a condition
-	$select_histo.= " WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
+	$select_histo.= "	WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
 	# GROUP BY
-	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
-	
-	$select_histo.= ")	ON  (ID= ID2)
-		WHERE FIELD_VALUE != '__delete'";
+	$select_histo.= "	GROUP BY FIELD_NAME_2, TABLE_KEY_2\n";
+	$select_histo.= "	) ON  (ID= ID2)\n";
+	$select_histo.= "WHERE FIELD_VALUE != '__delete'\n";
 	# FILTER FIELD_NAME
-	$select_histo.= "	AND (".join(' OR ', @query_conditions).")" if @query_conditions;
+	$select_histo.= "	AND (".join(' OR ', @query_conditions).")\n" if @query_conditions;
 	# ORDER
 	
-	$select_histo.= "	ORDER BY TABLE_KEY ASC, FIELD_NAME DESC;";
+	$select_histo.= "ORDER BY HISTO1.TABLE_KEY ASC, FIELD_NAME DESC;";
 
 	return $select_histo;
 }
