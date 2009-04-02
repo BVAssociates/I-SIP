@@ -287,8 +287,9 @@ sub get_label_table_hash($$) {
 	my $table_obj=shift;
 	
 	my $table_name=$table_obj->table_name();
+	my $environnement=$env_obj->{environnement};
 
-	my $label_table_name='IKOS_TABLE_[% table %].Table';
+	my $label_table_name='IKOS_TABLE_[% environnement %]_[% table %].Table';
 	my $label_table_icon='isip_table_open';
 	my $label_table_desc='Clefs de [% table %] [% description %]';
 	
@@ -296,6 +297,7 @@ sub get_label_table_hash($$) {
 	$label_desc= "(".$label_desc.")" if $label_desc;
 	
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
 	$label_table_desc =~ s/\[% table %\]/$table_name/g;
 	$label_table_desc =~ s/\[% description %\]/$label_desc/g;
@@ -312,13 +314,14 @@ sub get_label_table_item_hash($$) {
 	
 	my $table_name=$table_obj->table_name();
 	my @pkey_list=$env_obj->get_table_key($table_name);
+	my $environnement=$env_obj->{environnement};
 
 	my %table_info=$env_obj->get_table_info($table_name);
 	my $label_field=$table_info{label_field};
 	
 	my $link_obj=$env_obj->get_links();
 
-	my $label_table_name='IKOS_TABLE_[% table %].Item';
+	my $label_table_name='IKOS_TABLE_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
 	my $label_table_desc='[% keys %] [% description %]';
 	
@@ -346,6 +349,7 @@ sub get_label_table_item_hash($$) {
 	
 	
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
 	$label_table_desc =~ s/\[% keys %\]/$keys/g;
 	$label_table_desc =~ s/\[% description %\]/$label_desc/g;
@@ -361,12 +365,14 @@ sub get_label_field_hash($$) {
 	my $table_obj=shift;
 	
 	my $table_name=$table_obj->table_name();
+	my $environnement=$env_obj->{environnement};
 
-	my $label_table_name='IKOS_FIELD_[% table %].Table';
+	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Table';
 	my $label_table_icon='isip_table_key';
 	my $label_table_desc='Liste des champs';
 		
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
 	
 	return (NodeId => $label_table_name,
@@ -380,12 +386,14 @@ sub get_label_field_item_hash($$) {
 	my $table_obj=shift;
 	
 	my $table_name=$table_obj->table_name();
+	my $environnement=$env_obj->{environnement};
 
-	my $label_table_name='IKOS_FIELD_[% table %].Item';
+	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
 	my $label_table_desc='%[FIELD_NAME] (%[TEXT])';
 	
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
 	return (NodeId => $label_table_name,
 		Icon => $label_table_icon,

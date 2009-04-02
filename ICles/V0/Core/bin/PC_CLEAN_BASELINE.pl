@@ -163,3 +163,4 @@ sub run {
 }
 
 exit !run(@ARGV) if not caller;
+1;
