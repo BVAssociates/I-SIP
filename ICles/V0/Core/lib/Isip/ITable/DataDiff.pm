@@ -59,6 +59,10 @@ sub open() {
 	$self->{current_source_only_key}=[];
 	$self->{fetch_source_only_running}=0;
 	
+	# var to affect behavior of compare_next
+	$self->{compare_fetch}=0;
+	$self->{compare_diff}=0;
+	
 	# We bless the object with the new class
 	bless ($self, $class);
 	
@@ -167,116 +171,62 @@ sub query_condition() {
     return @{ $self->{query_condition} };
 }
 
-# utility sub for fetch_row
-sub _fetch_source_only() {
-	my $self = shift;
-	
-	# if no deleted keys, return nothing
-	if (not $self->{diff}->get_source_only()) {
-		return undef;
-	}
-	
-	# if 
-	if (not ($self->{fetch_source_only_running} or @{$self->{current_source_only_key}} )) {
-		my %temp=$self->{diff}->get_source_only();
-		@{$self->{current_source_only_key}} = sort (keys %temp);
-	}
-	
-	my $return_key=shift @{ $self->{current_source_only_key} };
-	
-	return $return_key;
-}
 
-sub _fetch_row_memory() {
+sub fetch_row() {
 	my $self=shift;
-	
-	my $first=(sort keys %{$self->{in_memory_table}})[0];
-	return () if not defined $first;
-	
-	my %row= %{$self->{in_memory_table}->{$first}};
-	delete $self->{in_memory_table}->{$first};
-	return %row;
-}
 
-# get row  by one based on query
-sub _fetch_row_static() {
-	my $self = shift;
+	croak(__PACKAGE__."->compare_init() must be called before ".__PACKAGE__."->fetch_row()") if not blessed $self->{diff};
 	
-	my %current_row;
-	
-	croak(__PACKAGE__."->compare() must be called before ".__PACKAGE__."->fetch_row()") if not blessed $self->{diff};
+	$self->{compare_fetch}=1;
 	
 	# first, printing lines only in source
-	my $source_only_key=$self->_fetch_source_only();
-	$self->{fetch_source_only_running}=1;
-	
-	# We use table_target to print the target table
-	# Then we add informations about the difference with table_source
-	if ($source_only_key) {
-		%current_row = $self->{diff}->get_source_only($source_only_key);
-	}
-	else {
-		#%current_row = $self->{table_target}->fetch_row();
-		%current_row = $self->_fetch_row_memory();
-	}
+	my $current_row=$self->compare_next();
 	
 	# table_target return no lines, so we return
-	if (not %current_row) {
-		$self->{fetch_source_only_running}=0;
+	if (not $current_row) {
+		$self->{compare_fetch}=0;
 		return ();
 	}
 	
 	# initialize dynamic fields
 	foreach ($self->dynamic_field) {
-		$current_row{$_}="" if not $current_row{$_};
+		$current_row->{$_}="" if not exists $current_row->{$_};
 	}
 	
-	# get only query fields
-	my %query_field_row;
-	@query_field_row{$self->query_field} = @current_row{$self->query_field};
-
-	return %query_field_row;
-}
-
-
-sub fetch_row() {
-	my $self=shift;
-
-	my %query_field_row=$self->_fetch_row_static();
-	
-	return () if not %query_field_row;
-	
 	# compute internal dynamic fields
-	if (grep ('^ICON$', $self->query_field()) ) {
+	if (grep {/^ICON$/} $self->query_field() ) {
 	
 		if (not blessed $self->{isip_rules}) {
 			carp ("no IsipRules set");
-			$query_field_row{ICON}="isip_error";
+			$current_row->{ICON}="isip_error";
 		}
 		else {
 		
 			my %line_diff_icon=$self->{isip_rules}->enum_line_icon();
 			my $return_status="ERROR";
-			my $key=join(',',@query_field_row{sort $self->key()});
+			my $key=join(',',@$current_row{sort $self->key()});
 			
 			my @diff_list;
 			
 			# compute icon field by field
-			foreach my $field (keys %query_field_row) {
+			foreach my $field (keys %$current_row) {
 				#dont check excluded fields
 				if (not grep {$field eq $_} $self->compare_exclude()
 						and not $self->{isip_rules}->is_field_hidden(FIELD_NAME => $field) )
 				{
-					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $query_field_row{$field}, DIFF => $self->{diff}->get_field_status($key,$field));
+					push @diff_list,$self->{isip_rules}->get_field_icon(FIELD_NAME => $field ,FIELD_VALUE => $current_row->{$field}, DIFF => $current_row->{DIFF});
 				}
 			}
 			
 			# compute icon of whole line
 			$return_status=$self->{isip_rules}->get_line_icon(@diff_list);
 			
-			$query_field_row{ICON}=$return_status;
+			$current_row->{ICON}=$return_status;
 		}
 	}
+	
+	my %query_field_row;
+	@query_field_row{$self->query_field} = @$current_row{$self->query_field};
 	
 	return %query_field_row;
 }
@@ -335,127 +285,27 @@ sub compare_exclude() {
 #  $$self->{diff_new}{key_value}{field1}="field_value"
 #  $self->{diff_delete}{key_value}{field1}="field_value"
 # return the number of differences found
-sub compare_order_based() {
+
+# this sub go thourgh the 2 tables and compute an IsipDiff object
+sub compare() {
 	my $self=shift;
 	
-	my $table_from = $self->{table_source};
-	my $table_to = $self->{table_target};
-	my @key;
-
-	# store the result in a IsipDiff object
-	my $diff_object=IsipDiff->new();
+	$self->compare_init();
 	
-	if ( join(',',sort $table_to->key()) ne  join(',',sort $table_from->key())) {
-		croak("The 2 tables have not the same keys : ".join(',',sort $table_to->key())." => ".join(',',sort $table_from->key()));
+	$self->{compare_diff}=1;
+	
+	while ($self->compare_next()) {
+		#nothing to do
 	}
 	
-	if ( $table_to->table_name() ne $table_from->table_name() ) {
-		croak("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
-	}
+	$self->{compare_diff}=0;
 	
-	
-	if ( join(',',sort $table_to->field()) ne  join(',',sort $table_from->field())) {
-		#croak("The 2 tables have not the same fields");
-	}
-	
-	@key=$self->key();
-	$table_to->query_sort(@key);
-	$table_from->query_sort(@key);
-	
-	#first pass to get primary keys which are on one table
-	## after 2 loops :
-	##	$seen_keys{keys} = 1 if only me have it
-	##	$seen_keys{keys} = 0 if the two table have it
-	##	$seen_keys{keys} = -1 if only $table_from have it
-	my %seen_keys;
-	my @row;
-	$table_to->query_field(@key);
-	$table_from->query_field(@key);
-	while (@row=$table_to->fetch_row_array()) {
-		$seen_keys{join(',',@row)}++
-	}
-	while (@row=$table_from->fetch_row_array()) {
-		$seen_keys{join(',',@row)}--
-	}
-	
-	
-	$table_to->query_field($table_to->field);
-	$table_from->query_field($table_from->field);
-	
-	my %row_table1;
-	my %row_table2;
-	
-	# main loop
-	# We supprose here that the 2 tables are ordered by their Primary Keys
-	foreach my $current_keys (sort keys %seen_keys) {
-		my $new_keys = $seen_keys{$current_keys};
-		# this key does not exist anymore
-		if ($new_keys < 0) {
-			$self->_debug("Found new line : Key (".$current_keys.")");
-			%row_table1=$table_from->fetch_row;
-			
-			# something wrong appens !
-			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (expected : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
-			
-			# remove excluded fields
-			foreach my $field ( $self->compare_exclude ) {
-				delete $row_table1{$field};
-			}
-			
-			#put whole row
-			$diff_object->add_target_only($current_keys,{ %row_table1});
-		}
-		# this key are new in the table
-		elsif ($new_keys > 0) {
-			$self->_debug("Found deleted line : Key (".$current_keys.")");
-			%row_table2=$self->fetch_row;
-			
-			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (expected : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
-			
-			# remove excluded fields
-			foreach my $field ($self->compare_exclude) {
-				delete $row_table2{$field};
-			}
-			
-			$diff_object->add_source_only($current_keys,{ %row_table2});
-			
-		}
-		# this key exist in the 2 tables
-		# find the differences
-		else {
-			%row_table1=$table_from->fetch_row;
-			%row_table2=$self->fetch_row;
-			
-			confess "FATAL:bad line key : ".join(',',@row_table1{@key})." (expected : $current_keys)" if join(',',@row_table1{@key}) ne $current_keys;
-			confess "FATAL:bad line key : ".join(',',@row_table2{@key})." (expected : $current_keys)" if join(',',@row_table2{@key}) ne $current_keys;
-			
-			foreach my $field1 (keys %row_table1) {
-			
-				next if grep(/^$field1$/, $self->compare_exclude);
-				
-				if (not exists $row_table2{$field1}) {
-					$self->_debug("Found new column : Key (".$current_keys.") $field1 : $row_table1{$field1}");
-					$diff_object->add_source_only_field($field1) if not grep(/^$field1$/,@{$self->{diff_new_field}});
-					$diff_object->add_source_update($current_keys, $field1, $row_table1{$field1});
-					
-				} elsif ($row_table1{$field1} ne $row_table2{$field1}) {
-					$self->_debug("Found update : Key (".$current_keys.") $field1 :",$row_table2{$field1}," -> ",$row_table1{$field1} );
-					$diff_object->add_source_update($current_keys, $field1, $row_table1{$field1});
-					
-				}
-			}
-		}
-	}
-	$self->finish;
-	$table_from->finish;
-	
-	return $diff_object;
+	return $self->{diff};
 }
 
-# compare the table in arg to $self
-# /!\ put the 2 tables in memory
-# use compare_from_sql_based() if table and $self use the same driver/database
-sub compare() {
+# init Iterator by slurping first table in memory
+# can be memory hungry !
+sub compare_init() {
 	my $self=shift;
 	
 	my $table_from = $self->{table_source};
@@ -468,12 +318,12 @@ sub compare() {
 	if (not $table_to->key()) {
 		croak("No key defined");
 	}
-	if ( join(',',sort $table_to->key()) ne  join(',',sort $table_from->key())) {
-		croak("The 2 tables have not the same keys : ".join(',',sort $table_to->key())." => ".join(',',sort $table_from->key()));
+	if ( $table_to->key() ne  $table_from->key()) {
+		croak("The 2 tables have not the same keys : ".$table_to->key()." => ".$table_from->key());
 	}
 	
 	if ( $table_to->table_name() ne $table_from->table_name() ) {
-		croak("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
+		carp("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
 	}
 	
 	#if ( join(',',sort $self->field()) ne  join(',',sort $table_from->field())) {
@@ -484,106 +334,221 @@ sub compare() {
 		croak("query fields does not contains the key fields") if not grep (/^$key_field$/, $table_to->query_field() );
 	}
 	
-	@key=sort $table_to->key();
+	@key=$self->key();
 	
-	# Slurp the tables in memory
-	my %in_memory_table1;
-	my %in_memory_table2;
+	# Slurp the first table in memory
 	my %row;
 	while (%row=$table_from->fetch_row()) {
-		$in_memory_table1{join(',',@row{@key})}={ %row };
+		$self->{in_memory_table}->{join(',',@row{@key})}={ %row };
 	}
-	while (%row=$table_to->fetch_row()) {
-		$in_memory_table2{join(',',@row{@key})}={ %row };
-	}
-	undef %row;
 	
-	# we keep a ref on the target table (for fetch)
-	$self->{in_memory_table}=\%in_memory_table2;
+	$self->{fetch_source_only_running}=0;
+}
 
-	#first pass to get primary keys which are on one table
-	## after 2 loops :
-	##	$seen_keys{keys} = 1 if only me have it
-	##	$seen_keys{keys} = 0 if the two table have it
-	##	$seen_keys{keys} = -1 if only $table_from have it
-	my %seen_keys;
+sub compare_next() {
+	my $self=shift;
 	
-	foreach (keys %in_memory_table1) {
-		$seen_keys{$_}--;
-	}
-	foreach (keys %in_memory_table2) {
-		$seen_keys{$_}++;
-	}
-
-	# main loop
-	foreach my $current_keys (sort keys %seen_keys) {
-		my $new_keys = $seen_keys{$current_keys};
-		# this key does not exist on the target
-		if ($new_keys < 0) {
-			$self->_debug("Line only in source table : Key (".$current_keys.")");
+	my $table_to=$self->{table_target};
+	
+	my @key=sort $table_to->key();
+	
+	# get a row 
+	my %row_target=$table_to->fetch_row() if not $self->{fetch_source_only_running};
+	my $row_source_ref;
+	
+	if (not %row_target) {
+		# no more data in target
+		
+		$self->{fetch_source_only_running}=1;
+		
+		if (%{$self->{in_memory_table}}) {
+			# data remaining in source
 			
-			# remove excluded fields
-			foreach my $field ( $self->compare_exclude ) {
-				#TODO must we keep all information about delete line or
-				# only compared field ?
-				
-				#delete $in_memory_table1{$current_keys}{$field};
+			if (not @{$self->{current_source_only_key}}) {
+				# compute remaining keys if not already done
+				$self->{current_source_only_key}=[ sort keys %{$self->{in_memory_table}} ];
 			}
 			
-			#put whole row
-			$self->{diff}->add_source_only($current_keys,$in_memory_table1{$current_keys});
-		}
-		# this key are new in the table table
-		elsif ($new_keys > 0) {
-			$self->_debug("Line only in target table : Key (".$current_keys.")");
+			my $current_keys=shift @{$self->{current_source_only_key}};
 			
-			# remove excluded fields
-			foreach my $field ($self->compare_exclude) {
-				#TODO must we keep all information about delete line or
-				# only compared field ?
-				
-				#delete $in_memory_table2{$current_keys}{$field};
+			if( not defined $current_keys) {
+				# no more key to return
+				return undef;
 			}
-
-			#put whole row
-			$self->{diff}->add_target_only($current_keys,$in_memory_table2{$current_keys});
-
+			else {
+				return $self->dispatch_source_only($current_keys,delete $self->{in_memory_table}->{$current_keys});
+			}
 		}
-		# this key exist in the 2 tables
-		# find the differences
 		else {
-			my %row_table1=%{ $in_memory_table1{$current_keys} };
-			my %row_table2=%{ $in_memory_table2{$current_keys} };
+			#no data in source neither target
+			return undef;
+		}
+	}
+	else {
+		my $current_keys=join(',',@row_target{@key});
+		$row_source_ref=delete $self->{in_memory_table}->{$current_keys};
+
+		if (not $row_source_ref) {
+			# key exists only in target
+			return $self->dispatch_target_only($current_keys,\%row_target);
+		}
+		else {
+			# key exists in the 2 tables
+			my %row_source=%{ $row_source_ref };
 			
 			my %all_fields;
-			foreach my $field (keys %row_table1,keys %row_table2) {
+			foreach my $field (keys %row_source,keys %row_target) {
 				$all_fields{$field}++;
 			}
 			
 			foreach my $field1 (keys %all_fields) {
-			
-				next if grep(/^$field1$/, $self->compare_exclude);
 				
-				if (not exists $row_table1{$field1}) {
-					$self->_debug("Column only in target : Key (".$current_keys.") $field1 : $row_table2{$field1}");
-					$self->{diff}->add_target_only_field($field1);
-				
-				} elsif (not exists $row_table2{$field1}) {
-					$self->_debug("Column only in source : Key (".$current_keys.") $field1 : $row_table1{$field1}");
-					$self->{diff}->add_source_only_field($field1);
-					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
-				
-				} elsif ($row_table2{$field1} ne $row_table1{$field1}) {
-					$self->_debug("Field modified in target table : Key (".$current_keys.") $field1 : '".$row_table1{$field1}."' -> '".$row_table2{$field1}."'");
-					$self->{diff}->add_source_update($current_keys,$field1,$row_table1{$field1});
-					
+				if (grep(/^$field1$/, $self->compare_exclude)) {
+					#field excluded from compare, aka equal
+					delete $row_source{$field1};
+					next;
 				}
+				
+				if (not exists $row_source{$field1}) {
+					$row_source{$field1}='__delete';
+					$self->dispatch_target_only_field($current_keys,$field1);
+				} elsif (not exists $row_target{$field1}) {
+					$self->dispatch_source_only_field($current_keys,$field1);
+				} elsif ($row_target{$field1} eq $row_source{$field1}) {
+					# field are the same on the 2 rows, we keep only one
+					delete $row_source{$field1};
+				}
+			}
+			
+			if (%row_source) {
+				return $self->dispatch_source_update($current_keys,\%row_source,\%row_target);
+			}
+			else {
+				return $self->dispatch_equal($current_keys,\%row_target);
 			}
 		}
 	}
 	
-	return $self->{diff};
+	die "Oops, you should not be here!";
 }
+
+##########################
+# Dispatcher methods to trigger actions
+##########################
+
+sub dispatch_equal() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,target_row)");
+	
+	if ($self->{compare_diff}) {
+		# nothing to do
+	}
+	
+	if ($self->{compare_fetch}) {
+		$target_row->{DIFF}="OK";
+		return $target_row;
+	}
+	
+	return 1;
+}
+
+sub dispatch_source_update() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $source_row=shift;
+	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row)");
+
+	$self->_debug("Line updated : Key (".$current_key.") : ".join(",",values %{$source_row}));
+	
+	if ($self->{compare_diff}) {
+		while (my %field=each %$source_row) {
+			$self->{diff}->add_source_update($current_key,%field);
+		}
+	}
+	
+	if ($self->{compare_fetch}) {
+		#my %new_row=%$target_row;
+		#@new_row{keys %$source_row}=values %$source_row;
+		$target_row->{DIFF}="UPDATE";
+		return $target_row;
+	}
+	
+	return 1;
+}
+
+sub dispatch_target_only() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $target_row=shift or croak("usage:dispatch_target_only(current_key,target_row)");
+
+	$self->_debug("Line only in target : Key (".$current_key.")");
+	
+	if ($self->{compare_diff}) {
+		$self->{diff}->add_target_only($current_key,$target_row);
+	}
+	
+	if ($self->{compare_fetch}) {
+		$target_row->{DIFF}="NEW";
+		return $target_row;
+	}
+	
+	return 1;
+}
+
+sub dispatch_source_only() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $source_row=shift or croak("usage:dispatch_source_only(current_key,source_row)");
+
+	$self->_debug("Line only in source : Key (".$current_key.")");
+	
+	if ($self->{compare_diff}) {
+		$self->{diff}->add_source_only($current_key,$source_row);
+	}
+	
+	if ($self->{compare_fetch}) {
+		$source_row->{DIFF}="DELETE";
+		return $source_row;
+	}
+	
+	return 1;
+}
+
+sub dispatch_source_only_field() {
+	my $self=shift;
+
+	my $current_key=shift;
+	my $field=shift;
+	my $field_value=shift or croak("usage:dispatch_source_update(current_key,field,field_value)");
+	
+	$self->_debug("Column only in source : Key (".$current_key.") $field : $field_value");
+	
+	if ($self->{compare_diff}) {
+		$self->{diff}->add_source_only_field($current_key,$field);
+	}
+	
+}
+
+sub dispatch_target_only_field() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $field=shift;
+	my $field_value=shift or croak("usage:dispatch_target_only_field(current_key,field,field_value)");
+
+	$self->_debug("Column only in target : Key (".$current_key.") $field : $field_value");
+	
+	if ($self->{compare_diff}) {
+		$self->{diff}->add_target_only_field($current_key,$field);
+	}
+	
+}
+
 
 # apply the data in a IsipDiff oject in the table
 sub update_compare_target() {

@@ -42,18 +42,29 @@ sub compare_exclude() {
 sub fetch_row() {
 	my $self=shift;
 
-	my %query_field_row=$self->_fetch_row_static();
+	croak(__PACKAGE__."->compare_init() must be called before ".__PACKAGE__."->fetch_row()") if not blessed $self->{diff};
 	
-	return () if not %query_field_row;
+	$self->{compare_diff}=1;
+	$self->{compare_fetch}=1;
+	
+	# first, printing lines only in source
+	my $current_row=$self->compare_next();
+	
+	# table_target return no lines, so we return
+	if (not $current_row) {
+		$self->{compare_diff}=0;
+		$self->{compare_fetch}=0;
+		return ();
+	}
+	
 
-	my $key=join(',',@query_field_row{sort $self->key()});
 	
 	# compute internal dynamic fields
 	if (grep ('^ICON$', $self->query_field()) ) {
 	
 		if (not blessed $self->{isip_rules}) {
 			carp ("no IsipRules set");
-			$query_field_row{ICON}="isip_error";
+			$current_row->{ICON}="isip_error";
 		}
 		else {
 		
@@ -61,26 +72,32 @@ sub fetch_row() {
 			my $return_status="";
 			
 			#dont check excluded fields
-			if (not grep {$query_field_row{FIELD_NAME} eq $_} $self->compare_exclude())
+			if (not grep {$current_row->{FIELD_NAME} eq $_} $self->compare_exclude())
 			{
-				$query_field_row{DIFF} = $self->{diff}->get_field_status($key,"FIELD_VALUE");
-				$return_status=$self->{isip_rules}->get_field_icon(%query_field_row);
+				$return_status=$self->{isip_rules}->get_field_icon(%$current_row);
 			}
 			
-			$query_field_row{ICON}=$return_status;
+			$current_row->{ICON}=$return_status;
 		}
 	}
 
+	# get only requested fields
+	my %query_field_row;
+	@query_field_row{$self->query_field} = @$current_row{$self->query_field};
 	
-	
-	if ($query_field_row{ICON} eq "different") {
-		my %update=$self->{diff}->get_source_update($key);
-		$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
-	}
-	elsif ($query_field_row{ICON} eq "supprime") {
-		my %update=$self->{diff}->get_source_only($key);
-		$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
-		$query_field_row{FIELD_VALUE}="";
+	if (exists $query_field_row{OLD_FIELD_VALUE}) {
+		my %tmp=%$current_row;
+		my $key=join(',',@tmp{$self->key});
+		
+		if ($query_field_row{ICON} eq "different") {
+			my %update=$self->{diff}->get_source_update($key);
+			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
+		}
+		elsif ($query_field_row{ICON} eq "supprime") {
+			my %update=$self->{diff}->get_source_only($key);
+			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
+			$query_field_row{FIELD_VALUE}="";
+		}
 	}
 	
 	return %query_field_row;

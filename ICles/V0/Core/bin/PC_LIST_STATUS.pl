@@ -268,7 +268,7 @@ if ($explore_mode eq "compare") {
 	$table_explore=DataDiff->open($table_from, $table_current, {debug => $debug_level});
 
 	$table_explore->compare_exclude("PROJECT");
-	$table_explore->compare();
+	$table_explore->compare_init();
 	
 	my $diff_rules = IsipRulesDiff->new($table_name, $env_sip, {debug => $debug_level});
 	$table_explore->isip_rules($diff_rules);
