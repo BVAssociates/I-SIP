@@ -123,17 +123,31 @@ sub get_display_table($) {
 	return $current_table;
 }
 
+sub get_source_field ($$) {
+	my $env_obj=shift;
+	my $current_table=shift;
+	
+	my $source_data = eval { $env_obj->open_source_table($current_table) };
+	if ($@) {
+		warn $@;
+		return 0;
+	}
+	
+	return $source_data->field();
+}
 
 sub get_def_table_string($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
+	my $table_name=shift;
 	
 	my $environnement=$env_obj->{environnement};
-	my $table_name=$table_obj->table_name();
 	my $link_obj=$env_obj->get_links();
 	my $display_table=get_display_table($table_name);
-	my $keys=$env_obj->get_table_key($table_name);
+	my $keys=$env_obj->get_table_key($display_table);
+	my @field=get_source_field($env_obj,$display_table);
+	
+	return if not @field;
 	
 	my $separator='@';
 	my @virtual_field=("ICON","PROJECT");
@@ -150,14 +164,14 @@ KEY="[% keys %]"
 ';
 
 	# fill standards value of DEF
-	my @field_list=(@virtual_field,$table_obj->field() );
+	my @field_list=(@virtual_field,@field);
 	my $format = join($separator, @field_list);
 	my $size = join($separator,('20s') x @field_list ) ;
 	
 	$string .= $def_template;
 	
 	$string =~ s/\[% environnement %\]/$environnement/g;
-	$string =~ s/\[% table %\]/$table_name/g;
+	$string =~ s/\[% table %\]/$display_table/g;
 	$string =~ s/\[% separator %\]/$separator/g;
 	$string =~ s/\[% format %\]/$format/g;
 	$string =~ s/\[% size %\]/$size/g;
@@ -189,8 +203,9 @@ KEY="[% keys %]"
 sub get_def_field_string($$) {
 	
 	my $env_obj=shift;
-	my $table_obj=shift;
-
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
+	
 	my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl [% environnement %] [% table %] %DATE_EXPLORE%"
 SEP="@"
 FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@MEMO@PROJECT"
@@ -202,21 +217,19 @@ FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
 ';
 
 	my $environnement=$env_obj->{environnement};
-	my $table=$table_obj->table_name;
 	
 	my $string=$def_field_template;
 	$string =~ s/\[% environnement %\]/$environnement/g;
-	$string =~ s/\[% table %\]/$table/g;
+	$string =~ s/\[% table %\]/$display_table/g;
 	
 	return $string;
 }
 sub get_pci_table_string($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
-	
-	my $table=$table_obj->table_name();
-	
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
+		
 	# TEMPLATES
 	my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~Ligne~Explorer les champs~expl~~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
@@ -231,25 +244,25 @@ Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux
 	# TEMPLATE ASSEMBLY
 	my $string = $pci_template;
 	
-	if ($env_obj->is_root_table($table)) {
+	if ($env_obj->is_root_table($table_name)) {
 		$string .= $pci_template_root;
 	}
 	
 	# get all table having current table as F_KEY
-	my $link_obj=$env_obj->get_links();
-	my @child_table=$link_obj->get_child_tables(get_display_table($table));
+	my $link_obj=$env_obj->get_links_menu();
+	my @child_table=$link_obj->get_child_tables($table_name);
 	
 	$string .= $pci_fkey_template if @child_table;
 	
 	# TEMPLATE REPLACEMENT
 
 	my $environnement=$env_obj->{environnement};
-	my $key_var=join(',',map {'%'.$_.'%'} $env_obj->get_table_key($table));
+	my $key_var=join(',',map {'%'.$_.'%'} $env_obj->get_table_key($display_table));
 	my $child_table=join (',',map { s/.+_([^_]+)$/$1/ } @child_table);
 	my $table_list=join (',',map {"IKOS_TABLE_$environnement\_$_"} @child_table);
 	
 	$string =~ s/\[% environnement %\]/$environnement/g;
-	$string =~ s/\[% table %\]/$table/g;
+	$string =~ s/\[% table %\]/$display_table/g;
 	$string =~ s/\[% key_var %\]/$key_var/g;
 	$string =~ s/\[% child_table %\]/$child_table/g;
 	$string =~ s/\[% table_list %\]/$table_list/g;
@@ -260,7 +273,8 @@ Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux
 sub get_pci_field_string($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
 	
 	my $pci_field_template='Table~~Explore~expl~~~Explore~~0~~Expand
 Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,STATUS,COMMENT~0~~Display
@@ -272,11 +286,10 @@ Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_C
 ';
 
 	my $environnement=$env_obj->{environnement};
-	my $table=$table_obj->table_name();
 	
 	my $string = $pci_field_template;
 	$string =~ s/\[% environnement %\]/$environnement/g;
-	$string =~ s/\[% table %\]/$table/g;
+	$string =~ s/\[% table %\]/$display_table/g;
 	
 	return $string;
 }
@@ -284,22 +297,22 @@ Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_C
 sub get_label_table_hash($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
 	
-	my $table_name=$table_obj->table_name();
 	my $environnement=$env_obj->{environnement};
 
 	my $label_table_name='IKOS_TABLE_[% environnement %]_[% table %].Table';
 	my $label_table_icon='isip_table_open';
 	my $label_table_desc='Clefs de [% table %] [% description %]';
 	
-	my $label_desc=$env_obj->get_table_description($table_name);
+	my $label_desc=$env_obj->get_table_description($display_table);
 	$label_desc= "(".$label_desc.")" if $label_desc;
 	
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
 	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
-	$label_table_desc =~ s/\[% table %\]/$table_name/g;
+	$label_table_desc =~ s/\[% table %\]/$display_table/g;
 	$label_table_desc =~ s/\[% description %\]/$label_desc/g;
 	
 	return (NodeId => $label_table_name,
@@ -310,13 +323,13 @@ sub get_label_table_hash($$) {
 sub get_label_table_item_hash($$) {
 	
 	my $env_obj=shift;
-	my $table_obj=shift;
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
 	
-	my $table_name=$table_obj->table_name();
-	my @pkey_list=$env_obj->get_table_key($table_name);
+	my @pkey_list=$env_obj->get_table_key($display_table);
 	my $environnement=$env_obj->{environnement};
 
-	my %table_info=$env_obj->get_table_info($table_name);
+	my %table_info=$env_obj->get_table_info($display_table);
 	my $label_field=$table_info{label_field};
 	
 	my $link_obj=$env_obj->get_links();
@@ -330,10 +343,10 @@ sub get_label_table_item_hash($$) {
 	
 	
 	# suppression de l'affichage des clefs primaire qui sont des clef etrangere d'autres tables
-	my @parent_tables=$link_obj->get_parent_tables($table_name);
+	my @parent_tables=$link_obj->get_parent_tables($display_table);
 	my %fkey_seen;
 	foreach my $parent (@parent_tables) {
-		my %foreign_key=$link_obj->get_foreign_fields($table_name,$parent);
+		my %foreign_key=$link_obj->get_foreign_fields($display_table,$parent);
 		foreach (keys %foreign_key) {
 			$fkey_seen{$_}++;
 		}
@@ -362,16 +375,16 @@ sub get_label_table_item_hash($$) {
 sub get_label_field_hash($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
+	my $table_name=shift;
+	my $display_table=get_display_table($table_name);
 	
-	my $table_name=$table_obj->table_name();
 	my $environnement=$env_obj->{environnement};
 
 	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Table';
 	my $label_table_icon='isip_table_key';
 	my $label_table_desc='Liste des champs';
 		
-	$label_table_name =~ s/\[% table %\]/$table_name/g;
+	$label_table_name =~ s/\[% table %\]/$display_table/g;
 	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
 	
 	
@@ -383,10 +396,10 @@ sub get_label_field_hash($$) {
 sub get_label_field_item_hash($$) {
 
 	my $env_obj=shift;
-	my $table_obj=shift;
 	
-	my $table_name=$table_obj->table_name();
+	my $table_name=shift;
 	my $environnement=$env_obj->{environnement};
+	my $display_table=get_display_table($table_name);
 
 	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
@@ -547,7 +560,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 		
 			# check if table is a menu table (virtual)
 			my $display_table=$current_table;
-			$current_table =~ s/.+__(.+)$/$1/;
+			$current_table =get_display_table($display_table);
 			
 			my %table_info=$env->get_table_info($current_table);
 			
@@ -563,12 +576,6 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			#}
 			# open DATA table
 			log_info("Mise à jour des menus de ",$display_table);
-			my $source_data = eval { $env->open_source_table($current_table, { debug => $bv_debug }) };
-			if ($@) {
-				warn $@;
-				$bv_severite=202;
-				next;
-			}
 			
 			
 			my $source_data_table=$environnement."_".$display_table;
@@ -578,8 +585,10 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 
 		##### CREATE DEF
 			
-			$string=get_def_table_string($env,$source_data);
-						
+			$string=get_def_table_string($env,$display_table);
+			
+			next if not $string;
+			
 			$filename=sprintf($def_filename,$def_path,$source_data_table);
 			
 			write_file($filename,$string);
@@ -587,7 +596,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 
 		##### CREATE DEF FIELD
 			
-			$string = get_def_field_string($env,$source_data);
+			$string = get_def_field_string($env,$display_table);
 						
 			$filename=sprintf($def_field_filename,$def_path,$source_data_table);
 			
@@ -597,7 +606,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 		##### CREATE PCI
 			
 			
-			$string = get_pci_table_string($env,$source_data);
+			$string = get_pci_table_string($env,$display_table);
 			
 			$filename=sprintf($pci_filename,$pci_path,$source_data_table);
 			
@@ -605,7 +614,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			
 		##### CREATE PCI FIELD
 			
-			$string = get_pci_field_string($env,$source_data);
+			$string = get_pci_field_string($env,$display_table);
 			
 			$filename=sprintf($pci_field_filename,$pci_path,"$environnement\_$current_table");
 			
@@ -616,16 +625,16 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			my $labels=ITools->open("ICleLabels");
 			my %label_hash;
 			
-			%label_hash=get_label_table_hash($env,$source_data);
+			%label_hash=get_label_table_hash($env,$display_table);
 			$labels->insert_row(%label_hash);
 			
-			%label_hash=get_label_table_item_hash($env,$source_data);
+			%label_hash=get_label_table_item_hash($env,$display_table);
 			$labels->insert_row(%label_hash);
 			
-			%label_hash=get_label_field_hash($env,$source_data);
+			%label_hash=get_label_field_hash($env,$display_table);
 			$labels->insert_row(%label_hash);
 			
-			%label_hash=get_label_field_item_hash($env,$source_data);
+			%label_hash=get_label_field_item_hash($env,$display_table);
 			$labels->insert_row(%label_hash);			
 		}
 

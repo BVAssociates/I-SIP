@@ -102,6 +102,7 @@ use Isip::IsipConfig;
 use Isip::Environnement;
 require 'pc_init_env.pl';
 require 'pc_init_table.pl';
+require 'pc_generate_menu.pl';
 require 'pc_update_cache.pl';
 
 
@@ -121,4 +122,5 @@ foreach my $environ ($config->get_environnement_list) {
 	
 }
 
+$bv_severite+=pc_generate_menu::run($_) foreach ($config->get_environnement_list);
 $bv_severite+=pc_update_cache::run($_) foreach ($config->get_environnement_list);

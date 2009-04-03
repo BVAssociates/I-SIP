@@ -36,7 +36,7 @@ sub open() {
 sub compare_exclude() {
 	my $self=shift;
 	
-	return grep(!/^FIELD_VALUE|FIELD_NAME$/,$self->query_field);
+	return grep(!/^FIELD_VALUE$/,$self->field);
 }
 
 sub fetch_row() {
@@ -81,6 +81,11 @@ sub fetch_row() {
 		}
 	}
 
+	# initialize dynamic fields
+	foreach ($self->dynamic_field) {
+		$current_row->{$_}="" if not exists $current_row->{$_};
+	}
+	
 	# get only requested fields
 	my %query_field_row;
 	@query_field_row{$self->query_field} = @$current_row{$self->query_field};
@@ -88,12 +93,11 @@ sub fetch_row() {
 	if (exists $query_field_row{OLD_FIELD_VALUE}) {
 		my %tmp=%$current_row;
 		my $key=join(',',@tmp{$self->key});
-		
-		if ($query_field_row{ICON} eq "different") {
+		if ($query_field_row{DIFF} eq "UPDATE") {		
 			my %update=$self->{diff}->get_source_update($key);
 			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
 		}
-		elsif ($query_field_row{ICON} eq "supprime") {
+		elsif ($query_field_row{DIFF} eq "DELETE") {
 			my %update=$self->{diff}->get_source_only($key);
 			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
 			$query_field_row{FIELD_VALUE}="";
