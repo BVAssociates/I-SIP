@@ -86,6 +86,7 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 ###########################################################
 
 sub sortie ($) {
+	log_info("sortie du programme ".__FILE__);
 	exit shift;
 }
 
@@ -125,181 +126,43 @@ $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
+my $module=$opts{m};
+my $compare_option=$opts{c};
+
 #  Traitement des arguments
 ###########################################################
 
-#recuperation de l'environnement
-my $env_compare=$ENV{ENV_COMPARE};
-my $date_compare=$ENV{DATE_COMPARE};
-my $date_explore=$ENV{DATE_EXPLORE};
-my $module_explore=$ENV{Module} || $opts{m} || usage($debug_level);
+log_info("Debut du programme : ".__FILE__." ".join(" ",@ARGV));
 
-my $filter_field=$ENV{FILTER_FIELD};
-my $filter_value=$ENV{FILTER_VALUE};
-my $filter_exclude;
-
-if ($filter_value and $filter_value =~ /^!(.+)/) {
-	$filter_value=$1;
-	$filter_exclude=1;
-}
 
 if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 }
 
-my $environnement=shift;
-my $table_name_arg=shift;
-my $temp_date_explore=shift;
-$date_explore=$temp_date_explore if $temp_date_explore;
-
-if (exists $opts{c}) {
-	if ($opts{c} =~ /@/) {
-		($env_compare,$date_compare) = split(/@/,$opts{c});
-	}
-	else {
-		$env_compare=$opts{c};
-	}
-}
-
-$env_compare=$environnement if $date_compare and not $env_compare;
-
-# deduction du contenu de la colonne ICON
-#  explore par defaut
-#  compare si une source est trouvée
-my $explore_mode="explore";
-$explore_mode="compare" if $env_compare or $date_compare;
-
-log_info("Mode d'exploration : $explore_mode");
-
-if ($explore_mode eq "explore") {
-	log_erreur("mode explore impossible");
-}
+my $environnement=shift @ARGV;
+my $table_name_arg=shift @ARGV;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
 use Isip::Environnement;
-use ITable::ITools;
-use Isip::ITable::FieldDiff;
-use Isip::IsipRules;
-use Isip::IsipRulesDiff;
+require "PC_LIST_FIELD_STATUS.pl";
 
 # New SIP Object instance
 my $env_sip = Environnement->new($environnement, {debug => $debug_level});
-my @table_list=($table_name_arg) || $env_sip->get_table_list_module($module_explore);
+my @table_list=($table_name_arg) || $env_sip->get_table_list_module($module);
 
-# recupere à liste de champ à afficher
-use ITable::ITools;
-my $itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
-my $separator=$itools_table->output_separator;
-my @query_field=$itools_table->field;
-
-
-# Check if it is an SQL filter
-my @comment_condition;
-if ($filter_field and $filter_field !~ /^ICON|PROJECT$/ ) {
-
-	$filter_value =~ s/\*/%/g;
-	my $comp_operator;
-	if ($filter_exclude) {
-		$comp_operator='<>';
-		$comp_operator='not like' if $filter_value =~ /%/;
-	}
-	else {
-		$comp_operator='=' ;
-		$comp_operator='like' if $filter_value =~ /%/;
-	}
-	
-	# Check where is the clause
-	if ($filter_field eq 'PROJECT') {
-		#push @comment_condition, "$filter_field $comp_operator '$filter_value'";
-	}
-}
 
 
 foreach my  $table_name (@table_list) {
-
-	my $rules=IsipRules->new($table_name,$env_sip);
-	my @field_order=$env_sip->get_table_field($table_name);
-	my %memory_row;
-
-	my $table_status;
-		
-	my $env_sip_from = Environnement->new($env_compare);
-	my $env_sip_to = $env_sip;
-	
-	# open first table
-	my $table_from = $env_sip_from->open_histo_field_table($table_name, {debug => $debug_level});
-	
-	$table_from->query_date($date_compare) if $date_compare;
-	
-	# open second table
-	my $table_to = $env_sip_to->open_histo_field_table($table_name, {debug => $debug_level});
-	
-	$table_to->query_date($date_explore) if $date_explore;
-	
-	# open DataDiff table from two table
-	$table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
-	
-	# declare some additionnal blank fields
-	# (ICON field will be computed into DataDiff)
-	$table_status->dynamic_field($table_status->dynamic_field,"ICON","TYPE","TEXT");
-	$table_status->query_field(@query_field);
-	
-	
-	# compute diff
-	$table_status->compare();
-	
-	# Assign a IsipRules to compute ICON field
-	my $diff_rules=IsipRulesDiff->new($table_name,$env_sip);
-	$table_status->isip_rules($diff_rules);
-	
-	
-	# put row in memory
-	while (my %row=$table_status->fetch_row) {
-	
-		
-		$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if exists $row{TYPE};
-		$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if exists $row{TEXT};
-		
-		#TODO treat CSV mutli-line
-		#if ($row{MEMO}) {
-		#	use IO::Uncompress::Gunzip qw(gunzip);
-		#	use MIME::Base64;
-		#	my $input=decode_base64($row{MEMO});
-		#	my $output;
-		#	gunzip(\$input=>\$output);
-		#	#excel wait for <LF> only
-		#	$output =~ s/\r//gm;
-		#	$row{MEMO}=$output;
-		#}
-				
-		# don't display ignored fields
-		my $display_line=1;
-		if ($filter_field and exists $row{$filter_field}) {
-			if ($filter_exclude and $row{$filter_field} eq $filter_value) {
-				$display_line = 0;
-			}
-			elsif (not $filter_exclude and $row{$filter_field} ne $filter_value) {
-				$display_line = 0;
-			}
-		}
-		
-		if ($row{TYPE} and $row{TYPE} eq "exclus"
-				or $row{ICON} and $row{ICON} eq "stamp") {
-				$display_line = 0;
-		}
-
-		if ($display_line) {
-			print join($separator,$table_status->hash_to_array(%row))."\n";
-		}
+	if ($compare_option) {
+		pc_list_field_status::run("-r","-a","-c".$compare_option,$environnement,$table_name);
 	}
-	
-	#exit 1; #DEBUG
-	
-
+	else {
+		pc_list_field_status::run("-r","-a",$environnement,$table_name);
+	}
 }
 
 

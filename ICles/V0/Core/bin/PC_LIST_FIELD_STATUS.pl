@@ -17,7 +17,7 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne IC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-c environnement_source@date_source] environnement_cible table_name date_cible
+ PC_LIST_FIELD_STATUS.pl [-r] [-a] [-c environnement_source@date_source] environnement_cible table_name date_cible
  
 =head1 DESCRIPTION
 
@@ -57,6 +57,12 @@ exemple : RDNPRCOD=VTS
 =item -h : Affiche l'aide en ligne
 
 =item -v : Mode verbeux
+
+=item -r : Formatte la sortie pour un REPORT
+
+=item -k clef : affiche les champs de la ligne correspondant à la clef
+
+=item -a : affiche tous les champs de toutes les lignes
 
 =item -c environnement_source@date_source : force le mode COMPARE
 
@@ -119,7 +125,7 @@ sub run {
 	@ARGV=grep $_,@ARGV;
 
 	my %opts;
-	getopts('k:hvc:a', \%opts);
+	getopts('k:hvc:ar', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -128,6 +134,7 @@ sub run {
 
 	my $table_key_value=$opts{k};
 	my $all_key=$opts{a};
+	my $report_mode=$opts{r};
 
 	#  Traitement des arguments
 	###########################################################
@@ -216,10 +223,10 @@ sub run {
 		}
 
 		$table_key_value=join(',',@table_key_list_value);
+		
+		log_info("KEY= $table_key");
+		log_info("KEY_VAL=$table_key_value");
 	}
-
-	log_info("KEY= $table_key");
-	log_info("KEY_VAL=$table_key_value");
 
 	# Check if it is an SQL filter
 	my @comment_condition;
@@ -244,9 +251,16 @@ sub run {
 
 	# recupere à liste de champ à afficher
 	use ITable::ITools;
-	my $itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name, {debug => $debug_level});
+	my $itools_table;
+	if ($report_mode) {
+		$itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
+	}
+	else {
+		$itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name, {debug => $debug_level});
+	}
 	my $separator=$itools_table->output_separator;
 	my @query_field=$itools_table->field;
+	
 
 	# Create IsipRule object
 	my $rules=IsipRules->new($table_name, $env_sip, {debug => $debug_level});
