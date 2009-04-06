@@ -33,8 +33,8 @@ sub check_before_cache() {
 	my $value_ref=shift;
 	
 	$self->{action}=0;
-	if ($value_ref->{ICON}) {
-		if ($value_ref->{OLD_ICON}) {
+	if (exists $value_ref->{ICON}) {
+		if (exists $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
 				$self->{action}=1 if $value_ref->{OLD_ICON} eq 'valide';
 				$self->{action}=-1 if $value_ref->{ICON} eq 'valide';
@@ -47,7 +47,7 @@ sub check_before_cache() {
 		
 	my $dirty=abs($self->{action});
 	$self->{current_table}=$table if $dirty;
-	
+
 	return $dirty;
 }
 
@@ -68,12 +68,7 @@ sub add_row_cache() {
 	$old_value=0 if not defined $old_value;
 	
 	my $new_value=$old_value + $self->{action};
-	if ($new_value > 0) {
-		$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
-	}
-	else {
-		$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = 0;
-	}
+	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 }
 
 sub is_dirty_key() {
