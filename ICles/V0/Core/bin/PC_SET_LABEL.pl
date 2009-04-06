@@ -136,3 +136,29 @@ else {
 }
 
 $table->commit_transaction;
+
+# update cache
+use Isip::IsipTreeCache;
+use Isip::IsipRules;
+use Isip::Cache::CacheStatus;
+
+#my $table_ikos=$env->open_local_from_histo_table($table_name);
+
+my %icon_list=IsipRules->enum_field_icon();
+
+if (not $ENV{ICON}) {
+	log_info("impossible de mettre à jour le cache car ICON n'est pas dans l'environnement");
+	$ENV{ICON}="valide_label";
+}
+
+# reconstruct the line
+my %new_line;
+$new_line{ICON}=$icon_list{$icon};
+$new_line{OLD_ICON}=$ENV{ICON};
+@new_line{$env->get_table_key($table_name)}=split(',',$key);
+
+my $cache=IsipTreeCache->new($env);
+$cache->add_dispatcher(CacheStatus->new($env));
+
+$cache->recurse_line($table_name, \%new_line);
+$cache->save_cache();

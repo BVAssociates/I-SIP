@@ -36,8 +36,8 @@ sub check_before_cache() {
 	if (exists $value_ref->{ICON}) {
 		if (exists $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
-				$self->{action}=1 if $value_ref->{OLD_ICON} eq 'valide';
-				$self->{action}=-1 if $value_ref->{ICON} eq 'valide';
+				$self->{action}=1 if $value_ref->{OLD_ICON} =~ /^valide/;
+				$self->{action}=-1 if $value_ref->{ICON} =~ /^valide/;
 			}
 		}
 		else {
@@ -155,7 +155,7 @@ sub load_cache() {
 sub save_cache() {
 	my $self=shift;
 	
-	return if not $self->{memory_cache};
+	return if not %{$self->{memory_cache}};
 
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	
