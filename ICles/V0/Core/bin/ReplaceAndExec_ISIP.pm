@@ -6,6 +6,7 @@ use warnings;
 # use applicatifs
 use Isip::Environnement;
 use Isip::IsipLog '$logger';
+use Carp;
 
 our (@ISA, @EXPORT);
 BEGIN {
@@ -114,7 +115,7 @@ sub update_field($$) {
 	my $table_name=shift;
 	my $values=shift;
 	
-	if (not $table_name =~ /^IKOS_FIELD_([[:alpha:]]+)_(\w+)$/) {
+	if (not $table_name =~ /^IKOS_FIELD_([\w\d]+)_(\w+)$/) {
 		croak("Table $table_name non géré par $0");
 	}
 	my ($environnement,$table_ikos) = ($1,$2);
