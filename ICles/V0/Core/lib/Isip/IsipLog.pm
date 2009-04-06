@@ -14,28 +14,28 @@ our $logger;
 my $start;
 my $end;
 my $log;
+my $stat_sep;
 END {
-	#$end=Benchmark->new();
-	$log->info(join(' ',@ARGV).":$?:exit");
-	#$log->notice("$0 @ARGV exec time : ",timestr(timediff($end,$start)));
+	my $args=join(' ',@ARGV);
+	$log->info(join($stat_sep,$args,$?,"exit"));
 }
 
 BEGIN {
+	$stat_sep="££";
+	
 	$log = Log::Handler->new();
-
     $log->add(file => {
         filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
         mode     => 'append',
 		autoflush => 0,
         maxlevel => 'debug',
         minlevel => 'warning',
-		message_layout => '%T:%S:%P:%r:%m',
+		message_layout => join($stat_sep,'%T','%S','%P','%r','%m'),
 		timeformat      => '%Y%m%dT%H%M%S',
         newline  => 1,
     });
 
-    $log->info(join(' ',@ARGV)."::starting");
-	#$start=Benchmark->new();
+    $log->info(join(' ',@ARGV).$stat_sep.$stat_sep."starting");
 }
 # END STATISTIC LOGGER
 
