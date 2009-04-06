@@ -7,7 +7,6 @@ use fields qw(
 	environnement
 	info_table
 	description
-	defaut_library
 	link_table
 	isip_config
 	defaut_odbc_options
@@ -48,14 +47,9 @@ sub new() {
 	$logger->notice("Chargement de l'environnement $environnement");
 	
 	$self->{description}=$self->{isip_config}->{info_env}->{$environnement}->{description};
-	$self->{defaut_library}=$self->{isip_config}->{info_env}->{$environnement}->{defaut_library};
 	
 	# constants
 	#TODO : use confuguration file
-	
-	$logger->warning( "Defaut Datasource should not be null" ) if not $self->{defaut_library};
-	
-	
 	
 	# populate class members
 	
@@ -117,39 +111,18 @@ sub new() {
 	while (my %row=$source_info->fetch_row) {
 		next if not exists $self->{info_table}->{$row{XML_NAME}};
 	
-		#overide datasource with specific
+		carp("XML sources non implémenté");
+		
 		#$sources{$row{XML_NAME}}=$row{XML_PATH};
-		$self->set_datasource($row{XML_NAME},$row{XML_PATH});
+		#$self->set_datasource($row{XML_NAME},$row{XML_PATH});
 
 	}
 	
-	# set defaut value if datasource not specified
-	foreach my $table ($self->get_table_list) {
-		if (not $self->{info_table}->{$table}->{source}) {
-			if ($self->{info_table}->{$table}->{type_source} eq "XML") {
-				$logger->warning("$table est de type XML, mais n'a pas de fichier associé");
-				delete $self->{info_table}->{$table};
-			}
-			else {
-				$self->set_datasource($table,$self->{defaut_library});
-			}
-		}
-	}
-
 	$logger->info("Environnement $self->{environnement} opened");
 	
 	return $self;
 }
 
-sub set_datasource() {
-	my $self = shift;
-	
-	my $table=shift;
-	my $datasource=shift or croak("usage : set_datasource(table,datasource)");
-	
-	# datasource
-	$self->{info_table}->{$table}->{source}=$datasource;
-}
 
 sub get_column_info() {
 	my $self = shift;
@@ -582,16 +555,20 @@ sub open_source_table() {
 		croak("La table table_name est inconnue");
 	}
 	
+	my $library=$self->{isip_config}->get_odbc_database_name(
+		$self->{info_table}->{$table_name}->{module},
+		$self->{environnement});
+	
 	# open source table depending on TYPE_SOURCE
 	if ($self->{info_table}->{$table_name}->{type_source} eq "ODBC") {
-		if (not $self->{info_table}->{$table_name}->{source}) {
+		if (not $library) {
 			$logger->error("SOURCE missing for $table_name");
 		}
 		
 		if ($self->{info_table}->{$table_name}->{param_source}) {
 			use Isip::ITable::ODBC_Query;
-			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
-			$return_table=ODBC_Query->open($self->{info_table}->{$table_name}->{source}, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
+			$logger->info("Connexion à ODBC : $library");
+			$return_table=ODBC_Query->open($library, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
 
 			#manually set KEY
 			if ($self->{info_table}->{$table_name}->{key}) {
@@ -602,8 +579,8 @@ sub open_source_table() {
 		}
 		else {
 			use ITable::ODBC;
-			$logger->info("Connexion à ODBC : $self->{info_table}->{$table_name}->{source}");
-			$return_table=ODBC->open($self->{info_table}->{$table_name}->{source}, $table_name, $options);
+			$logger->info("Connexion à ODBC : $library");
+			$return_table=ODBC->open($library, $table_name, $options);
 			
 			#manually set KEY
 			if ($self->{info_table}->{$table_name}->{key}) {
@@ -615,7 +592,7 @@ sub open_source_table() {
 				
 				# connect to DB2 catalog
 				my $sys_table=ODBC->open("QSYS","QADBKFLD",$self->{isip_config}->get_odbc_option($self->{environnement}));
-				$sys_table->query_condition("DBKLIB='IKGLFIC' AND DBKFIL = '$table_logical'");
+				$sys_table->query_condition("DBKLIB='$library' AND DBKFIL = '$table_logical'");
 				$sys_table->query_field("DBKFLD");
 				my @keys;
 				while (my ($key)=$sys_table->fetch_row_array) {
@@ -629,6 +606,9 @@ sub open_source_table() {
 		
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
+	
+		carp("XML sources non implémenté");
+		
 		if (not $self->{info_table}->{$table_name}->{source}) {
 			$logger->error("SOURCE missing for $table_name");
 		}

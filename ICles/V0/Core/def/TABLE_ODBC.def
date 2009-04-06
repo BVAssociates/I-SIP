@@ -1,4 +1,4 @@
-COMMAND="PC_LIST_TABLE_ODBC.pl -s@ %Environnement%"
+COMMAND="PC_LIST_TABLE_ODBC.pl -s@ %Environnement% %TABLE_MODULE%"
 SEP="@"
 FORMAT="TABLE_NAME@TABLE_TEXT"
 SIZE="20s@20s"

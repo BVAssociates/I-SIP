@@ -15,7 +15,7 @@ PC_LIST_FIELD_ODBC - Liste les champs d'une table IKOS par ODBC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_ODBC.pl environnement tablename
+ PC_LIST_FIELD_ODBC.pl environnement module tablename
  
 =head1 DESCRIPTION
 
@@ -44,6 +44,8 @@ Liste les champs d'une table IKOS à la date courante en utilisant le driver ODBC
 =over
 
 =item environnement : environnement à utiliser
+
+=item module : module dans lequel se trouve la table
 
 =item tablename : table a décrire
 
@@ -99,12 +101,13 @@ $separator=$opts{s} if exists $opts{s};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2) {
+if ( @ARGV != 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift;
+my $module=shift;
 my $table=shift;
 
 #  Corps du script
@@ -117,16 +120,17 @@ use ITable::ODBC;
 my $config=IsipConfig->new();
 
 my $table_source;
+
 if ($ENV{param_source}) {
 	$logger->info("Connexion à ODBC : $ENV{param_source}");
-	$table_source = ODBC_Query->open($config->get_odbc_database_name($environnement),
+	$table_source = ODBC_Query->open($config->get_odbc_database_name($module,$environnement),
 				$table,
 				$ENV{param_source},
 				$config->get_odbc_option($environnement) );
 }
 else {
 	$logger->info("Connexion à ODBC : $table");
-	$table_source = ODBC->open($config->get_odbc_database_name($environnement),
+	$table_source = ODBC->open($config->get_odbc_database_name($module,$environnement),
 				$table,
 				$config->get_odbc_option($environnement) );
 }

@@ -15,7 +15,7 @@ PC_LIST_TABLE_ODBC - Liste les tables IKOS par ODBC
 
 =head1 SYNOPSIS
 
- PC_LIST_TABLE_ODBC.pl environnement
+ PC_LIST_TABLE_ODBC.pl environnement module
  
 =head1 DESCRIPTION
 
@@ -44,6 +44,8 @@ Liste les tables IKOS en utilisant le driver ODBC
 =over
 
 =item environnement : environnement à utiliser
+
+=item module
 
 =back
 
@@ -99,12 +101,13 @@ $separator=$opts{s} if exists $opts{s};
 
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
-if ( @ARGV != 1) {
+if ( @ARGV != 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift;
+my $module=shift;
 
 #  Corps du script
 ###########################################################
@@ -121,7 +124,7 @@ if (not defined $table_info) {
 	die "error opening SYSTABLES";
 }
 
-my $schema=$config->get_odbc_database_name($environnement);
+my $schema=$config->get_odbc_database_name($module,$environnement);
 $table_info->query_condition("TABLE_SCHEMA='$schema' AND TABLE_TYPE='P'");
 
 #my $field_def=ITools->open("TABLE_ODBC");

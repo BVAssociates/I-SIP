@@ -1,4 +1,6 @@
 SEP=";"
-FORMAT="Module;Description"
-SIZE="20s;20s"
+FORMAT="Module;Description;BIBTYP"
+SIZE="20s;20s;20s"
 KEY="Module"
+
+FKEY=[BIBTYP] on CONF_MODULE_TYPE[BIBTYP]

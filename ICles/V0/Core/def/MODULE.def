@@ -1,5 +1,5 @@
 COMMAND="Select -s from CONF_MODULE"
 SEP=";"
-FORMAT="Module;Description"
-SIZE="20s;20s"
+FORMAT="Module;Description;BIBTYP"
+SIZE="20s;20s;20s"
 KEY="Module"

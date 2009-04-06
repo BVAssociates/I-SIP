@@ -2,6 +2,7 @@ package IsipConfig;
 use fields qw(
 	options
 	info_env
+	info_module
 	defaut_odbc_options
 );
 
@@ -39,7 +40,7 @@ sub new() {
 	# store global info about tables
 	$self->{info_env}= {};
 
-	#BEGIN of information retrieval
+	#store information about Environnements and ODBC Datasouces
 	my $table_environ=ITools->open("ENVIRON",$self->{options});
 	while (my %row=$table_environ->fetch_row) {
 		$self->{info_env}->{$row{Environnement}}->{description}=$row{Description};
@@ -47,6 +48,13 @@ sub new() {
 		$self->{info_env}->{$row{Environnement}}->{defaut_library}=$row{DEFAUT_LIBRARY};
 	}
 	
+
+	#store information about Modules and DB2 Libraries
+	my $table_module=ITools->open("MODULE",$self->{options});
+	while (my %row=$table_module->fetch_row) {
+		$self->{info_module}->{$row{Module}}->{description}=$row{Description};
+		$self->{info_module}->{$row{Module}}->{library_type}=$row{BIBTYP};
+	}
 	
 	return $self;
 }
@@ -55,13 +63,35 @@ sub new() {
 sub get_odbc_database_name() {
 	my $self = shift;
 	
-	my $environnement=shift or die "bad arguments";
+	my $module=shift;
+	my $environnement=shift or die "usage:get_odbc_database_name(module,environnement)";
 	
 	if (not exists $self->{info_env}->{$environnement}) {
 		croak("Environnement $environnement non configuré");
 	}
 	
-	return $self->{info_env}->{$environnement}->{defaut_library};
+	if (not exists $self->{info_module}->{$module}) {
+		croak("Module $module non configuré");
+	}
+	
+	my $library_type=$self->{info_module}->{$module}->{library_type};
+	
+	my $module_table=ODBC->open("IKGSENV","ENVBIBP", $self->get_odbc_option($environnement));
+	
+	$module_table->query_condition(
+		"ADCDENV = '".$environnement."'",
+		"ADTYPBIB = '".$library_type."'");
+	
+	$module_table->query_field("ADBIBLIOT");
+	
+	my ($library)=$module_table->fetch_row_array();
+	
+	if ($module_table->fetch_row() or not $library) {
+		# more than one row or no row at all
+		croak("Impossible de determiner la librairie de type $library_type pour le module $module dans l'environnement $environnement");
+	}
+	
+	return $library;
 }
 
 #return odbc datasource name
