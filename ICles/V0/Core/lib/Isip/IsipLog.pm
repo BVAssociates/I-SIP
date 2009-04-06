@@ -10,6 +10,35 @@ use Log::Handler;
 
 our $logger;
 
+# BEGIN STATISTIC LOGGER
+my $start;
+my $end;
+my $log;
+END {
+	#$end=Benchmark->new();
+	$log->info(join(' ',@ARGV).":$?:exit");
+	#$log->notice("$0 @ARGV exec time : ",timestr(timediff($end,$start)));
+}
+
+BEGIN {
+	$log = Log::Handler->new();
+
+    $log->add(file => {
+        filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
+        mode     => 'append',
+		autoflush => 0,
+        maxlevel => 'debug',
+        minlevel => 'warning',
+		message_layout => '%T:%S:%P:%r:%m',
+		timeformat      => '%Y%m%dT%H%M%S',
+        newline  => 1,
+    });
+
+    $log->info(join(' ',@ARGV)."::starting");
+	#$start=Benchmark->new();
+}
+# END STATISTIC LOGGER
+
 BEGIN {
 	use Exporter   ();
 	our (@ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
@@ -103,7 +132,7 @@ sub log_screen_only() {
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'notice',
+		maxlevel => 'debug',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
