@@ -17,7 +17,7 @@ use Isip::IsipLog '$logger';
 
 Class to handle type and status.
 
-=author
+=head1 AUTHOR
 
 BV Associates, 2008
 

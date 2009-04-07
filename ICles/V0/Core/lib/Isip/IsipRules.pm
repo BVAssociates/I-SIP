@@ -28,7 +28,7 @@ use ITable::Sqlite;
 
 Class to handle type and status.
 
-=author
+=head1 AUTHOR
 
 BV Associates, 2008
 
