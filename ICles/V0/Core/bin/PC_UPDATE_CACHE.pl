@@ -122,12 +122,26 @@ sub run {
 
 	my @list_table;
 	if ($module) {
-		@list_table=$env_sip->get_table_list_module($module);
+		my @temp_list_table=$env_sip->get_table_list_module($module);
+		
+		# add dependants tables from other module to table list
+		my $links=$env_sip->get_links();
+		my %table_uniq;
+		foreach (@temp_list_table) {
+			$table_uniq{$_}++;
+			my @depend=$links->get_parent_tables($_,1);
+			foreach (@depend) {
+				$table_uniq{$_}++;
+			}
+		}
+		@list_table=sort keys %table_uniq;
 	}
 	else {
 		@list_table=$env_sip->get_table_list();
 	}
 
+	
+	
 
 	my $counter=0;
 	my $source_table;
