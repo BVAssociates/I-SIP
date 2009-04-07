@@ -398,7 +398,13 @@ sub fetch_row() {
 	# add dynamic field if requested
 	#TODO : use IsipRules
 	if (grep (/^ICON$/, $self->query_field() )) {
-		$return_line{ICON}=$self->{isip_rules}->get_line_icon(@field_icon) if blessed $self->{isip_rules};
+		if (blessed $self->{isip_rules}) {
+			$return_line{ICON}=$self->{isip_rules}->get_line_icon(@field_icon);
+		}
+		else {
+			# handle case where no icon can be resolved
+			$return_line{ICON}="none";
+		}
 	}
 	
 	if (grep (/^PROJECT$/, $self->query_field() )) {

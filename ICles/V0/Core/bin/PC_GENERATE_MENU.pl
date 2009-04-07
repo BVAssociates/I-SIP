@@ -146,6 +146,9 @@ sub get_def_table_string($$) {
 	my $keys=$env_obj->get_table_key($display_table);
 	my @field=get_source_field($env_obj,$display_table);
 	
+	my $no_icon_option="";
+	$no_icon_option="-n" if $display_table ne $table_name;
+	
 	return if not @field;
 	
 	my $separator='@';
@@ -153,7 +156,7 @@ sub get_def_table_string($$) {
 	
 	my $string;
 
-	my $def_template = 'COMMAND="PC_LIST_STATUS.pl -c %ENV_COMPARE%@%DATE_COMPARE% [% environnement %] [% table %] %DATE_EXPLORE%"
+	my $def_template = 'COMMAND="PC_LIST_STATUS.pl [% option %] -c %ENV_COMPARE%@%DATE_COMPARE% [% environnement %] [% table %] %DATE_EXPLORE%"
 SEP="[% separator %]"
 FORMAT="[% format %]"
 SIZE="[% size %]"
@@ -175,6 +178,7 @@ KEY="[% keys %]"
 	$string =~ s/\[% format %\]/$format/g;
 	$string =~ s/\[% size %\]/$size/g;
 	$string =~ s/\[% keys %\]/$keys/g;
+	$string =~ s/\[% option %\]/$no_icon_option/g;
 	
 	# add one FKEY entry per foreign tables
 	foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
@@ -231,8 +235,12 @@ sub get_pci_table_string($$) {
 		
 	# TEMPLATES
 	my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
-Item~Ligne~Explorer les champs~expl~~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
 ';
+	
+	if ($display_table eq $table_name) {
+		$pci_template.='Item~Ligne~Explorer les champs~expl~~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
+';
+	}
 	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
 Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
 ';
@@ -280,8 +288,8 @@ Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DAT
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 
-Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME% OK~0~~Configure
-Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME%~0~~Configure
+Item~Surveillance~Ne plus surveiller~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME% OK~0~~Configure
+Item~Surveillance~Surveiller à nouveau~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME%~0~~Configure
 ';
 
 	my $environnement=$env_obj->{environnement};
@@ -433,7 +441,7 @@ sub run {
 	#  Traitement des arguments
 	###########################################################
 
-	if ( @ARGV < 1 ) {
+	if ( not exists $opts{a} and @ARGV < 1 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
 		sortie(202);

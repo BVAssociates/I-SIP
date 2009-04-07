@@ -16,7 +16,7 @@ PC_LIST_STATUS - Affiche une table et y ajoute une colonne de ICON
 =head1 SYNOPSIS
 
  PC_LIST_STATUS.pl [-c environnement_source@date_source] environnement_cible table_name [date_cible]
- 
+
 =head1 DESCRIPTION
 
 Affiche une table et y ajoute une colonne ICON.
@@ -119,12 +119,14 @@ map {s/%\w+%//g} @ARGV;
 log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvc:', \%opts) or usage(0);
+getopts('hvc:n', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $no_icon=$opts{n} if $opts{n};
 
 #  Traitement des arguments
 ###########################################################
@@ -279,12 +281,16 @@ elsif ($explore_mode eq "explore") {
 	log_info("pré-charge les informations de modification des sous-tables");
 	
 	if (not $date_explore) {
+		# load Cache to know state of child lines
 		$dirty_cache=CacheStatus->new($env_sip);
 		$dirty_cache->load_cache($table_name);
+		
+		# load Rules to know state of current lines
 		my $type_rules = IsipRules->new($table_name, $env_sip, {debug => $debug_level});
-		$table_explore->isip_rules($type_rules);
+		$table_explore->isip_rules($type_rules) if not $no_icon;
 	}
 	if ($filter_field and $filter_field eq 'PROJECT') {
+		# load Cache to know project of child lines
 		$project_cache=CacheProject->new($env_sip);
 		$project_cache->set_dirty_project($filter_value);
 	}
@@ -310,8 +316,8 @@ while (my %row=$table_explore->fetch_row) {
 	$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
 	if ($filter_field) {
 		if ($filter_field eq 'ICON') {
-			if (($filter_exclude and $row{ICON} ne $filter_value)
-				or (! $filter_exclude and $row{ICON} eq $filter_value) )
+			if (($filter_exclude and $row{ICON} !~ /^$filter_value$/)
+				or (! $filter_exclude and $row{ICON} =~ /^$filter_value$/) )
 			{
 					print join($table_explore->output_separator,@row{@query_field})."\n"
 			}
