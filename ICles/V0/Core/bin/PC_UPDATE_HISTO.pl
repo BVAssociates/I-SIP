@@ -282,7 +282,7 @@ sub run {
 	if (not exists $opts{n} and $total_diff_counter) {
 		log_info("mise à jour du cache pour $environnement");
 		require "pc_update_cache.pl";
-		my @args=($environnement,$table_name);
+		my @args=($environnement);
 		unshift @args,("-m",$module_name) if $module_name;
 		pc_update_cache::run(@args);
 	}
