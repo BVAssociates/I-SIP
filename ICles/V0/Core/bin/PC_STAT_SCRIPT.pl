@@ -160,6 +160,7 @@ while (my %script=$stats->fetch_row() ) {
 
 foreach (keys %script_exec_all) {
 
+	my $median_time;
 	my $average_last_time;
 	my $average_total_time;
 	my $total_time;
@@ -174,10 +175,11 @@ foreach (keys %script_exec_all) {
 		$average_last_time=$average_total_time;
 	}
 
+	$median_time=(sort @{$script_time_last{$_}})[@{$script_time_last{$_}}/2];
 
 	next if $average_last_time < $min_script_average;
 	
-	print join($sep,$_,$script_exec_all{$_},$script_exec_fail{$_},int($total_time),int($average_total_time),int($average_last_time))."\n";
+	print join($sep,$_,$script_exec_all{$_},$script_exec_fail{$_},int($total_time),int($average_total_time),int($average_last_time),int($median_time))."\n";
 	
 }
 
