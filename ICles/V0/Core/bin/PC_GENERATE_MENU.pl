@@ -128,8 +128,7 @@ sub get_source_field ($$) {
 	my $current_table=shift;
 	
 	my $source_data = eval { $env_obj->open_source_table($current_table) };
-	if ($@) {
-		warn $@;
+	if (not $source_data) {
 		return 0;
 	}
 	

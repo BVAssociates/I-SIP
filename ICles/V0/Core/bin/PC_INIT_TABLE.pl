@@ -259,12 +259,16 @@ else {
 	else {
 		$current_table=$env_sip->open_source_table($table_name);
 	}
-	
-	$env_sip->initialize_column_info($current_table,$links);
+	if ($current_table) {
+		$env_sip->initialize_column_info($current_table,$links);
 
-	$env_sip->create_database_histo($table_name);
-	
-	$logger->notice("La table $table_name a été ajoutée dans l'environnement $environnement");
+		$env_sip->create_database_histo($table_name);
+		
+		$logger->notice("La table $table_name a été ajoutée dans l'environnement $environnement");
+	}
+	else {
+		$logger->warning("Impossible d'ouvrir la table $table_name dans $environnement");
+	}
 }
 
 #######################

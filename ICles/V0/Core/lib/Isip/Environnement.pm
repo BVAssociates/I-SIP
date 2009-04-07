@@ -607,7 +607,10 @@ sub open_source_table() {
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
 	
+		#TODO
 		carp("XML sources non implémenté");
+		return;
+		#TODO
 		
 		if (not $self->{info_table}->{$table_name}->{source}) {
 			$logger->error("SOURCE missing for $table_name");
