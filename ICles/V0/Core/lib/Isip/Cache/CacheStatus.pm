@@ -44,10 +44,15 @@ sub check_before_cache() {
 			$self->{action}=1 if $value_ref->{ICON} !~ /^valide|exclus$/;
 		}
 	}
-		
+	
 	my $dirty=abs($self->{action});
 	$self->{current_table}=$table if $dirty;
 
+	#add table itself in cache
+	my @key=$self->{isip_env}->get_table_key($table);
+	my $key_string=@{$value_ref}{@key};
+	$self->add_row_cache($table,$key_string,$value_ref);
+	
 	return $dirty;
 }
 
@@ -115,7 +120,7 @@ sub is_dirty_key() {
 	$table->custom_select_query("SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
 			GROUP BY TABLE_NAME,TABLE_KEY
-			WHERE TABLE_NAME=$table_name' AND TABLE_KEY='$table_key'");
+			WHERE TABLE_NAME='$table_name' AND TABLE_KEY='$table_key' AND TABLE_SOURCE <> '$table_name'");
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -130,6 +135,63 @@ sub is_dirty_key() {
 	}
 }
 
+sub is_dirty_table() {
+	my $self=shift;
+	
+	my $table_name=shift or croak("usage : is_dirty_table(table_name)");
+	my $table_source=shift;
+	
+	# check in current object
+	if (exists $self->{memory_cache}->{$table_name}) {
+		# if source provided, we check only for this table
+		if ($table_source) {
+			if (my $nb=keys %{$self->{memory_cache}->{$table_name}->{$table_source}}) {
+				return $nb;
+			}
+		}
+		# else we check for all table
+		else {
+			my $found=0;
+			my $counter=0;
+			my %tables=%{$self->{memory_cache}->{$table_name}};
+			foreach my $source_name (keys %tables) {
+				if (my $nb=keys %{$self->{memory_cache}->{$table_name}->{$table_source}}) {
+					$found=1;
+					$counter+=$nb;
+				}
+			}
+			
+			if ($found) {
+				return $counter;
+			}
+		}
+	}
+	
+	# if key was not in dirty childs and table was preloaded, key is OK
+	if ($self->{loaded_table}->{$table_name}) {
+		return 0;
+	}
+	
+	# check on disk	
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
+	$table->query_field("NUM_CHILD");
+	$table->custom_select_query("SELECT sum(NUM_CHILD) as NUM_CHILD
+			FROM CACHE_ICON
+			WHERE TABLE_NAME='$table_name'");
+	
+	my $count=0;
+	while (my %row=$table->fetch_row) {
+		$count += $row{NUM_CHILD} if $row{NUM_CHILD};
+	}
+
+	if ($count > 0) {
+		return $count;
+	}
+	else {
+		return 0;
+	}
+}
 
 sub load_cache() {
 	my $self=shift;
@@ -138,7 +200,7 @@ sub load_cache() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	$table->query_condition("TABLE_NAME ='$table_name'");
+	$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {

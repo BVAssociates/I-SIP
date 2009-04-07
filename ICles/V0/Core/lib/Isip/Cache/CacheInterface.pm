@@ -17,6 +17,7 @@ sub new() {
 	$self->{isip_env} = shift or croak("usage: CacheInterface->new(env_ref)");
 	
 	$self->{loaded_table}={};
+	$self->{memory_cache}={};
 	
 	return $self;
 }
@@ -34,6 +35,9 @@ sub is_dirty_key() {
 	croak("cannot use CacheInterface");
 }
 
+sub is_dirty_table() {
+	croak("cannot use CacheInterface");
+}
 
 sub load_cache() {
 	croak("cannot use CacheInterface");

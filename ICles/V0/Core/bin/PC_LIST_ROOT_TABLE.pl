@@ -86,7 +86,20 @@ sub log_info {
 
 #  Traitement des Options
 ###########################################################
+#recuperation de l'environnement
+my $env_compare=$ENV{ENV_COMPARE};
+my $date_compare=$ENV{DATE_COMPARE};
+my $date_explore=$ENV{DATE_EXPLORE};
 
+
+my $filter_field=$ENV{FILTER_FIELD};
+my $filter_value=$ENV{FILTER_VALUE};
+my $filter_exclude;
+
+if ($filter_value and $filter_value =~ /^!(.+)/) {
+	$filter_value=$1;
+	$filter_exclude=1;
+}
 
 my %opts;
 getopts('hvs:', \%opts);
@@ -109,6 +122,10 @@ if ( @ARGV < 2) {
 }
 my $environnement=shift;
 my $module=shift;
+
+$env_compare=$environnement if $date_compare and not $env_compare;
+my $explore_mode="explore";
+$explore_mode="compare" if $env_compare or $date_compare;
 
 #  Corps du script
 ###########################################################
@@ -136,11 +153,23 @@ foreach my $table ($env->get_table_list_module($module)) {
 
 foreach my $table (keys %list_table_uniq) {
 	my $def_name=$table;
-	$table =~ s/^(.+)__.+/$1/;
-	my %table_info=$env->get_table_info($table);
+	my ($real_table,$display_table) = ($table =~ /^([^_]+)(?:__([^_]+))?/);
+	my %table_info=$env->get_table_info($real_table);
 	my $icon="valide";
-	#$icon="dirty" if $cache->is_dirty_table($table);
-	print join($separator,($icon,$table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+	$icon="dirty" if $real_table and $cache->is_dirty_table($real_table);
+	
+	if ($filter_field) {
+		if ($filter_field eq 'ICON') {
+			if (($filter_exclude and $icon !~ /^$filter_value$/)
+				or (! $filter_exclude and $icon =~ /^$filter_value$/) )
+			{
+				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+			}
+		}
+	}
+	else {
+				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+	}
 }
 
 
