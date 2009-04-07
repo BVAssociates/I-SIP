@@ -17,7 +17,7 @@ PC_UPDATE_CACHE - Met à jour le cache
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-m module] environnement tablename
+ PC_UPDATE_HISTO.pl [-h] [-v] [-m module] environnement
  
 =head1 DESCRIPTION
 
@@ -44,8 +44,6 @@ Met à jour le cache.
 =head1 ARGUMENTS
 
 =head2 environnement : environnement à utiliser
-
-=head2 tablename : table a décrire
 
 =head1 AUTHOR
 
@@ -102,7 +100,7 @@ sub run {
 	#  Traitement des arguments
 	###########################################################
 
-	if ( @ARGV < 1 ) {
+	if ( @ARGV != 1 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
 		sortie(202);
@@ -165,8 +163,10 @@ sub run {
 
 	$cache->clear_cache(@list_table);
 	$cache->save_cache;
+	
+	return 1;
 }
 
 
-exit run(@ARGV) if !caller;
+exit !run(@ARGV) if !caller;
 1;

@@ -120,10 +120,10 @@ foreach my $env (@env_list) {
 	if (!$pid) {
 		# child process
 		log_info("nettoyage avant collecte de l'environnement $env");
-		$return_code += pc_clean_baseline::run($env);
+		$return_code = 202 if not pc_clean_baseline::run($env);
 		log_info("Collecte de l'environnement $env");
-		$return_code += pc_update_histo::run("-d",$env);
-		log_info("Terminé pour l'environnement $env");
+		$return_code = 202 if not pc_update_histo::run("-d",$env);
+		log_info("Terminé pour l'environnement $env avec le code $return_code");
 		last if $fork;
 	}
 }
@@ -132,6 +132,7 @@ if ($fork and $pid) {
 	log_info("Attente que tous les process se termine");
 	wait;
 	$return_code=$?;
+	log_info("Collecte complète avec le code $return_code");
 }
 
 exit $return_code;

@@ -217,9 +217,14 @@ sub run {
 
 		if (exists $opts{n}) {
 			log_info("Simulation : les changements n'ont pas été appliqués");
+			
+			use Data::Dumper;
+			print Dumper($diff_obj);
+			
 		} else {
 		
 			#write changes on disk
+			log_info("Debut de la mise à jour des données");
 			my $diff_counter;
 			$diff_counter= $table_diff->update_compare_target();
 			$total_diff_counter += $diff_counter;
@@ -274,17 +279,16 @@ sub run {
 
 	log_info("Nombre de lignes mises à jour effectuées au total dans $environnement : $total_diff_counter");
 
-	if (not exists $opts{n}) {
+	if (not exists $opts{n} and $total_diff_counter) {
 		log_info("mise à jour du cache pour $environnement");
 		require "pc_update_cache.pl";
 		my @args=($environnement,$table_name);
 		unshift @args,("-m",$module_name) if $module_name;
-		$bv_severite+=pc_update_cache::run(@args);
+		pc_update_cache::run(@args);
 	}
-
-	return $bv_severite;
+	return 1;
 }
 
-exit run(@ARGV) if !caller;
+exit !run(@ARGV) if !caller;
 
 1;

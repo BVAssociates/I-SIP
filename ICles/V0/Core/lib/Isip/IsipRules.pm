@@ -291,7 +291,7 @@ sub get_line_icon () {
 	foreach (@icon_list) {
 	
 		# remove label information
-		s/_label//;
+		s/_label// if defined;
 	
 		my $icon;
 		if (not defined $_) {

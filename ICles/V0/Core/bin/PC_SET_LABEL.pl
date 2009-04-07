@@ -160,5 +160,9 @@ $new_line{OLD_ICON}=$ENV{ICON};
 my $cache=IsipTreeCache->new($env);
 $cache->add_dispatcher(CacheStatus->new($env));
 
+log_info("Mise à jour des icônes");
 $cache->recurse_line($table_name, \%new_line);
-$cache->save_cache();
+eval {$cache->save_cache() };
+if ($@) {
+	log_erreur("Mise à jour des icônes impossible : $@");
+}
