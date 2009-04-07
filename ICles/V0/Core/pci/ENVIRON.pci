@@ -3,4 +3,4 @@
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
 Item~Baselines~Ajouter Baseline~expl~~{DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION)}{MESSAGE=getValue("Description de la baseline")}~ExecuteProcedure~PC_SET_BASELINE.pl -m "%MESSAGE%" %Environnement% %DATE_BASELINE%~0~~Add
 Item~Baselines~Supprimer Baseline~adm~~DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=1)~ExecuteProcedure~PC_SET_BASELINE.pl -d %Environnement% %DATE_BASELINE%~0~~Remove
-Item~Baselines~Administrer Baselines~expl~~~Administrate~DATE_UPDATE~0~~Configure
+Item~Baselines~Administrer Baselines~dev~~~Administrate~DATE_UPDATE~0~~Configure

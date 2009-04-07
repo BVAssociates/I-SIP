@@ -8,8 +8,10 @@ Item~Configuration SIP~Ajouter Environnements~adm~~{ODBC_NAME=getListValue("ODBC
 Item~Configuration SIP~Ajouter/Supprimer Projets~adm~~~Administrate~PROJECT_TYPE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
+Item~Configuration SIP~Ajouter/Supprimer Types de Modules~dev~~~Administrate~CONF_MODULE_TYPE~0~~Configure
 
-Item~dev~statistiques~dev~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
+Item~dev~Historique Execution~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
+Item~dev~Statistique Execution~dev~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
 
 #Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
 #Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand
