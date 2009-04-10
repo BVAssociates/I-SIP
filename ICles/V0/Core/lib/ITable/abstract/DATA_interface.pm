@@ -66,6 +66,17 @@ sub open() {
     return $self;
 }
 
+# open a new table, keeping connexion, query and whatever
+sub reopen() {
+	my $self=shift;
+	
+	my $new_table=shift or croak("usage : reopen(new_table)");
+	
+	$self->{table_name}=$new_table;
+	
+	croak("reopen() not implemented in ".ref($self));
+}
+
 ##############################################
 ## accessor methods         ##
 ##############################################
@@ -458,8 +469,7 @@ sub equals_struct() {
 	croak("argument must be a DATA_interface object") if not (blessed($data_ref) and $data_ref->isa("DATA_interface"));
 	
 	if ($self->table_name() ne $data_ref->table_name()) {
-		$self->_debug("different table_name : $data_ref->table_name() , expected $self->table_name()");
-		return 0;
+		$self->_debug("different table_name : ".$data_ref->table_name()." , ".$self->table_name());
 	}
 	elsif (join(',',$self->key()) ne join(',',$data_ref->key()) ) {
 		$self->_debug("different keys");

@@ -1,7 +1,7 @@
 package DataDiff;
 
 
-require ITable::abstract::DATA_interface;
+use ITable::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
 use Carp qw(carp cluck confess croak );
@@ -336,6 +336,9 @@ sub compare_init() {
 	
 	@key=$self->key();
 	
+	# preallocate hash buckets
+	#keys(%{$self->{in_memory_table}})=100000;
+	
 	# Slurp the first table in memory
 	my %row;
 	while (%row=$table_from->fetch_row()) {
@@ -343,6 +346,8 @@ sub compare_init() {
 	}
 	
 	$self->{fetch_source_only_running}=0;
+	
+	$self->_debug("PERF: buckets : ", scalar(%{$self->{in_memory_table}}));
 }
 
 sub compare_next() {
@@ -538,10 +543,9 @@ sub dispatch_target_only_field() {
 	my $self=shift;
 	
 	my $current_key=shift;
-	my $field=shift;
-	my $field_value=shift or croak("usage:dispatch_target_only_field(current_key,field,field_value)");
-
-	$self->_debug("Column only in target : Key (".$current_key.") $field : $field_value");
+	my $field=shift or croak("usage:dispatch_target_only_field(current_key,field)");
+	
+	$self->_debug("Column only in target : Key (".$current_key.") $field");
 	
 	if ($self->{compare_diff}) {
 		$self->{diff}->add_target_only_field($current_key,$field);

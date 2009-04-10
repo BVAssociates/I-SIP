@@ -252,8 +252,9 @@ sub get_query()
 	SELECT
 	max(ID) as ID2,
 	HISTO2.TABLE_KEY as TABLE_KEY_2,
-	HISTO2.FIELD_NAME as FIELD_NAME_2,
-	max(DATE_HISTO) AS DATE_MAX
+	HISTO2.FIELD_NAME as FIELD_NAME_2
+	-- HISTO2.FIELD_NAME as FIELD_NAME_2,
+	-- max(DATE_HISTO) AS DATE_MAX
 	FROM
 	$self->{table_name_histo_view} as HISTO2\n";
 	
