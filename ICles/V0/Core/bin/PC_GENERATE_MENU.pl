@@ -241,8 +241,8 @@ sub get_pci_table_string($$) {
 		$pci_template.='Item~Ligne~Explorer les champs~expl~~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
 ';
 	}
-	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
-Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] %NEW_CATEGORY%~0~~Configure
+	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
+Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 ';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
 	my $pci_fkey_template='Item~~Explorer sous-tables~expl~~~Explore~[% table_list %]~0~~Expand
