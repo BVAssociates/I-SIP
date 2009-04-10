@@ -56,8 +56,8 @@ sub open() {
 	$self->{isip_rules}={};
 		
 	# static value
-	$self->{current_source_only_key}=[];
-	$self->{fetch_source_only_running}=0;
+	$self->{current_target_only_key}=[];
+	$self->{fetch_target_only_running}=0;
 	
 	# var to affect behavior of compare_next
 	$self->{compare_fetch}=0;
@@ -341,11 +341,11 @@ sub compare_init() {
 	
 	# Slurp the first table in memory
 	my %row;
-	while (%row=$table_from->fetch_row()) {
+	while (%row=$table_to->fetch_row()) {
 		$self->{in_memory_table}->{join(',',@row{@key})}={ %row };
 	}
 	
-	$self->{fetch_source_only_running}=0;
+	$self->{fetch_target_only_running}=0;
 	
 	$self->_debug("PERF: buckets : ", scalar(%{$self->{in_memory_table}}));
 }
@@ -353,35 +353,35 @@ sub compare_init() {
 sub compare_next() {
 	my $self=shift;
 	
-	my $table_to=$self->{table_target};
+	my $table_from=$self->{table_source};
 	
-	my @key=sort $table_to->key();
+	my @key=sort $table_from->key();
 	
 	# get a row 
-	my %row_target=$table_to->fetch_row() if not $self->{fetch_source_only_running};
-	my $row_source_ref;
+	my %row_source=$table_from->fetch_row() if not $self->{fetch_target_only_running};
+	my $row_target_ref;
 	
-	if (not %row_target) {
-		# no more data in target
+	if (not %row_source) {
+		# no more data in source
 		
-		$self->{fetch_source_only_running}=1;
+		$self->{fetch_target_only_running}=1;
 		
 		if (%{$self->{in_memory_table}}) {
-			# data remaining in source
+			# data remaining in target
 			
-			if (not @{$self->{current_source_only_key}}) {
+			if (not @{$self->{current_target_only_key}}) {
 				# compute remaining keys if not already done
-				$self->{current_source_only_key}=[ sort keys %{$self->{in_memory_table}} ];
+				$self->{current_target_only_key}=[ sort keys %{$self->{in_memory_table}} ];
 			}
 			
-			my $current_keys=shift @{$self->{current_source_only_key}};
+			my $current_keys=shift @{$self->{current_target_only_key}};
 			
 			if( not defined $current_keys) {
 				# no more key to return
 				return undef;
 			}
 			else {
-				return $self->dispatch_source_only($current_keys,delete $self->{in_memory_table}->{$current_keys});
+				return $self->dispatch_target_only($current_keys,delete $self->{in_memory_table}->{$current_keys});
 			}
 		}
 		else {
@@ -390,16 +390,16 @@ sub compare_next() {
 		}
 	}
 	else {
-		my $current_keys=join(',',@row_target{@key});
-		$row_source_ref=delete $self->{in_memory_table}->{$current_keys};
+		my $current_keys=join(',',@row_source{@key});
+		$row_target_ref=delete $self->{in_memory_table}->{$current_keys};
 
-		if (not $row_source_ref) {
-			# key exists only in target
-			return $self->dispatch_target_only($current_keys,\%row_target);
+		if (not $row_target_ref) {
+			# key exists only in source
+			return $self->dispatch_source_only($current_keys,\%row_source);
 		}
 		else {
 			# key exists in the 2 tables
-			my %row_source=%{ $row_source_ref };
+			my %row_target=%{ $row_target_ref };
 			
 			my %all_fields;
 			foreach my $field (keys %row_source,keys %row_target) {
@@ -415,11 +415,11 @@ sub compare_next() {
 				}
 				
 				if (not exists $row_source{$field1}) {
-					$row_source{$field1}='__delete';
 					$self->dispatch_target_only_field($current_keys,$field1);
 				} elsif (not exists $row_target{$field1}) {
+					$row_target{$field1}='__delete';
 					$self->dispatch_source_only_field($current_keys,$field1);
-				} elsif ($row_target{$field1} eq $row_source{$field1}) {
+				} elsif ($row_source{$field1} eq $row_target{$field1}) {
 					# field are the same on the 2 rows, we keep only one
 					delete $row_source{$field1};
 				}
