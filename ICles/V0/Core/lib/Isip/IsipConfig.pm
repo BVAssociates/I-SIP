@@ -146,6 +146,12 @@ sub get_environnement_list() {
 	return keys %{$self->{info_env}};
 }
 
+sub get_module_list() {
+	my $self = shift;
+
+	return keys %{$self->{info_module}};
+}
+
 # provide file path of Sqlite database depending on architecture, environnement and table name
 sub get_data_dir() {
 	my $self = shift;
@@ -247,6 +253,7 @@ sub create_database_environnement() {
 		"PRIMARY_KEY" NUMERIC,
 		"FOREIGN_TABLE" VARCHAR(30),
 		"FOREIGN_KEY" VARCHAR(30),
+		"COLNO" NUMERIC,
 		PRIMARY KEY ("TABLE_NAME","FIELD_NAME")
 	)');
 	

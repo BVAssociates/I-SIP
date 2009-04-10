@@ -27,7 +27,7 @@ sub _set_columns_info() {
 	
 	my $table_info;
 	
-	eval { $table_info=$self->{database_handle}->prepare("SELECT \* from SYSCOLUMNS_".$self->{table_name}) };
+	eval { $table_info=$self->{database_handle}->prepare("SELECT \* from SYSCOLUMNS_".$self->{table_name}."ORDER BY COLNO") };
 	croak "Error in prepare" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");

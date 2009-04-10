@@ -13,7 +13,8 @@ use fields qw(
 );
 
 use strict;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw(blessed);
+use POSIX qw(strftime);
 
 #use ITable::ITools;
 use Carp qw(carp croak);
@@ -665,32 +666,67 @@ sub initialize_column_info() {
 	
 	my %column_info=$self->get_column_info($itable_obj->table_name);
 	$column_info->begin_transaction;
+	
+	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+	my $col_number=0;
 	foreach my $field ($itable_obj->field) {
+		$col_number++;
 		
-		if (exists $column_info{$field}) {
-			$logger->warning("$field déjà présent : PASSE");
-			next;
+		if (delete $column_info{$field}) {
+			$logger->warning("$field déjà présent : MISE A JOUR");
+			# extract type and size from format "type(size)"
+			my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
+			
+			# construct the line to insert
+			my %row;
+			$row{TABLE_NAME}=$itable_obj->table_name;
+			$row{FIELD_NAME}=$field;
+			$row{DATA_TYPE}=$type;
+			$row{DATA_LENGTH}=$size;
+			$row{TEXT}=$field_txt_hash{$field};
+			$row{COLNO}=$col_number;
+			
+			$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
+			$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
+			
+			$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
+			
+			$column_info->update_row(%row);
 		}
+		else {
+			$logger->warning("$field inconnu : AJOUT");
+			
+			# extract type and size from format "type(size)"
+			my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
+			
+			# construct the line to insert
+			my %row;
+			$row{DATE_HISTO}=$timestamp;
+			$row{TABLE_NAME}=$itable_obj->table_name;
+			$row{FIELD_NAME}=$field;
+			$row{DATA_TYPE}=$type;
+			$row{DATA_LENGTH}=$size;
+			$row{TEXT}=$field_txt_hash{$field};
+			$row{COLNO}=$col_number;
+			
+			$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
+			$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
+			
+			$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
+			
+			$column_info->insert_row(%row);
+		}
+	}
+	
+	foreach (keys %column_info) {
+		$logger->warning("$_ n'est plus dans la base : PASSE");
 		
-		$logger->warning("$field inconnu : AJOUT");
-		
-		# extract type and size from format "type(size)"
-		my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
-		
-		# construct the line to insert
-		my %row;
-		$row{TABLE_NAME}=$itable_obj->table_name;
-		$row{FIELD_NAME}=$field;
-		$row{DATA_TYPE}=$type;
-		$row{DATA_LENGTH}=$size;
-		$row{TEXT}=$field_txt_hash{$field};
-		
-		$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
-		$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
-		
-		$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
-		
-		$column_info->insert_row(%row);
+		# pour l'instant on la laisse, mais prévoir sa suppression
+		#
+		#my %row;
+		#$row{TABLE_NAME}=$itable_obj->table_name;
+		#$row{FIELD_NAME}=$_;
+		#$column_info->delete_row(%row);
 	}
 	$column_info->commit_transaction;
 
