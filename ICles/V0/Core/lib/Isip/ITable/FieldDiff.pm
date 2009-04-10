@@ -1,7 +1,7 @@
 package FieldDiff;
 
 
-require Isip::ITable::DataDiff;
+use Isip::ITable::DataDiff;
 @ISA = ("DataDiff");
 
 use Carp qw(carp cluck confess croak );
@@ -28,6 +28,11 @@ sub open() {
 	
 	
 	$self->{dynamic_field} = [ $self->dynamic_field ,"OLD_FIELD_VALUE"];
+	
+	$self->{comment_field} = ["COMMENT","STATUS","MEMO","PROJECT"];
+	
+	$self->{update_timestamp}= "";
+	$self->{update_user}= "";
 	
 	return $self;
 }
@@ -105,4 +110,84 @@ sub fetch_row() {
 	}
 	
 	return %query_field_row;
+}
+
+#@override
+sub dispatch_equal() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $source_row=shift;
+	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row,target_row)");
+	
+	if ($self->{compare_diff}) {
+		# nothing to do
+	}
+	
+	if ($self->{compare_fetch}) {
+		$target_row->{DIFF}="OK";
+	}
+	
+	if ($self->{update_comment}) {
+		my %new_comment;
+		foreach my $field (@{$self->{comment_field}}) {
+			if ($source_row->{$field} ne $target_row->{$field}) {
+				$new_comment{$field}=$source_row->{$field};
+			}
+		}
+		
+		# some comment needs update
+		if (%new_comment) {
+			my @table_key=sort $self->{table_target}->key();
+			
+			$self->_debug("Comment updated : Key (".$current_key.") : ".join(",",values %new_comment));
+	
+		
+			# assign current key, needed for updating
+			@new_comment{@table_key}=@{$target_row}{@table_key};
+			
+			# set special fields
+			$new_comment{DATE_UPDATE}=$self->{update_timestamp};
+			$new_comment{USER_UPDATE}=$self->{update_user};
+			
+			$self->{table_target}->update_row(%new_comment);
+		}
+	}
+	
+	return $target_row;
+}
+
+sub set_update_timestamp() {
+    my $self = shift;
+    
+	my $timestamp=shift or croak ("usage : set_update_timestamp(timestamp)");
+	
+	# ISO 8601 format : 1977-04-22T06:00
+	if ( $timestamp !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
+		$self->_error("timestamp must be like 1977-04-22T06:00 (ISO 8601)");
+		croak("usage : set_update_timestamp(timestamp)")
+	}
+	
+	$self->{update_timestamp}=$timestamp;
+}
+
+sub set_update_user() {
+    my $self = shift;
+    
+	my $user=shift or croak ("usage : set_update_user(user)");
+	
+	$self->{update_user}=$user;
+}
+
+
+sub update_comment_target() {
+	my $self = shift;
+	
+	$self->{update_comment}=1;
+	
+	$self->{table_target}->begin_transaction();
+	$self->compare();
+	$self->{table_target}->commit_transaction();
+	
+	return;
 }

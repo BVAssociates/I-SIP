@@ -406,11 +406,11 @@ sub compare_next() {
 				$all_fields{$field}++;
 			}
 			
+			my %row_update;
 			foreach my $field1 (keys %all_fields) {
 				
 				if (grep(/^$field1$/, $self->compare_exclude)) {
 					#field excluded from compare, aka equal
-					delete $row_source{$field1};
 					next;
 				}
 				
@@ -419,17 +419,17 @@ sub compare_next() {
 				} elsif (not exists $row_target{$field1}) {
 					$row_target{$field1}='__delete';
 					$self->dispatch_source_only_field($current_keys,$field1);
-				} elsif ($row_source{$field1} eq $row_target{$field1}) {
-					# field are the same on the 2 rows, we keep only one
-					delete $row_source{$field1};
+				} elsif ($row_source{$field1} ne $row_target{$field1}) {
+					# field are differents
+					$row_update{$field1} = $row_source{$field1};
 				}
 			}
 			
-			if (%row_source) {
-				return $self->dispatch_source_update($current_keys,\%row_source,\%row_target);
+			if (%row_update) {
+				return $self->dispatch_source_update($current_keys,\%row_update,\%row_target);
 			}
 			else {
-				return $self->dispatch_equal($current_keys,\%row_target);
+				return $self->dispatch_equal($current_keys,\%row_source,\%row_target);
 			}
 		}
 	}
@@ -445,7 +445,8 @@ sub dispatch_equal() {
 	my $self=shift;
 	
 	my $current_key=shift;
-	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,target_row)");
+	my $source_row=shift;
+	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row,target_row)");
 	
 	if ($self->{compare_diff}) {
 		# nothing to do

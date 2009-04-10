@@ -111,7 +111,7 @@ sub new() {
 	my %sources;
 	while (my %row=$source_info->fetch_row) {
 		next if not exists $self->{info_table}->{$row{XML_NAME}};
-	
+		
 		carp("XML sources non implémenté");
 		
 		#$sources{$row{XML_NAME}}=$row{XML_PATH};
@@ -162,8 +162,10 @@ sub get_table_list() {
 sub get_table_list_module() {
 	my $self = shift;
 	
-	my $module_name= shift or croak("usage : get_table_list_module(module_name)");
+	my $module_name= shift;
 
+	return $self->get_table_list() if not $module_name;
+	
 	my @table_list;
 	my %temp_hash=%{$self->{info_table}};
 	foreach (keys %temp_hash ) {
