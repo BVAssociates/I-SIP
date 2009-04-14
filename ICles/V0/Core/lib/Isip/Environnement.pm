@@ -369,7 +369,7 @@ sub is_baseline_date() {
 	
 	my $date=shift;
 	
-	if ( $date !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
+	if ( $date !~ /\d{4}-?\d{2}-?\d{2}T\d{2}:?\d{2}/) {
 			croak("$date:La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
 	}
 	
@@ -536,7 +536,7 @@ sub open_local_table() {
 		croak ("Unable to access $table_name for $self->{environnement}");
 	}
 	my $tmp_return = eval {Sqlite->open($sqlite_path, $table_name, @_)};
-	croak "Error opening $table_name : $@" if $@;
+	croak "Impossible d'ouvrir la table SQLite $table_name" if $@;
 	return $tmp_return;
 }
 
@@ -857,10 +857,41 @@ sub drop_histo_baseline() {
 	
 	my $baseline_name=$table_name.'_'.$baseline_date;
 	
-	my $baseline_table=$self->open_local_table($table_name."_HISTO");
+	my $database_path=$self->get_sqlite_path($table_name."_HISTO");
+	return 0 if not $database_path;
 	
-	$baseline_table->execute("DROP TABLE $baseline_name");
-	#$baseline_table->execute("VACUUM");
+	# ouverture sqlite_master
+	my $master_table=Sqlite->open($database_path, 'sqlite_master', @_);
+	
+	$master_table->execute("DROP TABLE $baseline_name");
+	#$master_table->execute("VACUUM");
+}
+
+# method to delete a _HISTO table
+#  only move HISTO to a fake baseline, to be clean later
+#  return the fake baseline date
+sub drop_histo() {
+	my $self=shift;
+
+	my $table_name=shift or croak("usage : drop_histo_rename(table_name)");
+	
+	my $counter=0;
+	my $fake_baseline_date = "00000000T";
+	my $new_histo_name=$table_name.'_'.$fake_baseline_date.sprintf("%04d",$counter);
+	while ($self->exist_local_table($new_histo_name)) {
+		$counter++;
+		$new_histo_name=$table_name.'_'.$fake_baseline_date.sprintf("%04d",$counter);
+	}
+
+	my $master_table=$self->open_local_table($table_name."_HISTO");
+	
+	$logger->info("rename ".$table_name."_HISTO to ".$new_histo_name);
+	$master_table->execute("ALTER TABLE ".$table_name."_HISTO RENAME TO ".$new_histo_name);
+	
+	# recreate empty HISTO
+	$self->create_database_histo($table_name);
+	
+	return $fake_baseline_date.sprintf("%04d",$counter);;
 }
 
 1;

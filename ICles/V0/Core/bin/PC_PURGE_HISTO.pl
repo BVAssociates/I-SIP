@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-package pc_clean_baseline;
+package pc_purge_histo;
 
 # Inclusions obligatoires
 use strict;
@@ -12,16 +12,22 @@ use Isip::IsipLog qw'$logger log_screen_only';
 ###########################################################
 =head1 NAME
 
-PC_CLEAN_BASELINE - Supprime les table de baseline qui ne sont pas déclarés comme baseline
+PC_PURGE_HISTO - Supprime les entrées des tables HISTO
 
 =head1 SYNOPSIS
 
- PC_CLEAN_BASELINE.pl [-h] [-v] environnement
+ PC_PURGE_HISTO.pl [-h] [-v] [-d | -k] environnement
  
 =head1 DESCRIPTION
 
-Utiliser cette commande pour nettoyer les bases en supprimant les tables de baselines
-qui ne correpsondent pas à une baseline de la liste des baselines
+Supprime les entrées des tables HISTO. Par défaut, le script ne fait que renommer
+les tables HISTO pour qu'elles soient ensuite réellement supprimer par le script 
+PC_CLEAN_BASELINE.pl .
+
+Avec l'option "-d", la table renommée est immédiatement supprimée.
+
+Avec l'option "-k", on insert dans la nouvelle table les valeurs et commentaires
+dans leur dernière valeur connues.
 
 =head1 ENVIRONNEMENT
 
@@ -39,6 +45,10 @@ qui ne correpsondent pas à une baseline de la liste des baselines
 
 =item -v : Mode verbeux
 
+=item -d : supprime reellement au lieu de renommer (DROP)
+
+=item -k : garder la dernière collecte
+
 =back
 
 =head1 ARGUMENTS
@@ -46,6 +56,8 @@ qui ne correpsondent pas à une baseline de la liste des baselines
 =over
 
 =item environnement
+
+=item date
 
 =back
 
@@ -88,16 +100,15 @@ sub run {
 
 
 	my %opts;
-	getopts('hvdm:', \%opts);
+	getopts('hvdk', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
 
-	usage($debug_level+1) if $opts{h};
 	
-	my $drop_baseline=$opts{d};
-	my $message=$opts{m};
-
+	my $drop_histo=$opts{d};
+	my $keep_last=$opts{k};
+	
 	#  Traitement des arguments
 	###########################################################
 
@@ -115,50 +126,38 @@ sub run {
 
 	use Isip::Environnement;
 
-	$logger->notice("Nettoyrage de l'environnement $environnement");
 	my $env=Environnement->new($environnement);
 	
 	#log_screen_only();
 	
-	my $baseline_list=ITools->open("DATE_UPDATE");
-	$baseline_list->query_condition("ENVIRON=$environnement");
-	
-	my %baseline;
-	while (my %baseline_info=$baseline_list->fetch_row()) {
-		$baseline_info{DATE_UPDATE} =~ tr/:-//d;
-		$baseline{$baseline_info{DATE_UPDATE}}++ if $baseline_info{BASELINE};
-	}
-	
 	foreach my $table_name ($env->get_table_list) {
-	
-		#manualy open database which is storing _HISTO table
-		my $database_path=$env->get_sqlite_path($table_name."_HISTO");
-		my $master_table=Sqlite->open($database_path, 'sqlite_master');
-		$master_table->query_field("name");
-		
-		#put list in memory to avoid locking
-		my @base_table;
-		while (my ($histo_table)=$master_table->fetch_row_array) {
-			push @base_table, $histo_table;
-		}
-		
-		foreach my $histo_table (@base_table) {
-			my $found_baseline=$histo_table;
-			
-			# table not a baseline table
-			next if not $found_baseline =~ s/^$table_name\_(\d{4}\d{2}\d{2}T\d{2}\d{2})$/$1/;
-			
-			# table is a known baseline
-			next if $baseline{$found_baseline};
-			
-			# table is an unknown baseline
-			log_info("$table_name : $found_baseline n'est pas une baseline connue. Suppression.");
-			$env->drop_histo_baseline($table_name,$found_baseline);
-		}
+		#my $pid = fork();
+		#if (!$pid) {
+
+			$logger->notice("deplacement de $table_name\_HISTO");
+			my $date=$env->drop_histo($table_name);
+			if ($keep_last) {
+				$logger->notice("réinsertion de la dernière collecte dans $table_name\_HISTO");
+				
+				# little quirk to get the query of the last update data set
+				my $histo_table=$env->open_local_from_histo_table($table_name);
+				my $select_query=$histo_table->get_query();
+				undef $histo_table;
+				$select_query =~ s/$table_name\_HISTO/$table_name\_$date/g;
+				
+				my $local_table=$env->open_local_table($table_name."_HISTO");
+				$local_table->execute("INSERT INTO ".$table_name."_HISTO ".$select_query);
+			}
+			if ($drop_histo) {
+				$logger->notice("suppression complète de $table_name\_HISTO");
+				$env->drop_histo_baseline($table_name,$date);
+			}
+
+			$logger->notice("terminé pour $table_name");
+		#	last;
+		#}
 	}
 	#wait;
-	
-	$logger->notice("Nettoyage terminé pour $environnement");
 	
 	return 1;
 }

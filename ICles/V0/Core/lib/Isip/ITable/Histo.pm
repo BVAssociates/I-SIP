@@ -112,11 +112,15 @@ sub query_date {
     my $self = shift;
     if (@_) {
 		my $datetime=shift;
-		# ISO 8601 format : 1977-04-22T06:00
-		if ( $datetime !~ /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/) {
-			$self->_error("datetime must be like 1977-04-22T06:00 (ISO 8601)");
+		# ISO 8601 format : 1977-04-22T06:00 or 19770422T0600
+		if ( $datetime !~ /\d{4}-?\d{2}-?\d{2}T\d{2}:?\d{2}/) {
+			$self->_error("datetime must be like 1977-04-22T06:00 or 19770422T0600 (ISO 8601)");
 			croak("usage : query_date(datetime)")
-		}	
+		}
+		
+		# reformat date
+		$datetime =~ s/(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2})/$1-$2-$3T$4:$5/;
+		
 		$self->{query_date} = $datetime;
 	}
     return $self->{query_date} ;

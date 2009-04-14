@@ -17,7 +17,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-m module] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-m module] [-b environnement_source[@date]] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -43,9 +43,11 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 
 =item -d : enregistre la date
 
-=item -c : compacte la base après collecte
+=item -k : compacte la base après collecte
 
 =item -m module : n'effectue la collecte que sur les tables de "module"
+
+=item -c env@date : utilise un environnement à une date comme source de donnée
 
 =back
 
@@ -99,7 +101,7 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:dc', \%opts) or usage(0);
+	getopts('hvnm:dkc:', \%opts) or usage(0);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -107,7 +109,19 @@ sub run {
 	usage($debug_level+1) if $opts{h};
 	my $module_name=$opts{m};
 	my $save_date=$opts{d};
-	my $force_vacuum=$opts{c};
+	my $force_vacuum=$opts{k};
+	
+	my $env_compare;
+	my $date_compare;
+	if (exists $opts{c}) {
+		if ($opts{c} =~ /@/) {
+			($env_compare,$date_compare) = split(/@/,$opts{c});
+		}
+		else {
+			$env_compare=$opts{c};
+		}
+	}
+	
 
 	#  Traitement des arguments
 	###########################################################
@@ -119,6 +133,10 @@ sub run {
 	}
 	my $environnement=shift @ARGV;
 	my $table_name=shift @ARGV;
+	
+	if ($env_compare and $env_compare eq $environnement) {
+		log_erreur("Environnement source est identique à l'environnement cible");
+	}
 
 	#  Corps du script
 	###########################################################
@@ -190,14 +208,23 @@ sub run {
 		
 		$counter++;
 		
-		log_info("Connexion à la table source dans $environnement : $current_table");
-		# open source table depending on TYPE_SOURCE
-		$source_table=$env_sip->open_source_table($current_table);
-		
+		if (not $env_compare) {
+			log_info("Connexion à la table source dans $environnement : $current_table");
+			# open source table depending on TYPE_SOURCE
+			$source_table=$env_sip->open_source_table($current_table);
+		}
+		elsif ($env_compare ne $environnement) {
+			log_info("Connexion à la table $env_compare : $current_table");
+			my $env_from=Environnement->new($env_compare);
+			$source_table=$env_from->open_local_from_histo_table($current_table, $date_compare);
+		}
+		else {
+			die "cas impossible";
+		}
 		
 		log_info("Connexion à la base d'historisation dans $environnement : $current_table");
 		my $histo_table=$env_sip->open_local_from_histo_table($current_table);
-		 $histo_table->query_field($source_table->query_field);
+		#$histo_table->query_field($source_table->query_field);
 		
 		my $force_comment;
 		if ($histo_table->is_empty) {
