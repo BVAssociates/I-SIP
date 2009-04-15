@@ -6,36 +6,39 @@ $Carp::MaxArgNums=0;
 $Carp::MaxArgLen=0;
 
 use Log::Handler;
-
+use POSIX qw(strftime);
 
 our $logger;
 
 # BEGIN STATISTIC LOGGER
 my $start;
-my $end;
 my $log;
 my $stat_sep;
+my $args;
 END {
-	my $args=join(' ',@ARGV);
-	$log->info(join($stat_sep,$args,$?,"exit"));
+	my $user_name=$ENV{IsisUser};
+	$user_name=$ENV{USERDOMAIN}."\\".$ENV{USERNAME} if not $user_name;
+	$log = Log::Handler->new();
+	$log->add(file => {
+		filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
+		mode     => 'append',
+		autoflush => 1,
+		maxlevel => 'debug',
+		minlevel => 'warning',
+		message_layout => join($stat_sep,'%T',$user_name,'%S','%P','%r','%m'),
+		timeformat      => '%Y%m%dT%H%M%S',
+		newline  => 1,
+	});
+	$log->info(join($stat_sep,$args,$?,$start));
 }
 
 BEGIN {
+	$args=join(' ',@ARGV);
 	$stat_sep="££";
-	
-	$log = Log::Handler->new();
-    $log->add(file => {
-        filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
-        mode     => 'append',
-		autoflush => 0,
-        maxlevel => 'debug',
-        minlevel => 'warning',
-		message_layout => join($stat_sep,'%T','%S','%P','%r','%m'),
-		timeformat      => '%Y%m%dT%H%M%S',
-        newline  => 1,
-    });
 
-    $log->info(join(' ',@ARGV).$stat_sep.$stat_sep."starting");
+	$start=strftime "%Y%m%dT%H%M%S", localtime;
+	
+    #$log->info($args.$stat_sep.$stat_sep."starting");
 }
 # END STATISTIC LOGGER
 
@@ -111,7 +114,9 @@ if ($@) {
 		alias    => 'screen-out',
 		});
 	$logger->add(file => {
-		autoflush => 1,
+		#fileopen => 0,
+		#reopen => 0,
+		autoflush => 0,
 		newline  => 1,
 		maxlevel => 'info',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
