@@ -49,6 +49,17 @@ sub add_link() {
 	
 }
 
+sub remove_link() {
+	my $self=shift;
+	
+	my $table_name=shift;
+	my $table_foreign=shift or croak "usage: add_link (table_name, table_foreign)";;
+	
+	delete $self->{table_parent}->{$table_name}->{$table_foreign};
+	delete $self->{table_child}->{$table_foreign}->{$table_name}; 
+}
+
+
 
 # for a table having some foreign_key
 # return ($field1, $field2)

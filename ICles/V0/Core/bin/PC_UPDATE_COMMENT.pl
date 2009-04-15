@@ -17,7 +17,7 @@ Pc_UPDATE_COMMENT - Met à jour les commentaires d'un environnent à l'autre à val
 
 =head1 SYNOPSIS
 
- Pc_UPDATE_COMMENT.pl [-r] -c environnement_source environnement_cible table_name
+ Pc_UPDATE_COMMENT.pl [-m module] -c environnement_source environnement_cible table_name
  
 =head1 DESCRIPTION
 
@@ -40,11 +40,7 @@ Met à jour les commentaires d'un environnent à l'autre à valeur égales.
 
 =item -v : Mode verbeux
 
-=item -r : Formatte la sortie pour un REPORT
-
-=item -k clef : affiche les champs de la ligne correspondant à la clef
-
-=item -a : affiche tous les champs de toutes les lignes
+=item -m module
 
 =item -c environnement_source : Environnement qui contient les commentaires à copier
 

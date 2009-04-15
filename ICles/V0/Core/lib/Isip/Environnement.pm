@@ -72,6 +72,7 @@ sub new() {
 	}
 	
 	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
+	$column_info->query_sort("COLNO");
 	
 	while (my %row=$column_info->fetch_row) {
 		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
@@ -80,7 +81,10 @@ sub new() {
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{description}=$row{TEXT};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_type}=$row{DATA_TYPE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_size}=$row{DATA_LENGTH};
-
+		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{column_order}=$row{COLNO};
+		
+		push @{$self->{info_table}->{$row{TABLE_NAME}}->{_column_order}}, $row{FIELD_NAME};
+		
 		if ($row{PRIMARY_KEY}) {
 			push @{$self->{info_table}->{$row{TABLE_NAME}}->{key}}, $row{FIELD_NAME} ;
 			$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}="clef";
@@ -201,6 +205,7 @@ sub get_links_menu() {
 		my $child_ext="";
 		foreach my $parent (@parents) {
 			my %field=$link_clone->get_foreign_fields($child,$parent);
+			$link_clone->remove_link($child,$parent);
 			foreach my $pkey (keys %field) {
 				# on construit une nouvelle relation avec une table parente dédiée
 				$link_clone->add_link($child_ext.$child,$pkey,$table.$separator.$parent,$field{$pkey});
@@ -267,26 +272,17 @@ sub get_table_size() {
 sub get_table_field() {
 	my $self = shift;
 	my $tablename = shift or croak "get_table_field() wait args : 'tablename'";
-	my $debug_level = 0;
-	my $key_found;
 	
 	# some different way to get the infos :
 	#   - from INFO_TABLE, 
 	#   - from local table
 	#   - from ITools definition file
 	#
-	# For now, we'll use ITools definition beacause it keep order of field
+	# we use collected values from COLUMN_INFO
 	
 	my @cols=@{$self->{info_table}->{$tablename}->{_column_order}};
-	if ( not @cols ) {
-		my $table=ITools->open("IKOS_TABLE_".$self->{environnement}."_".$tablename, {debug => $debug_level});
-		@cols=@{$self->{info_table}->{$tablename}->{_column_order}}=$table->field;
-	}
-		
+
 	return @cols;
-	
-	#my %cols=%{$self->{info_table}->{$tablename}->{column}};
-	#return keys %cols;
 }
 
 # provide file name of Sqlite database depending on table name and environnement
@@ -887,6 +883,9 @@ sub drop_histo() {
 	
 	$logger->info("rename ".$table_name."_HISTO to ".$new_histo_name);
 	$master_table->execute("ALTER TABLE ".$table_name."_HISTO RENAME TO ".$new_histo_name);
+	$logger->info("delete obsolete indexes");
+	$master_table->execute("DROP INDEX IDX_TABLE_KEY");
+	$master_table->execute("DROP INDEX IDX_TABLE_FIELD");
 	
 	# recreate empty HISTO
 	$self->create_database_histo($table_name);
