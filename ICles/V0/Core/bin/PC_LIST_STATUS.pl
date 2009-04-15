@@ -316,6 +316,7 @@ while (my %row=$table_explore->fetch_row) {
 	$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
 	if ($filter_field) {
 		if ($filter_field eq 'ICON') {
+			$filter_value=qr/$filter_value/;
 			if (($filter_exclude and $row{ICON} !~ /^$filter_value$/)
 				or (! $filter_exclude and $row{ICON} =~ /^$filter_value$/) )
 			{
