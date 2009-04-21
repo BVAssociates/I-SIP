@@ -290,22 +290,28 @@ sub update_row() {
 			push @updated_fields,$field."=".$row{$field};
 		}
 	}
-	my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(' AND ', @conditions));
 	
-	# prepare query
-	$self->_debug('Prepare SQL : ',$insert_query);
-	eval { $self->{database_statement}=$self->{database_handle}->prepare( $insert_query ) };
-	croak "Error in : ".$insert_query if $@;	
-	# execute query
-	$self->_debug('Execute SQL');
-	eval { $self->{database_statement}->execute() };
-	croak "Error while : ".$insert_query if $@;
-	
-	my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name}, "ID");
-	
-	$self->_close_database();
-	
-	return $last_id;
+	if (@updated_fields) {
+		my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(' AND ', @conditions));
+		
+		# prepare query
+		$self->_debug('Prepare SQL : ',$insert_query);
+		eval { $self->{database_statement}=$self->{database_handle}->prepare( $insert_query ) };
+		croak "Error in : ".$insert_query if $@;	
+		# execute query
+		$self->_debug('Execute SQL');
+		eval { $self->{database_statement}->execute() };
+		croak "Error while : ".$insert_query if $@;
+		
+		my $last_id = $self->{database_handle}->last_insert_id('', '', $self->{table_name}, "ID");
+		
+		$self->_close_database();
+		
+		return $last_id;
+	}
+	else {
+		$self->_debug('Nothing to update');
+	}
 }
 
 sub delete_row() {
