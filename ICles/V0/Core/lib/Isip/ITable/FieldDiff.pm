@@ -160,13 +160,13 @@ sub dispatch_source_update() {
 	my $source_row=shift;
 	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row)");
 
-	$self->SUPER::dispatch_source_update($current_key,$source_row,$target_row);
+	my $return=$self->SUPER::dispatch_source_update($current_key,$source_row,$target_row);
 	
 	if ($self->{update_comment}) {
 		$logger->warning("Impossible de mettre à jour le commentaire car la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'a pas la même valeur dans l'environnement cible");
 	}
 	
-	return 1;
+	return $return;
 }
 
 sub dispatch_source_only() {
@@ -175,13 +175,13 @@ sub dispatch_source_only() {
 	my $current_key=shift;
 	my $source_row=shift or croak("usage:dispatch_source_only(current_key,source_row)");
 
-	$self->SUPER::dispatch_source_only($current_key,$source_row);
+	my $return=$self->SUPER::dispatch_source_only($current_key,$source_row);
 	
 	if ($self->{update_comment}) {
 		$logger->warning("Impossible de mettre à jour le commentaire car la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'existe pas dans l'environnement cible");
 	}
 	
-	return 1;
+	return $return;
 }
 
 sub set_update_timestamp() {

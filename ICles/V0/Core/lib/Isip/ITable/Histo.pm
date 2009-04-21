@@ -141,7 +141,7 @@ sub query_date {
 		$self->{column_histo}->query_date($datetime);
 		
 		# little check if fields are missing at new date
-		if ($self->{query_field}  > @{$self->field()}) {
+		if (@{$self->{query_field}}  > $self->field()) {
 			$self->{query_field}  = [ $self->field() ];
 		}
 	}
