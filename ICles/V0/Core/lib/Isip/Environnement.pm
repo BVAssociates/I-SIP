@@ -641,6 +641,8 @@ sub initialize_column_info() {
 		$source_col{size}=$size_hash{$field} if $size_hash{$field};
 		$source_col{colno}=$colno_hash{$field} if $colno_hash{$field};
 		$source_col{key}=1 if grep {$_ eq $field} @key;
+		$source_col{foreign_table}=$foreign_table_info{$field} if $foreign_table_info{$field};
+		$source_col{foreign_field}=$foreign_key_info{$field} if $foreign_key_info{$field};
 		
 		if ($all_fields{$field} > 0) {
 			$column_info->add_column($field, \%source_col);
