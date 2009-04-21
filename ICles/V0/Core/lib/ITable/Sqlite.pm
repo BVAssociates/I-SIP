@@ -129,6 +129,8 @@ sub _open_database() {
 	# use RaiseError exception to stop the script at first error
 	$self->{database_handle} = DBI->connect("dbi:SQLite:dbname=$self->{database_path}","","",{ RaiseError => 1});
 	
+	$self->_debug("SQLite version",$self->{database_handle}->{sqlite_version});
+	
 	# set the busy timeout
 	$self->_set_timeout();
 	
