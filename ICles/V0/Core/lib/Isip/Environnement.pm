@@ -535,9 +535,7 @@ sub open_source_table() {
 			$return_table=ODBC_Query->open($library, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
 
 			#manually set KEY
-			if ($self->{info_table}->{$table_name}->{key}) {
-				$return_table->key($self->get_table_key($table_name));
-			} else {
+			if (not $return_table->key($self->get_table_key($table_name))) {
 				carp ("PRIMARY KEY not defined for $table_name.") ;
 			}
 		}
@@ -547,9 +545,7 @@ sub open_source_table() {
 			$return_table=ODBC->open($library, $table_name, $options);
 			
 			#manually set KEY
-			if ($self->{info_table}->{$table_name}->{key}) {
-				$return_table->key($self->get_table_key($table_name));
-			} else {
+			if (not $return_table->key($self->get_table_key($table_name))) {
 				my $table_logical=$table_name;
 				$table_logical =~ s/P$/L0/;
 				carp ("PRIMARY KEY not defined for $table_name. Try to get it from $table_logical.") ;
