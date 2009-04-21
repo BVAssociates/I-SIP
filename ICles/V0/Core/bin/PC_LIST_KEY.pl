@@ -11,15 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_TABLE_LOCAL - Liste les tables locales (SQlite)
+PC_LIST_KEY - Liste les clefs primaire des tables
 
 =head1 SYNOPSIS
 
- PC_LIST_TABLE_LOCAL.pl [-h][-v] [-s separateur] environnement
+ PC_LIST_KEY.pl [-h][-v] [-s separateur] environnement
  
 =head1 DESCRIPTION
 
-Affiche le contenu d'une table de la base de donnée d'information de l'environnement
+Liste les clefs primaire de toutes les tables dans un environnement
 
 =head1 ENVIRONNEMENT
 
@@ -46,8 +46,6 @@ Affiche le contenu d'une table de la base de donnée d'information de l'environne
 =over
 
 =item environnement
-
-=item tablename : table a ouvrir
 
 =back
 
@@ -112,14 +110,14 @@ my $environnement=shift;
 ###########################################################
 my $bv_severite=0;
 use Isip::Environnement;
+use ITable::ITools;
 
 my $env=Environnement->new($environnement);
 
+
 foreach my $table ($env->get_table_list()) {
-	my %table_info=$env->get_table_info($table);
-	$table_info{icon}="valide";
-	$table_info{icon}="warn" if not $env->get_table_key($table);;
-	$table_info{table_name}=$table;
-	$table_info{active}=1;
-	print join($separator, @table_info{("root_table","active","table_name","type_source","param_source","module","label_field","description","icon")}),"\n",
+	my $column_table=$env->open_local_table($table."_COLUMN");
+	while (my %row=$column_table->fetch_row) {
+		print join($separator,@row{$column_table->query_field})."\n" if $row{PRIMARY_KEY};
+	}
 }

@@ -127,12 +127,7 @@ sub get_source_field ($$) {
 	my $env_obj=shift;
 	my $current_table=shift;
 	
-	my $source_data = eval { $env_obj->open_source_table($current_table) };
-	if (not $source_data) {
-		return 0;
-	}
-	
-	return $source_data->field();
+	return $env_obj->get_table_field($current_table);
 }
 
 sub get_def_table_string($$) {

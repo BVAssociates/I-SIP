@@ -5,6 +5,7 @@ use ITable::abstract::DATA_interface;
 @ISA = ("DATA_interface");
 
 use ITable::Sqlite;
+use Isip::HistoColumns;
 
 use Carp qw(carp cluck confess croak );
 use Scalar::Util qw(blessed);
@@ -23,7 +24,7 @@ sub open() {
 	
 	# mandatory parameter
 	if (@_ < 2) {
-		croak ('\'new\' take 2 mandatory argument: ${class}->open("databasename","tablename"[ ,{ timeout => $sec, debug => $num} ])')
+		croak ('\'new\' take 2 mandatory argument: ${class}->open("databasename","tablename"[ ,{ date => $query_date, timeout => $sec, debug => $num} ])')
 	}
 	# virtual informations
     my $database_name = shift;
@@ -41,6 +42,9 @@ sub open() {
 	
 	# Open real table on database
 	$self->{table_histo} = Sqlite->open($self->{database_name}, $self->{table_name_histo}, $options);
+	
+	# get object handling columns
+	$self->{column_histo} = HistoColumns->new($self->{database_name}, $self->{table_name}, $options);
 	
 	bless ($self, $class);
 	
@@ -89,23 +93,32 @@ sub open() {
 # modifying primary key is now avaibable
 # query_sort always by key
 sub key {
-    my $self = shift;
-    if (@_) { 
-		@{ $self->{key} } = @_ ;
-		@{ $self->{query_sort} } = @_ ;
-		$self->_debug("New Virtual Keys : ", join("|",@{$self->{key}}));
+    my $self=shift;
+	if (@_) { 
+		croak("Unable to set key");
 	}
-    return @{ $self->{key} };
+	
+	my @key=$self->{column_histo}->get_key_list();
+    return @key;
 }
 
 sub field {
     my $self = shift;
     if (@_) { 
-		@{ $self->{field} } = @_ ;
-		@{ $self->{query_field} } = @_ ;
-		$self->_debug("New fields : ", join("|",@{$self->{field}}));
+		croak("Unable to set field");
 	}
-    return @{ $self->{field} };
+	
+	my @list=$self->{column_histo}->get_field_list();
+    return @list;
+}
+
+sub field_txt {
+    my $self = shift;
+    if (@_) { 
+		croak("Unable to set field_txt");
+	}
+	my %hash=$self->{column_histo}->get_field_txt_hash();
+    return %hash;
 }
 
 sub query_date {
@@ -121,7 +134,16 @@ sub query_date {
 		# reformat date
 		$datetime =~ s/(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2})/$1-$2-$3T$4:$5/;
 		
+		# set date
 		$self->{query_date} = $datetime;
+
+		# set date for HistoColums object
+		$self->{column_histo}->query_date($datetime);
+		
+		# little check if fields are missing at new date
+		if ($self->{query_field}  > @{$self->field()}) {
+			$self->{query_field}  = [ $self->field() ];
+		}
 	}
     return $self->{query_date} ;
 }
@@ -305,7 +327,7 @@ sub fetch_row() {
 	
 	# if a temp_next_row exist from previous call, we add the FIELD_VALUE to the return hash
 	if ( %{ $self->{temp_next_row} } ) {
-		my %field_line= %{ $self->{temp_next_row} };
+		%field_line= %{ $self->{temp_next_row} };
 		
 		# split FIELD_NAME when one row contains more than one real field
 		if (grep {/,/} $field_line{FIELD_NAME}) {
@@ -667,6 +689,8 @@ sub validate_row_by_key() {
 	
 	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=$updated_value, USER_UPDATE=$user_update, DATE_UPDATE=$date_update where TABLE_KEY=$key";
 	$self->{table_histo}->execute($update_sql);
+	
+	warn("obsolete method : validate_row_by_key");
 }
 
 # add new field
@@ -674,15 +698,31 @@ sub add_field() {
 	my $self = shift;
 	
 	my $field_name = shift or croak ('add_field take 1 argument : field_name');
+	my $field_options = shift;
 	
 	$self->_debug("Add field $field_name");
 	
-	# just add field name in field member
-	push ( @{$self->{field}} , $field_name);
-	push ( @{$self->{query_field}} , $field_name);
+	$self->{column_histo}->add_column($field_name, $field_options);
 	
-	#TODO : add field definition in TABLE_INFO
+	
+	return 1;
 }
+
+sub remove_field() {
+	my $self = shift;
+	
+	my $field_name = shift or croak ('remove_field take 1 argument : field_name');
+	my $field_options = shift;
+	
+	$self->_debug("Remove field $field_name");
+	
+	$self->{column_histo}->remove_column($field_name, $field_options);
+	
+	warn 'TODO : set "__delete" on removed fields';
+	
+	return 1;
+}
+
 
 sub finish() {
 	my $self=shift;

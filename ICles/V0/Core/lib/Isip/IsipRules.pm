@@ -91,7 +91,7 @@ sub _init_info() {
 	my $self=shift;
 	
 	# store table columns and their informationns (desc,type..)
-	$self->{column_info}={ $self->{environnement}->get_column_info($self->{table_name}) };
+	$self->{column_info}=$self->{environnement}->get_columns($self->{table_name});
 	
 	if ($self->{environnement}->exist_local_table($self->{table_name}."_LABEL")) {
 		my $table_status=$self->{environnement}->open_local_table($self->{table_name}."_LABEL");
@@ -164,7 +164,7 @@ sub get_field_type_txt() {
 	
 	my $col_name=shift or croak("usage get_field_type_txt(col_name)");
 	
-	my $type = $self->{column_info}->{$col_name}->{type};
+	my $type = $self->{column_info}->get_type($col_name);
 	$type="" if not defined $type;
 	return $type;
 }
@@ -174,7 +174,7 @@ sub get_field_description() {
 	
 	my $col_name=shift or croak("usage get_type(col_name)");
 	
-	my $desc=$self->{column_info}->{$col_name}->{description};
+	my $desc=$self->{column_info}->get_field_txt($col_name);
 	
 	$desc="" if not defined $desc;
 	return $desc;

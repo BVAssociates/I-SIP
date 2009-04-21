@@ -38,6 +38,10 @@ sub open() {
 	# force primary key
 	$self->{key}=["FIELD_NAME","TABLE_KEY"];
 	
+	# get object handling columns
+	$self->{column_histo} = HistoColumns->new($self->{database_name}, $table_name, $options);
+	
+	
 	$self->{isip_rules} = {};
 	
 	$self->{meta_filter}= [];
@@ -54,7 +58,23 @@ sub query_key_value() {
 
 sub query_date {
     my $self = shift;
-    if (@_) { $self->{query_date} = shift }
+    if (@_) {
+		my $datetime=shift;
+		# ISO 8601 format : 1977-04-22T06:00 or 19770422T0600
+		if ( $datetime !~ /\d{4}-?\d{2}-?\d{2}T\d{2}:?\d{2}/) {
+			$self->_error("datetime must be like 1977-04-22T06:00 or 19770422T0600 (ISO 8601)");
+			croak("usage : query_date(datetime)")
+		}
+		
+		# reformat date
+		$datetime =~ s/(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2})/$1-$2-$3T$4:$5/;
+		
+		# set date
+		$self->{query_date} = $datetime;
+
+		# set date for HistoColums object
+		$self->{column_histo}->query_date($datetime);
+	}
     return $self->{query_date} ;
 }
 
@@ -74,6 +94,8 @@ sub get_query()
 	
 	my $select_histo;
 	my @select_conditions;
+	
+	push @select_conditions, "FIELD_NAME IN (".join(',',map {"'".$_."'"} $self->{column_histo}->get_field_list()).")";
 	
 	my $date_format = "%Y-%m-%dT%H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();

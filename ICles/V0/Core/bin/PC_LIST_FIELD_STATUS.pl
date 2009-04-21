@@ -266,6 +266,7 @@ sub run {
 	my $rules=IsipRules->new($table_name, $env_sip, {debug => $debug_level});
 
 	my %memory_row;
+	my @histo_table_field = $env_sip->get_table_field($table_name);
 
 	if ($explore_mode eq "compare") {
 
@@ -356,7 +357,9 @@ sub run {
 			}
 			
 			if ($all_key) {
-				print join($separator,$table_status->hash_to_array(%row))."\n";
+				if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
+					print join($separator,$table_status->hash_to_array(%row))."\n";
+				}
 			}
 			else {
 				$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
@@ -367,7 +370,7 @@ sub run {
 
 
 	# order the lines in the order of table field
-	my @field_order=grep {$_} @memory_row{$env_sip->get_table_field($table_name)};
+	my @field_order=grep {$_} @memory_row{@histo_table_field};
 	delete @memory_row{$env_sip->get_table_field($table_name)};
 	for (keys %memory_row) {
 		print $memory_row{$_};

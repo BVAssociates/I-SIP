@@ -84,31 +84,36 @@ sub open() {
 sub table_name {
     my $self = shift;
     if (@_) { croak("'table_name' member is read-only") }
-    return $self->{table_target}->{table_name};
+    return $self->{table_target}->table_name;
 }
 
 sub field {
     my $self = shift;
     if (@_) { croak("'field' member is read-only") }
-    return @{ $self->{table_target}->{field} };
+    my @list=$self->{table_target}->field();
+	return @list;
 }
 
 sub field_txt {
     my $self = shift;
     if (@_) { croak("'field_txt' member is read-only") }
-    return %{ $self->{table_target}->{field_txt} };
+	my @list=$self->{table_target}->field_txt();
+	return @list;
 }
 
 sub field_desc {
     my $self = shift;
     if (@_) { croak("'field_desc' member is read-only") }
-    return %{ $self->{table_target}->{field_desc} };
+	my %hash=$self->{table_target}->field_desc;
+    return %hash;
 }
 
 sub key {
     my $self = shift;
     if (@_) { croak("'key' member is read-only") }
-    return @{ $self->{table_target}->{key} };
+	
+	my @list=$self->{table_target}->key();
+	return @list;
 }
 
 sub not_null {
@@ -121,7 +126,10 @@ sub not_null {
 sub size {
     my $self = shift;
     if (@_) { croak("'size' member is read-only") }
-    return %{ $self->{table_target}->{size} };
+	
+	my %hash=$self->{table_target}->size;
+    return %hash;
+	
 }
 
 sub isip_rules() {
@@ -290,10 +298,12 @@ sub compare_exclude() {
 sub compare() {
 	my $self=shift;
 	
-	$self->compare_init();
-	
 	$self->{compare_diff}=1;
 	
+	# compare struct
+	$self->compare_init();
+	
+	# compare values
 	while ($self->compare_next()) {
 		#nothing to do
 	}
@@ -314,21 +324,36 @@ sub compare_init() {
 
 	# store the result in a IsipDiff object
 	$self->{diff}=IsipDiff->new();
+	my @key_source=$table_from->key();
+	my @key_target=$table_to->key();
 	
-	if (not $table_to->key()) {
+	if (not @key_source or not @key_target) {
 		croak("No key defined");
 	}
-	if ( $table_to->key() ne  $table_from->key()) {
-		croak("The 2 tables have not the same keys : ".$table_to->key()." => ".$table_from->key());
+	if ( @key_source ne @key_target) {
+		croak("The 2 tables have not the same keys : ".@key_source." => ".@key_target);
 	}
 	
 	if ( $table_to->table_name() ne $table_from->table_name() ) {
 		carp("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
 	}
 	
-	#if ( join(',',sort $self->field()) ne  join(',',sort $table_from->field())) {
-	#	croak("The 2 tables have not the same fields");
-	#}
+	my %all_fields;
+	foreach my $field ($table_from->field) {
+		$all_fields{$field}++;
+	}
+	foreach my $field ($table_to->field) {
+		$all_fields{$field}--;
+	}
+	
+	foreach my $field (keys %all_fields) {
+		if ($all_fields{$field} > 0) {
+			$self->dispatch_source_only_field($field);
+		}
+		elsif ($all_fields{$field} < 0) {
+			$self->dispatch_target_only_field($field);
+		}
+	}
 	
 	foreach my $key_field ($table_to->key()) {
 		croak("query fields does not contains the key fields") if not grep (/^$key_field$/, $table_to->query_field() );
@@ -415,10 +440,14 @@ sub compare_next() {
 				}
 				
 				if (not exists $row_source{$field1}) {
-					$self->dispatch_target_only_field($current_keys,$field1);
+					# field deleted in compare_init
+					
+					##FIXME: must we explicitly delete the field??
+					#$row_update{$field1}="__delete";
+					
 				} elsif (not exists $row_target{$field1}) {
-					$row_target{$field1}='__delete';
-					$self->dispatch_source_only_field($current_keys,$field1);
+					# field added in compare_init
+					$row_update{$field1}=$row_source{$field1};
 				} elsif ($row_source{$field1} ne $row_target{$field1}) {
 					# field are differents
 					$row_update{$field1} = $row_source{$field1};
@@ -528,14 +557,12 @@ sub dispatch_source_only() {
 sub dispatch_source_only_field() {
 	my $self=shift;
 
-	my $current_key=shift;
-	my $field=shift;
-	my $field_value=shift or croak("usage:dispatch_source_update(current_key,field,field_value)");
+	my $field=shift or croak("usage:dispatch_source_only_field(field)");
 	
-	$self->_debug("Column only in source : Key (".$current_key.") $field : $field_value");
+	$self->_debug("Column only in source : $field");
 	
 	if ($self->{compare_diff}) {
-		$self->{diff}->add_source_only_field($current_key,$field);
+		$self->{diff}->add_source_only_field($field);
 	}
 	
 }
@@ -543,13 +570,12 @@ sub dispatch_source_only_field() {
 sub dispatch_target_only_field() {
 	my $self=shift;
 	
-	my $current_key=shift;
-	my $field=shift or croak("usage:dispatch_target_only_field(current_key,field)");
+	my $field=shift or croak("usage:dispatch_target_only_field(field)");
 	
-	$self->_debug("Column only in target : Key (".$current_key.") $field");
+	$self->_debug("Column only in target : $field");
 	
 	if ($self->{compare_diff}) {
-		$self->{diff}->add_target_only_field($current_key,$field);
+		$self->{diff}->add_target_only_field($field);
 	}
 	
 }
@@ -564,7 +590,28 @@ sub update_compare_target() {
 	my $diff_object = $self->{diff};
 	
 	my $request_number=0;
+	my $struct_diff=0;
 	$self->{table_target}->begin_transaction();
+	
+	
+	# add new field on line
+	my @key_new_field_hash=$diff_object->get_source_only_field();
+	foreach my $new_field (@key_new_field_hash) {
+		my %field_option;
+		$field_option{description}=$self->{table_source}->{field_txt}->{$new_field};
+		$field_option{size}=$self->{table_source}->{size}->{$new_field};
+		$self->{table_target}->add_field($new_field,\%field_option);
+		$struct_diff++;
+	}
+	undef @key_new_field_hash;
+	
+	# remove missing field on line
+	my @key_delete_field_hash=$diff_object->get_target_only_field();
+	foreach my $delete_field (@key_delete_field_hash) {
+		$self->{table_target}->remove_field($delete_field);
+		$struct_diff++;
+	}
+	undef @key_delete_field_hash;
 	
 	# remove lines only in source
 	my %key_new_hash=$diff_object->get_target_only();
@@ -582,21 +629,6 @@ sub update_compare_target() {
 	}
 	undef %key_delete_hash;
 	
-	# add new field on line
-	my @key_new_field_hash=$diff_object->get_source_only_field();
-	foreach my $new_field (@key_new_field_hash) {
-		$self->{table_target}->add_field($new_field);
-		$request_number++;
-	}
-	undef @key_new_field_hash;
-	
-	# remove missing field on line
-	my @key_delete_field_hash=$diff_object->get_target_only_field();
-	foreach my $delete_field (@key_delete_field_hash) {
-		$self->{table_target}->remove_field($delete_field);
-		$request_number++;
-	}
-	undef @key_delete_field_hash;
 	
 	# update modified lines
 	my @table_key=sort $self->key();
@@ -621,7 +653,12 @@ sub update_compare_target() {
 	$self->{table_target}->commit_transaction();
 	$self->_debug("Les changements ont été appliqués ($request_number)");
 	
-	return $request_number;
+	if (wantarray) {
+		return ($request_number,$struct_diff);
+	}
+	else {
+		return $request_number;
+	}
 }
 
 

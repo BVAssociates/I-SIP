@@ -218,7 +218,9 @@ sub insert_row() {
 	
 	# quote the fields with the apropriate 
 	foreach my $key (keys %row) {
-		$row{$key} = $self->{database_handle}->quote($row{$key});
+		if (not $row{$key} or $row{$key} !~ s/^!//) {
+			$row{$key} = $self->{database_handle}->quote($row{$key});
+		}
 	}
 	my $insert_query = sprintf("INSERT INTO %s (%s) VALUES (%s);",$self->{table_name},join(',',keys %row),join(',', values %row));
 	
@@ -282,7 +284,10 @@ sub update_row() {
 		if ( grep(/^$field$/,@primary_keys) ) {
 			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
 		} else {
-			push @updated_fields,$field."=".$self->{database_handle}->quote($row{$field});
+			if (not $row{$field} or $row{$field} !~ s/^!//) {
+				$row{$field} = $self->{database_handle}->quote($row{$field});
+			}
+			push @updated_fields,$field."=".$row{$field};
 		}
 	}
 	my $insert_query = sprintf("UPDATE %s SET %s WHERE %s;",$self->{table_name},join(',',@updated_fields),join(' AND ', @conditions));

@@ -191,6 +191,7 @@ sub run {
 	}
 
 	my $total_diff_counter=0;
+	my $total_struct_diff_counter=0;
 	my $counter=0;
 	my $source_table;
 	my %diff_list;
@@ -253,8 +254,10 @@ sub run {
 			#write changes on disk
 			log_info("Debut de la mise à jour des données");
 			my $diff_counter;
-			$diff_counter= $table_diff->update_compare_target();
+			my $diff_counter_struct;
+			($diff_counter,$diff_counter_struct)= $table_diff->update_compare_target();
 			$total_diff_counter += $diff_counter;
+			$total_struct_diff_counter += $diff_counter_struct;
 			if ($diff_counter) {
 				$histo_table->{table_histo}->execute("ANALYZE");
 				log_info("Les changements ont ete appliqués sur $current_table dans $environnement (lignes mises à jour : $diff_counter)");
@@ -288,7 +291,7 @@ sub run {
 	}
 
 	#write date in baselines
-	if ($save_date and $total_diff_counter) {
+	if ($save_date and $total_diff_counter+$total_struct_diff_counter) {
 		log_info("Sauvegarde de la date de collecte dans $environnement");
 		my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
 		$table_date->insert_row(ENVIRON => $environnement,
@@ -304,6 +307,7 @@ sub run {
 	# flush cache to disk
 	#$cache->update_dirty_cache();
 
+	log_info("Nombre de modification de structure effectuées au total dans $environnement : $total_struct_diff_counter");
 	log_info("Nombre de lignes mises à jour effectuées au total dans $environnement : $total_diff_counter");
 
 	if (not exists $opts{n} and $total_diff_counter) {

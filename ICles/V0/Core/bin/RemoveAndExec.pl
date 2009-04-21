@@ -125,7 +125,7 @@ use ReplaceAndExec_ISIP;
 my $values=join('',@values);
 
 # use lib to access Sqlite
-if ($table_name =~ /^TABLE_INFO|COLUMN_INFO|CACHE_.*$/i) {
+if ($table_name =~ /^TABLE_INFO|CACHE_.*$/i) {
 	delete_info($table_name,$values);
 }
 else {

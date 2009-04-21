@@ -11,15 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_TABLE_LOCAL - Liste les tables locales (SQlite)
+upgrade_column_info - 
 
 =head1 SYNOPSIS
 
- PC_LIST_TABLE_LOCAL.pl [-h][-v] [-s separateur] environnement
+ upgrade_column_info.pl [-h][-v] 
  
 =head1 DESCRIPTION
 
-Affiche le contenu d'une table de la base de donnée d'information de l'environnement
+Met à jour les bases de données ISIP avec la nouvelle colonne
 
 =head1 ENVIRONNEMENT
 
@@ -37,15 +37,13 @@ Affiche le contenu d'une table de la base de donnée d'information de l'environne
 
 =item -v : Mode verbeux
 
-=item -s : modifie le separateur de sortie
-
 =back
 
 =head1 ARGUMENTS
 
 =over
 
-=item environnement
+=item environnement : environnement à utiliser
 
 =item tablename : table a ouvrir
 
@@ -88,38 +86,60 @@ sub log_info {
 
 
 my %opts;
-getopts('hvs:', \%opts);
+getopts('hv', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $separator=',';
-$separator=$opts{s} if exists $opts{s};
-
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
+
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
+
+use Isip::IsipConfig;
 use Isip::Environnement;
+use Isip::HistoColumns;
 
-my $env=Environnement->new($environnement);
+my $config=IsipConfig->new();
 
-foreach my $table ($env->get_table_list()) {
-	my %table_info=$env->get_table_info($table);
-	$table_info{icon}="valide";
-	$table_info{icon}="warn" if not $env->get_table_key($table);;
-	$table_info{table_name}=$table;
-	$table_info{active}=1;
-	print join($separator, @table_info{("root_table","active","table_name","type_source","param_source","module","label_field","description","icon")}),"\n",
+my @environnement_list=$config->get_environnement_list();
+
+foreach (@environnement_list) {
+	my $env=Environnement->new($_);
+	
+	foreach my $table ($env->get_table_list) {
+		my $table_source=$env->open_local_table("COLUMN_INFO");
+		$table_source->query_condition("TABLE_NAME = '$table'");
+		$table_source->query_sort("COLNO");
+		
+		$env->create_database_histo($table);
+		my $columns=$env->get_columns($table);
+		
+		while (my %field=$table_source->fetch_row() ) {
+			my %new_field;
+			$new_field{description}=$field{"TEXT"};
+			
+			$new_field{size}=$field{"DATA_TYPE"};
+			$new_field{size}.='('.$field{"DATA_LENGTH"}.')';
+			
+			$new_field{colno}=$field{"COLNO"};
+			$new_field{key}=1 if $field{"PRIMARY_KEY"};
+			$new_field{foreign_table}=$field{"FOREIGN_TABLE"};
+			$new_field{foreign_field}=$field{"FOREIGN_KEY"};
+			$new_field{key}=1 if $field{"PRIMARY_KEY"};
+			
+			$columns->add_column($field{"FIELD_NAME"}, \%new_field) if not $columns->has_field($field{"FIELD_NAME"});
+		}
+	}
 }

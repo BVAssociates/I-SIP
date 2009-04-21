@@ -12,9 +12,49 @@ our (@ISA, @EXPORT);
 BEGIN {
  require Exporter;
  @ISA = qw(Exporter);
- @EXPORT = qw(update_info insert_info delete_info update_field);  # symbols to export
+ @EXPORT = qw(update_column_info update_info insert_info delete_info update_field);  # symbols to export
 }
 
+
+sub update_column_info($$) {
+	
+	my $table_name=shift;
+	my $values=shift;
+
+
+	my $environnement=$ENV{Environnement};
+	die "Variable <Environnement> not set" if not $environnement;
+
+	my $table_uptade=$ENV{TABLE_NAME}.'_COLUMN';
+
+
+	use ITable::ITools;
+	my $itools_table=ITools->open($table_name);
+	my $separator=$itools_table->output_separator;
+	my @field=$itools_table->field;
+
+	my $env_sip=Environnement->new($environnement);
+	my $local_table;
+
+	#recuperation des valeurs dans un hash
+	my %row;
+	@row{@field}=split(/$separator/, $values, -1);
+	
+	$local_table=$env_sip->open_local_table($table_uptade, {timeout => 10000});
+
+	# nettoie les champs inconnus
+	my %unknown_field;
+	$unknown_field{$_}++ foreach @field;
+	delete $unknown_field{$_} foreach $local_table->field;
+	delete @row{keys %unknown_field};
+
+	use POSIX qw(strftime);
+	$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime if exists $row{DATE_UPDATE};
+	$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
+
+	$logger->info("updating $values into $table_uptade");
+	$local_table->update_row( %row );
+}
 
 sub update_info($$) {
 	
@@ -34,12 +74,18 @@ sub update_info($$) {
 
 	my $env_sip=Environnement->new($environnement);
 	my $local_table;
-	my %row;
 
+	#recuperation des valeurs dans un hash
+	my %row;
+	@row{@field}=split(/$separator/, $values, -1);
+	
 	$local_table=$env_sip->open_local_table($table_name, {timeout => 10000});
 
-	$local_table->query_field(@field);
-	%row=$local_table->array_to_hash(split(/$separator/, $values, -1));
+	# nettoie les champs inconnus
+	my %unknown_field;
+	$unknown_field{$_}++ foreach @field;
+	delete $unknown_field{$_} foreach $local_table->field;
+	delete @row{keys %unknown_field};
 
 	use POSIX qw(strftime);
 	$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime if exists $row{DATE_UPDATE};

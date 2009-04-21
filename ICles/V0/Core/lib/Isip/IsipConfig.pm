@@ -240,23 +240,6 @@ sub create_database_environnement() {
 	PRIMARY KEY (TABLE_NAME) 
 	)');
 
-	$logger->notice("Create table COLUMN_INFO");
-	$master_table->execute('CREATE TABLE IF NOT EXISTS "COLUMN_INFO" (
-		"TABLE_NAME" VARCHAR(30),
-		"FIELD_NAME" VARCHAR(30),
-		"DATE_UPDATE" VARCHAR(30),
-		"USER_UPDATE" VARCHAR(30),
-		"DATA_TYPE" VARCHAR(30),
-		"DATA_LENGTH" VARCHAR(30),
-		"TEXT" VARCHAR(30),
-		"TYPE" VARCHAR(30),
-		"PRIMARY_KEY" NUMERIC,
-		"FOREIGN_TABLE" VARCHAR(30),
-		"FOREIGN_KEY" VARCHAR(30),
-		"COLNO" NUMERIC,
-		PRIMARY KEY ("TABLE_NAME","FIELD_NAME")
-	)');
-	
 	$logger->notice("Create table XML_INFO");
 	$master_table->execute('CREATE TABLE IF NOT EXISTS "XML_INFO" (
 		"XML_NAME" TEXT PRIMARY KEY  NOT NULL ,
@@ -314,7 +297,7 @@ sub _find_file() {
 
 =head1 NAME
 
- Isip::Environnement - Class to access data from IKOS SIP 
+ Isip::Isipconfig - Accede au information globale à un service d'ICle ISIP
 
 =head1 SYNOPSIS
 

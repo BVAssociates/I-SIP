@@ -7,7 +7,6 @@ use fields qw(
 	environnement
 	info_table
 	description
-	link_table
 	isip_config
 	defaut_odbc_options
 );
@@ -33,9 +32,7 @@ sub new() {
 	my Environnement $self= fields::new($class);
 
 	# store global info about tables
-	my ILink $link=ILink->new();
 	$self->{isip_config}= IsipConfig->new();
-	$self->{link_table}=$link;
 	
 	$self->{options}= $options;
 	$self->{environnement} = $environnement;
@@ -71,44 +68,7 @@ sub new() {
 		$self->{info_table}->{$row{TABLE_NAME}}->{_column_order}=[];
 	}
 	
-	my $column_info=$self->open_local_table("COLUMN_INFO", $self->{options});
-	$column_info->query_sort("COLNO");
-	
-	while (my %row=$column_info->fetch_row) {
-		next if not exists $self->{info_table}->{$row{TABLE_NAME}};
 		
-		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}=$row{TYPE};
-		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{description}=$row{TEXT};
-		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_type}=$row{DATA_TYPE};
-		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{data_size}=$row{DATA_LENGTH};
-		$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{column_order}=$row{COLNO};
-		
-		push @{$self->{info_table}->{$row{TABLE_NAME}}->{_column_order}}, $row{FIELD_NAME};
-		
-		if ($row{PRIMARY_KEY}) {
-			push @{$self->{info_table}->{$row{TABLE_NAME}}->{key}}, $row{FIELD_NAME} ;
-			$self->{info_table}->{$row{TABLE_NAME}}->{column}->{$row{FIELD_NAME}}->{type}="clef";
-		}
-		
-		if ($row{FOREIGN_TABLE} and $row{FOREIGN_KEY} and exists $self->{info_table}->{$row{FOREIGN_TABLE}}) {
-			$self->{link_table}->add_link($row{TABLE_NAME},$row{FIELD_NAME},$row{FOREIGN_TABLE},$row{FOREIGN_KEY});
-		}
-	}
-	
-
-	foreach my $table (keys %{ $self->{info_table} }) {
-		
-		# fixed key for XML sources
-		if ($self->{info_table}->{$table}->{type_source} eq "XML") {
-			$self->{info_table}->{$table}->{key}=[ "xml_path" ];
-		} 
-		
-		if (not $self->{info_table}->{$table}->{key}) {
-			$logger->warning("No PRIMARY KEY for $table") ;
-		}
-	}
-	
-	
 	# add environnement specific info about tables
 	my $source_info=$self->open_local_table("XML_INFO", $self->{options});
 	
@@ -132,10 +92,29 @@ sub new() {
 sub get_column_info() {
 	my $self = shift;
 	
-	my $table_name=shift or croak("usage : get_column_info(table)");
+	croak "OBSELETE. Use get_columns() instead";
+}
+
+sub get_columns() {
+	my $self = shift;
 	
-	return undef if not exists $self->{info_table}->{$table_name}->{column};
-	return %{$self->{info_table}->{$table_name}->{column}};
+	use Isip::HistoColumns;
+	
+	my $table_name=shift or croak "usage : get_columns(tablename[,date])";
+	my $query_date=shift;
+	
+	my $table_column=$table_name."_COLUMN";
+	
+	my $sqlite_path=$self->get_sqlite_path($table_column,$self->{environnement});
+	if (not -e $sqlite_path) {
+		croak ("Unable to access $table_column for $self->{environnement}");
+	}
+	
+	my $options = {date => $query_date} if $query_date;
+	
+	my $tmp_return = eval {HistoColumns->new($sqlite_path, $table_name, $options)};
+	croak "Impossible d'obtenir les informations de colonnes pour $table_name" if $@;
+	return $tmp_return;
 }
 
 sub is_root_table() {
@@ -182,15 +161,22 @@ sub get_table_list_module() {
 # return ILink object
 sub get_links() {
 	my $self = shift;
-		
-	return $self->{link_table};
+	
+	my $links=ILink->new();
+	
+	foreach ($self->get_table_list) {
+		my $link_add=$self->get_columns($_)->get_links();
+		$links->add_link($link_add);
+	}
+
+	return $links;
 }
 
 # return new ILink object with new virtual ROOT tables (see #56)
 sub get_links_menu() {
 	my $self = shift;
 		
-	my ILink $link_clone = $self->{link_table}->clone();
+	my ILink $link_clone = $self->get_links->clone();
 	
 	my $separator='__';
 	
@@ -222,26 +208,22 @@ sub get_links_menu() {
 sub get_table_key() {
 	my $self = shift;
 	my $tablename = shift or croak "get_table_key() wait args : 'tablename'";
-	my $debug_level = $self->{options}->{debug};
-	my $key_found;
 	
-	# some different way to get the infos :
-	#   - from INFO_TABLE, 
-	#   - from local table
-	#   - from ITools definition file
-	#
-	# For now, we'll use INFO_TABLE
-	if (exists $self->{info_table}->{$tablename}->{key}) {
-		if (wantarray) {
-			return sort @{$self->{info_table}->{$tablename}->{key}};
-		}
-		else {
-			return join(',',sort @{$self->{info_table}->{$tablename}->{key}});
-		}
+	my @key;
+	
+	# fixed key for XML sources
+	if ($self->{info_table}->{$tablename}->{type_source} eq "XML") {
+		@key= "xml_path";
+	} 
+	else {
+		@key=$self->get_columns($tablename)->get_key_list();
+	}
+	
+	if (wantarray) {
+		return @key;
 	}
 	else {
-		carp("no PRIMARY KEY defined for $tablename");
-		return undef;
+		return join(',',@key);
 	}
 }
 
@@ -273,16 +255,7 @@ sub get_table_field() {
 	my $self = shift;
 	my $tablename = shift or croak "get_table_field() wait args : 'tablename'";
 	
-	# some different way to get the infos :
-	#   - from INFO_TABLE, 
-	#   - from local table
-	#   - from ITools definition file
-	#
-	# we use collected values from COLUMN_INFO
-	
-	my @cols=@{$self->{info_table}->{$tablename}->{_column_order}};
-
-	return @cols;
+	return $self->get_columns($tablename)->get_field_list();
 }
 
 # provide file name of Sqlite database depending on table name and environnement
@@ -301,7 +274,7 @@ sub get_sqlite_filename() {
 	my $table_extension;
 	
 	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
+	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(COLUMN|HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
@@ -413,7 +386,8 @@ sub open_local_from_histo_table() {
 			croak("Impossible d'ouvrir $table_name : $@") if $@;
 		}
 		else {
-			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas");
+			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas");
+			return;
 		}
 	}
 	else {
@@ -425,15 +399,6 @@ sub open_local_from_histo_table() {
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
 	
-	my $dyn_exluded_re = join '|', $table_histo->dynamic_field;
-	$table_histo->field(grep {!/\b$dyn_exluded_re\b/} $self->get_table_field($table_name));
-	
-	$table_histo->size($self->get_table_size($table_name));
-	
-	# we must set the primary key manually
-	my @key_string=$self->get_table_key($table_name);
-	$table_histo->key(@key_string) if @key_string;
-
 	return $table_histo
 }
 
@@ -532,7 +497,7 @@ sub open_local_table() {
 		croak ("Unable to access $table_name for $self->{environnement}");
 	}
 	my $tmp_return = eval {Sqlite->open($sqlite_path, $table_name, @_)};
-	croak "Impossible d'ouvrir la table SQLite $table_name" if $@;
+	croak "Impossible d'ouvrir la table SQLite $table_name : $@" if $@;
 	return $tmp_return;
 }
 
@@ -634,14 +599,16 @@ sub initialize_column_info() {
 		croak("usage initialize_column_info(DATA_interface)")
 	}
 
-	my $column_info=$self->open_local_table("COLUMN_INFO");
+	my $column_info=$self->get_columns($itable_obj->table_name);
 	
 	my %size_hash=$itable_obj->size();
 	my %field_txt_hash=$itable_obj->field_txt();
 	my @key=$itable_obj->key();
 	
-	$logger->notice("Populate TABLE_INFO with information from source table: ".$itable_obj->table_name);	
+	my $i=1;
+	my %colno_hash = map {$_ => $i++} $itable_obj->field();
 	
+	$logger->notice("Update table structure from source table: ".$itable_obj->table_name);	
 	
 	# caclul des clefs étrangère pour cette table si un 2e argument est passé
 	my %foreign_key_info;
@@ -662,72 +629,33 @@ sub initialize_column_info() {
 		}
 	}		
 	
-	my %column_info=$self->get_column_info($itable_obj->table_name);
-	$column_info->begin_transaction;
-	
-	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-	my $col_number=0;
+	my %all_fields;
 	foreach my $field ($itable_obj->field) {
-		$col_number++;
+		$all_fields{$field}++;
+	}
+	
+	foreach my $field ($column_info->get_field_list) {
+		$all_fields{$field}--;
+	}
+	
+	foreach my $field (keys %all_fields) {
+
+		my %source_col;
+		$source_col{description}=$field_txt_hash{$field} if $field_txt_hash{$field};
+		$source_col{size}=$size_hash{$field} if $size_hash{$field};
+		$source_col{colno}=$colno_hash{$field} if $colno_hash{$field};
+		$source_col{key}=1 if grep {$_ eq $field} @key;
 		
-		if (delete $column_info{$field}) {
-			$logger->warning("$field déjà présent : MISE A JOUR");
-			# extract type and size from format "type(size)"
-			my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
-			
-			# construct the line to insert
-			my %row;
-			$row{TABLE_NAME}=$itable_obj->table_name;
-			$row{FIELD_NAME}=$field;
-			$row{DATA_TYPE}=$type;
-			$row{DATA_LENGTH}=$size;
-			$row{TEXT}=$field_txt_hash{$field};
-			$row{COLNO}=$col_number;
-			
-			$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
-			$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
-			
-			$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
-			
-			$column_info->update_row(%row);
+		if ($all_fields{$field} > 0) {
+			$column_info->add_column($field, \%source_col);
+		}
+		elsif ($all_fields{$field} < 0) {
+			$column_info->remove_column($field);
 		}
 		else {
-			$logger->warning("$field inconnu : AJOUT");
-			
-			# extract type and size from format "type(size)"
-			my ($type,$size) = $size_hash{$field} =~ /(\w+)\((\d+)\)/;
-			
-			# construct the line to insert
-			my %row;
-			$row{DATE_HISTO}=$timestamp;
-			$row{TABLE_NAME}=$itable_obj->table_name;
-			$row{FIELD_NAME}=$field;
-			$row{DATA_TYPE}=$type;
-			$row{DATA_LENGTH}=$size;
-			$row{TEXT}=$field_txt_hash{$field};
-			$row{COLNO}=$col_number;
-			
-			$row{FOREIGN_TABLE}=$foreign_table_info{$field} if exists $foreign_table_info{$field};
-			$row{FOREIGN_KEY}=$foreign_key_info{$field} if exists $foreign_key_info{$field};
-			
-			$row{PRIMARY_KEY}=1 if grep {$field eq $_} @key;
-			
-			$column_info->insert_row(%row);
+			$column_info->update_column($field, \%source_col);
 		}
 	}
-	
-	foreach (keys %column_info) {
-		$logger->warning("$_ n'est plus dans la base : PASSE");
-		
-		# pour l'instant on la laisse, mais prévoir sa suppression
-		#
-		#my %row;
-		#$row{TABLE_NAME}=$itable_obj->table_name;
-		#$row{FIELD_NAME}=$_;
-		#$column_info->delete_row(%row);
-	}
-	$column_info->commit_transaction;
-
 }
 
 sub create_database_histo() {
@@ -742,7 +670,6 @@ sub create_database_histo() {
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
-	$logger->info("no PRIMARY KEY defined for $tablename") if not $self->get_table_key($tablename);
 	$logger->notice("database already exist at <$database_path>") if -s $database_path;
 	
 	if (! -e $database_path) {
@@ -771,6 +698,24 @@ sub create_database_histo() {
 	COMMENT VARCHAR(50),
 	STATUS VARCHAR(30),
 	MEMO VARCHAR(30))");
+	
+	$logger->notice("Create table $tablename\_COLUMN");
+	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_COLUMN (
+		TABLE_NAME VARCHAR(30),
+		FIELD_NAME VARCHAR(30),
+		DATE_HISTO VARCHAR(30),
+		DATE_UPDATE VARCHAR(30),
+		USER_UPDATE VARCHAR(30),
+		DATA_TYPE VARCHAR(30),
+		DATA_LENGTH VARCHAR(30),
+		TEXT VARCHAR(30),
+		TYPE VARCHAR(30),
+		PRIMARY_KEY NUMERIC,
+		FOREIGN_TABLE VARCHAR(30),
+		FOREIGN_KEY VARCHAR(30),
+		COLNO NUMERIC,
+		PRIMARY KEY (TABLE_NAME,FIELD_NAME,DATE_HISTO)
+	)");
 	
 	$logger->notice("Create table $tablename\_LABEL");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_LABEL (

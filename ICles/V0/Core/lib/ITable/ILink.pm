@@ -3,6 +3,7 @@ package ILink;
 use strict;
 use Carp ('croak');
 use Storable qw(dclone);
+use Scalar::Util qw(blessed);
 
 
 
@@ -37,14 +38,35 @@ sub clone() {
 sub add_link() {
 	my $self=shift;
 	
-	my $table_name=shift;
-	my $field_name=shift;
-	my $table_foreign=shift;
-	my $field_foreign=shift or croak "usage: add_link (table_name, field_name, table_foreign, field_foreign)";
+	my $first_arg=shift or croak "usage: add_link(table_name, field_name, table_foreign, field_foreign) or add_link(ILink_ref)";
 	
-	# store the same information in 2 structs
-	$self->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
-	$self->{table_child}->{$table_foreign}->{$table_name}->{$field_foreign} = $field_name;
+	if (blessed $first_arg and $first_arg->isa("ILink")) {
+		my $self_add=$first_arg;
+		
+		foreach my $parent (keys %{$self_add->{table_parent}}) {
+			foreach (keys %{$self_add->{table_parent}->{$parent}}) {
+				$self->{table_parent}->{$parent}->{$_}=$self_add->{table_parent}->{$parent}->{$_};
+			}
+		}
+		foreach my $child (keys %{$self_add->{table_child}}) {	
+			foreach (keys %{$self_add->{table_child}->{$child}}) {
+				$self->{table_child}->{$child}->{$_}=$self_add->{table_child}->{$child}->{$_};
+			}
+		}
+		
+	}
+	else {	
+		my $table_name=$first_arg;
+		my $field_name=shift;
+		my $table_foreign=shift;
+		my $field_foreign=shift or croak "usage: add_link(table_name, field_name, table_foreign, field_foreign) or add_link(ILink_ref)";
+		
+		# store the same information in 2 structs
+		$self->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
+		$self->{table_child}->{$table_foreign}->{$table_name}->{$field_foreign} = $field_name;
+		
+		return $self;
+	}
 	
 	
 }
