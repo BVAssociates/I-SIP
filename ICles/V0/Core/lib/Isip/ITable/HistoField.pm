@@ -95,7 +95,15 @@ sub get_query()
 	my $select_histo;
 	my @select_conditions;
 	
-	push @select_conditions, "FIELD_NAME IN (".join(',',map {"'".$_."'"} $self->{column_histo}->get_field_list()).")";
+	# aware of concatened keys
+	my @query_field=$self->{column_histo}->get_field_list();
+	my @key_field=$self->{column_histo}->get_key_list();
+	foreach my $field (@key_field) {
+		@query_field = grep {$_ ne $field} @query_field;
+	}
+	push @query_field, join(',',@key_field);
+	
+	push @select_conditions, "FIELD_NAME IN (".join(',',map {"'".$_."'"} @query_field).")";
 	
 	my $date_format = "%Y-%m-%dT%H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
