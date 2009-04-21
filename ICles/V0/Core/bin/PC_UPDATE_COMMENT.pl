@@ -17,7 +17,7 @@ Pc_UPDATE_COMMENT - Met à jour les commentaires d'un environnent à l'autre à val
 
 =head1 SYNOPSIS
 
- Pc_UPDATE_COMMENT.pl [-m module] -c environnement_source environnement_cible table_name
+ Pc_UPDATE_COMMENT.pl [-m module] [-p projet] -c environnement_source environnement_cible table_name
  
 =head1 DESCRIPTION
 
@@ -43,6 +43,8 @@ Met à jour les commentaires d'un environnent à l'autre à valeur égales.
 =item -m module
 
 =item -c environnement_source : Environnement qui contient les commentaires à copier
+
+=item -p projet : Uniquement les lignes de la table_source qui appartiennent au projet
 
 =back
 
@@ -102,7 +104,7 @@ sub run {
 	@ARGV=grep $_,@ARGV;
 
 	my %opts;
-	getopts('hvc:m:', \%opts);
+	getopts('hvc:m:p:', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -111,6 +113,7 @@ sub run {
 	
 	my $environnement_from=$opts{c};
 	my $module=$opts{m} if exists $opts{m};
+	my $project=$opts{p} if exists $opts{p};
 
 	#  Traitement des arguments
 	###########################################################
@@ -140,20 +143,58 @@ sub run {
 	my $env_from = Environnement->new($environnement_from, {debug => $debug_level});
 	my $env_to  = Environnement->new($environnement, {debug => $debug_level});
 
-	my @table_list;
+	my @table_list_from;
+	my @table_list_to;
 	if (not $table_name) {
-		@table_list=$env_from->get_table_list_module($module);
+		@table_list_from=$env_from->get_table_list_module($module);
+		@table_list_to=$env_to->get_table_list_module($module);
 	}
 	else {
-		@table_list=($table_name);
+		@table_list_from=($table_name);
+		@table_list_to=($table_name);
 	}
 
-	foreach my $current_table (@table_list) {
+	foreach my $current_table (@table_list_from) {
 		my $table_from = $env_from->open_histo_field_table($current_table);
-		my $table_to = $env_to->open_histo_field_table($current_table);
+		my $table_to;
 		
 		log_info("Recopie des commentaires à valeur égales de $current_table, de $environnement_from vers $environnement");
+		
+		if ($project) {
+			$table_from->metadata_condition("PROJECT = '$project'");
+			my %target_key_condition;
+			while (my %row=$table_from->fetch_row) {
+				$target_key_condition{$row{TABLE_KEY}}++;
+			}
+			
+			if (%target_key_condition) {
+				$table_from->query_key_value(keys %target_key_condition);
+				
+				if (grep {$current_table} @table_list_to) {
+					$table_to = $env_to->open_histo_field_table($current_table);
+					$table_to->query_key_value(keys %target_key_condition);
+				}
+				else {
+					$logger->warning("Impossible de mettre à jour le commentaires car la table $current_table n'existe pas dans l'environnement cible");
+					next;
+				}
+			}
+			else {
+				$logger->info("Aucune ligne ne correspond au projet $project");
+				next;
+			}
+		}
+		else {
+			if (grep {$current_table} @table_list_to) {
+				$table_to = $env_to->open_histo_field_table($current_table);
+			}
+			else {
+				next;
+			}
+		}
+		
 		my $comment_diff=FieldDiff->open($table_from,$table_to);
+		$comment_diff->debugging(1);
 		
 		use POSIX qw(strftime);
 		my $current_date=strftime "%Y-%m-%dT%H:%M", localtime;

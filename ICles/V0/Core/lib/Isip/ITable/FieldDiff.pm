@@ -8,6 +8,8 @@ use Carp qw(carp cluck confess croak );
 use strict;
 use Scalar::Util qw(blessed);
 
+use Isip::IsipLog '$logger';
+
 #use Data::Dumper;
 
 ##################################################
@@ -120,13 +122,7 @@ sub dispatch_equal() {
 	my $source_row=shift;
 	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row,target_row)");
 	
-	if ($self->{compare_diff}) {
-		# nothing to do
-	}
-	
-	if ($self->{compare_fetch}) {
-		$target_row->{DIFF}="OK";
-	}
+	$self->SUPER::dispatch_equal($current_key,$source_row,$target_row);
 	
 	if ($self->{update_comment}) {
 		my %new_comment;
@@ -140,7 +136,7 @@ sub dispatch_equal() {
 		if (%new_comment) {
 			my @table_key=sort $self->{table_target}->key();
 			
-			$self->_debug("Comment updated : Key (".$current_key.") : ".join(",",values %new_comment));
+			$self->_info("Comment updated : Key (".$current_key.") : ".join(",",values %new_comment));
 	
 		
 			# assign current key, needed for updating
@@ -155,6 +151,37 @@ sub dispatch_equal() {
 	}
 	
 	return $target_row;
+}
+
+sub dispatch_source_update() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $source_row=shift;
+	my $target_row=shift or croak("usage:dispatch_source_update(current_key,field,source_row)");
+
+	$self->SUPER::dispatch_source_update($current_key,$source_row,$target_row);
+	
+	if ($self->{update_comment}) {
+		$logger->warning("Impossible de mettre à jour le commentaire car la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'a pas la même valeur dans l'environnement cible");
+	}
+	
+	return 1;
+}
+
+sub dispatch_source_only() {
+	my $self=shift;
+	
+	my $current_key=shift;
+	my $source_row=shift or croak("usage:dispatch_source_only(current_key,source_row)");
+
+	$self->SUPER::dispatch_source_only($current_key,$source_row);
+	
+	if ($self->{update_comment}) {
+		$logger->warning("Impossible de mettre à jour le commentaire car la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'existe pas dans l'environnement cible");
+	}
+	
+	return 1;
 }
 
 sub set_update_timestamp() {

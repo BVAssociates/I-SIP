@@ -41,7 +41,7 @@ sub open() {
 	# get object handling columns
 	$self->{column_histo} = HistoColumns->new($self->{database_name}, $table_name, $options);
 	
-	
+	$self->{query_key_value}=[];
 	$self->{isip_rules} = {};
 	
 	$self->{meta_filter}= [];
@@ -52,8 +52,8 @@ sub open() {
 
 sub query_key_value() {
 	my $self = shift;
-    if (@_) { $self->{query_key_value} = shift }
-    return $self->{query_key_value} ;
+    if (@_) { @{$self->{query_key_value}} = @_ }
+    return @{$self->{query_key_value}};
 }
 
 sub query_date {
@@ -99,7 +99,10 @@ sub get_query()
 	
 	my $date_format = "%Y-%m-%dT%H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
-	push @select_conditions, "TABLE_KEY ='".$self->query_key_value()."'" if $self->query_key_value;
+
+	my @table_key_list=$self->query_key_value();
+	push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} @table_key_list).")" if @table_key_list;
+	
 	push @select_conditions, $self->query_condition() if $self->query_condition;
 	
 	my @real_query_field;
