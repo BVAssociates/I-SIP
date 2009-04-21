@@ -30,9 +30,11 @@ sub open() {
 	my $baseline_date = shift;
 	my $options=shift;
 	
+	# Call Histo constructor
 	my $self = $class->SUPER::open($database_name,$table_name, $options);
 	
-	$self->{query_date} = $baseline_date;
+	# set Histo date
+	$self->SUPER::query_date($baseline_date);
 	
 	# sanitize date format
 	$self->{table_name_histo} = $self->get_baseline_name($table_name,$baseline_date);
