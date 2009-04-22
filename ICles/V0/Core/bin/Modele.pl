@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+package Modele;
 
 # Inclusions obligatoires
 use strict;
@@ -13,7 +14,14 @@ Modele.pl - ici un résumé
 
 =head1 SYNOPSIS
 
+Dans un shell :
+
  Modele.pl [-h] [-v] [-n] arg1 arg2
+
+Dans un autre script Perl :
+
+ require "Modele.pl";
+ Modele::run("-n","option_n","arg1","arg2");
  
 =head1 DESCRIPTION
 
