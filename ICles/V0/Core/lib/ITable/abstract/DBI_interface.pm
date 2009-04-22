@@ -218,7 +218,7 @@ sub insert_row() {
 	
 	# quote the fields with the apropriate 
 	foreach my $key (keys %row) {
-		if (not $row{$key} or $row{$key} !~ s/^!//) {
+		if (not $row{$key} or $row{$key} !~ s/^sql\(.+\)$/$1/) {
 			$row{$key} = $self->{database_handle}->quote($row{$key});
 		}
 	}

@@ -250,7 +250,7 @@ sub add_column() {
 									." AND EXISTS (SELECT * FROM ".$self->{table_name}."_COLUMN WHERE COLNO = ".$new_field{COLNO}.")");
 	}
 	else {
-		$new_field{COLNO}="!(SELECT coalesce(MAX(COLNO),0)+1 from ".$self->{table_name}."_COLUMN)";
+		$new_field{COLNO}="sql((SELECT coalesce(MAX(COLNO),0)+1 from ".$self->{table_name}."_COLUMN))";
 	}
 	
 	# update row
