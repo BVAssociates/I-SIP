@@ -17,7 +17,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-m module] [-b environnement_source[@date]] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-n|-u] [-m module] [-b environnement_source[@date]] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -101,7 +101,7 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:dkc:', \%opts) or usage(0);
+	getopts('hvnm:dkc:u', \%opts) or usage(0);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -110,6 +110,8 @@ sub run {
 	my $module_name=$opts{m};
 	my $save_date=$opts{d};
 	my $force_vacuum=$opts{k};
+	my $no_update_histo=$opts{n};
+	my $no_update_cache=$opts{u};
 	
 	my $env_compare;
 	my $date_compare;
@@ -243,7 +245,7 @@ sub run {
 		my $diff_obj=$table_diff->compare();
 		log_info("Nombre de différences : ".$diff_obj->count);
 
-		if (exists $opts{n}) {
+		if ($no_update_histo) {
 			log_info("Simulation : les changements n'ont pas été appliqués");
 			
 			use Data::Dumper;
@@ -310,7 +312,7 @@ sub run {
 	log_info("Nombre de modification de structure effectuées au total dans $environnement : $total_struct_diff_counter");
 	log_info("Nombre de lignes mises à jour effectuées au total dans $environnement : $total_diff_counter");
 
-	if (not exists $opts{n} and $total_diff_counter) {
+	if (not $no_update_cache and not $no_update_histo and $total_diff_counter+$total_struct_diff_counter) {
 		log_info("mise à jour du cache pour $environnement");
 		require "pc_update_cache.pl";
 		my @args=($environnement);

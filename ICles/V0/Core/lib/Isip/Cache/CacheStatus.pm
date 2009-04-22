@@ -33,8 +33,8 @@ sub check_before_cache() {
 	my $value_ref=shift;
 	
 	$self->{action}=0;
-	if (exists $value_ref->{ICON}) {
-		if (exists $value_ref->{OLD_ICON}) {
+	if (exists $value_ref->{ICON} and $value_ref->{ICON}) {
+		if (exists $value_ref->{OLD_ICON} and $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
 				$self->{action}=1 if $value_ref->{OLD_ICON} =~ /^valide/;
 				$self->{action}=-1 if $value_ref->{ICON} =~ /^valide/;

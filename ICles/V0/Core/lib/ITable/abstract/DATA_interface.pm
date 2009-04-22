@@ -472,7 +472,7 @@ sub equals_struct() {
 		$self->_debug("different table_name : ".$data_ref->table_name()." , ".$self->table_name());
 	}
 	elsif (join(',',$self->key()) ne join(',',$data_ref->key()) ) {
-		$self->_debug("different keys");
+		$self->_error("different keys");
 		return 0;
 	}
 	## not necessary!

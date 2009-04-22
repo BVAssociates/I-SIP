@@ -69,7 +69,12 @@ sub new() {
 sub get_key_list() {
 	my $self = shift;
 	
-	return sort @{$self->{key}};
+	if (wantarray) {
+		return sort @{$self->{key}};
+	}
+	else {
+		return join(',',sort @{$self->{key}});
+	}
 }
 
 sub get_field_list() {
