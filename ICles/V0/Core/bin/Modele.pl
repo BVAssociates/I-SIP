@@ -16,7 +16,7 @@ Modele.pl - ici un résumé
 
 Dans un shell :
 
- Modele.pl [-h] [-v] [-n] arg1 arg2
+ Modele.pl [-h] [-v] [-n opt1] arg1 arg2
 
 Dans un autre script Perl :
 
@@ -49,9 +49,13 @@ Ici la description fonctionnelle du programme
 
 =head1 ARGUMENTS
 
-=head2 arg1 : argument 1
+=over
 
-=head2 arg2 : argument 2
+=item arg1 : argument 1
+
+=item arg2 : argument 2
+
+=back
 
 =head1 AUTHOR
 
