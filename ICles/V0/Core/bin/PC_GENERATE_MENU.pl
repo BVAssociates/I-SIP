@@ -138,8 +138,11 @@ sub get_def_table_string($$) {
 	my $environnement=$env_obj->{environnement};
 	my $link_obj=$env_obj->get_links();
 	my $display_table=get_display_table($table_name);
-	my $keys=$env_obj->get_table_key($display_table);
-	my @field=get_source_field($env_obj,$display_table);
+	
+	my $columns_ref=$env_obj->get_columns($display_table);
+	
+	my $keys=$columns_ref->get_key_list();
+	my @field=$columns_ref->get_field_list();
 	
 	my $no_icon_option="";
 	$no_icon_option="-n" if $display_table ne $table_name;
@@ -156,14 +159,36 @@ SEP="[% separator %]"
 FORMAT="[% format %]"
 SIZE="[% size %]"
 KEY="[% keys %]"
+SORT="[% sort %]"
 ';
-	my $fkey_def_template='FKEY="[[% fkeys %]] on [% foreign_table %][[% foreign_field %]]"
+	my $fkey_def_template='#FKEY="[[% fkeys %]] on [% foreign_table %][[% foreign_field %]]"
 ';
 
 	# fill standards value of DEF
 	my @field_list=(@virtual_field,@field);
 	my $format = join($separator, @field_list);
-	my $size = join($separator,('20s') x @field_list ) ;
+	
+	my @size_list;
+	foreach my $field (@field_list) {
+		my $size_tmp=$columns_ref->get_size($field);
+		
+		if (not defined $size_tmp) {
+			$size_tmp='20s' ;
+		}
+		elsif ($size_tmp =~ /^(?:DECIMAL|INTEGER)\((\d+)\)$/) {
+			$size_tmp=$1.'n' ;
+		}
+		elsif ($size_tmp =~ /\((\d+)\)$/) {
+			$size_tmp=$1.'s' ;
+		}
+		else {
+			$size_tmp='20s' ;
+		}
+		push @size_list, $size_tmp
+	}
+
+	my $size = join($separator, @size_list ) ;
+	my $sort=join($separator,$columns_ref->get_key_list());
 	
 	$string .= $def_template;
 	
@@ -173,6 +198,7 @@ KEY="[% keys %]"
 	$string =~ s/\[% format %\]/$format/g;
 	$string =~ s/\[% size %\]/$size/g;
 	$string =~ s/\[% keys %\]/$keys/g;
+	$string =~ s/\[% sort %\]/$sort/g;
 	$string =~ s/\[% option %\]/$no_icon_option/g;
 	
 	# add one FKEY entry per foreign tables
