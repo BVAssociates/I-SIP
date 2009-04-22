@@ -128,7 +128,7 @@ $table->begin_transaction;
 
 $table->delete_row(TABLE_KEY => $key, FIELD_NAME => $field);
 if ($icon) {
-	$table->insert_row(TABLE_KEY => $key, , FIELD_NAME => $field, LABEL => $icon);
+	$table->insert_row(TABLE_KEY => $key, FIELD_NAME => $field, LABEL => $icon);
 	log_info("$field pour la clef $key de $table_name labellisé $icon");
 }
 else {
@@ -142,7 +142,13 @@ use Isip::IsipTreeCache;
 use Isip::IsipRules;
 use Isip::Cache::CacheStatus;
 
-#my $table_ikos=$env->open_local_from_histo_table($table_name);
+# reconstruct the line
+my %new_line;
+my $table_ikos=$env->open_local_from_histo_table($table_name);
+$table_ikos->query_key_value($key);
+%new_line=$table_ikos->fetch_row();
+croak("Problème lors de la récupération de la ligne $key") if $table_ikos->fetch_row() or not %new_line;
+undef $table_ikos;
 
 my %icon_list=IsipRules->enum_field_icon();
 
@@ -151,9 +157,20 @@ if (not $ENV{ICON}) {
 	$ENV{ICON}="valide_label";
 }
 
-# reconstruct the line
-my %new_line;
-$new_line{ICON}=$icon_list{$icon};
+if ($icon) {
+	$new_line{ICON}=$icon_list{$icon};
+	$new_line{OLD_ICON}=$ENV{ICON};
+}
+else {
+	#recalcul de l'icone du champ
+	my $rules=IsipRules->new($table_name, $env);
+	
+	my %field_line=%ENV;
+	@field_line{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")}=@ENV{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")};
+	
+	$new_line{ICON}=$rules->get_field_icon(%field_line);
+	$new_line{OLD_ICON}=$ENV{ICON};
+}
 $new_line{OLD_ICON}=$ENV{ICON};
 @new_line{$env->get_table_key($table_name)}=split(',',$key);
 
