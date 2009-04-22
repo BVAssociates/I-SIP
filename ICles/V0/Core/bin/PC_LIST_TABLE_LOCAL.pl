@@ -115,7 +115,7 @@ use Isip::Environnement;
 
 my $env=Environnement->new($environnement);
 
-foreach my $table ($env->get_table_list()) {
+foreach my $table (sort $env->get_table_list()) {
 	my %table_info=$env->get_table_info($table);
 	$table_info{icon}="valide";
 	$table_info{icon}="warn" if not $env->get_table_key($table);;

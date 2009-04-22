@@ -151,7 +151,7 @@ foreach my $table ($env->get_table_list_module($module)) {
 	}
 }
 
-foreach my $table (keys %list_table_uniq) {
+foreach my $table (sort keys %list_table_uniq) {
 	my $def_name=$table;
 	my ($real_table,$display_table) = ($table =~ /^([^_]+)(?:__([^_]+))?/);
 	my %table_info=$env->get_table_info($real_table);
