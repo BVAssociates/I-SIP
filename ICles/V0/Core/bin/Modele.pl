@@ -9,35 +9,45 @@ use Getopt::Std;
 ###########################################################
 =head1 NAME
 
-PC_LIST_FIELD_HISTO - Liste les champs d'une table dans un environnement
+Modele.pl - ici un résumé
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_HISTO.pl environnement tablename
+ Modele.pl [-h] [-v] [-n] arg1 arg2
  
 =head1 DESCRIPTION
 
-Liste les champs d'une table dans un environnement à la date courante
+Ici la description fonctionnelle du programme
 
 =head1 ENVIRONNEMENT
 
-=item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+=over
+
+=item ITOOLS : L'environnement du service de l'ICles doit être chargé
+
+=back
 
 =head1 OPTIONS
 
-=head2 -h : Affiche l'aide en ligne
+=over
 
-=head2 -v : Mode verbeux
+=item -h : Affiche l'aide en ligne
+
+=item -v : Mode verbeux
+
+=item -n option : une option
+
+=back
 
 =head1 ARGUMENTS
 
-=head2 * environnement à utiliser
+=head2 arg1 : argument 1
 
-=head2 * table a décrire
+=head2 arg2 : argument 2
 
 =head1 AUTHOR
 
-BV Associates, 16/10/2008
+Copyright (c) 2008 BV Associates. Tous droits réservés.
 
 =cut
 
@@ -64,34 +74,49 @@ sub log_info {
 	print STDERR "INFO: ".join(" ",@_)."\n"; 
 }
 
+#  Programme Principal
+###########################################################
+sub run {
+	local @ARGV=@_;
 
 #  Traitement des Options
 ###########################################################
 
+	my %opts;
+	getopts('hvn:', \%opts);
 
-my %opts;
-getopts('hv', \%opts);
+	my $debug_level = 0;
+	$debug_level = 1 if $opts{v};
 
-my $debug_level = 0;
-$debug_level = 1 if $opts{v};
+	usage($debug_level+1) if $opts{h};
 
-usage($debug_level+1) if $opts{h};
+	my $option_n=$opts{n} if $opts{n};
 
-#  Traitement des arguments
-###########################################################
+	#  Traitement des arguments
+	###########################################################
 
-if ( @ARGV != 2) {
-	log_info("Nombre d'argument incorrect (".@ARGV.")");
-	usage($debug_level);
-	sortie(202);
+	if ( @ARGV != 2) {
+		log_info("Nombre d'argument incorrect (".@ARGV.")");
+		usage($debug_level);
+		sortie(202);
+	}
+	my $arg1=shift @ARGV;
+	my $arg2=shift @ARGV;
+
+	#  Corps du script
+	###########################################################
+
+	my $tout_est_ok="traitement ......";
+	
+	if ($tout_est_ok) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+
 }
-my $arg1=shift;
-my $arg2=shift;
 
-#  Corps du script
-###########################################################
-my $bv_severite=0;
+exit !run(@ARGV) if !caller;
 
-
-
-sortie($bv_severite);
+1;
