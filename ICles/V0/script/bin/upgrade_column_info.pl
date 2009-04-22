@@ -123,7 +123,11 @@ foreach (@environnement_list) {
 		$table_source->query_condition("TABLE_NAME = '$table'");
 		$table_source->query_sort("COLNO");
 		
+		my $table_column=$env->open_local_table($table."_COLUMN");
+		$table_column->execute("DELETE FROM $table\_COLUMN");
+		
 		$env->create_database_histo($table);
+		
 		my $columns=$env->get_columns($table);
 		
 		while (my %field=$table_source->fetch_row() ) {
@@ -138,6 +142,8 @@ foreach (@environnement_list) {
 			$new_field{foreign_table}=$field{"FOREIGN_TABLE"};
 			$new_field{foreign_field}=$field{"FOREIGN_KEY"};
 			$new_field{key}=1 if $field{"PRIMARY_KEY"};
+			
+			$new_field{date}='2008-01-01T00:00';
 			
 			$columns->add_column($field{"FIELD_NAME"}, \%new_field) if not $columns->has_field($field{"FIELD_NAME"});
 		}
