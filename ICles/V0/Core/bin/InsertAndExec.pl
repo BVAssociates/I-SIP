@@ -128,7 +128,7 @@ use ReplaceAndExec_ISIP;
 my $values=join('',@values);
 
 # if we administrate a table other than FIELD_*, we use the original script
-if ($table_name =~ /^TABLE_INFO|CACHE_.*$/i) {
+if ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
 	insert_info($table_name,$values);
 }
 else {

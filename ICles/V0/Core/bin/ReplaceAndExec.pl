@@ -156,7 +156,7 @@ if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
 elsif ($table_name =~ /^COLUMN_INFO$/i) {
 	update_column_info($table_name,$values);
 }
-elsif ($table_name =~ /^TABLE_INFO|CACHE_.*$/i) {
+elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
 	update_info($table_name,$values);
 }
 else {

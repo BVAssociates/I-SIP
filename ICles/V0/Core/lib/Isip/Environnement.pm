@@ -74,13 +74,18 @@ sub new() {
 	
 	my %sources;
 	while (my %row=$source_info->fetch_row) {
-		next if not exists $self->{info_table}->{$row{XML_NAME}};
-		
-		carp("XML sources non implémenté");
-		
-		#$sources{$row{XML_NAME}}=$row{XML_PATH};
-		#$self->set_datasource($row{XML_NAME},$row{XML_PATH});
-
+	    next if not exists $self->{info_table}->{$row{XML_NAME}};
+	    
+	    $self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}=[];
+	    
+	    if ($row{MASTER}) {
+		$self->{info_table}->{$row{XML_NAME}}->{xml_path}=$row{XML_PATH};
+	    }
+	    else {
+		push @{$self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}},
+		    $row{XML_PATH};
+	    }
+	    
 	}
 	
 	$logger->info("Environnement $self->{environnement} opened");
@@ -567,19 +572,16 @@ sub open_source_table() {
 	}
 	elsif ($self->{info_table}->{$table_name}->{type_source} eq "XML") {
 	
-		#TODO
-		carp("XML sources non implémenté");
-		return;
-		#TODO
-		
-		if (not $self->{info_table}->{$table_name}->{source}) {
+		my $xml_path=$self->{info_table}->{$table_name}->{xml_path};
+		if (not $xml_path) {
 			$logger->error("SOURCE missing for $table_name");
+			return;
 		}
 		
 		use ITable::XmlFile;
 		
-		$logger->info("Connexion à XML : $self->{info_table}->{$table_name}->{source}");
-		$return_table=XmlFile->open($self->{info_table}->{$table_name}->{source}, $table_name, $options);
+		$logger->info("Connexion à XML : $xml_path");
+		$return_table=XmlFile->open($xml_path, $table_name, $options);
 	}
 	
 	return $return_table;
@@ -729,24 +731,6 @@ sub create_database_histo() {
 	
 	$logger->notice("Replace view $tablename\_HISTO_CATEGORY");
 	$master_table->execute("DROP VIEW IF EXISTS $tablename\_HISTO_CATEGORY");
-	#$master_table->execute("CREATE VIEW $tablename\_HISTO_CATEGORY AS
-	#SELECT ID,
-	#	DATE_HISTO,
-	#	USER_UPDATE,
-	#	DATE_UPDATE,
-	#	TABLE_NAME,
-	#	$tablename\_HISTO.TABLE_KEY as TABLE_KEY,
-	#	FIELD_NAME,
-	#	FIELD_VALUE,
-	#	COMMENT,
-	#	STATUS,
-	#	MEMO,
-	#	PROJECT,
-	#	coalesce($tablename\_CATEGORY.CATEGORY,'vide') as CATEGORY
-	#FROM $tablename\_HISTO
-	#LEFT JOIN $tablename\_CATEGORY
-	#	ON ($tablename\_HISTO.TABLE_KEY=$tablename\_CATEGORY.TABLE_KEY )
-	#WHERE CATEGORY IS NULL OR CATEGORY != 'HIDDEN'");
 	
 	$logger->notice("Create indexes");
 	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");

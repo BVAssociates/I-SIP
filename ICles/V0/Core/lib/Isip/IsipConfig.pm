@@ -242,9 +242,10 @@ sub create_database_environnement() {
 
 	$logger->notice("Create table XML_INFO");
 	$master_table->execute('CREATE TABLE IF NOT EXISTS "XML_INFO" (
-		"XML_NAME" TEXT PRIMARY KEY  NOT NULL ,
+		"XML_NAME" TEXT NOT NULL ,
 		"XML_PATH" TEXT NOT NULL ,
-		"MASTER" TEXT
+		"MASTER" TEXT ,
+		PRIMARY KEY ("XML_NAME", "XML_PATH")
 	)');
 	
 	$logger->notice("Drop table CACHE_ICON");

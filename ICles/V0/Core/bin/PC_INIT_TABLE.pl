@@ -16,7 +16,7 @@ PC_INIT_TABLE - Initalise la table de données d'historique d'une table
 
 =head1 SYNOPSIS
 
- PC_INIT_TABLE.pl [-h] [-v ] [-m master] [-c [-i environnement_source]] environnement tablename
+ PC_INIT_TABLE.pl [-h] [-v ] [-x] [-c [-i environnement_source]] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -46,7 +46,7 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 
 =item -i environnement_source : import la définition de la table depuis un environnement existant
 
-=item -m master : Le fichier est une copie d'un fichier "maître"
+=item -x : ajoute en tant que fichier XML répliqué
 
 =back
 
@@ -101,7 +101,7 @@ local @ARGV=@_;
 log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvcm:i:M', \%opts) or usage(0);
+getopts('hvcxi:M', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -109,7 +109,7 @@ $debug_level = 1 if $opts{v};
 usage($debug_level+1) if $opts{h};
 
 my $create=$opts{c};
-my $master=$opts{m};
+my $xml_copy=$opts{x};
 my $import=$opts{i};
 my $no_generate_menu=$opts{M};
 
@@ -207,8 +207,9 @@ if ($create) {
 			$xml_entry{XML_NAME}=$table_name;
 			$xml_entry{XML_PATH}=$ENV{XML_PATH};
 					
-			# defaut to 1 if master table
-			$xml_entry{MASTER}=$master;
+			# set to 1 if master table
+			$xml_entry{MASTER}=1 if not $xml_copy;
+			
 			$xml_info->insert_row(%xml_entry);
 		}
 		else {
@@ -223,7 +224,7 @@ if ($create) {
 		$new_line{ACTIVE}=1;
 		
 		# optionnal fields
-		$new_line{ROOT_TABLE}=1 if not $master;
+		$new_line{ROOT_TABLE}=1 if not $xml_copy;
 		$new_line{PARAM_SOURCE}=$ENV{PARAM_SOURCE} if $ENV{PARAM_SOURCE};
 	}
 	my $table=$env_sip->open_local_table("TABLE_INFO");
