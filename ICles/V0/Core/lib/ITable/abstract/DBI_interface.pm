@@ -218,7 +218,10 @@ sub insert_row() {
 	
 	# quote the fields with the apropriate 
 	foreach my $key (keys %row) {
-		if (not $row{$key} or $row{$key} !~ s/^sql\(.+\)$/$1/) {
+		if (not defined $row{$key}) {
+			$row{$key} ="NULL";
+		}
+		elsif ($row{$key} !~ s/^sql\((.+)\)$/$1/) {
 			$row{$key} = $self->{database_handle}->quote($row{$key});
 		}
 	}
@@ -284,7 +287,10 @@ sub update_row() {
 		if ( grep(/^$field$/,@primary_keys) ) {
 			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
 		} else {
-			if (not $row{$field} or $row{$field} !~ s/^!//) {
+			if (not defined $row{$key}) {
+			$row{$key} ="NULL";
+			}
+			elsif (not $row{$field} or $row{$field} !~ s/^sql\((.+)\)$/$1/) {
 				$row{$field} = $self->{database_handle}->quote($row{$field});
 			}
 			push @updated_fields,$field."=".$row{$field};

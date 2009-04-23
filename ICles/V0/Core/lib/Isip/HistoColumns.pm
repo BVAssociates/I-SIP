@@ -228,9 +228,9 @@ sub add_column() {
 		$new_field{DATE_HISTO}=strftime "%Y-%m-%dT%H:%M", localtime;
 	}
 	
-	$new_field{TEXT}=$field_option->{description};
-	$new_field{FOREIGN_TABLE}=$field_option->{foreign_table};
-	$new_field{FOREIGN_KEY}=$field_option->{foreign_field};
+	$new_field{TEXT}=$field_option->{description} if $field_option->{description};
+	$new_field{FOREIGN_TABLE}=$field_option->{foreign_table} if $field_option->{foreign_table};
+	$new_field{FOREIGN_KEY}=$field_option->{foreign_field} if $field_option->{foreign_field};
 	$new_field{PRIMARY_KEY}=1 if $field_option->{key};
 	
 	if (exists $field_option->{size} and $field_option->{size} =~ /(\w+)\((\d+)\)/) {
