@@ -119,6 +119,9 @@ foreach (@environnement_list) {
 	my $env=Environnement->new($_);
 	
 	foreach my $table ($env->get_table_list) {
+		
+		$env->create_database_histo($table);
+		
 		my $table_source=$env->open_local_table("COLUMN_INFO");
 		$table_source->query_condition("TABLE_NAME = '$table'");
 		$table_source->query_sort("COLNO");
