@@ -219,6 +219,15 @@ sub get_query()
 	
 	push @select_conditions, "strftime('$provided_date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 	
+	# aware of concatened keys
+	my @field=$self->{column_histo}->get_field_list();
+	my @key_field=$self->{column_histo}->get_key_list();
+	foreach my $field (@key_field) {
+	        @field = grep {$_ ne $field} @field;
+	}
+	push @field, join(',',@key_field);
+	push @select_conditions, "FIELD_NAME IN (".join(',',map {'\''.$_.'\''} @field).")";
+	
 	my @field_key=$self->key();
 	my %query_key;
 	
@@ -409,7 +418,7 @@ sub fetch_row() {
 	my $missing_key;
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
-			$self->_error("field $_ cannot be null (should be one of : $field_line{TABLE_KEY})");
+			$self->_error("field $_ cannot be null (should be one of : $current_key");
 			$missing_key=1;
 		}
 	}
@@ -718,7 +727,7 @@ sub remove_field() {
 	
 	$self->{column_histo}->remove_column($field_name, $field_options);
 	
-	warn 'TODO : set "__delete" on removed fields';
+	#$self
 	
 	return 1;
 }
