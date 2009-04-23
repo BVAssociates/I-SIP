@@ -287,8 +287,8 @@ sub update_row() {
 		if ( grep(/^$field$/,@primary_keys) ) {
 			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
 		} else {
-			if (not defined $row{$key}) {
-			$row{$key} ="NULL";
+			if (not defined $row{$field}) {
+				$row{$field} ="NULL";
 			}
 			elsif (not $row{$field} or $row{$field} !~ s/^sql\((.+)\)$/$1/) {
 				$row{$field} = $self->{database_handle}->quote($row{$field});
