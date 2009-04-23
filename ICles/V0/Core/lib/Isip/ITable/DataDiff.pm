@@ -70,6 +70,7 @@ sub open() {
 	$self->{field}  = [ $self->{table_target}->field() ];
 	$self->{query_field}  = [ $self->{table_target}->query_field() ];
 	$self->{dynamic_field}  = [ "DIFF",$self->{table_target}->dynamic_field() ];
+	$self->{old_field}  = {};
 	
 	$self->_debug("initialisation");
 	
@@ -281,6 +282,20 @@ sub compare_exclude() {
 	return @{ $self->{diff_exclude} }
 }
 
+# add special 
+sub set_old_field_name() {
+	my $self=shift;
+	
+	my $field=shift or croak ("usage  set_old_field_name(field [,new_name])");
+	my $new_name=shift;
+	
+	$new_name="OLD_".$field if not $new_name;
+	
+	push @{$self->{dynamic_field}}, $new_name;
+	$self->{old_field}->{$new_name}= $field;
+	
+	return 1;
+}
 
 ##########################
 # Old compare_from() method based on the sorted Primary Key
@@ -482,6 +497,13 @@ sub dispatch_equal() {
 	}
 	
 	if ($self->{compare_fetch}) {
+		
+		# additionnal fields which contains old value
+		foreach my $add_field (keys %{$self->{old_field}}) {
+			#put old value in old field
+			$target_row->{$add_field}=$target_row->{$self->{old_field}->{$add_field}};
+		}
+		
 		$target_row->{DIFF}="OK";
 		return $target_row;
 	}
@@ -505,6 +527,12 @@ sub dispatch_source_update() {
 	}
 	
 	if ($self->{compare_fetch}) {
+	
+		# additionnal fields which contains old value
+		foreach my $add_field (keys %{$self->{old_field}}) {
+			#put old value in old field
+			$target_row->{$add_field}=$source_row->{$self->{old_field}->{$add_field}};
+		}
 		#my %new_row=%$target_row;
 		#@new_row{keys %$source_row}=values %$source_row;
 		$target_row->{DIFF}="UPDATE";
@@ -527,6 +555,13 @@ sub dispatch_target_only() {
 	}
 	
 	if ($self->{compare_fetch}) {
+	
+		# additionnal fields which contains old value
+		foreach my $add_field (keys %{$self->{old_field}}) {
+			# no old field
+			$target_row->{$add_field}="";
+		}
+		
 		$target_row->{DIFF}="NEW";
 		return $target_row;
 	}
@@ -547,6 +582,14 @@ sub dispatch_source_only() {
 	}
 	
 	if ($self->{compare_fetch}) {
+	
+		# additionnal fields which contains old value
+		foreach my $add_field (keys %{$self->{old_field}}) {
+			# move new field in old field
+			$source_row->{$add_field}=$source_row->{$self->{old_field}->{$add_field}};
+			$source_row->{$self->{old_field}->{$add_field}}="";
+		}
+		
 		$source_row->{DIFF}="DELETE";
 		return $source_row;
 	}
