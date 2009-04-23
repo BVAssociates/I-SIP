@@ -1,7 +1,8 @@
 # Commandes d'Exploitation : Droit expl
 
 Item~~Modules~expl~~~Explore~MODULE~0~~Expand
-Item~Import données~Import commentaires uniquement~expl~~ENV_FROM=getListValue("Choisir l'environnement qui contient les données à importer",ENVIRON@Environnement,Description@Environnement != %Environnement%)~ExecuteProcedure~PC_UPDATE_COMMENT.pl -c %ENV_FROM% %Environnement%~1~~Backup
+Item~Import données~Import commentaires sur un projet~expl~~{ENV_FROM=getListValue("Choisir l'environnement qui contient les données à importer",ENVIRON@Environnement,Description@Environnement != %Environnement%)}{PROJECT_UPDATE=getListValue("Choisir le projet",PROJECT_TYPE)}~ExecuteProcedure~PC_UPDATE_COMMENT.pl -p "%PROJECT_UPDATE%" -c "%ENV_FROM%" %Environnement%~1~~Backup
+Item~Import données~Import tous les commentaires~expl~~ENV_FROM=getListValue("Choisir l'environnement qui contient les données à importer",ENVIRON@Environnement,Description@Environnement != %Environnement%)~ExecuteProcedure~PC_UPDATE_COMMENT.pl -c %ENV_FROM% %Environnement%~1~~Backup
 Item~Import données~Supprime données de l'environnement~expl~~~ExecuteProcedure~PC_PURGE_HISTO.pl %Environnement%~1~~Backup
 Item~Import données~Supprime et import données d'un autre environnement~expl~~ENV_FROM=getListValue("Choisir l'environnement qui contient les données à importer",ENVIRON@Environnement,Description@Environnement != %Environnement%)~ExecuteProcedure~PC_REFRESH_HISTO.pl -c %ENV_FROM% %Environnement%~1~~Backup
 Item~Baselines~Ajouter Baseline~expl~~{DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION)}{MESSAGE=getValue("Description de la baseline")}~ExecuteProcedure~PC_SET_BASELINE.pl -m "%MESSAGE%" %Environnement% %DATE_BASELINE%~0~~Add
