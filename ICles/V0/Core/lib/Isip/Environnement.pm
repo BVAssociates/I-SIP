@@ -596,6 +596,10 @@ sub initialize_column_info() {
 	if (not blessed($itable_obj) or not $itable_obj->isa("DATA_interface")) {
 		croak("usage initialize_column_info(DATA_interface)")
 	}
+	
+	if ($itable_obj->isa("XmlFile")) {
+		warn("Les fichiers de type XML ne peuvent pas être importés");
+	}
 
 	my $column_info=$self->get_columns($itable_obj->table_name);
 	
