@@ -53,7 +53,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK   = qw($logger);
+	@EXPORT_OK   = qw($logger no_log);
 	
 	# DIE and WARN trap
 	
@@ -137,7 +137,19 @@ sub log_screen_only() {
 	$logger->add(screen => {
 		log_to   => 'STDERR',
 		newline  => 1,
-		maxlevel => 'debug',
+		maxlevel => 'notice',
+		timeformat      => '%Y/%m/%d %H:%M:%S',
+		message_layout  => '%T:%L:%m',
+		alias    => 'screen-out',
+		});
+}
+
+sub no_log() {
+	$logger=Log::Handler->create_logger('logger');
+	$logger->add(screen => {
+		log_to   => 'STDERR',
+		newline  => 1,
+		maxlevel => 'warning',
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
