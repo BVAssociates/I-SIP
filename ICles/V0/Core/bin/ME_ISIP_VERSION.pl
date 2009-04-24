@@ -101,12 +101,17 @@ sub run {
 	#  Corps du script
 	###########################################################
 
-	my $revision='$Rev$';
 	my $URL='$HeadURL$';
 	
-	$URL =~ s#ICles\V0\Core\bin##;
+	my $branch;
+	($branch) = $URL =~ m#([^/]+)/ICles/V0/Core/bin/ME_ISIP_VERSION.pl#;
 	
-	print $URL;
+	if ($branch eq "trunk") {
+		print "I-SIP, Version de developpement\n";
+	}
+	else {
+		print $branch."\n";
+	}
 }
 
 exit !run(@ARGV) if !caller;
