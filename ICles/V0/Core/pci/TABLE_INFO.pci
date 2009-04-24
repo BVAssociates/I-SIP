@@ -5,4 +5,4 @@ Item~~Configuer colonnes~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~Ad
 Item~~Configurer les XML repliqués~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML""~~Administrate~XML_INFO~0~~Configure
 Item~~Vérifier et mettre à jour structure~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl %Environnement% %TABLE_NAME%~0~~Save
 Item~Suppression~Supprimer la définition de la table~adm~~~ExecuteProcedure~PC_REMOVE_TABLE.pl %Environnement% %TABLE_NAME%~1~~Remove
-Item~Suppression~Supprimer la table et ses données~dev~~~ExecuteProcedure~PC_REMOVE_TABLE.pl -f %Environnement% %TABLE_NAME%~1~~Remove
+Item~Suppression~Supprimer la table et ses données~adm~~~ExecuteProcedure~PC_REMOVE_TABLE.pl -f %Environnement% %TABLE_NAME%~1~~Remove

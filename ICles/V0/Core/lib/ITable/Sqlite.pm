@@ -123,6 +123,8 @@ sub _open_database() {
 	
 	croak 'no database_path defined' if not defined $self->{database_path};
 	
+	croak $self->{database_path}." does not exists or is empty" if not -s $self->{database_path};
+	
 	return if defined $self->{database_handle};
 	
 	$self->_debug("Open database file : ",$self->{database_path});

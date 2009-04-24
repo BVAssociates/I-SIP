@@ -4,3 +4,5 @@ SIZE="20s;20s;20s"
 KEY="Module"
 
 FKEY=[BIBTYP] on CONF_MODULE_TYPE[BIBTYP]
+
+SORT="Module"

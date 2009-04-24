@@ -591,6 +591,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			$current_table =get_display_table($display_table);
 			
 			my %table_info=$env->get_table_info($current_table);
+			log_erreur("Impossible d'obtenir des informations sur $current_table") if not %table_info;
 			
 			my $table_key=$env->get_table_key($current_table);
 			

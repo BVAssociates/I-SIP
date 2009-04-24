@@ -98,7 +98,7 @@ sub get_odbc_database_name() {
 sub get_odbc_datasource_name() {
 	my $self = shift;
 	
-	my $environnement=shift or die "bad arguments";
+	my $environnement=shift or croak "usage : get_odbc_datasource_name(environnement)";
 	
 	if (not exists $self->{info_env}->{$environnement}) {
 		croak("Environnement $environnement non configuré");
@@ -214,7 +214,7 @@ sub create_database_environnement() {
 	
 	my $database_path=$self->get_data_dir()."/ISIP_".$environnement."_INFO.sqlite";
 	
-	carp "database already exist at <$database_path>" if -s $database_path;
+	$logger->info("database already exist at <$database_path>") if -s $database_path;
 	
 	if (! -e $database_path) {
 		$logger->notice("Creating empty file : $database_path");
@@ -248,10 +248,10 @@ sub create_database_environnement() {
 		PRIMARY KEY ("XML_NAME", "XML_PATH")
 	)');
 	
-	$logger->notice("Drop table CACHE_ICON");
-	$master_table->execute('DROP TABLE "CACHE_ICON"');
+	#$logger->notice("Drop table CACHE_ICON");
+	#$master_table->execute('DROP TABLE "CACHE_ICON"');
 	$logger->notice("Create table CACHE_ICON");
-	$master_table->execute('CREATE TABLE "CACHE_ICON" (
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_ICON" (
 		"TABLE_NAME" VARCHAR,
 		"TABLE_SOURCE" VARCHAR,
 		"TABLE_KEY" VARCHAR,

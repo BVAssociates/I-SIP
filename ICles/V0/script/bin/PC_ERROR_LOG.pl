@@ -5,21 +5,21 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use Isip::IsipLog qw($logger log_screen_only);
+use Isip::IsipLog '$logger';
 
 #  Documentation
 ###########################################################
 =head1 NAME
 
-ME_COLLECTE_ALL - Collecte tous les environnements
+upgrade_column_info - 
 
 =head1 SYNOPSIS
 
- ME_COLLECTE_ALL.pl [-h][-v][-p]
+ upgrade_column_info.pl [-h][-v] log_file
  
 =head1 DESCRIPTION
 
-Collecte tous les environnements
+Met à jour les bases de données ISIP avec la nouvelle colonne
 
 =head1 ENVIRONNEMENT
 
@@ -37,12 +37,15 @@ Collecte tous les environnements
 
 =item -v : Mode verbeux
 
-=item -p : utilise un processus par environnement (fork)
-
 =back
 
 =head1 ARGUMENTS
 
+=over
+
+=item log_file : log à analyser
+
+=back
 
 =head1 AUTHOR
 
@@ -81,64 +84,28 @@ sub log_info {
 
 
 my %opts;
-getopts('hvp', \%opts) or usage(0);
+getopts('hv', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $fork=$opts{p} if exists $opts{p};
-
-
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 0) {
+if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 
+#my $log_file=shift @ARGV;
+
 #  Corps du script
 ###########################################################
-my $bv_severite=0;
 
-use Isip::IsipConfig;
-require "PC_UPDATE_HISTO.pl";
-require "PC_CLEAN_BASELINE.pl";
 
-my $config=IsipConfig->new();
-my @env_list=$config->get_environnement_list();
-
-log_screen_only() if $fork;
-
-my $return_code=0;
-my $pid=0;
-foreach my $env (@env_list) {
-	$pid = fork() if $fork;
-	if (!$pid) {
-		# child process
-		log_info("nettoyage avant collecte de l'environnement $env");
-		eval { pc_clean_baseline::run($env) };
-		if ($@) {
-			$return_code = 202;
-			log_info("Problème lors du nettoyage des bases de $env");
-		}
-		
-		log_info("Collecte de l'environnement $env");
-		eval { pc_update_histo::run("-ed",$env) };
-		$return_code = 202 if $@;
-		log_info("Terminé pour l'environnement $env avec le code $return_code");
-		last if $fork;
-	}
+while(<>)  {
+	print if m{\d+/\d+/\d+ \d+:\d+:\d+:(ERROR|CRITICAL)};
 }
-
-if ($fork and $pid) {
-	log_info("Attente que tous les process se termine");
-	wait;
-	$return_code=$?;
-	log_info("Collecte complète avec le code $return_code");
-}
-
-exit $return_code;

@@ -10,8 +10,9 @@ Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalA
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Types de Modules~dev~~~Administrate~CONF_MODULE_TYPE~0~~Configure
 
-Item~dev~Historique Execution~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
-Item~dev~Statistique Execution~dev~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
+Item~Technique~Historique Execution~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
+Item~Technique~Statistique Execution~adm~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
+Item~Technique~Erreurs de collecte~adm~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\derniere_collecte.log~0~~Configure
 
 #Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
 #Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand

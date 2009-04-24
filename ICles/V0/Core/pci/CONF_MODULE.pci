@@ -1,4 +1,4 @@
 
 Item~~Propriétés Tables~adm~~~Explore~TABLE_INFO~0~~Expand
 Item~~Recalculer structure du module~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl -m %Module% %Environnement%~0~~Method
-Item~dev~Modifier Tables~dev~~~Administrate~TABLE_INFO~0~~Configure
+Item~Technique~Modifier Tables~dev~~~Administrate~TABLE_INFO~0~~Configure

@@ -60,7 +60,7 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	die shift;
 }
 
 sub usage($) {
@@ -115,7 +115,7 @@ sub run {
 
 	use Isip::Environnement;
 
-	$logger->notice("Nettoyrage de l'environnement $environnement");
+	$logger->notice("Nettoyage de l'environnement $environnement");
 	my $env=Environnement->new($environnement);
 	
 	#log_screen_only();
@@ -133,6 +133,9 @@ sub run {
 	
 		#manualy open database which is storing _HISTO table
 		my $database_path=$env->get_sqlite_path($table_name."_HISTO");
+		
+		log_erreur("Impossible d'acceder à $database_path pour nettoyage") if not -s $database_path;
+		
 		my $master_table=Sqlite->open($database_path, 'sqlite_master');
 		$master_table->query_field("name");
 		

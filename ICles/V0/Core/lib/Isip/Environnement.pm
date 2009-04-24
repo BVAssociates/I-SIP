@@ -93,13 +93,6 @@ sub new() {
 	return $self;
 }
 
-
-sub get_column_info() {
-	my $self = shift;
-	
-	croak "OBSELETE. Use get_columns() instead";
-}
-
 sub get_columns() {
 	my $self = shift;
 	
@@ -118,7 +111,7 @@ sub get_columns() {
 	my $options = {date => $query_date} if $query_date;
 	
 	my $tmp_return = eval {HistoColumns->new($sqlite_path, $table_name, $options)};
-	croak "Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement} if $@;
+	croak "Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement}." : $@" if $@;
 	return $tmp_return;
 }
 
@@ -313,7 +306,7 @@ sub get_sqlite_path() {
 	
 	if ($dir) {
 		if (not -e $filepath) {
-			carp("Unable to access to file : $filepath");
+			carp("$filepath n'existe pas");
 		}
 	}
 	else {
@@ -514,18 +507,22 @@ sub open_source_table() {
 	my $return_table;
 	
 	if (not exists $self->{info_table}->{$table_name}) {
-		croak("La table table_name est inconnue dans ".$self->{environnement});
+		$logger->error("La table table_name est inconnue dans ".$self->{environnement});
+		return;
 	}
 	
 	my $library=$self->{isip_config}->get_odbc_database_name(
 		$self->{info_table}->{$table_name}->{module},
 		$self->{environnement});
 	
+	if (not $library) {
+		$logger->error("Librairie non configuré pour ".$self->{info_table}->{$table_name}->{module}." dans ".$self->{environnement});
+		return;
+	}
+	
 	# open source table depending on TYPE_SOURCE
 	if ($self->{info_table}->{$table_name}->{type_source} eq "ODBC") {
-		if (not $library) {
-			$logger->error("SOURCE missing for $table_name dans ".$self->{environnement});
-		}
+		
 		
 		if ($self->{info_table}->{$table_name}->{param_source}) {
 			use Isip::ITable::ODBC_Query;
@@ -575,6 +572,10 @@ sub open_source_table() {
 		
 		$logger->info("Connexion à XML : <$xml_path> dans ".$self->{environnement}."");
 		$return_table=XmlFile->open($xml_path, $table_name, $options);
+	}
+	else {
+		$logger->error("Type de source <".$self->{info_table}->{$table_name}->{type_source}."> non reconnu pour $table_name dans ".$self->{environnement});
+		return;
 	}
 	
 	return $return_table;
