@@ -410,10 +410,16 @@ sub open_local_from_histo_table() {
 		}
 	}
 	else {
-		croak("La table $table_name\_HISTO est manquante dans ".$self->{environnement}) if not $self->exist_local_table($table_name.'_HISTO');
+		if (not $self->exist_local_table($table_name.'_HISTO')) {
+			$logger->error("La table $table_name\_HISTO est manquante dans ".$self->{environnement}) ;
+			return;
+		}
 		
 		$table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
-		croak("Impossible d'ouvrir la table $table_name dans ".$self->{environnement}." : $@") if $@;
+		if ($@) {
+			$logger->error("Impossible d'ouvrir la table $table_name dans ".$self->{environnement}." : $@") ;
+			return;
+		}
 
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
@@ -443,6 +449,7 @@ sub open_histo_field_table() {
 		if ($self->exist_local_table($baseline_name)) {
 			$table_histo = eval {HistoFieldBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
 			$logger->error("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@") if $@;
+			return;
 		}
 		else {
 			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name ");
@@ -453,7 +460,10 @@ sub open_histo_field_table() {
 		croak "La table $table_name\_HISTO est manquante dans ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 		
 		$table_histo = eval {HistoField->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
-		croak "Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@" if $@;
+		if ($@) {
+			$logger->error("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@");
+			return;
+		}
 
 		$table_histo->query_date($date_explore) if $date_explore;
 	}

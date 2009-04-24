@@ -270,6 +270,8 @@ sub run {
 		#open IKOS table for DATA
 		my $table_from=$env_sip_from->open_local_from_histo_table($table_name,$date_compare);
 
+		return 0 if not $table_from;
+		
 		$table_from->query_condition(@query_condition);
 
 		$table_from->query_field("PROJECT",$table_from->query_field);
