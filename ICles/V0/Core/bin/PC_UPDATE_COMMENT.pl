@@ -17,7 +17,7 @@ Pc_UPDATE_COMMENT - Met à jour les commentaires d'un environnent à l'autre à val
 
 =head1 SYNOPSIS
 
- Pc_UPDATE_COMMENT.pl [-m module] [-p projet] -c environnement_source environnement_cible table_name
+ Pc_UPDATE_COMMENT.pl [-m module] [-p projet] -c environnement_source@date environnement_cible table_name
  
 =head1 DESCRIPTION
 
@@ -42,7 +42,9 @@ Met à jour les commentaires d'un environnent à l'autre à valeur égales.
 
 =item -m module
 
-=item -c environnement_source : Environnement qui contient les commentaires à copier
+=item -c environnement_source@date : Environnement qui contient les commentaires à copier
+
+à une date donnée
 
 =item -p projet : Uniquement les lignes de la table_source qui appartiennent au projet
 
@@ -131,6 +133,10 @@ sub run {
 
 	usage($debug_level) if not $environnement_from;
 	
+	my $date_from;
+	($environnement_from,$date_from) = $environnement_from =~ /^([^@]+)(?:@(.+))?/;
+	
+	usage($debug_level) if not $environnement_from;
 
 	#  Corps du script
 	###########################################################
@@ -154,9 +160,21 @@ sub run {
 		@table_list_to=($table_name);
 	}
 
-	foreach my $current_table (@table_list_from) {
-		my $table_from = $env_from->open_histo_field_table($current_table);
-		my $table_to;
+	foreach my $current_table (@table_list_to) {
+		my $table_to = $env_to->open_histo_field_table($current_table);
+		my $table_from;
+		if (grep {$current_table} @table_list_from) {
+			$table_from = $env_from->open_histo_field_table($current_table, $date_from);
+			if (not $table_from) {
+				log_info("pas de mise à jour pour $current_table dans $environnement car elle n'existe pas à cette date dans $environnement_from");
+				next;
+			}
+		}
+		else {
+			$logger->warning("pas de mise à jour pour $current_table dans $environnement car elle n'existe pas dans $environnement_from");
+			next;
+		}
+		
 		
 		log_info("Recopie des commentaires à valeur égales de $current_table, de $environnement_from vers $environnement");
 		
@@ -169,15 +187,9 @@ sub run {
 			
 			if (%target_key_condition) {
 				$table_from->query_key_value(keys %target_key_condition);
+				$table_to->query_key_value(keys %target_key_condition);
 				
-				if (grep {$current_table} @table_list_to) {
-					$table_to = $env_to->open_histo_field_table($current_table);
-					$table_to->query_key_value(keys %target_key_condition);
-				}
-				else {
-					$logger->warning("Impossible de mettre à jour le commentaires car la table $current_table n'existe pas dans l'environnement cible");
-					next;
-				}
+				
 			}
 			else {
 				$logger->info("Aucune ligne ne correspond au projet $project");
