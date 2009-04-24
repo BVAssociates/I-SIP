@@ -76,16 +76,29 @@ sub new() {
 	while (my %row=$source_info->fetch_row) {
 	    next if not exists $self->{info_table}->{$row{XML_NAME}};
 	    
-	    $self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}=[];
+		if (not exists $self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}) {
+			$self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}=[];
+		}
 	    
-	    if ($row{MASTER}) {
-		$self->{info_table}->{$row{XML_NAME}}->{xml_path}=$row{XML_PATH};
+		# if master already set, put the path in copy_list
+	    if ($row{MASTER} and not $self->{info_table}->{$row{XML_NAME}}->{xml_path})
+		{
+			$self->{info_table}->{$row{XML_NAME}}->{xml_path}=$row{XML_PATH};
 	    }
-	    else {
-		push @{$self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}},
-		    $row{XML_PATH};
+	    else
+		{
+			push @{$self->{info_table}->{$row{XML_NAME}}->{xml_copy_list}},$row{XML_PATH};
 	    }
-	    
+	}
+	
+	foreach my $xml_name ($self->get_table_list) {
+		# if no master, we take the first XML
+		if (exists $self->{info_table}->{$xml_name}->{xml_copy_list}
+				and @{$self->{info_table}->{$xml_name}->{xml_copy_list}}
+				and not $self->{info_table}->{$xml_name}->{xml_path})
+		{
+			$self->{info_table}->{$xml_name}->{xml_path}=shift @{$self->{info_table}->{$xml_name}->{xml_copy_list}};
+		}
 	}
 	
 	$logger->info("Environnement $self->{environnement} opened");

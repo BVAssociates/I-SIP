@@ -119,27 +119,21 @@ use Text::Diff;
 use Carp;
 
 my $env=Environnement->new($environnement);
+my %table_info=$env->get_table_info($table_name);
 
-my $table_xml=$env->open_local_table("XML_INFO");
-
-$table_xml->query_condition("XML_NAME = '$table_name'") if $table_name;
-
-my $xml_master;
-my @xml_copy_list;
-while ( my %row=$table_xml->fetch_row() ) {
-	if ($row{MASTER}) {
-		$xml_master=$row{XML_PATH};
-	}
-	else {
-		push @xml_copy_list, $row{XML_PATH};
-	}
+if (not %table_info or $table_info{type_source} ne "XML") {
+	log_erreur("$table_name n'est une table XML");
 }
+
+my $xml_master=$table_info{xml_path};
+my @xml_copy_list=@{$table_info{xml_copy_list}};
 
 if (not $xml_master) {
 	croak("Impossible de retrouver le chemin du XML de référence");
 }
 
 $logger->notice("XML référence : $xml_master");
+$logger->notice("XML repliqués : ", @xml_copy_list);
 
 
 my $table_master=XmlFile->open($xml_master, $table_name);
