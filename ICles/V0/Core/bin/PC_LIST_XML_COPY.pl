@@ -125,6 +125,6 @@ my $table_xml=$env->open_local_table("XML_INFO");
 $table_xml->query_condition("XML_NAME = '$table_name'") if $table_name;
 
 while ( my %row=$table_xml->fetch_row() ) {
-	print join($separator, $row{XML_NAME}, $row{XML_PATH})."\n" if $master or not $row{MASTER};
+	print join($separator, $row{XML_NAME}, $row{XML_PATH}, $row{MASTER})."\n" if $master or not $row{MASTER};
 }
 
