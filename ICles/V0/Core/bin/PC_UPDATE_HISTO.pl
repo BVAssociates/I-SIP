@@ -17,7 +17,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-c] [-n|-u] [-m module] [-b environnement_source[@date]] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-e] [-c] [-n|-u] [-m module] [-b environnement_source[@date]] environnement [tablename]
  
 =head1 DESCRIPTION
 
@@ -44,6 +44,8 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 =item -d : enregistre la date
 
 =item -k : compacte la base après collecte
+
+=item -e : réinitialise l'environnement (description, structure)
 
 =item -m module : n'effectue la collecte que sur les tables de "module"
 
@@ -101,7 +103,7 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:dkc:u', \%opts) or usage(0);
+	getopts('hvnm:dkc:ue', \%opts) or usage(0);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -112,6 +114,7 @@ sub run {
 	my $force_vacuum=$opts{k};
 	my $no_update_histo=$opts{n};
 	my $no_update_cache=$opts{u};
+	my $update_env=$opts{e};
 	
 	my $env_compare;
 	my $date_compare;
@@ -148,10 +151,18 @@ sub run {
 	my $bv_severite=0;
 
 	use Isip::Environnement;
+	use Isip::IsipConfig;
 	use ITable::ITools;
 	use Isip::ITable::DataDiff;
 	use Isip::IsipTreeCache;
 
+	if ($update_env) {
+		my $config=IsipConfig->new();
+	
+		require "PC_INIT_ENV.pl";
+		pc_init_env::run($config->get_odbc_datasource_name($environnement), $environnement);
+	}
+	
 	my $env_sip = Environnement->new($environnement);
 
 	my @list_table;
