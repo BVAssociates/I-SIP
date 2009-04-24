@@ -112,13 +112,13 @@ sub get_columns() {
 	
 	my $sqlite_path=$self->get_sqlite_path($table_column,$self->{environnement});
 	if (not -e $sqlite_path) {
-		croak ("Unable to access $table_column for $self->{environnement}");
+		croak ("Impossible d'acceder à la base de $table_column dans $self->{environnement}");
 	}
 	
 	my $options = {date => $query_date} if $query_date;
 	
 	my $tmp_return = eval {HistoColumns->new($sqlite_path, $table_name, $options)};
-	croak "Impossible d'obtenir les informations de colonnes pour $table_name" if $@;
+	croak "Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement} if $@;
 	return $tmp_return;
 }
 
@@ -283,15 +283,13 @@ sub get_sqlite_filename() {
 	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 	
-	croak("$table_name n'est pas un nom de table valide") if not $table_real;
+	croak("$table_name n'est pas un nom de table valide dans ".$self->{environnement}) if not $table_real;
 	
 	if ($table_name =~ /^TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {
-	
-		croak("no environnement defined for table type : HISTO")
-			if not $environnement;
+		croak("no environnement defined for table type : HISTO") if not $environnement;
 		
 		$filename = "ISIP_".$environnement."_".$table_real.".sqlite";
 	}
@@ -344,7 +342,7 @@ sub is_baseline_date() {
 	my $date=shift;
 	
 	if ( $date !~ /\d{4}-?\d{2}-?\d{2}T\d{2}:?\d{2}/) {
-			croak("$date:La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
+			croak("is_baseline_date($date):La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
 	}
 	
 	my $baseline_list=ITools->open("DATE_UPDATE");
@@ -388,18 +386,18 @@ sub open_local_from_histo_table() {
 		my $baseline_name=HistoBaseline->get_baseline_name($table_name,$date_explore);
 		if ($self->exist_local_table($baseline_name)) {
 			$table_histo = eval {HistoBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
-			croak("Impossible d'ouvrir $table_name : $@") if $@;
+			croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}.": $@") if $@;
 		}
 		else {
-			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas");
+			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name ");
 			return;
 		}
 	}
 	else {
-		croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+		croak("La table $table_name\_HISTO est manquante dans ".$self->{environnement}) if not $self->exist_local_table($table_name.'_HISTO');
 		
 		$table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
-		croak "Error opening $table_name : $@" if $@;
+		croak("Impossible d'ouvrir la table $table_name dans ".$self->{environnement}." : $@") if $@;
 
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
@@ -428,26 +426,21 @@ sub open_histo_field_table() {
 		my $baseline_name=HistoFieldBaseline->get_baseline_name($table_name,$date_explore);
 		if ($self->exist_local_table($baseline_name)) {
 			$table_histo = eval {HistoFieldBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
-			croak("Impossible d'ouvrir $table_name : $@") if $@;
+			croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@") if $@;
 		}
 		else {
-			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas");
+			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name");
 		}
 	}
 	else {
-		croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
+		croak "La table $table_name\_HISTO est manquante dans ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
 		
 		$table_histo = eval {HistoField->open($self->get_sqlite_path($table_name,$self->{environnement}), $table_name, @_)};
-		croak "Error opening $table_name : $@" if $@;
+		croak "Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@" if $@;
 
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
-	
-	
-	croak "Database not initialized for table $table_name in environnement ".$self->{environnement} if not $self->exist_local_table($table_name.'_HISTO');
-	
-	croak "Error opening $table_name : $@" if $@;
-	
+		
 	return $table_histo
 }
 
@@ -459,7 +452,7 @@ sub open_cache_table() {
 	my $table_name=shift or croak "open_cache_table() wait args : 'tablename'";
 	
 	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name), $table_name, @_)};
-	croak "Error opening $table_name : $@" if $@;
+	croak "Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@" if $@;
 	return $tmp_return;
 }
 
@@ -499,7 +492,7 @@ sub open_local_table() {
 	
 	my $sqlite_path=$self->get_sqlite_path($table_name,$self->{environnement});
 	if (not -e $sqlite_path) {
-		croak ("Unable to access $table_name for $self->{environnement}");
+		croak ("Impossible d'ouvrir le fichier $sqlite_path dans $self->{environnement}");
 	}
 	my $tmp_return = eval {Sqlite->open($sqlite_path, $table_name, @_)};
 	croak "Impossible d'ouvrir la table SQLite $table_name : $@" if $@;
@@ -521,7 +514,7 @@ sub open_source_table() {
 	my $return_table;
 	
 	if (not exists $self->{info_table}->{$table_name}) {
-		croak("La table table_name est inconnue");
+		croak("La table table_name est inconnue dans ".$self->{environnement});
 	}
 	
 	my $library=$self->{isip_config}->get_odbc_database_name(
@@ -531,7 +524,7 @@ sub open_source_table() {
 	# open source table depending on TYPE_SOURCE
 	if ($self->{info_table}->{$table_name}->{type_source} eq "ODBC") {
 		if (not $library) {
-			$logger->error("SOURCE missing for $table_name");
+			$logger->error("SOURCE missing for $table_name dans ".$self->{environnement});
 		}
 		
 		if ($self->{info_table}->{$table_name}->{param_source}) {
@@ -541,7 +534,7 @@ sub open_source_table() {
 
 			#manually set KEY
 			if (not $return_table->key($self->get_table_key($table_name))) {
-				carp ("PRIMARY KEY not defined for $table_name.") ;
+				carp ("PRIMARY KEY not defined for $table_name dans ".$self->{environnement}) ;
 			}
 		}
 		else {
@@ -553,7 +546,7 @@ sub open_source_table() {
 			if (not $return_table->key($self->get_table_key($table_name))) {
 				my $table_logical=$table_name;
 				$table_logical =~ s/P$/L0/;
-				carp ("PRIMARY KEY not defined for $table_name. Try to get it from $table_logical.") ;
+				carp ("PRIMARY KEY non défini pour $table_name dans ".$self->{environnement}." : tentative de récupration à partir de $table_logical") ;
 				
 				# connect to DB2 catalog
 				my $sys_table=ODBC->open("QSYS","QADBKFLD",$self->{isip_config}->get_odbc_option($self->{environnement}));
@@ -574,13 +567,13 @@ sub open_source_table() {
 	
 		my $xml_path=$self->{info_table}->{$table_name}->{xml_path};
 		if (not $xml_path) {
-			$logger->error("SOURCE missing for $table_name");
+			$logger->error("SOURCE missing for $table_name dans".$self->{environnement});
 			return;
 		}
 		
 		use ITable::XmlFile;
 		
-		$logger->info("Connexion à XML : $xml_path");
+		$logger->info("Connexion à XML : <$xml_path> dans ".$self->{environnement}."");
 		$return_table=XmlFile->open($xml_path, $table_name, $options);
 	}
 	
@@ -590,11 +583,11 @@ sub open_source_table() {
 sub initialize_column_info() {
 	my $self=shift;
 	
-	my $itable_obj=shift or croak "bad arguments";
+	my $itable_obj=shift or croacroak("usage initialize_column_info(DATA_interface)");
 	my $links=shift;
 	
 	if (not blessed($itable_obj) or not $itable_obj->isa("DATA_interface")) {
-		croak("usage initialize_column_info(DATA_interface)")
+		croak("usage initialize_column_info(DATA_interface)");
 	}
 	
 	if ($itable_obj->isa("XmlFile")) {
@@ -616,14 +609,14 @@ sub initialize_column_info() {
 	my %foreign_key_info;
 	my %foreign_table_info;
 	if ($links) {
-		croak "bad arguments" if not blessed($links) and not $links->isa("ILink");
+		croak("usage initialize_column_info(DATA_interface)") if not blessed($links) and not $links->isa("ILink");
 		my @foreign_table=$links->get_parent_tables($itable_obj->table_name);
 		foreach my $f_tab (@foreign_table) {
 			my %foreign_key=$links->get_foreign_fields($itable_obj->table_name,$f_tab);
 			
 			foreach my $f_key (keys  %foreign_key) {
 				if (exists $foreign_key_info{$f_key}) {
-					croak "Problème avec les liens : un champ ne peux avoir qu'une clef étrangère";
+					croak("Problème avec les liens : un champ ne peux avoir qu'une clef étrangère pour  $f_tab dans ".$self->{environnement});
 				}
 				$foreign_key_info{$f_key}=$foreign_key{$f_key};
 				$foreign_table_info{$f_key}=$f_tab;
@@ -766,9 +759,9 @@ sub create_histo_baseline() {
 	
 	my $baseline_table=$self->open_local_table($table_name."_HISTO");
 	
-	$logger->info("Create $baseline_name");
+	$logger->info("Create $baseline_name dans ".$self->{environnement});
 	$baseline_table->execute("CREATE TABLE IF NOT EXISTS $baseline_name as ".$select_query);
-	$logger->info("Create indexes on $baseline_name");
+	$logger->info("Create indexes on $baseline_name dans ".$self->{environnement});
 	$baseline_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY_$baseline_date ON $baseline_name (TABLE_KEY ASC)");
 	
 }
@@ -812,7 +805,7 @@ sub drop_histo() {
 
 	my $master_table=$self->open_local_table($table_name."_HISTO");
 	
-	$logger->info("rename ".$table_name."_HISTO to ".$new_histo_name);
+	$logger->info("rename ".$table_name."_HISTO to ".$new_histo_name." dans ".$self->{environnement});
 	$master_table->execute("ALTER TABLE ".$table_name."_HISTO RENAME TO ".$new_histo_name);
 	$logger->info("delete obsolete indexes");
 	$master_table->execute("DROP INDEX IDX_TABLE_KEY");
