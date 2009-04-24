@@ -167,9 +167,9 @@ sub run {
 		$config_sip->create_database_environnement($environnement);
 	}
 	
-	return 0;
+	return 1;
 }
 
-exit run(@ARGV) if !caller;
+exit !run(@ARGV) if !caller;
 
 1;

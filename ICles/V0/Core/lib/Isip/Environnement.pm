@@ -105,13 +105,14 @@ sub get_columns() {
 	
 	my $sqlite_path=$self->get_sqlite_path($table_column,$self->{environnement});
 	if (not -e $sqlite_path) {
-		croak ("Impossible d'acceder à la base de $table_column dans $self->{environnement}");
+		$logger->warning ("Impossible d'acceder à la base de $table_column dans $self->{environnement}");
+		return;
 	}
 	
 	my $options = {date => $query_date} if $query_date;
 	
 	my $tmp_return = eval {HistoColumns->new($sqlite_path, $table_name, $options)};
-	croak "Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement}." : $@" if $@;
+	$logger->warning("Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement}." : $@") if $@;
 	return $tmp_return;
 }
 
@@ -159,22 +160,29 @@ sub get_table_list_module() {
 # return ILink object
 sub get_links() {
 	my $self = shift;
-	
+		
 	my $links=ILink->new();
 	
+	# get links for all table
 	foreach ($self->get_table_list) {
-		my $link_add=$self->get_columns($_)->get_links();
+		my $columns=$self->get_columns($_);
+		next if not $columns;
+		
+		my $link_add=$columns->get_links();
 		$links->add_link($link_add);
 	}
 
+
+	
+	
 	return $links;
 }
 
 # return new ILink object with new virtual ROOT tables (see #56)
 sub get_links_menu() {
 	my $self = shift;
-		
-	my ILink $link_clone = $self->get_links->clone();
+			
+	my ILink $link_clone = $self->get_links()->clone();
 	
 	my $separator='__';
 	

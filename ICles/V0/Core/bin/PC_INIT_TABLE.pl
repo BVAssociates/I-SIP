@@ -282,7 +282,7 @@ if (not $env_sip->get_table_key($table_name)) {
 	$logger->notice("Veuillez configurer les colonnes (menu \"Configurer Colonnes\"), puis lancer une vérification");
 	$logger->notice("###############################################");
 	
-	return 0;
+	return 1;
 }
 else {
 	if (not $no_generate_menu) {
@@ -291,10 +291,10 @@ else {
 	}
 }
 
-return 0;
+return 1;
 # END RUN
 }
 
-exit run(@ARGV) if !caller;
+exit !run(@ARGV) if !caller;
 
 1;
