@@ -214,6 +214,8 @@ sub get_table_key() {
 		@key= "xml_path";
 	} 
 	else {
+		return if not $self->exist_local_table($tablename."_COLUMN");
+		
 		@key=$self->get_columns($tablename)->get_key_list();
 	}
 	
