@@ -419,10 +419,11 @@ sub open_histo_field_table() {
 		my $baseline_name=HistoFieldBaseline->get_baseline_name($table_name,$date_explore);
 		if ($self->exist_local_table($baseline_name)) {
 			$table_histo = eval {HistoFieldBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
-			croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@") if $@;
+			$logger->error("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@") if $@;
 		}
 		else {
-			croak("Possible incohérence : $date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name");
+			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name ");
+			return;
 		}
 	}
 	else {
@@ -464,7 +465,9 @@ sub exist_local_table() {
 	return 0 if not $database_path;
 	
 	# verification on sqlite_master
-	my $master_table=Sqlite->open($database_path, 'sqlite_master', @_);
+	my $master_table=eval {Sqlite->open($database_path, 'sqlite_master', @_)};
+	return 0 if $@;
+	
 	$master_table->query_condition("type='table' AND name='$table_name'");
 	
 	my $return_value=0;
@@ -564,7 +567,7 @@ sub open_source_table() {
 	
 		my $xml_path=$self->{info_table}->{$table_name}->{xml_path};
 		if (not $xml_path) {
-			$logger->error("SOURCE missing for $table_name dans".$self->{environnement});
+			$logger->error("fichier source manquant $table_name dans ".$self->{environnement});
 			return;
 		}
 		

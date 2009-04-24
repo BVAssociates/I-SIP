@@ -350,7 +350,7 @@ sub compare_init() {
 	}
 	
 	if ( $table_to->table_name() ne $table_from->table_name() ) {
-		carp("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
+		$self->_debug("The 2 tables have not the same name : ".$table_to->table_name()." => ".$table_from->table_name());
 	}
 	
 	my %all_fields;
