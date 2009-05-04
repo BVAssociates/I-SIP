@@ -109,7 +109,7 @@ sub get_query()
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 
 	if ($self->query_key_value()) {
-		my @table_key_list=split(',',);
+		my @table_key_list=split(',',$self->query_key_value());
 		push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} @table_key_list).")";
 	}
 	push @select_conditions, $self->query_condition() if $self->query_condition;
