@@ -44,7 +44,12 @@ sub open() {
 	$self->{table_histo} = Sqlite->open($self->{database_name}, $self->{table_name_histo}, $options);
 	
 	# get object handling columns
-	$self->{column_histo} = HistoColumns->new($self->{database_name}, $self->{table_name}, $options);
+	if (exists $options->{columns}) {
+		$self->{column_histo} = $options->{columns};
+	}
+	else {
+		$self->{column_histo} = HistoColumns->new($self->{database_name}, $self->{table_name}, $options);
+	}
 	
 	bless ($self, $class);
 	

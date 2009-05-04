@@ -114,6 +114,14 @@ sub get_columns() {
 	my $table_name=shift or croak "usage : get_columns(tablename[,date])";
 	my $query_date=shift;
 	
+	if (not $query_date) {
+		# look in memory
+		my $temp_obj=$self->{info_table}->{$table_name}->{column};
+		if ($temp_obj and blessed $temp_obj) {
+			return $temp_obj;
+		}
+	}
+	
 	my $table_column=$table_name."_COLUMN";
 	
 	my $sqlite_path=$self->get_sqlite_path($table_column,$self->{environnement});
@@ -126,6 +134,12 @@ sub get_columns() {
 	
 	my $tmp_return = eval {HistoColumns->new($sqlite_path, $table_name, $options)};
 	$logger->warning("Impossible d'obtenir les informations de colonnes pour $table_name dans ".$self->{environnement}." : $@") if $@;
+	
+	# put object in memory for next calls
+	if (not $query_date) {
+		$self->{info_table}->{$table_name}->{column}=$tmp_return;
+	}
+	
 	return $tmp_return;
 }
 
@@ -262,6 +276,7 @@ sub get_table_size() {
 
 	return undef if not exists $self->{info_table}->{$tablename};
 	
+	die "function not implemented";
 	my %column_info=%{$self->{info_table}->{$tablename}->{column}};
 	
 	my %size_info;
@@ -275,8 +290,9 @@ sub get_table_size() {
 sub get_table_field() {
 	my $self = shift;
 	my $tablename = shift or croak "get_table_field() wait args : 'tablename'";
+	my $query_date=shift;
 	
-	return $self->get_columns($tablename)->get_field_list();
+	return $self->get_columns($tablename,$query_date)->get_field_list();
 }
 
 # provide file name of Sqlite database depending on table name and environnement
@@ -396,6 +412,9 @@ sub open_local_from_histo_table() {
 		undef $date_explore;
 	}
 	
+	my $options=shift;
+	$options->{columns}=$self->get_columns($table_name);
+	
 	my $table_histo;
 	
 	if ($date_explore and $self->is_baseline_date($date_explore)) {
@@ -410,12 +429,12 @@ sub open_local_from_histo_table() {
 		}
 	}
 	else {
-		if (not $self->exist_local_table($table_name.'_HISTO')) {
+		if (0 and not $self->exist_local_table($table_name.'_HISTO')) {
 			$logger->error("La table $table_name\_HISTO est manquante dans ".$self->{environnement}) ;
 			return;
 		}
 		
-		$table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, @_)};
+		$table_histo = eval {Histo->open($self->get_sqlite_path($table_name), $table_name, $options)};
 		if ($@) {
 			$logger->error("Impossible d'ouvrir la table $table_name dans ".$self->{environnement}." : $@") ;
 			return;
@@ -448,8 +467,10 @@ sub open_histo_field_table() {
 		my $baseline_name=HistoFieldBaseline->get_baseline_name($table_name,$date_explore);
 		if ($self->exist_local_table($baseline_name)) {
 			$table_histo = eval {HistoFieldBaseline->open($self->get_sqlite_path($table_name), $table_name, $date_explore, @_)};
-			$logger->error("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@") if $@;
-			return;
+			if ($@) {
+				$logger->error("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@");
+				return;
+			}
 		}
 		else {
 			$logger->warning("$date_explore est indiqué comme une baseline, mais les données n'existent pas pour ".$self->{environnement}.".$table_name ");
@@ -468,7 +489,7 @@ sub open_histo_field_table() {
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
 		
-	return $table_histo
+	return $table_histo;
 }
 
 sub open_cache_table() {
