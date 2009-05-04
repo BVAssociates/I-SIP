@@ -262,7 +262,7 @@ sub run {
 	$table_current->query_condition(@query_condition);
 
 	# recuperation des colonnes à afficher
-	my @query_field=("ICON","PROJECT",$env_sip->get_table_field($table_name));
+	my @query_field=("ICON","PROJECT",$env_sip->get_table_field($table_name,$date_explore));
 
 	if ($explore_mode eq "compare") {
 		my $env_sip_from = Environnement->new($env_compare);
