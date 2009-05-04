@@ -370,10 +370,13 @@ sub run {
 				
 				# compute dynamic fields
 				$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
-					
-				$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-				$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 			}
+			else {
+				$row{ICON}="none" if exists $row{ICON};
+			}
+					
+			$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
+			$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
 			
 			if ($all_key) {
 				if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
