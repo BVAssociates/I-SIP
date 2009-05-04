@@ -156,8 +156,17 @@ foreach my $table (sort keys %list_table_uniq) {
 	my ($real_table,$display_table) = ($table =~ /^([^_]+)(?:__([^_]+))?/);
 	my %table_info=$env->get_table_info($real_table);
 	my $icon="valide";
-	$icon="dirty" if $real_table and $cache->is_dirty_table($real_table);
 	
+	if (not ($date_explore or $env_compare or $date_compare) ) {
+		$icon="dirty" if $real_table and $cache->is_dirty_table($real_table);
+	}
+	
+	if ($date_explore) {
+		my $baseline_name=HistoBaseline->get_baseline_name($table,$date_explore);
+		if (not $env->exist_local_table($baseline_name)) {
+			next;
+		}
+	}
 	if ($filter_field) {
 		if ($filter_field eq 'ICON') {
 			if (($filter_exclude and $icon !~ /^$filter_value$/)
