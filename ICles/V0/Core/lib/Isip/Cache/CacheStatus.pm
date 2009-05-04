@@ -116,11 +116,19 @@ sub is_dirty_key() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+	$table->query_field("TABLE_NAME","TABLE_KEY","NUM_CHILD");
 	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
-	$table->custom_select_query("SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
+	
+	my $cache_select="SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
-			GROUP BY TABLE_NAME,TABLE_KEY
-			WHERE TABLE_NAME='$table_name' AND TABLE_KEY='$table_key' AND TABLE_SOURCE <> '$table_name'");
+			WHERE TABLE_NAME='$table_name' AND TABLE_KEY='$table_key' AND TABLE_SOURCE <> '$table_name'";
+	if ($table_source) {
+		$cache_select .= " AND TABLE_SOURCE = '$table_source'";
+	}
+	$cache_select .= "
+			GROUP BY TABLE_NAME,TABLE_KEY";
+	
+	$table->custom_select_query($cache_select);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -176,9 +184,14 @@ sub is_dirty_table() {
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
 	$table->query_field("NUM_CHILD");
-	$table->custom_select_query("SELECT sum(NUM_CHILD) as NUM_CHILD
+	
+	my $cache_select="SELECT sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
-			WHERE TABLE_NAME='$table_name'");
+			WHERE TABLE_NAME='$table_name'";
+	if ($table_source) {
+		$cache_select .= " AND TABLE_SOURCE = '$table_source'";
+	}
+	$table->custom_select_query($cache_select);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
