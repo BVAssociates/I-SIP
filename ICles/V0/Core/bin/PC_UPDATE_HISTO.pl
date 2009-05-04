@@ -240,6 +240,10 @@ sub run {
 		my $histo_table=$env_sip->open_local_from_histo_table($current_table);
 		#$histo_table->query_field($source_table->query_field);
 		
+		if (not $histo_table) {
+			log_erreur("La table $current_table n'a pas été initialisée");
+		}
+		
 		my $force_comment;
 		if ($histo_table->is_empty) {
 			
