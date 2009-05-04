@@ -52,8 +52,8 @@ sub open() {
 
 sub query_key_value() {
 	my $self = shift;
-    if (@_) { @{$self->{query_key_value}} = @_ }
-    return @{$self->{query_key_value}};
+    if (@_) { $self->{query_key_value} = shift }
+    return $self->{query_key_value};
 }
 
 sub query_date {
