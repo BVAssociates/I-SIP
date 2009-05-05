@@ -167,17 +167,15 @@ foreach my $table (sort keys %list_table_uniq) {
 			next;
 		}
 	}
-	if ($filter_field) {
-		if ($filter_field eq 'ICON') {
-			if (($filter_exclude and $icon !~ /^$filter_value$/)
-				or (! $filter_exclude and $icon =~ /^$filter_value$/) )
-			{
-				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
-			}
+	if ($filter_field and $filter_field eq 'ICON') {
+		if (($filter_exclude and $icon !~ /^$filter_value$/)
+			or (! $filter_exclude and $icon =~ /^$filter_value$/) )
+		{
+			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 		}
 	}
 	else {
-				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 	}
 }
 
