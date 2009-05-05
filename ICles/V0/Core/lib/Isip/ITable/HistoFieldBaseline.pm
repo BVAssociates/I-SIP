@@ -75,6 +75,7 @@ sub get_query()
 		push @real_query_field, $field_condition if not grep ($field_condition eq $_, $self->dynamic_field());
 	}
 	
+	push @select_conditions, @{$self->{meta_filter}};
 	
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
@@ -82,7 +83,7 @@ sub get_query()
 	
 	# Add a condition
 	$select_histo.= " WHERE ".join(" AND ", @select_conditions) if @select_conditions;
-	
+
 	return $select_histo;
 }
 
