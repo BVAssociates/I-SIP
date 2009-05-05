@@ -6,9 +6,9 @@
 # Encoding : UTF-8
 
 # Messages de la boîte de dialogue A propos...
-&AD_ProductName="I-SIP IKOS"
+&AD_ProductName="I-SIP"
 &AD_ApplicationName="Console"
-&AD_Version="Version 2.0.6"
+&AD_Version="Version 2.0.4-isip"
 &AD_Copyright="Copyright (c) 2001-2009 BV Associates. Tous droits réservés."
 &Button_Ok="Fermer"
 
