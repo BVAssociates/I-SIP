@@ -208,10 +208,12 @@ my @table_key_list_value;
 
 # recherche de la clef dans l'environnement
 foreach (@table_key_list) {
-	push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
-	if (not $ENV{$_}) {
-		log_erreur("Clef primaine <$_> n'est pas definie dans l'environnement");
-		sortie(202);
+	if (exists $ENV{$_}) {
+		push @table_key_list_value, $ENV{$_};
+	}
+	else {
+		$logger->warning("Clef primaine <$_> n'est pas definie dans l'environnement");
+		push @table_key_list_value, "";
 	}
 }
 
