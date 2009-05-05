@@ -211,14 +211,16 @@ sub run {
 
 	my @table_key_list=split(',',$table_key);
 	my @table_key_list_value;
-
+	
 	if (not $table_key_value and not $all_key) {
 		log_info("recherche de la clef primaire $table_key dans l'environnement");
 		foreach (@table_key_list) {
-			push @table_key_list_value, $ENV{$_} if exists $ENV{$_};
-			if (not $ENV{$_}) {
-				log_erreur("Clef primaine <$table_key> n'est pas definie dans l'environnement");
-				sortie(202);
+			if (exists $ENV{$_}) {
+				push @table_key_list_value, $ENV{$_};
+			}
+			else {
+				$logger->warning("Clef primaine <$_> n'est pas definie dans l'environnement");
+				push @table_key_list_value, "";
 			}
 		}
 
