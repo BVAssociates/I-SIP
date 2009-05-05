@@ -135,6 +135,40 @@ sub is_dirty_key() {
 	}
 }
 
+sub is_dirty_table() {
+	my $self=shift;
+	
+	my $table_name=shift or croak("usage : is_dirty_table(table_name");
+
+	if (not defined $self->{dirty_project}) {
+		croak("project must be defined by set_dirty_project(project)");
+	}
+		
+	my $project=$self->{dirty_project};
+	
+	# check in memory
+	## TODO
+	
+	# check on disk	
+	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
+	$table->query_field("NUM_CHILD");
+	$table->custom_select_query("SELECT sum(NUM_CHILD) as NUM_CHILD
+			FROM CACHE_PROJECT
+			WHERE TABLE_NAME='$table_name' AND PROJECT_CHILD='$project'
+			GROUP BY TABLE_NAME");
+	
+	my $count=0;
+	while (my %row=$table->fetch_row) {
+		$count += $row{NUM_CHILD};
+	}
+
+	if ($count > 0) {
+		return $count;
+	}
+	else {
+		return 0;
+	}
+}
 
 sub load_cache() {
 	my $self=shift;

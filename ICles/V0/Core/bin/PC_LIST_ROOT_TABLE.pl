@@ -132,10 +132,17 @@ $explore_mode="compare" if $env_compare or $date_compare;
 my $bv_severite=0;
 use Isip::Environnement;
 use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheProject;
 
 my $env=Environnement->new($environnement);
 
 my $cache=CacheStatus->new($env);
+
+my $cache_proj;
+if ($filter_field and $filter_field eq "PROJECT") {
+	$cache_proj=CacheProject->new($env);
+	$cache_proj->set_dirty_project($filter_value);
+}
 
 my $link_obj=$env->get_links_menu();
 
@@ -171,6 +178,11 @@ foreach my $table (sort keys %list_table_uniq) {
 		if (($filter_exclude and $icon !~ /^$filter_value$/)
 			or (! $filter_exclude and $icon =~ /^$filter_value$/) )
 		{
+			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+		}
+	}
+	elsif ($filter_field and $filter_field eq 'PROJECT') {
+		if ($cache_proj->is_dirty_table($real_table)) {
 			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 		}
 	}
