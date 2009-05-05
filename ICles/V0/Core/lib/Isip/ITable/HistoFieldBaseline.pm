@@ -67,7 +67,7 @@ sub get_query()
 	my @select_conditions;
 	
 	my $date_format = "%Y-%m-%dT%H:%M";
-	push @select_conditions, "TABLE_KEY ='".$self->query_key_value()."'" if $self->query_key_value;
+	push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} $self->query_key_value()).")" if $self->query_key_value;
 	push @select_conditions, $self->query_condition() if $self->query_condition;
 	
 	my @real_query_field;
