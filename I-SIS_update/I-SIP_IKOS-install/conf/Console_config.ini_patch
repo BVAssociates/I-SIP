@@ -1,1 +1,2 @@
-ADD_PARAMETER Processors:IsipProcessor "com.bv.isip.EditFormProcessor"
+ADD_PARAMETER Processors:IsipProcessorLine "com.bv.isip.EditFormProcessorIsipLine"
+ADD_PARAMETER Processors:FormProcessor "com.bv.isip.EditFormProcessor"
