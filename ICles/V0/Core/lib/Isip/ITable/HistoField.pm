@@ -31,7 +31,7 @@ sub open() {
 		
 	my $self  = $class->SUPER::open($database_name, $table_name."_HISTO", $options);
 	
-	$self->{dynamic_field}= [ "TYPE", "TEXT","ICON"];
+	$self->dynamic_field("TYPE", "TEXT","ICON");
 	$self->{query_field}  = [ $self->field() ];
 	$self->{query_date}=$options->{date};
 	
@@ -110,6 +110,8 @@ sub get_query()
 
 	my @table_key_list=$self->query_key_value();
 	push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} @table_key_list).")" if @table_key_list;
+	
+	push @select_conditions, "TABLE_KEY IN (SELECT TABLE_KEY FROM ".$self->{table_name}." WHERE ".join(' AND ', @{$self->{meta_filter}})." )" if @{$self->{meta_filter}};
 	
 	push @select_conditions, $self->query_condition() if $self->query_condition;
 	

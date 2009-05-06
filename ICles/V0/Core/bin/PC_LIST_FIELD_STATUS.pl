@@ -285,8 +285,8 @@ sub run {
 				log_info("$table_name n'existe pas dans $env_compare");
 			}
 			return 1;
-		}		
-		$table_from->query_key_value($table_key_value) if $table_key_value;
+		}
+		
 		
 		# open second table
 		my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
@@ -300,7 +300,33 @@ sub run {
 			return 1;
 		}
 		
-		$table_to->query_key_value($table_key_value) if $table_key_value;
+		if ($table_key_value) {
+			$table_from->query_key_value($table_key_value);
+			$table_to->query_key_value($table_key_value);
+		}
+		else {
+			if ($filter_field and $filter_field eq 'PROJECT') {
+				my $project=$filter_value;
+				
+				$table_from->metadata_condition("PROJECT = '$project'");
+				my %target_key_condition;
+				
+				while (my %row=$table_from->fetch_row) {
+					$target_key_condition{$row{TABLE_KEY}}++;
+				}
+				
+				if (%target_key_condition) {
+					$table_from->query_key_value(keys %target_key_condition);
+					$table_to->query_key_value(keys %target_key_condition);
+					
+					
+				}
+				else {
+					$logger->info("Aucune ligne ne correspond au projet $project");
+					return 0;
+				}
+			}
+		}
 		
 		# open DataDiff table from two table
 		my $table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
@@ -366,6 +392,19 @@ sub run {
 		# put row in memory
 		while (my %row=$table_status->fetch_row) {
 		
+			## decoding routine
+			## commented because MEMO field has many lines
+			#if ($row{MEMO}) {
+			#	use IO::Uncompress::Gunzip qw(gunzip);
+			#	use MIME::Base64;
+			#	my $input=decode_base64($row{MEMO});
+			#	my $output;
+			#	gunzip(\$input=>\$output);
+			#	#excel wait for <LF> only
+			#	$output =~ s/\r//gm;
+			#	$row{MEMO}=$output;
+			#}
+			
 			if (not $date_explore) {
 				# don't show hidden fields
 				next if $rules->is_field_hidden(%row);
