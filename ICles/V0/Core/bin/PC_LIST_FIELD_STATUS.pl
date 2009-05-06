@@ -255,7 +255,12 @@ sub run {
 	use ITable::ITools;
 	my $itools_table;
 	if ($report_mode) {
-		$itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
+		if ($explore_mode eq "compare") {
+			$itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
+		}
+		else {
+			$itools_table=ITools->open("FIELD_REPORT_HISTO", {debug => $debug_level});
+		}
 	}
 	else {
 		$itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name, {debug => $debug_level});
