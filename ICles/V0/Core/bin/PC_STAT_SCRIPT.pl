@@ -15,7 +15,7 @@ PC_STAT_SCRIPT.pl - Calcul des statistiques d'execution des scripts
 
 =head1 SYNOPSIS
 
- PC_STAT_SCRIPT.pl [-h][-v] [-a] [-i] [-m nb] [-s nb]
+ PC_STAT_SCRIPT.pl [-h][-v] [-a] [-i] [-m nb] [-s nb] [-u user]
  
 =head1 DESCRIPTION
 
@@ -42,6 +42,8 @@ Calcul des statistiques d'execution des scripts.
 =item -m nb : affiche seulement ceux dont la moyenne est supérieur à nb
 
 =item -s nb : calcul la moyenne flottante à partir des nb dernières executions
+
+=item -u user : filtre sur un utilisateur
 
 =back
 
@@ -92,7 +94,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvaim:s:', \%opts);
+getopts('hvaim:s:u:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -107,6 +109,8 @@ $min_script_average=$opts{m} if exists $opts{m};
 
 my $last_script_average_nb=10;
 $last_script_average_nb=$opts{s} if exists $opts{s};
+
+my $user=$opts{u} if exists $opts{u};
 
 #  Traitement des arguments
 ###########################################################
@@ -139,6 +143,8 @@ while (my %script=$stats->fetch_row() ) {
 	# don't care of line about starting
 	next if $script{CODE} eq "";
 	
+	next if $user and $script{USER} ne $user;
+	
 	$script{PROGRAM} = lc($script{PROGRAM}) if $ignore_script_case;
 	
 	my $script_id;
@@ -168,19 +174,20 @@ foreach (keys %script_exec_all) {
 	$total_time=sum(@{$script_time_last{$_}});
 	$average_total_time= $total_time/ $script_exec_all{$_};
 	
-	if (@{$script_time_last{$_}} > $last_script_average_nb) {
-		$average_last_time= sum(@{$script_time_last{$_}}[-$last_script_average_nb..-1]) / $last_script_average_nb;
-	}
-	else {
-		$average_last_time=$average_total_time;
-	}
+	if (int($average_total_time)) {
+		if (@{$script_time_last{$_}} > $last_script_average_nb) {
+			$average_last_time= sum(@{$script_time_last{$_}}[-$last_script_average_nb..-1]) / $last_script_average_nb;
+		}
+		else {
+			$average_last_time=$average_total_time;
+		}
 
-	$median_time=(sort @{$script_time_last{$_}})[@{$script_time_last{$_}}/2];
+		$median_time=(sort @{$script_time_last{$_}})[@{$script_time_last{$_}}/2];
 
-	next if $average_last_time < $min_script_average;
-	
-	print join($sep,$_,$script_exec_all{$_},$script_exec_fail{$_},int($total_time),int($average_total_time),int($average_last_time),int($median_time))."\n";
-	
+		next if $average_last_time < $min_script_average;
+		
+		print join($sep,$_,$script_exec_all{$_},$script_exec_fail{$_},int($total_time),int($average_total_time),int($average_last_time),int($median_time))."\n";
+	}
 }
 
  
