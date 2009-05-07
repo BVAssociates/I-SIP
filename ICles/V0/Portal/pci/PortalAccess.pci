@@ -5,6 +5,7 @@ Item~~Explorer les données~expl~~~Explore~ENVIRON~0~~Expand
 
 Item~Configuration SIP~Administrer Tables par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Expand
 Item~Configuration SIP~Ajouter Environnements~adm~~{ODBC_NAME=getListValue("ODBC",DATA_SOURCE)}{VAL_ENVIRON=getListValue("Environnement",SOURCE_ENVIRON)}~ExecuteProcedure~PC_INIT_ENV %ODBC_NAME% %VAL_ENVIRON%~0~~Add
+Item~Configuration SIP~Supprimer Environnements~adm~~VAL_ENVIRON=getListValue("Environnement",ENVIRON)~ExecuteProcedure~PC_REMOVE_ENV -f %VAL_ENVIRON%~0~~Remove
 Item~Configuration SIP~Ajouter/Supprimer Projets~adm~~~Administrate~PROJECT_TYPE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure

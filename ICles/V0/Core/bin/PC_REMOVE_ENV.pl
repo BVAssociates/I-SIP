@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-package pc_remove_table;
+package pc_remove_env;
 
 # Inclusions obligatoires
 use strict;
@@ -12,18 +12,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_REMOVE_TABLE - supprime la table de données d'historique d'une table
+PC_REMOVE_ENV - supprime un environnement complet
 
 =head1 SYNOPSIS
 
- PC_REMOVE_TABLE.pl [-h] [-v ] [-f] environnement tablename
+ PC_REMOVE_ENV.pl [-h] [-v ] [-f] environnement
  
 =head1 DESCRIPTION
 
-Ajoute les informations de colonnes d'une table dans l'environnement
-Creer une base de donnée historique.
 
-Si l'option -i est utilisée, une première collecte sera effecutée
 
 
 =head1 ENVIRONNEMENT
@@ -97,7 +94,7 @@ local @ARGV=@_;
 log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvfn', \%opts) or usage(0);
+getopts('hvf', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -105,18 +102,16 @@ $debug_level = 1 if $opts{v};
 usage($debug_level+1) if $opts{h};
 
 my $force=$opts{f};
-my $no_menu=$opts{n};
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2 ) {
+if ( @ARGV != 1 ) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 my $environnement=shift @ARGV;
-my $table_name=shift @ARGV;
 
 
 #  Corps du script
@@ -124,56 +119,47 @@ my $table_name=shift @ARGV;
 my $bv_severite=0;
 
 use Isip::Environnement;
-
+use ITable::ITools;
 
 my $env_sip = Environnement->new($environnement);
 
-my %table_info_save=$env_sip->get_table_info($table_name);
-
-log_erreur("$table_name est inconnue dans $environnement") if not %table_info_save;
-
+my @table_list=$env_sip->get_table_list();
 
 #######################
-# suppression fichier physique
+# suppression table
 #######################
 
-if ($force) {
-	my $file_to_remove=$env_sip->get_sqlite_path($table_name."_HISTO");
-	if (-e $file_to_remove) {
-		log_info("suppression du fichier de données : $file_to_remove");
-		unlink $file_to_remove or die "Impossible de supprimer $file_to_remove : $!";
+require "pc_remove_table.pl";
+	foreach my $table (@table_list) {
+	log_info("suppression définition de la table $table de l'$environnement");
+	my $return;
+	if ($force) {
+		$return=pc_remove_table::run("-fn",$environnement,$table);
+	}
+	else {
+		$return=pc_remove_table::run("-n",$environnement,$table);
+	}
+	if (not $return) {
+		log_erreur("Erreur lors de la suppression de la table $table dans $environnement");
 	}
 }
 
-
 #######################
-# mise à jour TABLE_INFO
+# suppression entrée environnement
 #######################
 
-my $table=$env_sip->open_local_table("TABLE_INFO");
+my $table=ITools->open("CONF_ENVIRON");
 
 my %line_to_remove;
-$line_to_remove{TABLE_NAME}=$table_name;
+$line_to_remove{Environnement}=$environnement;
 
-log_info("suppression définition de $table_name dans l'environnement $environnement");
+log_info("suppression définition de l'$environnement");
 $table->delete_row(%line_to_remove);
 
-
-#######################
-# mise à jour MENU
-#######################
-
-if (not $no_menu) {
-	require "PC_GENERATE_MENU.pl";
-
-	log_info("regénération des menu du module $table_info_save{module}");
-	pc_generate_menu::run("-m",$table_info_save{module},$environnement);
-}
-
-return 1;
+return 0;
 # END RUN
 }
 
-exit !run(@ARGV) if !caller;
+exit run(@ARGV) if !caller;
 
 1;
