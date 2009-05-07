@@ -165,6 +165,33 @@ sub update_row() {
 	$self->update_row_array(@array);
 }
 
+sub delete_row_array() {
+	my $self=shift;
+	
+	my %hash=$self->array_to_hash(@_);
+	
+	return $self->delete_row_array(%hash);
+}
+
+sub delete_row() {
+	my $self=shift;
+	
+	my %row = @_;
+	
+	my @where_condition;
+	while (my ($field,$value)=each %row) {
+		push @where_condition, $field."='".$value."'";
+	}
+	
+	my $delete_cmd="Delete FROM ".$self->table_name()." WHERE ".join(' AND ',@where_condition);	
+	my @return=`$delete_cmd`;
+	my $return = $? >> 8;
+	
+	if ($return) {
+		croak("Error $return while executing : $delete_cmd");
+	}
+}
+
 # abort current request being processed
 sub finish() {
 	my $self = shift;
