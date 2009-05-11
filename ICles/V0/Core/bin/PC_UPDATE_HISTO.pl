@@ -23,6 +23,10 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par ODBC.
 
+Si aucun module, ni aucune table n'est spécifié, la mise à jour est faite sur
+tout l'environnement.
+Dans ce cas, la date de collecte est enregistré dans DATE_UPDATE
+
 =head1 ENVIRONNEMENT
 
 =over
@@ -40,8 +44,6 @@ Met à jour les champs d'une table suffixée par _HISTO depuis une table IKOS par 
 =item -v : Mode verbeux
 
 =item -n : Mode simulation (aucune modification)
-
-=item -d : enregistre la date
 
 =item -k : compacte la base après collecte
 
@@ -103,14 +105,13 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:dkc:ue', \%opts) or usage(0);
+	getopts('hvnm:kc:ue', \%opts) or usage(0);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
 
 	usage($debug_level+1) if $opts{h};
 	my $module_name=$opts{m};
-	my $save_date=$opts{d};
 	my $force_vacuum=$opts{k};
 	my $no_update_histo=$opts{n};
 	my $no_update_cache=$opts{u};
@@ -142,6 +143,9 @@ sub run {
 	if ($env_compare and $env_compare eq $environnement) {
 		log_erreur("Environnement source est identique à l'environnement cible");
 	}
+	
+	my $save_date;
+	$save_date=1 if not $module_name and not $table_name;
 
 	#  Corps du script
 	###########################################################
@@ -310,6 +314,13 @@ sub run {
 	#write date in baselines
 	if ($save_date) {
 		log_info("Sauvegarde de la date de collecte dans $environnement");
+		
+		my $desc;
+		if ($env_compare) {
+			$desc="Recopie de $env_compare";
+			$desc .=" à la date $date_compare" if $date_compare;
+		}
+		
 		my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
 		$table_date->insert_row(DATE_HISTO => $timestamp,
 								DESCRIPTION => "",

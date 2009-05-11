@@ -105,6 +105,7 @@ sub run {
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
 
+	usage($debug_level+1) if $opts{h};
 	
 	my $drop_histo=$opts{d};
 	my $keep_last=$opts{k};
@@ -158,6 +159,15 @@ sub run {
 		#}
 	}
 	#wait;
+	
+	my $date_update=$env->open_local_table("DATE_UPDATE");
+	# delete all but baselines
+	if ($keep_last) {
+		$date_update->execute("DELETE FROM DATE_UPDATE WHERE DATE_HISTO NOT IN (SELECT DATE_HISTO FROM DATE_UPDATE ORDER BY DATE_HISTO DESC  LIMIT 1) AND BASELINE=0");
+	}
+	else {
+		$date_update->execute("DELETE FROM DATE_UPDATE WHERE BASELINE=0");
+	}
 	
 	return 1;
 }
