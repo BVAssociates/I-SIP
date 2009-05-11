@@ -206,7 +206,7 @@ sub copy_environnement() {
 sub create_database_environnement() {
 	my $self=shift;
 	
-	my $environnement=shift or die "bad arguments";
+	my $environnement=shift or croak("usage : create_database_environnement(environnement)");
 	
 	if (! grep {$environnement eq $_} $self->get_environnement_list) {
 		croak("$environnement is not a valid environnement");
@@ -268,6 +268,16 @@ sub create_database_environnement() {
 		"PROJECT_CHILD" VARCHAR,
 		"NUM_CHILD" INTEGER,
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "PROJECT_CHILD")
+	)');
+	
+	$logger->notice("Create table DATE_UPDATE");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "DATE_UPDATE" (
+		"DATE_HISTO" VARCHAR,
+		"DESCRIPTION" VARCHAR,
+		"DIFF_VALUE" INTEGER,
+		"DIFF_STRUCT" INTEGER,
+		"BASELINE" INTEGER,
+		PRIMARY KEY ("DATE_HISTO")
 	)');
 	
 	$master_table->close();

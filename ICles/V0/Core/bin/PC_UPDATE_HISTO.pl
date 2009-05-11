@@ -308,12 +308,13 @@ sub run {
 	}
 
 	#write date in baselines
-	if ($save_date and $total_diff_counter+$total_struct_diff_counter) {
+	if ($save_date) {
 		log_info("Sauvegarde de la date de collecte dans $environnement");
-		my $table_date=ITools->open("DATE_UPDATE", {debug => $debug_level});
-		$table_date->insert_row(ENVIRON => $environnement,
-								DATE_UPDATE => $timestamp,
+		my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
+		$table_date->insert_row(DATE_HISTO => $timestamp,
 								DESCRIPTION => "",
+								DIFF_VALUE => $total_diff_counter,
+								DIFF_STRUCT => $total_struct_diff_counter,
 								BASELINE => 0);
 	}
 

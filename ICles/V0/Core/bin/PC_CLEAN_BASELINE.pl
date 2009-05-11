@@ -120,13 +120,17 @@ sub run {
 	
 	#log_screen_only();
 	
-	my $baseline_list=ITools->open("DATE_UPDATE");
-	$baseline_list->query_condition("ENVIRON=$environnement");
+	my $baseline_list=$env->open_local_table("DATE_UPDATE");
+	$baseline_list->query_condition("BASELINE=1");
 	
 	my %baseline;
 	while (my %baseline_info=$baseline_list->fetch_row()) {
-		$baseline_info{DATE_UPDATE} =~ tr/:-//d;
-		$baseline{$baseline_info{DATE_UPDATE}}++ if $baseline_info{BASELINE};
+		$baseline_info{DATE_HISTO} =~ tr/:-//d;
+		$baseline{$baseline_info{DATE_HISTO}}++;
+	}
+	
+	if (not %baseline) {
+		croak("Pas de baseline pour cet environnement");
 	}
 	
 	foreach my $table_name ($env->get_table_list) {

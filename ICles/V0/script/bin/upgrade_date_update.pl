@@ -11,19 +11,23 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_DATE - Liste les date de mise à jour d'une table dans un environnement
+upgrade_date_update - 
 
 =head1 SYNOPSIS
 
- PC_LIST_DATE.pl [-h][-v] [-s sep] [-n] [-b] environnement
+ upgrade_column_info.pl [-h][-v] 
  
 =head1 DESCRIPTION
 
-Liste les date de collecte d'une table dans un environnement
+Met à jour les bases de données ISIP avec la nouvelle colonne
 
 =head1 ENVIRONNEMENT
 
+=over
+
 =item ITOOLS : L'environnement du service de l'ICles IKOS doit être chargé
+
+=back
 
 =head1 OPTIONS
 
@@ -33,17 +37,11 @@ Liste les date de collecte d'une table dans un environnement
 
 =item -v : Mode verbeux
 
-=item -n : affiche la date courante à la fin
-
-=item -b : uniquement les baselines
-
-=item -a : affiche les dates sans modifications
-
 =back
 
 =head1 ARGUMENTS
 
-=over 4
+=over
 
 =item environnement : environnement à utiliser
 
@@ -86,55 +84,57 @@ sub log_info {
 #  Traitement des Options
 ###########################################################
 
+
 my %opts;
-getopts('hvns:ba', \%opts);
+getopts('hv', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $print_now=$opts{n} if exists $opts{n};
-my $baseline=$opts{b} if exists $opts{b};
-my $all_date=$opts{a} if exists $opts{a};
-
-my $separator=',';
-$separator=$opts{s} if exists $opts{s};
-
-
-
-
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environ=shift;
+
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
+
+use Isip::IsipConfig;
 use Isip::Environnement;
+use Isip::HistoColumns;
 
-my $sip=Environnement->new($environ);
-my $table=$sip->open_local_table("DATE_UPDATE", {debug => $debug_level });
+my $config=IsipConfig->new();
 
-$table->query_field("DATE_HISTO","DESCRIPTION","BASELINE");
-$table->query_condition("DIFF_VALUE+DIFF_STRUCT >0") if not $all_date;
-$table->query_condition("BASELINE = 1") if $baseline;
+my @environnement_list=$config->get_environnement_list();
 
-die "unable to open local DATE_UPDATE in env $environ" if not defined $table;
+foreach my $env_name (@environnement_list) {
 
-while (my %line=$table->fetch_row()) {
-	print join($separator,@line{$table->query_field})."\n";
-}
-
-if ($print_now) {
-	# special date
-	use POSIX qw(strftime);
-	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
-	print join($separator,($timestamp,"maintenant",0))."\n";
+	my $env=Environnement->new($env_name);
+	
+	my $new_table=$env->open_local_table("DATE_UPDATE");
+	$new_table->execute("DROP TABLE IF EXISTS DATE_UPDATE");
+	
+	$config->create_database_environnement($env_name);
+	
+	$new_table=$env->open_local_table("DATE_UPDATE");
+	
+	open(my $old_date_file, $ENV{ISIP_DATA}."/tab/DATE_UPDATE")
+		or die "Impossible de retrouver la table DATE_UPDATE initiale";
+	while (<$old_date_file>) {
+		chomp;
+		my ($env,$date,$desc,$baseline)=split(/@/);
+		
+		next if $env ne $env_name;
+		
+		$new_table->insert_row_array($date,$desc,1,0,$baseline);
+	}
+	close($old_date_file);
 }

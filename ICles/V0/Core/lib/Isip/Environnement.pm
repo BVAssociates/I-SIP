@@ -249,9 +249,10 @@ sub get_table_key() {
 		@key= "xml_path";
 	} 
 	else {
-		return if not $self->exist_local_table($tablename."_COLUMN");
+		my $col_obj=$self->get_columns($tablename);
+		return if not $col_obj;
 		
-		@key=$self->get_columns($tablename)->get_key_list();
+		@key=$col_obj->get_key_list();
 	}
 	
 	if (wantarray) {
@@ -307,22 +308,23 @@ sub get_sqlite_filename() {
 	my $filename;
 	my $database_path;
 	
-	my $table_real;
-	my $table_extension;
 	
-	# table are in format TABLENAME_EXTENSION ou TABLENAME
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(COLUMN|HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
-	($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
-	($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
-	
-	croak("$table_name n'est pas un nom de table valide dans ".$self->{environnement}) if not $table_real;
-	
-	if ($table_name =~ /^TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
+	if ($table_name =~ /^DATE_UPDATE|TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {
 		croak("no environnement defined for table type : HISTO") if not $environnement;
 		
+		my $table_real;
+		my $table_extension;
+		
+		# table are in format TABLENAME_EXTENSION ou TABLENAME
+		($table_real,$table_extension) = ($table_name =~ /^(\w+)_(COLUMN|HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
+		($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
+		($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
+
+		croak("$table_name n'est pas un nom de table valide dans ".$self->{environnement}) if not $table_real;
+	
 		$filename = "ISIP_".$environnement."_".$table_real.".sqlite";
 	}
 	
@@ -377,8 +379,8 @@ sub is_baseline_date() {
 			croak("is_baseline_date($date):La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
 	}
 	
-	my $baseline_list=ITools->open("DATE_UPDATE");
-	$baseline_list->query_condition("DATE_UPDATE=".$date,"ENVIRON=".$self->{environnement});
+	my $baseline_list=$self->open_local_table("DATE_UPDATE");
+	$baseline_list->query_condition("DATE_HISTO='$date'");
 	
 	my %baseline_info=$baseline_list->fetch_row();
 	$baseline_list->finish;

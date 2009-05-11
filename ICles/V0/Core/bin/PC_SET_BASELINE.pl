@@ -126,8 +126,8 @@ sub run {
 	
 	#log_screen_only();
 	
-	my $baseline_list=ITools->open("DATE_UPDATE");
-	$baseline_list->query_condition("DATE_UPDATE=$date","ENVIRON=$environnement");
+	my $baseline_list=$env->open_local_table("DATE_UPDATE");
+	$baseline_list->query_condition("DATE_HISTO='$date'");
 	
 	my %baseline_info=$baseline_list->fetch_row();
 	$baseline_list->finish;
@@ -138,6 +138,9 @@ sub run {
 	else {
 		if (not $drop_baseline and $baseline_info{BASELINE}) {
 			log_erreur("la date $date est déjà une date de baseline");
+		}
+		elsif ($drop_baseline and not $baseline_info{BASELINE}) {
+			log_erreur("la date $date n'est pas une date de baseline");
 		}
 	}
 	
@@ -166,8 +169,13 @@ sub run {
 	$baseline_info{DESCRIPTION}=$message if $message;
 	
 	$baseline_list->update_row(%baseline_info);
-	$logger->notice("Baseline créé pour $environnement à la date $date");
 	
+	if ($drop_baseline) {
+		$logger->notice("Baseline supprimée pour $environnement à la date $date");
+	}
+	else {
+		$logger->notice("Baseline créé pour $environnement à la date $date");
+	}
 }
 
 exit !run(@ARGV) if not caller;
