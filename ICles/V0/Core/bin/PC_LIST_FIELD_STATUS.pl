@@ -17,7 +17,7 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne IC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-r] [-a] [-c environnement_source@date_source] environnement_cible table_name date_cible
+ PC_LIST_FIELD_STATUS.pl [-r] [-a|-k clef] [-c environnement_source@date_source] environnement_cible table_name date_cible
  
 =head1 DESCRIPTION
 

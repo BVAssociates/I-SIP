@@ -127,8 +127,11 @@ foreach my $env (@env_list) {
 		}
 		
 		log_info("Collecte de l'environnement $env");
-		eval { pc_update_histo::run("-ed",$env) };
-		$return_code = 202 if $@;
+		eval { pc_update_histo::run("-e",$env) };
+		if ($@) {
+			$logger->error($@);
+			$return_code = 202;
+		}
 		log_info("Terminé pour l'environnement $env avec le code $return_code");
 		last if $fork;
 	}
