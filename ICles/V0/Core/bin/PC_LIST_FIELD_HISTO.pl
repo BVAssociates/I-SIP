@@ -87,11 +87,16 @@ sub log_info {
 
 
 my %opts;
-getopts('Thv', \%opts);
+getopts('hvk:s:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
+my $table_key_value=$opts{k};
+
+my $separator=',';
+$separator=$opts{s} if $opts{s};
+	
 usage($debug_level+1) if $opts{h};
 
 #  Traitement des arguments
@@ -111,9 +116,6 @@ my $field=shift;
 $ENV{Environnement}=$environnement;
 $ENV{GSL_FILE}=$tablename;
 
-##for debug
-#$ENV{AAPTYCOD}='AFFEXT';
-
 #  Corps du script
 ###########################################################
 use ITable::ITools;
@@ -121,15 +123,11 @@ use Isip::Environnement;
 
 my $bv_severite=0;
 
-## DEBUG ONLY
-if (exists $opts{T}) { $ENV{RDNPRCOD}='VTS'; $bv_severite=202 };
-## DEBUG ONLY
-
 # New SIP Object instance
-my $ikos_sip = Environnement->new($environnement, {debug => $debug_level});
+my $env = Environnement->new($environnement, {debug => $debug_level});
 
 # recuperation de la clef primaine de la table
-my $table_key = $ikos_sip->get_table_key($tablename);
+my $table_key = $env->get_table_key($tablename);
 
 if (not $table_key) {
 	log_erreur("pas de clef primaine pour la table $tablename");
@@ -139,30 +137,68 @@ if (not $table_key) {
 my @table_key_list=split(',',$table_key);
 my @table_key_list_value;
 
-log_info("deduction de la clef primaire depuis l'environnement");
-foreach (@table_key_list) {
-	if (exists $ENV{$_}) {
-		push @table_key_list_value, $ENV{$_};
+if (not $table_key_value) {
+	log_info("deduction de la clef primaire depuis l'environnement");
+	foreach (@table_key_list) {
+		if (exists $ENV{$_}) {
+			push @table_key_list_value, $ENV{$_};
+		}
+		else {
+			$logger->warning("Clef primaine <$_> n'est pas definie dans l'environnement");
+			push @table_key_list_value, "";
+		}
 	}
-	else {
-		$logger->warning("Clef primaine <$_> n'est pas definie dans l'environnement");
-		push @table_key_list_value, "";
-	}
+	
+	$table_key_value=join(',',@table_key_list_value);
 }
 
-my $table_key_value=join(',',@table_key_list_value);
 
 log_info("KEY= $table_key");
 log_info("KEY_VAL=$table_key_value");
 
 # fetch selected row from histo table
-my $table_histo = $ikos_sip->open_local_table($tablename."_HISTO", {debug => $debug_level});
+my $table_histo = $env->open_local_table($tablename."_HISTO", {debug => $debug_level});
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
+my @field_histo;
+
 my $counter=0;
-while (my @line=$table_histo->fetch_row_array() ) {
+while (my %line=$table_histo->fetch_row() ) {
 	$counter++;
-	print join('@',@line)."\n";
+	$line{BASELINE_DESC}="";
+	push @field_histo, \%line;
+}
+
+# fetch selected row from baselines
+my $date_update=$env->open_local_table("DATE_UPDATE");
+$date_update->query_field("DATE_HISTO","DESCRIPTION");
+$date_update->query_condition("BASELINE=1");
+
+my %baselines;
+while (my ($date,$text)=$date_update->fetch_row_array) {
+	$baselines{$date}=$text;
+}
+
+while ( my ($date,$text)=each %baselines) {
+
+	my $baseline_name=HistoBaseline->get_baseline_name($tablename,$date);
+	
+	next if not $env->exist_local_table($baseline_name);
+	
+	my $table_baseline = $env->open_local_table($baseline_name, {debug => $debug_level});
+	$table_baseline->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
+
+	log_info("récupération de la valeur dans la baseline $date");
+
+	while (my %line=$table_baseline->fetch_row() ) {
+		$counter++;
+		$line{BASELINE_DESC}=$text;
+		push @field_histo, \%line;
+	}
+}
+
+foreach my $line(sort {$a->{DATE_HISTO} cmp $b->{DATE_HISTO}} @field_histo) {
+	print(join($separator,@$line{$table_histo->query_field(),"BASELINE_DESC"})."\n");
 }
 
 log_erreur("No history found for:",$field) if not $counter;
