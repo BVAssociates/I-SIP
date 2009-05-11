@@ -248,10 +248,10 @@ sub run {
 			log_erreur("La table $current_table n'a pas été initialisée");
 		}
 		
-		my $force_comment;
+		my $histo_is_empty;
 		if ($histo_table->is_empty) {
 			
-			$force_comment=1;
+			$histo_is_empty=1;
 			log_info("la table $current_table n'a jamais été collectée pour $environnement");
 		}
 		
@@ -279,6 +279,16 @@ sub run {
 			($diff_counter,$diff_counter_struct)= $table_diff->update_compare_target();
 			$total_diff_counter += $diff_counter;
 			$total_struct_diff_counter += $diff_counter_struct;
+			
+			my @new_fields=$table_diff->get_diff_object()->get_source_only_field();
+			if (not $histo_is_empty and @new_fields) {
+				$logger->notice("force le status à VALIDE pour les nouvelles colonnes");
+				$histo_table->{table_histo}->execute("UPDATE $current_table\_HISTO
+						SET STATUS='Valide',
+							COMMENT='Creation'
+						WHERE FIELD_NAME IN (".join(',', map {"\'".$_."\'"} @new_fields).")");
+			}
+			
 			if ($diff_counter) {
 				$histo_table->{table_histo}->execute("ANALYZE");
 				log_info("Les changements ont ete appliqués sur $current_table dans $environnement (lignes mises à jour : $diff_counter)");
@@ -293,9 +303,9 @@ sub run {
 				#store diff and continue.
 				$diff_list{$current_table}=$diff_obj;
 				
-				if ($force_comment) {
+				if ($histo_is_empty) {
 					# execute special query on table backend
-					$logger->notice("Set STATUS to Valide");
+					$logger->notice("force le status à VALIDE");
 					$histo_table->{table_histo}->execute("UPDATE $current_table\_HISTO
 						SET STATUS='Valide',
 							COMMENT='Creation'");
