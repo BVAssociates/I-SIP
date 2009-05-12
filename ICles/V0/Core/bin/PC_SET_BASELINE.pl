@@ -16,7 +16,7 @@ PC_SET_BASELINE - Construit une baseline
 
 =head1 SYNOPSIS
 
- PC_SET_BASELINE.pl [-h] [-v] [-d | -m message] environnement date
+ PC_SET_BASELINE.pl [-h] [-v] [-d|-m message [-p]] environnement date
  
 =head1 DESCRIPTION
 
@@ -41,6 +41,8 @@ Construit une baseline sur un environnement
 =item -d : supprime une baseline
 
 =item -m message : Ajoute une description à la baseline
+
+=item -p : ferme les projets associés à l'environnement
 
 =back
 
@@ -93,7 +95,7 @@ sub run {
 
 
 	my %opts;
-	getopts('hvdm:', \%opts);
+	getopts('hvdm:p', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -102,6 +104,8 @@ sub run {
 	
 	my $drop_baseline=$opts{d};
 	my $message=$opts{m};
+	my $close_project;
+	$close_project=1 if exists $opts{p};
 
 	#  Traitement des arguments
 	###########################################################
@@ -126,6 +130,8 @@ sub run {
 	
 	#log_screen_only();
 	
+	# PRE ACTION
+
 	my $baseline_list=$env->open_local_table("DATE_UPDATE");
 	$baseline_list->query_condition("DATE_HISTO='$date'");
 	
@@ -143,6 +149,8 @@ sub run {
 			log_erreur("la date $date n'est pas une date de baseline");
 		}
 	}
+	
+	# ACTION
 	
 	foreach my $table_name ($env->get_table_list) {
 		#my $pid = fork();
@@ -170,12 +178,26 @@ sub run {
 	
 	$baseline_list->update_row(%baseline_info);
 	
+	# POST ACTION
+	
 	if ($drop_baseline) {
 		$logger->notice("Baseline supprimée pour $environnement à la date $date");
 	}
 	else {
 		$logger->notice("Baseline créé pour $environnement à la date $date");
+		
+		if ($close_project) {
+			$logger->notice("Clôture des projets dans $environnement");
+		
+			use POSIX qw(strftime);
+			my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+			
+			my $table=$env->open_local_table("PROJECT_INFO");
+			$table->execute("UPDATE PROJECT_INFO SET PROJECT_CLOSE='$timestamp' WHERE PROJECT_CLOSE IS NULL OR PROJECT_CLOSE = ''");
+		}
 	}
+	
+	return 1;
 }
 
 exit !run(@ARGV) if not caller;
