@@ -1,0 +1,49 @@
+v0.6
+
+#8	export sous forme fichier dans I-SIS
+#12	Gestion des champ de type PROJECT
+#1	Filtrer ligne en rapport avec un "PROJECT"
+#13	champ MEMO libre à la saisie
+#16	impossible d'initaliser la table sans clef primaire definie
+#28	Ligne non valide si PROJECT est vide
+#36	integration module ORDRE EXPLOITATION
+#37	integration environnement NEW
+#38	integration environnement PRD
+
+v0.7
+
+#59	probleme collecte lors de l'ajout de colonne
+#77	Connexion : 1 librairie par module
+#4	sauvegarde complète lors de baseline
+#5	possibilité commenter une ligne entière
+#6	migration commentaires
+#11	Gerer l'ajout/suppression de Colonne
+#17	Automatiser ajout de table
+#26	Champ manuel : collecter mais ne pas surveiller champ
+#27	Grouper/Filtrer les lignes des grosses tables
+#58	collecte partielle : mise à jour CACHE
+#63	filtre ROOT_TABLE avec parent : ne pas afficher les lignes modifiées intermédiaire
+#75	Probleme perf bloquant : Réécriture Comparaison
+#86	migration commentaires sur projet
+#2	Rapport diff entre 2 environnement
+#7	purger les collectes entre 2 baselines
+#18	Centraliser table Clefs/Liens/(colonnes?) dans Sqlite par ENV
+#23	Calculer le DIFF d'un PROJECT
+#33	intégration fichiers XML Tomcat
+#45	XML : différence entre replicats
+#47	icone "nouveau" en cas d'ajout de nouvelle ligne
+#48	grouper les clefs pendant la collecte
+#49	User Applicatif AS/400
+#51	XML : probleme de caractere accentué
+#54	mettre à jour les icones dynamiquement
+#55	Wrokflow états de commentaires
+#56	Tables filles ROOT_TABLE
+#57	Administrate : impossible d'effacer une clef étrangère
+#62	Automatiser ajout de fichier XML
+#65	importer table definition d'un autre environnement
+#81	migration donnée (refresh de base)
+#9	retirer table Documentation
+#21	remontée info table liée au niveau des nom des tables racines
+#50	COLUMN_INFO : ordre des colonnes
+#74	Erreur si groupe contient des espace
+#31	Ecran login : préselectionné le user Windows
