@@ -134,16 +134,16 @@ sub get_def_table_string($$) {
 
 	my $env_obj=shift;
 	my $table_name=shift;
+	my $query_date=shift;
 	
 	my $environnement=$env_obj->{environnement};
-	my $link_obj=$env_obj->get_links();
 	my $display_table=get_display_table($table_name);
 	
-	my $columns_ref=$env_obj->get_columns($display_table);
+	my $columns_ref=$env_obj->get_columns($display_table,$query_date);
 	
 	my $keys=$columns_ref->get_key_list();
 	my @field=$columns_ref->get_field_list();
-	
+
 	my $no_icon_option="";
 	$no_icon_option="-n" if $display_table ne $table_name;
 	
@@ -201,7 +201,9 @@ SORT="[% sort %]"
 	$string =~ s/\[% sort %\]/$sort/g;
 	$string =~ s/\[% option %\]/$no_icon_option/g;
 	
+=begin comment
 	# add one FKEY entry per foreign tables
+	my $link_obj=$env_obj->get_links();
 	foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
 	
 		my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
@@ -219,7 +221,7 @@ SORT="[% sort %]"
 		
 		$string .= $string_fkey;
 	}
-	
+=cut
 	
 	return $string;
 	
