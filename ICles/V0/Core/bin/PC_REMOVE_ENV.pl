@@ -156,6 +156,18 @@ $line_to_remove{Environnement}=$environnement;
 log_info("suppression définition de l'$environnement");
 $table->delete_row(%line_to_remove);
 
+#######################
+# suppression fichier physique
+#######################
+
+if ($force) {
+	my $file_to_remove=$env_sip->get_sqlite_path("TABLE_INFO");
+	if (-e $file_to_remove) {
+		log_info("suppression du fichier de données : $file_to_remove");
+		unlink $file_to_remove or die "Impossible de supprimer $file_to_remove : $!";
+	}
+}
+
 return 0;
 # END RUN
 }
