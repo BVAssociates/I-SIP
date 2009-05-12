@@ -231,7 +231,7 @@ sub create_database_environnement() {
 	$master_table->execute('CREATE TABLE IF NOT EXISTS TABLE_INFO (
 	"ROOT_TABLE" NUMERIC,
 	"ACTIVE" NUMERIC,
-	"TABLE_NAME" VARCHAR(30),
+	"TABLE_NAME" VARCHAR(30) NOT NULL,
 	"TYPE_SOURCE" VARCHAR(30),
 	"PARAM_SOURCE" VARCHAR(30),
 	"MODULE" VARCHAR(30),
@@ -252,32 +252,41 @@ sub create_database_environnement() {
 	#$master_table->execute('DROP TABLE "CACHE_ICON"');
 	$logger->notice("Create table CACHE_ICON");
 	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_ICON" (
-		"TABLE_NAME" VARCHAR,
-		"TABLE_SOURCE" VARCHAR,
-		"TABLE_KEY" VARCHAR,
+		"TABLE_NAME" VARCHAR NOT NULL,
+		"TABLE_SOURCE" VARCHAR NOT NULL,
+		"TABLE_KEY" VARCHAR NOT NULL,
 		"NUM_CHILD" INTEGER,
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "TABLE_SOURCE")
 	)');
 	
-	$logger->notice("Drop table CACHE_PROJECT");
-	$master_table->execute('DROP TABLE "CACHE_PROJECT"');
+	#$logger->notice("Drop table CACHE_PROJECT");
+	#$master_table->execute('DROP TABLE IF EXISTS "CACHE_PROJECT"');
 	$logger->notice("Create table CACHE_PROJECT");
-	$master_table->execute('CREATE TABLE "CACHE_PROJECT" (
-		"TABLE_NAME" VARCHAR,
-		"TABLE_KEY" VARCHAR,
-		"PROJECT_CHILD" VARCHAR,
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_PROJECT" (
+		"TABLE_NAME" VARCHAR NOT NULL,
+		"TABLE_KEY" VARCHAR NOT NULL,
+		"PROJECT_CHILD" VARCHAR NOT NULL,
 		"NUM_CHILD" INTEGER,
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "PROJECT_CHILD")
 	)');
 	
 	$logger->notice("Create table DATE_UPDATE");
 	$master_table->execute('CREATE TABLE IF NOT EXISTS "DATE_UPDATE" (
-		"DATE_HISTO" VARCHAR,
+		"DATE_HISTO" VARCHAR NOT NULL,
 		"DESCRIPTION" VARCHAR,
 		"DIFF_VALUE" INTEGER,
 		"DIFF_STRUCT" INTEGER,
 		"BASELINE" INTEGER,
 		PRIMARY KEY ("DATE_HISTO")
+	)');
+	
+	$logger->notice("Create table PROJECT_INFO");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "PROJECT_INFO" (
+		"PROJECT_NAME" TEXT NOT NULL ,
+		"PROJECT_CREATE" TEXT,
+		"PROJECT_CLOSE" TEXT,
+		"DESCRIPTION" TEXT,
+		PRIMARY KEY ("PROJECT_NAME")
 	)');
 	
 	$master_table->close();

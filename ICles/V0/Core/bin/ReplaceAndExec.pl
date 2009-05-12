@@ -151,17 +151,20 @@ use ReplaceAndExec_ISIP;
 my ($current_vol,$current_dir,$current_script)=splitpath($0);
 
 if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
+	$logger->info("use library ReplaceAndExec_ISIP::update_field");
 	update_field($table_name,$values);
 }
 elsif ($table_name =~ /^COLUMN_INFO$/i) {
+	$logger->info("use library ReplaceAndExec_ISIP::update_column_info");
 	update_column_info($table_name,$values);
 }
 elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+	$logger->info("use library ReplaceAndExec_ISIP::update_info");
 	update_info($table_name,$values);
 }
 else {
 	# otherwise,  we use the original script
-	
+	$logger->info("use Legacy ReplaceAndExec");
 	system("Replace INTO $table_name VALUES \"$values\"");
 	exit $? >> 8;
 

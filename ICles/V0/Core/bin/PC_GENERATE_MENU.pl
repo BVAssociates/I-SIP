@@ -237,7 +237,7 @@ SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"
 KEY="ID"
 
 FKEY="[STATUS] on ETAT[Name]"
-FKEY="[PROJECT] on PROJECT_TYPE[PROJECT_NAME]"
+FKEY="[PROJECT] on PROJECT_INFO[PROJECT_NAME]"
 ';
 
 	my $environnement=$env_obj->{environnement};

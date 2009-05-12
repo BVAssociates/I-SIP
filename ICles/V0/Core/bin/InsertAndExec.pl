@@ -5,6 +5,8 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Isip::IsipLog '$logger';
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -62,7 +64,9 @@ BV Associates, 16/10/2008
 ###########################################################
 
 sub sortie ($) {
-	exit shift;
+	my $exit_value=shift;
+	$logger->notice("Sortie du programme, code $exit_value");
+	exit $exit_value;
 }
 
 sub usage($) {
@@ -72,12 +76,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#print STDERR "INFO: ".join(" ",@_)."\n"; 
+	$logger->info(@_);
 }
 
 
@@ -128,10 +134,12 @@ use ReplaceAndExec_ISIP;
 my $values=join('',@values);
 
 # if we administrate a table other than FIELD_*, we use the original script
-if ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+if ($table_name =~ /^PROJECT_INFO|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+	$logger->info("use library ReplaceAndExec_ISIP::insert_info");
 	insert_info($table_name,$values);
 }
 else {
+	$logger->info("use legacy InsertAndExec");
 	system("Insert INTO $table_name VALUES \"$values\"");
 	exit $? >> 8;
 }

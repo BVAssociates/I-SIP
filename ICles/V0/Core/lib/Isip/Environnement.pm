@@ -309,7 +309,7 @@ sub get_sqlite_filename() {
 	my $database_path;
 	
 	
-	if ($table_name =~ /^DATE_UPDATE|TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
+	if ($table_name =~ /^PROJECT_INFO|DATE_UPDATE|TABLE_INFO|XML_INFO|COLUMN_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {
@@ -743,7 +743,7 @@ sub create_database_histo() {
 	
 	$logger->notice("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_HISTO (
-	ID INTEGER PRIMARY KEY,
+	ID INTEGER PRIMARY KEY NOT NULL,
 	DATE_HISTO DATETIME,
 	USER_UPDATE VARCHAR(30),
 	DATE_UPDATE DATETIME,
@@ -758,9 +758,9 @@ sub create_database_histo() {
 	
 	$logger->notice("Create table $tablename\_COLUMN");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_COLUMN (
-		TABLE_NAME VARCHAR(30),
-		FIELD_NAME VARCHAR(30),
-		DATE_HISTO VARCHAR(30),
+		TABLE_NAME VARCHAR(30) NOT NULL,
+		FIELD_NAME VARCHAR(30) NOT NULL,
+		DATE_HISTO VARCHAR(30) NOT NULL,
 		DATE_UPDATE VARCHAR(30),
 		USER_UPDATE VARCHAR(30),
 		DATA_TYPE VARCHAR(30),
