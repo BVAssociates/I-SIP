@@ -526,7 +526,8 @@ public class EditFormProcessor extends ProcessorFrame {
                 if (!select_condition.toString().equals("")) {
                     select_condition.append(" AND ");
                 }
-                select_condition.append(definition.key[k] + "=" + ((IsisParameter) node.getContext(true).get(definition.key[k])).value);
+                String value=((IsisParameter) node.getContext(true).get(definition.key[k])).value;
+                select_condition.append(definition.key[k] + "='" + value + "'");
             }
             
             SimpleSelect HistoTable =
