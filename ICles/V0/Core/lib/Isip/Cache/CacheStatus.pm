@@ -93,17 +93,21 @@ sub is_dirty_key() {
 		}
 		# else we check for all table
 		else {
-			my $found=0;
 			my $counter=0;
 			my %tables=%{$self->{memory_cache}->{$table_name}};
 			foreach my $source_name (keys %tables) {
-				if (exists $self->{memory_cache}->{$table_name}->{$source_name}->{$table_key}) {
-					$found=1;
-					$counter+=$self->{memory_cache}->{$table_name}->{$source_name}->{$table_key};
+			
+				# exclude root_table from result
+				if ($self->{isip_env}->is_root_table($source_name)) {
+					next;
+				}
+				
+				if (exists $tables{$source_name}->{$table_key}) {
+					$counter+=$tables{$source_name}->{$table_key};
 				}
 			}
 			
-			if ($found) {
+			if (%tables) {
 				return $counter;
 			}
 		}
@@ -116,22 +120,24 @@ sub is_dirty_key() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	$table->query_field("TABLE_NAME","TABLE_KEY","NUM_CHILD");
+	$table->query_field("TABLE_NAME","TABLE_SOURCE","TABLE_KEY","NUM_CHILD");
 	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
 	
-	my $cache_select="SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
+	my $cache_select="SELECT TABLE_NAME, TABLE_SOURCE, TABLE_KEY, NUM_CHILD
 			FROM CACHE_ICON
 			WHERE TABLE_NAME='$table_name' AND TABLE_KEY='$table_key' AND TABLE_SOURCE <> '$table_name'";
 	if ($table_source) {
 		$cache_select .= " AND TABLE_SOURCE = '$table_source'";
 	}
-	$cache_select .= "
-			GROUP BY TABLE_NAME,TABLE_KEY";
 	
 	$table->custom_select_query($cache_select);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
+		# exclude root_table from result
+		if ($table_source ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
+			next;
+		}
 		$count += $row{NUM_CHILD};
 	}
 
