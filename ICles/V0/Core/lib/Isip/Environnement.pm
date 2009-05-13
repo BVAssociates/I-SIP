@@ -206,6 +206,16 @@ sub get_links() {
 }
 
 # return new ILink object with new virtual ROOT tables (see #56)
+# ex, si TTARIFP est indiqué comme ROOT_TABLE :
+# OGAP
+# |- TTARIFP
+# |- TACHMNP
+#
+# devient :
+# TTARIFP_OGAP
+# |- TTARIFP
+# TACHMNP__OGAP
+# |- TACHMNP
 sub get_links_menu() {
 	my $self = shift;
 			

@@ -108,11 +108,14 @@ sub get_query()
 	my $date_format = "%Y-%m-%dT%H:%M";
 	push @select_conditions, "strftime('$date_format',DATE_HISTO) <= '".$self->query_date()."'" if $self->query_date();
 
+	# select only wanted TABLE_KEY 
 	my @table_key_list=$self->query_key_value();
 	push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} @table_key_list).")" if @table_key_list;
 	
+	# preselect TABLE_KEY matching meta_filter in their history 
 	push @select_conditions, "TABLE_KEY IN (SELECT TABLE_KEY FROM ".$self->{table_name}." WHERE ".join(' AND ', @{$self->{meta_filter}})." )" if @{$self->{meta_filter}};
 	
+	# add condition
 	push @select_conditions, $self->query_condition() if $self->query_condition;
 	
 	my @real_query_field;
