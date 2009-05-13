@@ -135,8 +135,10 @@ sub is_dirty_key() {
 	my $count=0;
 	while (my %row=$table->fetch_row) {
 		# exclude root_table from result
-		if ($table_source ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
-			next;
+		if (not $table_source or $table_source ne $row{TABLE_SOURCE}) {
+			if ($self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
+				next;
+			}
 		}
 		$count += $row{NUM_CHILD};
 	}
@@ -153,54 +155,26 @@ sub is_dirty_table() {
 	my $self=shift;
 	
 	my $table_name=shift or croak("usage : is_dirty_table(table_name)");
-	my $table_source=shift;
 	
-	# check in current object
-	if (exists $self->{memory_cache}->{$table_name}) {
-		# if source provided, we check only for this table
-		if ($table_source) {
-			if (my $nb=keys %{$self->{memory_cache}->{$table_name}->{$table_source}}) {
-				return $nb;
-			}
-		}
-		# else we check for all table
-		else {
-			my $found=0;
-			my $counter=0;
-			my %tables=%{$self->{memory_cache}->{$table_name}};
-			foreach my $source_name (keys %tables) {
-				if (my $nb=keys %{$self->{memory_cache}->{$table_name}->{$table_source}}) {
-					$found=1;
-					$counter+=$nb;
-				}
-			}
-			
-			if ($found) {
-				return $counter;
-			}
-		}
-	}
-	
-	# if key was not in dirty childs and table was preloaded, key is OK
-	if ($self->{loaded_table}->{$table_name}) {
-		return 0;
-	}
-	
+
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
-	$table->query_field("NUM_CHILD");
+	$table->query_field("TABLE_SOURCE","NUM_CHILD");
 	
-	my $cache_select="SELECT sum(NUM_CHILD) as NUM_CHILD
+	my $cache_select="SELECT TABLE_SOURCE,sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
-			WHERE TABLE_NAME='$table_name'";
-	if ($table_source) {
-		$cache_select .= " AND TABLE_SOURCE = '$table_source'";
-	}
+			WHERE TABLE_NAME='$table_name'
+			GROUP BY TABLE_SOURCE";
+
 	$table->custom_select_query($cache_select);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
+		# exclude root_table from result
+		if ($table_name ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
+			next;
+		}
 		$count += $row{NUM_CHILD} if $row{NUM_CHILD};
 	}
 
