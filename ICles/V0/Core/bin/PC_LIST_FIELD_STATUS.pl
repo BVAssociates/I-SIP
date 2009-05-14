@@ -313,7 +313,7 @@ sub run {
 			if ($filter_field and $filter_field eq 'PROJECT') {
 				my $project=$filter_value;
 				
-				$table_from->metadata_condition("PROJECT = '$project'");
+				$table_from->query_condition("PROJECT = '$project'");
 				my %target_key_condition;
 				
 				while (my %row=$table_from->fetch_row) {

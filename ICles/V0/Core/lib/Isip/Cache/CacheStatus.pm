@@ -76,6 +76,43 @@ sub add_row_cache() {
 	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 }
 
+sub get_dirty_key {
+	my $self=shift;
+	my $table_name=shift or croak("usage : get_dirty_key(table_name)");
+	
+	my @return_list;
+	
+	# if key was not in dirty childs and table was preloaded, key is OK
+	if ($self->{loaded_table}->{$table_name}) {
+		if (exists $self->{memory_cache}->{$table_name}) {
+			my %tables=%{$self->{memory_cache}->{$table_name}};
+			foreach my $source_name (keys %tables) {
+				foreach my $table_key (keys %{$tables{$source_name}}) {
+					push @return_list, $table_key;
+				}
+			}
+		}
+		return @return_list;
+	}
+	
+	
+	
+	# check on disk	
+	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+	$table->query_field("TABLE_KEY");
+	$table->query_distinct(1);
+	
+	my @condition;
+	push @condition, "TABLE_NAME='$table_name' ";
+	$table->query_condition(@condition);
+	
+	while (my ($table_key)=$table->fetch_row_array()) {
+		push @return_list, $table_key;
+	}
+	
+	return @return_list;
+}
+
 sub is_dirty_key() {
 	my $self=shift;
 	
@@ -97,8 +134,9 @@ sub is_dirty_key() {
 			my %tables=%{$self->{memory_cache}->{$table_name}};
 			foreach my $source_name (keys %tables) {
 			
-				# exclude root_table from result
-				if ($self->{isip_env}->is_root_table($source_name)) {
+				# only childs
+				# exclude root_table
+				if ($source_name eq $table_name or $self->{isip_env}->is_root_table($source_name)) {
 					next;
 				}
 				
@@ -121,16 +159,16 @@ sub is_dirty_key() {
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	$table->query_field("TABLE_NAME","TABLE_SOURCE","TABLE_KEY","NUM_CHILD");
-	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
 	
-	my $cache_select="SELECT TABLE_NAME, TABLE_SOURCE, TABLE_KEY, NUM_CHILD
-			FROM CACHE_ICON
-			WHERE TABLE_NAME='$table_name' AND TABLE_KEY='$table_key' AND TABLE_SOURCE <> '$table_name'";
+	my @condition;
+	push @condition, "TABLE_NAME='$table_name' ";
+	push @condition, "TABLE_KEY='$table_key'";
+	push @condition, "TABLE_SOURCE <> '$table_name'";
 	if ($table_source) {
-		$cache_select .= " AND TABLE_SOURCE = '$table_source'";
+		push @condition, " TABLE_SOURCE = '$table_source'";
 	}
 	
-	$table->custom_select_query($cache_select);
+	$table->query_condition(@condition);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -193,7 +231,8 @@ sub load_cache() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
+	#$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
+	$table->query_condition("TABLE_NAME = '$table_name'");
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {

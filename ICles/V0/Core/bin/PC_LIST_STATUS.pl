@@ -140,16 +140,7 @@ sub run {
 	my $date_compare=$ENV{DATE_COMPARE};
 	my $date_explore=$ENV{DATE_EXPLORE};
 
-	my $filter_field=$ENV{FILTER_FIELD};
-	my $filter_value=$ENV{FILTER_VALUE};
-	my $filter_exclude;
-
-	if ($filter_value and $filter_value =~ /^!(.+)/) {
-		$filter_value=$1;
-		$filter_exclude=1;
-	}
-
-
+	
 	if ( @ARGV < 2 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
@@ -195,7 +186,8 @@ sub run {
 	use Isip::ITable::DataDiff;
 	use Isip::Cache::CacheStatus;
 	use Isip::Cache::CacheProject;
-
+	use Isip::IsipFilter;
+	
 	use Isip::IsipRulesDiff;
 
 	my $env_sip = Environnement->new($environnement);
@@ -205,7 +197,12 @@ sub run {
 
 	my @query_condition;
 	my @comment_condition;
-
+	
+	# creation d'un object IsipFilter
+	my $filter=IsipFilter->new();
+	# add conditions from ENV
+	#push @query_condition, $filter->get_query_condition();
+	
 	# on essaye de retrouver toutes les clefs etrangere dans l'environnement
 	# on ne possède pas l'information de l'arbre d'exploration, donc on cherche
 	#	les clefs etrangères de toutes les tables parentes
@@ -228,30 +225,12 @@ sub run {
 		}
 	}
 
-	# Check if it is an SQL filter
-	my $project_cache;
-	if ($filter_field and $filter_field ne 'ICON' ) {
-
-		$filter_value =~ s/\*/%/g;
-		my $comp_operator;
-		if ($filter_exclude) {
-			$comp_operator='<>';
-			$comp_operator='not like' if $filter_value =~ /%/;
-		}
-		else {
-			$comp_operator='=' ;
-			$comp_operator='like' if $filter_value =~ /%/;
-		}
-		
-		# Check where is the clause
-		if ($filter_field ne 'PROJECT') {
-			push @query_condition, "$filter_field $comp_operator '$filter_value'";
-		}
-	}
 
 	# table qui sera affichée
 	my $table_explore;
 	my $dirty_cache;
+	
+	
 	# ouverture de la table en cours d'exploration
 	my $table_current=$env_sip->open_local_from_histo_table($table_name,$date_explore);
 	if (not $table_current) {
@@ -259,6 +238,15 @@ sub run {
 		return 1;
 	}
 
+	my $project_cache;
+	if (my $filter_value=$filter->get_field_value("PROJECT")) {
+		# load Cache to know project of child lines
+		$project_cache=CacheProject->new($env_sip);
+		$project_cache->load_cache($table_name);
+		$project_cache->set_dirty_project($filter_value);
+		
+	}
+	
 	$table_current->query_condition(@query_condition);
 
 	# recuperation des colonnes à afficher
@@ -266,7 +254,7 @@ sub run {
 
 	if ($explore_mode eq "compare") {
 		my $env_sip_from = Environnement->new($env_compare);
-			
+		
 		#open IKOS table for DATA
 		my $table_from=$env_sip_from->open_local_from_histo_table($table_name,$date_compare);
 
@@ -288,9 +276,11 @@ sub run {
 	}
 	elsif ($explore_mode eq "explore") {
 		$table_explore=$table_current;
-		log_info("pré-charge les informations de modification des sous-tables");
+		
+		$table_current->query_field("PROJECT",$table_current->query_field);
 		
 		if (not $date_explore) {
+			log_info("pré-charge les informations de modification des sous-tables");
 			# load Cache to know state of child lines
 			$dirty_cache=CacheStatus->new($env_sip);
 			$dirty_cache->load_cache($table_name);
@@ -299,12 +289,15 @@ sub run {
 			my $type_rules = IsipRules->new($table_name, $env_sip, {debug => $debug_level});
 			$table_explore->isip_rules($type_rules) if not $no_icon;
 		}
-		if ($filter_field and $filter_field eq 'PROJECT') {
+		
+			
+		# special optimization
+		my $icon_filter=$filter->get_field_value("ICON");
+		if ($icon_filter and $icon_filter eq '!valide') {
 			# load Cache to know project of child lines
-			$project_cache=CacheProject->new($env_sip);
-			$project_cache->set_dirty_project($filter_value);
+			$table_explore->query_key_value($dirty_cache->get_dirty_key($table_name));
 		}
-
+		
 		if ($ENV{CATEGORY}) {
 			my %info=$env_sip->get_table_info($table_name);
 			if ($info{root_table} and $ENV{TABLE_NAME} and $ENV{TABLE_NAME} eq $table_name) {
@@ -322,29 +315,16 @@ sub run {
 	my @keys=$table_explore->key;
 	while (my %row=$table_explore->fetch_row) {
 		my $string_key=join(',',@row{@keys});
-		$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source);
-		$row{PROJECT}="dirty" if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
-		if ($filter_field) {
-			if ($filter_field eq 'ICON') {
-				$filter_value=qr/$filter_value/;
-				if (($filter_exclude and $row{ICON} !~ /^$filter_value$/)
-					or (! $filter_exclude and $row{ICON} =~ /^$filter_value$/) )
-				{
-						print join($table_explore->output_separator,@row{@query_field})."\n"
-				}
-			}
-			elsif ($filter_field eq 'PROJECT') {
-				if ($row{PROJECT} eq "dirty"
-					or (grep {/^$filter_value$/} split(',',$row{PROJECT}) ) )
-				{
-						print join($table_explore->output_separator,@row{@query_field})."\n"
-				}
-			}
-		}
-		else {
-					print join($table_explore->output_separator,@row{@query_field})."\n"
-		}
 		
+		# force PROJECT if a child has this PROJECT
+		$row{PROJECT}=$filter->get_field_value("PROJECT") if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
+		
+		# append _dirty to get special icon
+		$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source);
+		
+		if ($filter->is_display_line(%row)) {
+			print join($table_explore->output_separator,@row{@query_field})."\n"
+		}
 	}
 	
 	return 1;

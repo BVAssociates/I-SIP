@@ -67,6 +67,7 @@ sub open() {
 	$self->{dynamic_field}  = [ "ICON" , "PROJECT" ];
 	# add query option
 	$self->{query_date} = $options->{date};
+	$self->{query_key_value} =[];
 	$self->_debug("query date : ", join("|",$self->query_date())) if defined $self->{query_date};
 	
 	## internal members
@@ -186,8 +187,8 @@ sub set_update_timestamp() {
 # can use internal field TABLE_KEY to speed up queries
 sub query_key_value() {
 	my $self = shift;
-    if (@_) { $self->{query_key_value} = shift }
-    return $self->{query_key_value} ;
+    if (@_) { @{$self->{query_key_value}} = @_ }
+    return @{$self->{query_key_value}};
 }
 
 sub isip_rules() {
@@ -246,6 +247,14 @@ sub get_query()
 					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE $condition )\n"
 				}
 			}
+			elsif ($1 eq "PROJECT") {
+				#Special case of PROJECT filter
+				if ($3 eq 'vide') {
+					push @select_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition')\n"
+				} else {
+					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition' )\n"
+				}
+			}
 			else {
 			# check if condition is on one of the keys
 				if (grep {$1 eq $_} @field_key ) {
@@ -263,7 +272,7 @@ sub get_query()
 	}
 
 	#TODO : is it useful?
-	push @select_conditions, "TABLE_KEY = '".$self->{query_key_value}."'" if $self->{query_key_value};
+	push @select_conditions, "TABLE_KEY IN (".join(',', map {"'".$_."'"} $self->query_key_value).")" if $self->query_key_value;
 	
 	if (%query_key) {
 		# put joker on unknown keys
@@ -299,7 +308,7 @@ sub get_query()
 	$self->{table_name_histo_view} as HISTO2\n";
 	
 	# Add a condition
-	$select_histo.= "	WHERE ".join(" AND ", @select_conditions)."\n" if @select_conditions;
+	$select_histo.= "	WHERE ".join("\n	AND ", @select_conditions)."\n" if @select_conditions;
 	# GROUP BY
 	$select_histo.= "	GROUP BY FIELD_NAME_2, TABLE_KEY_2\n";
 	$select_histo.= "	) ON  (ID= ID2)\n";
