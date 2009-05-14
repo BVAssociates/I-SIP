@@ -130,7 +130,7 @@ sub run {
 	}
 	
 	if (not %baseline) {
-		croak("Pas de baseline pour cet environnement");
+		$logger->info("Pas de baseline pour cet environnement");
 	}
 	
 	foreach my $table_name ($env->get_table_list) {

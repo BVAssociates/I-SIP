@@ -753,7 +753,7 @@ sub create_database_histo() {
 	
 	$logger->notice("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_HISTO (
-	ID INTEGER PRIMARY KEY NOT NULL,
+	ID INTEGER PRIMARY KEY,
 	DATE_HISTO DATETIME,
 	USER_UPDATE VARCHAR(30),
 	DATE_UPDATE DATETIME,
@@ -830,7 +830,21 @@ sub create_histo_baseline() {
 	my $baseline_table=$self->open_local_table($table_name."_HISTO");
 	
 	$logger->info("Create $baseline_name dans ".$self->{environnement});
-	$baseline_table->execute("CREATE TABLE IF NOT EXISTS $baseline_name as ".$select_query);
+	$baseline_table->execute("CREATE TABLE IF NOT EXISTS $baseline_name (
+	ID INTEGER PRIMARY KEY,
+	DATE_HISTO DATETIME,
+	USER_UPDATE VARCHAR(30),
+	DATE_UPDATE DATETIME,
+	TABLE_NAME VARCHAR(30),
+	TABLE_KEY VARCHAR(30),
+	FIELD_NAME VARCHAR(30),
+	FIELD_VALUE VARCHAR(30),
+	PROJECT VARCHAR(30),
+	COMMENT VARCHAR(50),
+	STATUS VARCHAR(30),
+	MEMO VARCHAR(30))");
+	
+	$baseline_table->execute("INSERT INTO $baseline_name ".$select_query);
 	$logger->info("Create indexes on $baseline_name dans ".$self->{environnement});
 	$baseline_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY_$baseline_date ON $baseline_name (TABLE_KEY ASC)");
 	

@@ -17,7 +17,7 @@ PC_UPDATE_HISTO - Met à jour les champs d'une table Histo depuis la référence
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-d] [-e] [-c] [-n|-u] [-m module] [-b environnement_source[@date]] environnement [tablename]
+ PC_UPDATE_HISTO.pl [-h] [-v] [-e] [-c] [-n|-u] [-m module] [-b environnement_source[@date]] environnement [tablename]
  
 =head1 DESCRIPTION
 
