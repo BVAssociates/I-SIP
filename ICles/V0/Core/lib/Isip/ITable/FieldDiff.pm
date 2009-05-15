@@ -30,6 +30,7 @@ sub open() {
 	
 	
 	$self->{dynamic_field} = [ $self->dynamic_field ,"OLD_FIELD_VALUE"];
+	$self->{old_field}->{"OLD_FIELD_VALUE"}= "FIELD_VALUE";
 	
 	$self->{comment_field} = ["COMMENT","STATUS","MEMO","PROJECT"];
 	
@@ -43,7 +44,7 @@ sub open() {
 sub compare_exclude() {
 	my $self=shift;
 	
-	return grep(!/^FIELD_VALUE$/,$self->field);
+	return grep {!/^FIELD_VALUE$/} ($self->{table_target}->query_field(),$self->{table_source}->query_field());
 }
 
 sub fetch_row() {

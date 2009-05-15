@@ -449,7 +449,8 @@ sub compare_next() {
 			my %row_update;
 			foreach my $field1 (keys %all_fields) {
 				
-				if (grep(/^$field1$/, $self->compare_exclude)) {
+				my @excluded=$self->compare_exclude();
+				if (grep {/^$field1$/} @excluded) {
 					#field excluded from compare, aka equal
 					next;
 				}

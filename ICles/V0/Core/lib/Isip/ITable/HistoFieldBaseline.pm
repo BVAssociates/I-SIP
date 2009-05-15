@@ -75,8 +75,6 @@ sub get_query()
 		push @real_query_field, $field_condition if not grep ($field_condition eq $_, $self->dynamic_field());
 	}
 	
-	push @select_conditions, @{$self->{meta_filter}};
-	
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
 	$select_histo= "SELECT ".join(',',@real_query_field)." FROM $self->{table_name}\n";
