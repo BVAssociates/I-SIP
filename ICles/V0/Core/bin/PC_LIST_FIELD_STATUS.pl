@@ -256,6 +256,28 @@ sub run {
 		
 		# open first table
 		my $table_from = $env_sip_from->open_histo_field_table($table_name, $date_compare,{debug => $debug_level});
+		my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
+		
+		if (not $table_from and $table_to) {
+			use ITable::Null;
+			$table_from=Null->open($table_name);
+			$table_from->field($table_to->field);
+			$table_from->query_field($table_to->query_field);
+			$table_from->key($table_to->key);
+			$table_from->dynamic_field($table_to->dynamic_field);
+		}
+		elsif ($table_from and not $table_to) {
+			use ITable::Null;
+			$table_to=Null->open($table_name);
+			$table_to->field($table_from->field);
+			$table_to->query_field($table_from->query_field);
+			$table_to->key($table_from->key);
+			$table_to->dynamic_field($table_from->dynamic_field);
+		}
+		elsif (not $table_from and not $table_to) {
+			return 1;
+		}
+		
 		if (not $table_from) {
 			if ($date_compare) {
 				log_info("$table_name n'existe pas à la date $date_compare dans $env_compare");
@@ -268,7 +290,6 @@ sub run {
 		
 		
 		# open second table
-		my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
 		if (not $table_to) {
 			if ($date_explore) {
 				log_info("$table_name n'existe pas à la date $date_explore dans $environnement");

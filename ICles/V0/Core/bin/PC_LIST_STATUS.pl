@@ -258,7 +258,25 @@ sub run {
 		#open IKOS table for DATA
 		my $table_from=$env_sip_from->open_local_from_histo_table($table_name,$date_compare);
 
-		return 0 if not $table_from;
+		if (not $table_from and $table_current) {
+			use ITable::Null;
+			$table_from=Null->open($table_name);
+			$table_from->field($table_current->field);
+			$table_from->query_field($table_current->query_field);
+			$table_from->key($table_current->key);
+			$table_from->dynamic_field($table_current->dynamic_field);
+		}
+		elsif ($table_from and not $table_current) {
+			use ITable::Null;
+			$table_current=Null->open($table_name);
+			$table_current->field($table_from->field);
+			$table_current->query_field($table_from->query_field);
+			$table_current->key($table_from->key);
+			$table_current->dynamic_field($table_from->dynamic_field);
+		}
+		elsif (not $table_from and not $table_current) {
+			return 1;
+		}
 		
 		$table_from->query_condition(@query_condition);
 

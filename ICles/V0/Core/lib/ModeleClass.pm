@@ -72,8 +72,8 @@ sub new() {
 	}
 	$self->{obj1}=$param2;
 	
-	# initialisation des autres membres public
-	$self->{var2}=undef;
+	# initialisation var2 en tableau
+	$self->{var2}=[];
 	
 	# initialisation des membres privés
 	$self->{_var3}="constante";
@@ -90,7 +90,8 @@ sub new() {
 sub _something {
 	my $self=shift;
 	
-	$self->{var2} = "something";
+	# recupération du tableau par sa référence
+	push @{$self->{var2}}, "something";
 }
 
 ##################################################
