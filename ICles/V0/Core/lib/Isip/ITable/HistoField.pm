@@ -42,10 +42,8 @@ sub open() {
 	$self->{column_histo} = HistoColumns->new($self->{database_name}, $table_name, $options);
 	
 	$self->{query_key_value}=[];
-	$self->{isip_rules} = {};
-	
-	$self->{meta_filter}= [];
-	
+	$self->{isip_rules} = undef;
+		
 	return bless($self,$class);
 }
 
@@ -54,6 +52,18 @@ sub query_key_value() {
 	my $self = shift;
     if (@_) { @{$self->{query_key_value}} = @_ }
     return @{$self->{query_key_value}};
+}
+
+sub isip_rules() {
+	my $self = shift;
+	
+	my $isip_rules_ref;
+	if (@_) {
+		$isip_rules_ref = shift;
+		croak("arg1 of isip_rules must be a object ref") if not blessed $isip_rules_ref;
+		$self->{isip_rules}=$isip_rules_ref;
+	}
+    return $self->{isip_rules} ;
 }
 
 sub query_date {
@@ -78,14 +88,6 @@ sub query_date {
     return $self->{query_date} ;
 }
 
-sub metadata_condition() {
-	my $self = shift;
-	
-	if (@_) {
-		$self->{meta_filter} = [@_];
-	}
-    return @{$self->{meta_filter}} ;
-}
 
 # Construct SQL query to get last inserted value for each field
 sub get_query()
@@ -94,6 +96,7 @@ sub get_query()
 	
 	my $select_histo;
 	my @select_conditions;
+	my @having_conditions;
 	
 	# aware of concatened keys
 	my @query_field=$self->{column_histo}->get_field_list();
@@ -112,18 +115,25 @@ sub get_query()
 	my @table_key_list=$self->query_key_value();
 	push @select_conditions, "TABLE_KEY IN (".join (',',map {'\''.$_.'\''} @table_key_list).")" if @table_key_list;
 	
-	# preselect TABLE_KEY matching meta_filter in their history 
-	push @select_conditions, "TABLE_KEY IN (SELECT TABLE_KEY FROM ".$self->{table_name}." WHERE ".join(' AND ', @{$self->{meta_filter}})." )" if @{$self->{meta_filter}};
-	
-	# add condition
-	push @select_conditions, $self->query_condition() if $self->query_condition;
-	
-	my @real_query_field;
-	foreach my $field_condition ($self->query_field()) {
-		push @real_query_field, $field_condition if not grep ($field_condition eq $_, $self->dynamic_field());
+	foreach my $condition ($self->query_condition()) {
+		if ($condition =~ /^PROJECT/) {
+			# preselect TABLE_KEY matching meta_filter in their history 
+			push @select_conditions, "TABLE_KEY IN (SELECT TABLE_KEY FROM ".$self->{table_name}." WHERE ".join(' AND ', $condition)." )";
+			
+			push @having_conditions, $condition
+		}
+		elsif($condition =~ /^ICON/) {
+			# skip
+		}
+		else {
+			# add condition
+			push @select_conditions, $condition ;
+		}
 	}
 	
-	
+	#my @real_query_field=map {(/$self->{_dynamic_field_re}/)?"'' AS $_":$_ } $self->query_field();
+	my @real_query_field=grep {!/$self->{_dynamic_field_re}/} $self->query_field();
+		
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??
 	$select_histo= "SELECT ".join(',',@real_query_field)." FROM
@@ -140,7 +150,7 @@ sub get_query()
 	# GROUP BY
 	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
 	# HAVING metadata
-	$select_histo.= " HAVING ".join(" AND ", @{$self->{meta_filter}}) if @{$self->{meta_filter}};
+	$select_histo.= " HAVING ".join(" AND ", @having_conditions) if @having_conditions;
 	
 	$select_histo.= ")
 		ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
@@ -150,7 +160,27 @@ sub get_query()
 	return $select_histo;
 }
 
- 
+# /!\ functionnal bug : field "ICON" not set if you call fetch_row_array()
+
+sub fetch_row() {
+	my $self=shift;
+	
+	my %row=$self->SUPER::fetch_row();
+	
+	if (exists $row{ICON} and $self->{isip_rules} and not $self->query_date) {
+		$row{ICON}=$self->{isip_rules}->get_field_icon(%row)
+	}
+	
+	if (exists $row{TEXT} and $self->{isip_rules}) {
+		$row{TEXT}=$self->{isip_rules}->get_field_description($row{FIELD_NAME});
+	}
+	
+	if (exists $row{TYPE} and $self->{isip_rules}) {
+		$row{TYPE}=$self->{isip_rules}->get_field_type_txt($row{FIELD_NAME});
+	}
+	
+	return %row;
+}
  
 =head1 AUTHOR
 

@@ -144,15 +144,6 @@ sub run {
 	my $date_compare=$ENV{DATE_COMPARE};
 	my $date_explore=$ENV{DATE_EXPLORE};
 
-	my $filter_field=$ENV{FILTER_FIELD};
-	my $filter_value=$ENV{FILTER_VALUE};
-	my $filter_exclude;
-
-	if ($filter_value and $filter_value =~ /^!(.+)/) {
-		$filter_value=$1;
-		$filter_exclude=1;
-	}
-
 	if ( @ARGV < 2 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
@@ -175,17 +166,17 @@ sub run {
 
 	$env_compare=$environnement if $date_compare and not $env_compare;
 
-	log_info("Debut du programme : ".__FILE__." -c $env_compare\@$date_compare $environnement $table_name $date_explore");
+	my $log_command=" -c $env_compare" if $env_compare;
+	$log_command .="\@$date_compare" if $date_compare;
+	$log_command .=" $environnement $table_name";
+	$log_command .=" $date_explore" if $date_explore;
+	log_info("Debut du programme : ".__FILE__.$log_command);
 
 	# deduction du contenu de la colonne ICON
 	#  explore par defaut
 	#  compare si une source est trouvée
 	my $explore_mode="explore";
 	$explore_mode="compare" if $env_compare or $date_compare;
-
-	# pas de filtre en mode "explore" sur une date
-	undef $filter_field if $date_explore;
-	undef $filter_value if $date_explore;
 
 	log_info("Mode d'exploration : $explore_mode");
 
@@ -197,10 +188,14 @@ sub run {
 	use ITable::ITools;
 	use Isip::ITable::FieldDiff;
 	use Isip::IsipRulesDiff;
+	use Isip::IsipFilter;
 
 	# New SIP Object instance
 	my $env_sip = Environnement->new($environnement, {debug => $debug_level});
 
+	# IsipFilter instance
+	my $filter=IsipFilter->new();
+	
 	# recuperation de la clef primaine de la table
 	my $table_key = $env_sip->get_table_key($table_name);
 
@@ -228,27 +223,6 @@ sub run {
 		
 		log_info("KEY= $table_key");
 		log_info("KEY_VAL=$table_key_value");
-	}
-
-	# Check if it is an SQL filter
-	my @comment_condition;
-	if ($filter_field and $filter_field ne 'ICON' ) {
-
-		$filter_value =~ s/\*/%/g;
-		my $comp_operator;
-		if ($filter_exclude) {
-			$comp_operator='<>';
-			$comp_operator='not like' if $filter_value =~ /%/;
-		}
-		else {
-			$comp_operator='=' ;
-			$comp_operator='like' if $filter_value =~ /%/;
-		}
-		
-		# Check where is the clause
-		if ($filter_field eq 'PROJECT') {
-			push @comment_condition, "$filter_field $comp_operator '$filter_value'";
-		}
 	}
 
 	# recupere à liste de champ à afficher
@@ -310,15 +284,18 @@ sub run {
 			$table_to->query_key_value($table_key_value);
 		}
 		else {
-			if ($filter_field and $filter_field eq 'PROJECT') {
-				my $project=$filter_value;
+			if (my @pre_condition=$filter->get_query_condition) {
 				
-				$table_from->query_condition("PROJECT = '$project'");
+			
+				$table_to->query_condition(@pre_condition);
 				my %target_key_condition;
 				
-				while (my %row=$table_from->fetch_row) {
+				while (my %row=$table_to->fetch_row) {
 					$target_key_condition{$row{TABLE_KEY}}++;
 				}
+				
+				# NOT SURE
+				$table_to->query_condition(undef);
 				
 				if (%target_key_condition) {
 					$table_from->query_key_value(keys %target_key_condition);
@@ -327,18 +304,28 @@ sub run {
 					
 				}
 				else {
-					$logger->info("Aucune ligne ne correspond au projet $project");
+					$logger->info("Aucune ligne ne correspond au filtre");
 					return 0;
 				}
 			}
 		}
+		
+		# additionnals fields
+		$table_from->dynamic_field("TYPE","TEXT",$table_from->dynamic_field);
+		$table_from->query_field("TYPE","TEXT",$table_from->query_field);
+		
+		$table_to->dynamic_field("TYPE","TEXT",$table_to->dynamic_field);
+		$table_to->query_field("TYPE","TEXT",$table_to->query_field);
+		
+		# only target table need rules
+		$table_to->isip_rules($rules);
 		
 		# open DataDiff table from two table
 		my $table_status=FieldDiff->open($table_from, $table_to, {debug => $debug_level});
 		
 		# declare some additionnal blank fields
 		# (ICON field will be computed into DataDiff)
-		$table_status->dynamic_field("ICON","TYPE","TEXT","DOCUMENTATION",$table_status->dynamic_field);
+		$table_status->dynamic_field("ICON",$table_status->dynamic_field);
 		#$table_status->query_field(@query_field,"OLD_FIELD_VALUE","DIFF");
 		$table_status->query_field(@query_field);
 		
@@ -350,27 +337,10 @@ sub run {
 		$table_status->isip_rules($diff_rules);
 		
 		# put row in memory
+		$logger->notice("query fields: ",$table_status->query_field());
 		while (my %row=$table_status->fetch_row) {
-			$row{TYPE}=$diff_rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-			$row{TEXT}=$diff_rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
-			
-			my $display=1;
-			# don't display filtered fields
-			if ($filter_field and exists $row{$filter_field}) {
-				if ($filter_exclude and $row{$filter_field} eq $filter_value) {
-					$display=0;
-				}
-				elsif (not $filter_exclude and $row{$filter_field} ne $filter_value) {
-					$display=0;
-				}
-			}
-			
-			# don't display ignored fields
-			if ($row{TYPE} eq "exclus") {
-				$display=0;
-			}
-
-			if ($display) {
+		
+			if ($filter->is_display_line(%row)) {
 				if ($all_key) {
 					print join($separator,$table_status->hash_to_array(%row))."\n";
 				}
@@ -386,11 +356,11 @@ sub run {
 		# open histo table
 		my $table_status = $env_sip->open_histo_field_table($table_name, $date_explore, {debug => $debug_level});
 		
-		$table_status->query_key_value($table_key_value) if $table_key_value;;
-		$table_status->dynamic_field($table_status->dynamic_field,"DOCUMENTATION");
+		$table_status->query_key_value($table_key_value) if $table_key_value;
 		$table_status->query_field(@query_field);
+		$table_status->isip_rules($rules);
 		
-		$table_status->metadata_condition(@comment_condition);
+		$table_status->query_condition($filter->get_query_condition);
 		
 		$table_status->output_separator('@');
 		
@@ -413,24 +383,16 @@ sub run {
 			if (not $date_explore) {
 				# don't show hidden fields
 				next if $rules->is_field_hidden(%row);
-				
-				# compute dynamic fields
-				$row{ICON}=$rules->get_field_icon(%row) if exists $row{ICON};
 			}
-			else {
-				$row{ICON}="none" if exists $row{ICON};
-			}
-					
-			$row{TYPE}=$rules->get_field_type_txt($row{FIELD_NAME}) if $table_status->has_fields("TYPE");
-			$row{TEXT}=$rules->get_field_description($row{FIELD_NAME}) if $table_status->has_fields("TEXT");
-			
-			if ($all_key) {
-				if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
-					print join($separator,$table_status->hash_to_array(%row))."\n";
+			if ($filter->is_display_line(%row)) {
+				if ($all_key) {
+					if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
+						print join($separator,$table_status->hash_to_array(%row))."\n";
+					}
 				}
-			}
-			else {
-				$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
+				else {
+					$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
+				}
 			}
 		}
 	}
