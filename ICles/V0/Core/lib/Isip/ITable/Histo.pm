@@ -248,12 +248,8 @@ sub get_query()
 				}
 			}
 			elsif ($1 eq "PROJECT") {
-				#Special case of PROJECT filter
-				if ($3 eq 'vide') {
-					push @select_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition')\n"
-				} else {
-					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition' )\n"
-				}
+				#preselection of TABLE_KEY which has PROJECT in history
+				push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition' )\n"
 			}
 			else {
 			# check if condition is on one of the keys
