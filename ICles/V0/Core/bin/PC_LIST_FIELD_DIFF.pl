@@ -244,6 +244,7 @@ $table_from->query_condition("FIELD_NAME='$field_name'");
 
 $table_from->dynamic_field("ICON","TYPE","TEXT","ENVIRONNEMENT","DATE");
 $table_from->query_field(@query_field);
+$table_from->isip_rules($rules);
 
 my %row_from=$table_from->fetch_row();
 
@@ -261,8 +262,6 @@ if (not %row_from) {
 	#$row_from{FIELD_NAME}=$field_name;
 } else {
 	$row_from{ENVIRONNEMENT}=$env_compare if $table_from->has_fields("ENVIRONNEMENT");
-	$row_from{TYPE}=$rules->get_field_type_txt($row_from{FIELD_NAME}) if $table_from->has_fields("TYPE");
-	$row_from{TEXT}=$rules->get_field_description($row_from{FIELD_NAME}) if $table_from->has_fields("TEXT");
 }
 
 print join($separator,$table_from->hash_to_array(%row_from))."\n";
@@ -276,6 +275,7 @@ $table_to->query_condition("FIELD_NAME='$field_name'");
 
 $table_to->dynamic_field("ICON","TYPE","TEXT","ENVIRONNEMENT");
 $table_to->query_field(@query_field);
+$table_to->isip_rules($rules);
 
 my %row_to=$table_to->fetch_row();
 
@@ -293,8 +293,6 @@ if (not %row_to) {
 	#$row_to{FIELD_NAME}=$field_name;
 } else {
 	$row_to{ENVIRONNEMENT}=$environnement if $table_to->has_fields("ENVIRONNEMENT");
-	$row_to{TYPE}=$rules->get_field_type_txt($row_to{FIELD_NAME}) if $table_to->has_fields("TYPE");
-	$row_to{TEXT}=$rules->get_field_description($row_to{FIELD_NAME}) if $table_to->has_fields("TEXT");
 }
 print join($separator,$table_to->hash_to_array(%row_to))."\n";
 
