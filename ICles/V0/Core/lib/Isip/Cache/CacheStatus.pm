@@ -50,7 +50,7 @@ sub check_before_cache() {
 
 	#add table itself in cache
 	my @key=$self->{isip_env}->get_table_key($table);
-	my $key_string=@{$value_ref}{@key};
+	my $key_string=join(',',@{$value_ref}{@key});
 	$self->add_row_cache($table,$key_string,$value_ref);
 	
 	return $dirty;
@@ -66,7 +66,9 @@ sub add_row_cache() {
 	my $value_ref=shift or croak("usage: add_row_cache(table_name,key_string , value)");
 	
 	
-	$logger->info("add $key_string in CacheStatus");
+	$logger->info("add $table_name:$key_string in CacheStatus");
+	
+	croak("check_before_cache must be called before add_row_cache") if not $self->{current_table};
 	my $table_fired=$self->{current_table};
 	
 	my $old_value=$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string};
