@@ -167,8 +167,13 @@ sub fetch_row() {
 	
 	my %row=$self->SUPER::fetch_row();
 	
-	if (exists $row{ICON} and $self->{isip_rules} and not $self->query_date) {
-		$row{ICON}=$self->{isip_rules}->get_field_icon(%row)
+	if (exists $row{ICON} and $self->{isip_rules}) {
+		if ($self->query_date) {
+			$row{ICON}='none';
+		}
+		else {
+			$row{ICON}=$self->{isip_rules}->get_field_icon(%row);
+		}
 	}
 	
 	if (exists $row{TEXT} and $self->{isip_rules}) {
