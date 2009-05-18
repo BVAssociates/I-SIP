@@ -120,7 +120,7 @@ my $environnement=shift @ARGV;
 
 #  Corps du script
 ###########################################################
-my $bv_severite=0;
+my $return=0;
 
 use Isip::Environnement;
 require 'pc_init_table.pl';
@@ -134,13 +134,13 @@ foreach my $table (@table_list) {
 	my %table_info=$env_sip_from->get_table_info($table);
 	next if $table_info{type_source} eq "XML";
 	
-	$bv_severite+=pc_init_table::run("-Mci".$import,$environnement,$table);
+	$return+=pc_init_table::run("-Mci".$import,$environnement,$table);
 }
 
-$bv_severite+=pc_generate_menu::run($environnement);
+$return+=pc_generate_menu::run($environnement);
 
-return $bv_severite;
+return $return;
 # END RUN
 }
 
-exit run(@ARGV) if !caller;
+exit !run(@ARGV) if !caller;
