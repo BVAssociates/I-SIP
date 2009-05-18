@@ -1,6 +1,6 @@
 package DBI_interface;
 
-require ITable::abstract::DATA_interface;
+use ITable::abstract::DATA_interface;
 @ISA=("DATA_interface");
 
 use Carp qw(carp cluck confess croak );
