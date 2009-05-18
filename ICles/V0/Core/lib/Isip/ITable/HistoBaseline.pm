@@ -115,7 +115,7 @@ sub get_query() {
 	}
 
 	#TODO : is it useful?
-	push @select_conditions, "TABLE_KEY = '".$self->{query_key_value}."'" if $self->{query_key_value};
+	push @select_conditions, "TABLE_KEY = '".join(',',$self->query_key_value())."'" if $self->query_key_value();
 	
 	if (%query_key) {
 		# put joker on unknown keys
