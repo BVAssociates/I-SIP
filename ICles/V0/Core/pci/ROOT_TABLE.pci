@@ -9,5 +9,5 @@
 
 Item~~Explore~expl~~~Explore~IKOS_TABLE_%Environnement%_%DEF_NAME%~0~~Expand
 
-Item~~Explorer par groupe~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} eq "XML" or ($ENV{ENV_COMPARE} or $ENV{DATE_COMPARE})"~~Explore~CATEGORY~0~~Expand
+Item~~Explorer par groupe~adm~HAS_TABLE_GROUP %Environnement% %DEF_NAME%~~Explore~CATEGORY~0~~Expand
 Item~~Comparer XML avec la référence~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML" or ($ENV{ENV_COMPARE} or $ENV{DATE_COMPARE})"~~DisplayTable~XML_DIFF~0~~Expand
