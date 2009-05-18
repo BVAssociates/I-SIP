@@ -91,16 +91,6 @@ my $env_compare=$ENV{ENV_COMPARE};
 my $date_compare=$ENV{DATE_COMPARE};
 my $date_explore=$ENV{DATE_EXPLORE};
 
-
-my $filter_field=$ENV{FILTER_FIELD};
-my $filter_value=$ENV{FILTER_VALUE};
-my $filter_exclude;
-
-if ($filter_value and $filter_value =~ /^!(.+)/) {
-	$filter_value=$1;
-	$filter_exclude=1;
-}
-
 my %opts;
 getopts('hvs:', \%opts);
 
@@ -133,15 +123,16 @@ my $bv_severite=0;
 use Isip::Environnement;
 use Isip::Cache::CacheStatus;
 use Isip::Cache::CacheProject;
+use Isip::IsipFilter;
 
 my $env=Environnement->new($environnement);
-
 my $cache=CacheStatus->new($env);
+my $filter=IsipFilter->new();
 
 my $cache_proj;
-if ($filter_field and $filter_field eq "PROJECT") {
+if (my $project=$filter->get_field_value("PROJECT")) {
 	$cache_proj=CacheProject->new($env);
-	$cache_proj->set_dirty_project($filter_value);
+	$cache_proj->set_dirty_project($project);
 }
 
 my $link_obj=$env->get_links_menu();
@@ -164,30 +155,28 @@ foreach my $table (sort keys %list_table_uniq) {
 	my %table_info=$env->get_table_info($real_table);
 	my $icon="valide";
 	
+	# modify icon when exploring last data
 	if (not ($date_explore or $env_compare or $date_compare) ) {
 		$icon="dirty" if $real_table and $cache->is_dirty_table($real_table);
 	}
 	
+	# open baseline if date_explore
 	if ($date_explore) {
 		my $baseline_name=HistoBaseline->get_baseline_name($table,$date_explore);
 		if (not $env->exist_local_table($baseline_name)) {
 			next;
 		}
 	}
-	if ($filter_field and $filter_field eq 'ICON') {
-		if (($filter_exclude and $icon !~ /^$filter_value$/)
-			or (! $filter_exclude and $icon =~ /^$filter_value$/) )
-		{
-			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+	
+	if ($filter->is_display_line(ICON => $icon)) {
+		if ($cache_proj) {
+			if ($cache_proj->is_dirty_table($real_table)) {
+				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+			}
 		}
-	}
-	elsif ($filter_field and $filter_field eq 'PROJECT') {
-		if ($cache_proj->is_dirty_table($real_table)) {
-			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
+		else {
+				print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 		}
-	}
-	else {
-			print join($separator,($icon,$real_table,$def_name,$module,$table_info{description},$table_info{type_source}))."\n";
 	}
 }
 
