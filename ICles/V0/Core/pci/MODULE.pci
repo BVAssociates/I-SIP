@@ -1,8 +1,8 @@
 
 Item~Mode Exploration~Dernière collecte~expl~~~Explore~ROOT_TABLE~0~~Expand
-Item~Mode Exploration~Dernière collecte (nouveaux)~expl~~FILTER_ICON=!valide~Explore~ROOT_TABLE~0~~Expand
+Item~Mode Exploration~Dernière collecte (nouveaux)~expl~~FILTER_ICON=!valide,!stamp,!none~Explore~ROOT_TABLE~0~~Expand
 Item~Mode Exploration~Dernière collecte (projet)~expl~~FILTER_PROJECT=getListValue("Nom du projet",PROJECT_INFO)~Explore~ROOT_TABLE~0~~Expand
-Item~Mode Exploration~Dernière collecte (nouveaux+projet)~expl~~{FILTER_ICON=!valide}{FILTER_PROJECT=getListValue("Nom du projet",PROJECT_INFO)}~Explore~ROOT_TABLE~0~~Expand
+Item~Mode Exploration~Dernière collecte (nouveaux+projet)~expl~~{FILTER_ICON=!valide,!stamp,!none}{FILTER_PROJECT=getListValue("Nom du projet",PROJECT_INFO)}~Explore~ROOT_TABLE~0~~Expand
 Item~Mode Baseline~Explorer Baseline~expl~~~Explore~DATE_HISTO_BASELINE~0~~Expand
 #Item~Mode Baseline~Autre date~expl~~~Explore~DATE_HISTO~0~~Expand
 Item~Mode Comparaison~Comparaison depuis une baseline~expl~~DATE_COMPARE=getListValue("Date source",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=1)~Explore~FILTER_COMPARE~0~~Expand

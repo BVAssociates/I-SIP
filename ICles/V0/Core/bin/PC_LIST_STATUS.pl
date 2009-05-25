@@ -311,7 +311,7 @@ sub run {
 			
 		# special optimization
 		my $icon_filter=$filter->get_field_value("ICON");
-		if ($icon_filter and $icon_filter eq '!valide') {
+		if ($icon_filter and ($icon_filter eq '!valide' or $icon_filter eq '!valide,!stamp,!none')) {
 			# load Cache to know project of child lines
 			$table_explore->query_key_value($dirty_cache->get_dirty_key($table_name));
 		}
