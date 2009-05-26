@@ -307,7 +307,7 @@ sub get_pci_field_string($$) {
 	my $display_table=get_display_table($table_name);
 	
 	my $pci_field_template='Table~~Champs filtrés~expl~perl -e "exit 1 if not $ENV{FILTER_ICON} and not $ENV{FILTER_PROJECT}"~~Explore~~0~~Expand
-Table~~Toute la ligne~expl~~{FILTER_ICON=}{FILTER_PROJECT=}~Explore~~0~~Expand
+Table~~Information ligne complète~expl~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
 Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,PROJECT,STATUS,COMMENT,BASELINE_TXT~0~~Display
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
