@@ -1,8 +1,7 @@
 
-Item~~Explore~expl~perl -e "exit 1 unless not $ENV{FILTER_FIELD} or $ENV{FILTER_VALUE}"~~Explore~ROOT_TABLE~0~~Expand
-Item~~Saisie manuelle~expl~perl -e "exit 1 unless not $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getValue("Valeur %FILTER_FIELD%")~Explore~ROOT_TABLE~0~~Expand
-Item~~Saisie liste~expl~perl -e "exit 1 unless $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~Explore~ROOT_TABLE~0~~Expand
+#Item~~Explore~expl~perl -e "exit 1 unless not $ENV{FILTER_FIELD} or $ENV{FILTER_VALUE}"~~Explore~ROOT_TABLE~0~~Expand
+#Item~~Saisie manuelle~expl~perl -e "exit 1 unless not $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getValue("Valeur %FILTER_FIELD%")~Explore~ROOT_TABLE~0~~Expand
+#Item~~Saisie liste~expl~perl -e "exit 1 unless $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~Explore~ROOT_TABLE~0~~Expand
 
-Item~Rapport~Explore~dev~perl -e "exit 1 unless not $ENV{FILTER_FIELD} or $ENV{FILTER_VALUE}"~~DisplayTable~FIELD_REPORT_COMPARE~0~~Expand
-Item~Rapport~Saisie manuelle~expl~perl -e "exit 1 unless not $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getValue("Valeur %FILTER_FIELD%")~DisplayTable~FIELD_REPORT_COMPARE~0~~Expand
-Item~Rapport~Saisie liste~expl~perl -e "exit 1 unless $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~DisplayTable~FIELD_REPORT_COMPARE~0~~Expand
+Item~~Rapport Complet~expl~~~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
+Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~DisplayTable~FIELD_REPORT_COMPARE~0~~Display

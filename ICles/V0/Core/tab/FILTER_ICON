@@ -1,4 +1,4 @@
-;;;Afficher tout
-ICON;!valide|none;;Lignes non validés
+;Afficher tout
+!valide,none;Lignes non validés
 #CATEGORY;CATEGORY IS NOT NULL;;Lignes selectionnées
 PROJECT;;PROJECT_TYPE;Filtrer sur Projet

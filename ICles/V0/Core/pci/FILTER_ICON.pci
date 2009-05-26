@@ -1,0 +1,2 @@
+Item~~Rapport Complet~expl~~~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
+Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
