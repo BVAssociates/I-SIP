@@ -258,7 +258,7 @@ sub get_field_icon () {
 				$return_status=$self->{field_icon}{OK};
 			}
 			else {
-				$return_status=$self->{field_icon}{UNKNOWN};
+				$return_status=$self->{field_icon}{TEST};
 			}
 		}
 		elsif ($status eq "UPDATED") {
