@@ -164,7 +164,20 @@ sub dispatch_source_update() {
 	my $return=$self->SUPER::dispatch_source_update($current_key,$source_row,$target_row);
 	
 	if ($self->{update_comment}) {
-		$logger->warning("Impossible de mettre à jour le commentaire car la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'a pas la même valeur dans l'environnement cible");
+		$logger->warning("la ligne <$current_key> de la table ".$self->{table_target}->table_name." n'a pas la même valeur dans l'environnement cible");
+		my @table_key=sort $self->{table_target}->key();
+		
+		$self->_info("Comment invalidate : Key (".$current_key.")");
+		
+		my %new_comment;
+		# assign current key, needed for updating
+		@new_comment{@table_key}=@{$target_row}{@table_key};
+		# set special fields
+		$new_comment{DATE_UPDATE}=$self->{update_timestamp};
+		$new_comment{USER_UPDATE}=$self->{update_user};
+		$new_comment{STATUS}="";
+		
+		$self->{table_target}->update_row(%new_comment);
 	}
 	
 	return $return;
