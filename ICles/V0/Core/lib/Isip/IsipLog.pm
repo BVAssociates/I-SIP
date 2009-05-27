@@ -4,6 +4,8 @@ use strict;
 use Carp qw(carp cluck confess croak );
 $Carp::MaxArgNums=0;
 $Carp::MaxArgLen=0;
+my $package=__PACKAGE__;
+$Carp::Internal{$package} = 1;
 
 use Log::Handler;
 use POSIX qw(strftime);
@@ -23,7 +25,7 @@ END {
 		filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
 		mode     => 'append',
 		autoflush => 1,
-		maxlevel => 'debug',
+		maxlevel => 'info',
 		minlevel => 'warning',
 		message_layout => join($stat_sep,'%T',$user_name,'%S','%P','%r','%m'),
 		timeformat      => '%Y%m%dT%H%M%S',
@@ -92,16 +94,42 @@ BEGIN {
 		#$DIE ? $DIE->() : CORE::die();
 		exit 202;
 	};
-
-	$Carp::Internal{__PACKAGE__} = 1;
-
 }
-our @EXPORT_OK;
 
 
 #Check if global logger already initialized
 $logger=eval { Log::Handler->get_logger('logger') };
 
+my %dbi_definition=(dbi => {
+				# database connection
+				#data_source     => 'dbi:SQLite:dbname='.$ENV{ISIP_LOG}.'/Isip.log.sqlite',
+				dbname     => $ENV{ISIP_LOG}.'/Isip.log.sqlite',
+				driver     => 'SQLite',
+				debug      => 0,
+				table      => 'messages',
+				columns    => [ qw/level cdate pid caller progname mtime message/ ],
+				values     => [ qw/%level %time %pid %caller %progname %mtime %message/ ],
+				persistent => 1,
+				maxlevel   => 'info',
+				message_layout => '%m',
+				message_pattern => '%L %T %D %P %H %C %S %t %m',
+				timeformat      => '%Y/%m/%d %H:%M:%S',
+				alias    => 'sqlite-out',
+			});
+
+my %file_definition=(file => {
+				#fileopen => 0,
+				#reopen => 0,
+				autoflush => 0,
+				newline  => 1,
+				maxlevel => 'debug',
+				timeformat      => '%Y/%m/%d %H:%M:%S',
+				message_layout  => '%T:%L:%S:%m',
+				filename        => $ENV{ISIP_LOG}.'/Isip.log',
+				mode            => 'append',
+				alias    => 'file-out',
+			});
+		
 # if not, create it
 if ($@) {
 	$logger=Log::Handler->create_logger('logger');
@@ -113,23 +141,19 @@ if ($@) {
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
 		});
-	$logger->add(file => {
-		#fileopen => 0,
-		#reopen => 0,
-		autoflush => 0,
-		newline  => 1,
-		maxlevel => 'info',
-		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%S:%m',
-		filename        => $ENV{ISIP_LOG}.'/Isip.log',
-		mode            => 'append',
-		alias    => 'file-out',
-		}) if exists $ENV{ISIP_LOG};
-	
-	
+		
+	#$logger->add(%file_defition) if exists $ENV{ISIP_LOG};
+
+	$logger->add(%dbi_definition);
+
 	#Log::WarnDie may be used, but it put everything from STDERR
 	#in $logger->error() on STDOUT. So we must be aware of bad effect on output...
 	##Log::WarnDie->dispatcher( $logger );
+}
+
+
+sub log_verbose() {
+	$logger->set_level('screen-out' => { maxlevel => 'info'});
 }
 
 sub log_screen_only() {
@@ -142,6 +166,7 @@ sub log_screen_only() {
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
 		});
+	$logger->add(%dbi_definition);
 }
 
 sub no_log() {
@@ -154,6 +179,10 @@ sub no_log() {
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
 		});
+}
+
+if (not caller){
+	$logger->notice("it is a test");
 }
 
 1;
