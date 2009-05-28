@@ -162,7 +162,7 @@ foreach my $table (sort keys %list_table_uniq) {
 	
 	# open baseline if date_explore
 	if ($date_explore) {
-		my $baseline_name=HistoBaseline->get_baseline_name($table,$date_explore);
+		my $baseline_name=HistoBaseline->get_baseline_name($real_table,$date_explore);
 		if (not $env->exist_local_table($baseline_name)) {
 			next;
 		}
