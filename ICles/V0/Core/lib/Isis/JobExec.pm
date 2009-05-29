@@ -69,7 +69,7 @@ sub exec_script {
 	my $self=shift;
 	
 	my $progname=shift or croak("usage: exec_script(progname,(args,...))");
-	my $args=join(' ',@_);
+	my $args=join(' ',map {'"'.$_.'"'} @_);
 	
 	my $perl_interpreter='c:\Perl\bin\perl.exe';
 	
@@ -84,8 +84,8 @@ sub exec_script {
 								$perl_interpreter,
 								$full_commant,
 								1,
-								#CREATE_NO_WINDOW||CREATE_NEW_CONSOLE||DETACHED_PROCESS,
-								CREATE_NEW_CONSOLE||DETACHED_PROCESS,
+								CREATE_NO_WINDOW||CREATE_NEW_CONSOLE||DETACHED_PROCESS,
+								#CREATE_NEW_CONSOLE||DETACHED_PROCESS,
 								".")|| _raise_error();
 
 
@@ -101,7 +101,8 @@ sub exec_script {
 		warn("Lancement en tâche de fond");
 	}
 	else {
-		warn("Le programme s'est terminé immédiatement avec le code ".$exitcode) 
+		warn("Le programme s'est terminé immédiatement avec le code ".$exitcode);
+		return $exitcode;
 	}
 	
 }

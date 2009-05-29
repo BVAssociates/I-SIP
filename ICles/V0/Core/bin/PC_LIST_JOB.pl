@@ -116,7 +116,7 @@ if ( @ARGV < 0) {
 ###########################################################
 
 use Isis::JobStat;
-use Date::Calc qw(Now Today Add_Delta_Days Time_to_Date);
+use Date::Calc qw(Now Today Add_Delta_Days Delta_DHMS Today_and_Now);
 
 
 my $sqlite_stat_file=$ENV{ISIP_DATA}.'/tab/SCRIPT_STAT.sqlite';
@@ -146,27 +146,42 @@ push @condition, ("CODE IS NULL") if $only_running;
 $sqlite_stat->query_condition(@condition);
 
 while (my %proc=$sqlite_stat->fetch_row()) {
+	
+	my $is_done;
+	
 	if ($proc{CODE} eq "") {
 		$proc{CODE}="EN COURS";
 	}
 	elsif ($proc{CODE} eq "-1") {
 		$proc{CODE}="ANNULE";
+		$is_done++;
 	}
 	elsif ($proc{CODE} eq "0") {
 		$proc{CODE}="TERMINE";
+		$is_done++;
 	}
 	else {
 		$proc{CODE}="ERREUR";
+		$is_done++;
+	}
+	
+	my ($days,$hour,$min,$sec,$month);
+	if ($is_done) {
+		($sec,$min,$hour,undef,$month,undef,undef,$days,undef) = gmtime($proc{TIME});	
+	}
+	else {
+		my @start_date=$proc{TIMESTAMP} =~ /^(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2}):?(\d{2})$/;
+		
+		($days,$hour,$min,$sec) = Delta_DHMS(@start_date, Today_and_Now());
 	}
 	
 	# Convert time in humean readable time
-	my @parts = gmtime($proc{TIME});
 	$proc{TIME}='';
-	$proc{TIME}.=sprintf("%dd",$parts[7]) if $parts[7];
-	$proc{TIME}.=sprintf("%dh",$parts[2]) if $parts[2] or $parts[7];
-	$proc{TIME}.=sprintf("%dm",$parts[1]) if $parts[1] or $parts[2] or $parts[7];
-	$proc{TIME}.=sprintf("%ds",$parts[0]);
-	$proc{TIME} ='erreur' if $parts[4]; # no script runs for month!
+	$proc{TIME}.=sprintf("%dd",$days) if $days;
+	$proc{TIME}.=sprintf("%dh",$hour) if $hour or $days;
+	$proc{TIME}.=sprintf("%dm",$min) if $min or $hour or $days;
+	$proc{TIME}.=sprintf("%ds",$sec);
+	$proc{TIME} ='erreur' if $month; # no script runs for month!
 	
 	print(join($separator,@proc{"TIMESTAMP","PID","USER","PROGRAM","TIME","ARGV","CODE"}),"\n");
 }
