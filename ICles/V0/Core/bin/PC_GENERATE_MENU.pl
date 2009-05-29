@@ -575,7 +575,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 		
 		
 
-		if (@list_table) {
+		if ($table_name) {
 			foreach (@list_table) {
 				$logger->info("Cleaning old labels for", $_);
 				system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_'.$_.'_'.$environnement);
