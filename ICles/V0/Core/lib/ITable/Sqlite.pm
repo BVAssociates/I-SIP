@@ -62,6 +62,17 @@ sub open() {
     return bless($self,$class);
 }
 
+sub create_database {
+	my $class=shift;
+	my $database_path=shift or croak("usage: create_database(database_path)");
+	
+	if (not -r $database_path) {
+		CORE::open DATABASEFILE,">$database_path" or croak("unable to create file : $!");
+		CORE::close DATABASEFILE;
+	}
+
+	return $class->open($database_path, 'sqlite_master');
+}
 
 ##################################################
 ##  pivate methods  ##
@@ -140,6 +151,8 @@ sub _open_database() {
 	$self->{database_handle}->do("PRAGMA default_synchronous = OFF");
 	# make "like" case sensitive
 	$self->{database_handle}->do("PRAGMA case_sensitive_like=ON");
+
+	$self->{database_handle}->do("PRAGMA cache_size = 800000");
 	
 	# register external sqlite function
 	$self->_register_external_function();
