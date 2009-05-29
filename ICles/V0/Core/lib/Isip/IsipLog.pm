@@ -1,5 +1,8 @@
 package Isip::IsipLog;
 
+# special module to trace running programs
+use Isis::JobStatHook;
+
 use strict;
 use Carp qw(carp cluck confess croak );
 $Carp::MaxArgNums=0;
@@ -11,38 +14,6 @@ use Log::Handler;
 use POSIX qw(strftime);
 
 our $logger;
-
-# BEGIN STATISTIC LOGGER
-my $start;
-my $log;
-my $stat_sep;
-my $args;
-END {
-	my $user_name=$ENV{IsisUser};
-	$user_name=$ENV{USERDOMAIN}."\\".$ENV{USERNAME} if not $user_name;
-	$log = Log::Handler->new();
-	$log->add(file => {
-		filename => $ENV{ISIP_DATA}.'/tab/SCRIPT_STAT',
-		mode     => 'append',
-		autoflush => 1,
-		maxlevel => 'info',
-		minlevel => 'warning',
-		message_layout => join($stat_sep,'%T',$user_name,'%S','%P','%r','%m'),
-		timeformat      => '%Y%m%dT%H%M%S',
-		newline  => 1,
-	});
-	$log->info(join($stat_sep,$args,$?,$start));
-}
-
-BEGIN {
-	$args=join(' ',@ARGV);
-	$stat_sep="££";
-
-	$start=strftime "%Y%m%dT%H%M%S", localtime;
-	
-    #$log->info($args.$stat_sep.$stat_sep."starting");
-}
-# END STATISTIC LOGGER
 
 BEGIN {
 	use Exporter   ();
@@ -91,7 +62,7 @@ BEGIN {
 			$logger->critical( @_ );
 		}
 		
-		#$DIE ? $DIE->() : CORE::die();
+		$DIE ? $DIE->() : CORE::die(@_);
 		exit 202;
 	};
 }
@@ -110,7 +81,7 @@ my %dbi_definition=(dbi => {
 				columns    => [ qw/level cdate pid caller progname mtime message/ ],
 				values     => [ qw/%level %time %pid %caller %progname %mtime %message/ ],
 				persistent => 1,
-				maxlevel   => 'info',
+				maxlevel   => 'notice',
 				message_layout => '%m',
 				message_pattern => '%L %T %D %P %H %C %S %t %m',
 				timeformat      => '%Y/%m/%d %H:%M:%S',
@@ -142,9 +113,9 @@ if ($@) {
 		alias    => 'screen-out',
 		});
 		
-	#$logger->add(%file_defition) if exists $ENV{ISIP_LOG};
+	$logger->add(%file_definition) if exists $ENV{ISIP_LOG};
 
-	$logger->add(%dbi_definition);
+	#$logger->add(%dbi_definition) if exists $ENV{ISIP_LOG};
 
 	#Log::WarnDie may be used, but it put everything from STDERR
 	#in $logger->error() on STDOUT. So we must be aware of bad effect on output...
