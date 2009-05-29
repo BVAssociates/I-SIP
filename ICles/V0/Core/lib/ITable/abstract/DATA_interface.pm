@@ -341,6 +341,42 @@ sub fetch_row()
 	return %row_object;
 }
 
+# simple procedure to display a table
+sub display_table {
+	my $self=shift;
+	
+	while (my %row=$self->fetch_row()) {
+		my @print_row;
+		foreach my $field ($self->query_field) {
+			my $sep=$self->output_separator();
+			if (defined $row{$field}) {
+				$row{$field} =~ s/($sep)/?/g;
+				push @print_row,$row{$field};
+			}
+			else {
+				push @print_row,"";
+			}
+		}
+		print(join($self->output_separator,@print_row),"\n");
+	}
+
+}
+
+sub define_table {
+	my $self=shift;
+
+	my %definition;
+	
+	$definition{SEP}=$self->output_separator;
+	$definition{FORMAT}=join($self->output_separator,$self->field);
+	$definition{SIZE}=join($self->output_separator,("10s") x scalar $self->field);
+	$definition{KEY}=join($self->output_separator,$self->key);
+	$definition{NOT_NULL}=join($self->output_separator,$self->not_null) if $self->not_null;
+
+	while(my ($var,$value)=each %definition) {
+		print $var."="."\"".$value."\"\n";
+	}
+}
 
 sub execute() {
 	my $self = shift;
@@ -348,14 +384,6 @@ sub execute() {
 	croak "execute() not implemented";
 }
 
-# get information on Table's definition
-sub describe()
-{
-	my $self = shift;
-	
-	croak("describe() not implemented in ".ref($self));
-	return undef;
-}
 
 # convert an array to hash following query_field() fields
 sub array_to_hash() {
