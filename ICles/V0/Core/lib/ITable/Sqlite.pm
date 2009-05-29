@@ -92,8 +92,9 @@ sub _set_columns_info() {
 	while (my @col=eval { $table_info->fetchrow_array } ) {
 		push (@{$self->{field}},       $col[1]);
 		$self->{size}->{$col[1]}=       $col[2];
-		push (@{$self->{not_null}},     $col[1]) if $col[3];
 		push (@{$self->{key}},          $col[1]) if $col[5];
+		# due to a regression bug in Sqlite, a KEY return NOT_NULL
+		push (@{$self->{not_null}},     $col[1]) if $col[3] and not $col[5];
 	}
 	croak $@ if $@;
 	
