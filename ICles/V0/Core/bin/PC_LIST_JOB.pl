@@ -87,7 +87,7 @@ sub ErrorReport {
 
 
 my %opts;
-getopts('hvu:d:rc', \%opts);
+getopts('hvu:d:rcs:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -96,6 +96,9 @@ my $username = $opts{u} if $opts{u};
 my $dayback = $opts{d} if $opts{d};
 my $only_running = $opts{r} if $opts{r};
 my $create_base = $opts{c} if $opts{c};
+
+my $separator=',';
+$separator=$opts{s} if $opts{s};
 
 usage($debug_level+1) if $opts{h};
 
@@ -113,7 +116,7 @@ if ( @ARGV < 0) {
 ###########################################################
 
 use Isis::JobStat;
-use Date::Calc qw(Now Today Add_Delta_Days );
+use Date::Calc qw(Now Today Add_Delta_Days Time_to_Date);
 
 
 my $sqlite_stat_file=$ENV{ISIP_DATA}.'/tab/SCRIPT_STAT.sqlite';
@@ -144,13 +147,28 @@ $sqlite_stat->query_condition(@condition);
 
 while (my %proc=$sqlite_stat->fetch_row()) {
 	if ($proc{CODE} eq "") {
-		$proc{CODE}="RUNNING";
+		$proc{CODE}="EN COURS";
 	}
 	elsif ($proc{CODE} eq "-1") {
-		$proc{CODE}="KILLED";
+		$proc{CODE}="ANNULE";
 	}
-	print(join(',',@proc{"TIMESTAMP","PID","USER","PROGRAM","TIME","ARGV","CODE","BACKGROUND"}),"\n");
+	elsif ($proc{CODE} eq "0") {
+		$proc{CODE}="TERMINE";
+	}
+	else {
+		$proc{CODE}="ERREUR";
+	}
+	
+	# Convert time in humean readable time
+	my @parts = gmtime($proc{TIME});
+	$proc{TIME}='';
+	$proc{TIME}.=sprintf("%dd",$parts[7]) if $parts[7];
+	$proc{TIME}.=sprintf("%dh",$parts[2]) if $parts[2] or $parts[7];
+	$proc{TIME}.=sprintf("%dm",$parts[1]) if $parts[1] or $parts[2] or $parts[7];
+	$proc{TIME}.=sprintf("%ds",$parts[0]);
+	$proc{TIME} ='erreur' if $parts[4]; # no script runs for month!
+	
+	print(join($separator,@proc{"TIMESTAMP","PID","USER","PROGRAM","TIME","ARGV","CODE"}),"\n");
 }
-
 
 

@@ -11,6 +11,7 @@ Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalA
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Types de Modules~dev~~~Administrate~CONF_MODULE_TYPE~0~~Configure
 
+Item~Technique~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
 Item~Technique~Historique Execution, tout le monde~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
 Item~Technique~Historique Execution~adm~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
 Item~Technique~Statistique Execution~adm~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure

@@ -127,9 +127,13 @@ if ( @ARGV < 0) {
 my $bv_severite=0;
 
 use ITable::ITools;
+use ITable::Sqlite;
+use File::Spec;
 use List::Util qw(sum);
 
-my $stats=ITools->open("SCRIPT_STAT");
+my $stat_tablename="SCRIPT_STAT";
+my ($sqlite_path)=grep {$_=File::Spec->catfile($_,$stat_tablename.".sqlite");-e $_} split(/;/,$ENV{BV_TABPATH});
+my $stats=Sqlite->open($sqlite_path, $stat_tablename);
 
 my $dest=ITools->open("SCRIPT_STAT_AVERAGE");
 my $sep=$dest->output_separator;
@@ -160,6 +164,7 @@ while (my %script=$stats->fetch_row() ) {
 	$script_exec_fail{$script_id}=0;
 	$script_exec_fail{$script_id}++ if $script{CODE} != 0;
 	
+	$script{TIME}=0 if not $script{TIME};
 	push @{$script_time_last{$script_id}}, $script{TIME} ;
 }
 
