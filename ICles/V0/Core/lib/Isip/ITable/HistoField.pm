@@ -1,6 +1,6 @@
 package HistoField;
 
-require ITable::Sqlite;
+use ITable::Sqlite;
 @ISA = ("Sqlite");
 
 use Carp qw(carp cluck confess croak );
