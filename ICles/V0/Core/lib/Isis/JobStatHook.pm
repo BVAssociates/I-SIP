@@ -83,7 +83,7 @@ BEGIN {
 
 END {
 	
-	if (-r $stat_base) {
+	if ($start_date) {
 		
 		my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
 		my $req=$database->prepare('update SCRIPT_STAT set TIME=?, CODE=?'

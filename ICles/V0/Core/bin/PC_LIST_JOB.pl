@@ -15,7 +15,7 @@ ME_EXEC_JOB - Execute un script Perl en tâche de fond
 
 =head1 SYNOPSIS
 
- ME_EXEC_JOB.pl [-h][-v] [-u user] script[.pl] [arg1 arg2 ...]
+ ME_EXEC_JOB.pl [-h][-v] [-c] [-r] [-d jours] [-u user]
  
 =head1 DESCRIPTION
 
@@ -37,15 +37,17 @@ Execute un script Perl en tâche de fond
 
 =item -v : Mode verbeux
 
-=item -u user : process owned by user
+=item -c : creer la base
+
+=item -r : affiche uniquement les jobs en cours
+
+=item -d n : affiche les jobs terminés depuis n jours
+
+=item -u user : affiche les jobs appartenant à un user
 
 =back
 
 =head1 ARGUMENTS
-
-=item script : nom du script Perl
-
-=item arg1 arg2 ... : argument du script Perl
 
 =head1 AUTHOR
 
