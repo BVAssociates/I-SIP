@@ -59,6 +59,27 @@ sub open() {
 ##  pivate methods  ##
 ##################################################
 
+# try to retrive timestamp from approx date and pid
+sub _guess_timestamp {
+	my $self=shift;
+	
+	my $timestamp_min=shift;
+	my $pid=shift;
+	
+	$self->select_custom_query("SELECT FROM SCRIPT_STAT"
+		."	WHERE TIMESTAMP > '$timestamp_min'"
+		."	AND PID=$pid"
+		."	ORDER BY TIMESTAMP DESC LIMIT 1"
+		);
+		
+	my $quess_timestamp;
+	while (my %proc=$self->fetch_row()) {
+		$quess_timestamp=proc{$proc{TIMESTAMP}};
+	}
+	$self->select_custom_query(undef);
+	
+	return $quess_timestamp;
+}
 
 ##################################################
 ##  public methods  ##
@@ -71,12 +92,16 @@ sub clean_dead_process {
 	
 	my %process_to_check;
 	
+	my @field_save=$self->query_field();
 	my @condition_save=$self->query_condition();
+	
+	$self->query_field($self->field);
 	$self->query_condition("CODE IS NULL");
 	while (my %proc=$self->fetch_row()) {
 		$process_to_check{$proc{PID}}=\%proc;
 	}
 	$self->query_condition(@condition_save);
+	$self->query_field(@field_save);
 	
 	return if not %process_to_check;
 	

@@ -1,0 +1,4 @@
+
+Item~~Suivre l'execution~expl~perl -e "exit !($ENV{CODE} eq 'EN COURS')"~~ExecuteProcedure~PC_LOG_JOB -f %TIMESTAMP%~0~~ViewFile
+Item~~Voir les messages~expl~perl -e "exit !($ENV{CODE} ne 'EN COURS')"~~ExecuteProcedure~PC_LOG_JOB %TIMESTAMP%~0~~ViewFile
+Item~~Annuler commande~expl~perl -e "exit !($ENV{CODE} eq 'EN COURS')"~~ExecuteProcedure~ME_KILL_JOB %PID%~1~~Close

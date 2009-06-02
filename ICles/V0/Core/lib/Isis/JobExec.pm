@@ -5,7 +5,8 @@ use Isis::JobStat;
 
 use fields qw(
 	current_process
-
+	is_running
+	start_date
 	);
 
 
@@ -50,6 +51,9 @@ sub new() {
 	}
 
 	$self->{current_process}={};
+	
+	$self->{is_running}=0;
+	$self->{start_date}=undef;
 
     return $self;
 }
@@ -57,8 +61,20 @@ sub new() {
 
 
 ##################################################
-##  pivate methods  ##
+##  accessors  ##
 ##################################################
+
+sub is_running {
+	my $self=shift;
+	
+	return $self->{is_running};
+}
+
+sub start_date {
+	my $self=shift;
+	
+	return $self->{start_date};
+}
 
 
 ##################################################
@@ -81,7 +97,7 @@ sub exec_script {
 	#return;
 	
 	use POSIX 'strftime';
-	my $timestamp=strftime("%Y%m%dT%H%M%S", localtime);
+	$self->{start_date}=strftime("%Y%m%dT%H%M%S", localtime);
 	
 	Win32::Process::Create($self->{current_process},
 								$perl_interpreter,
@@ -103,14 +119,31 @@ sub exec_script {
 	
 	
 	if ($exitcode == STILL_ACTIVE) {
-		print("Lancement en tâche de fond du programme : $progname $args");
+		print("Lancement en tâche de fond du programme : $progname $args\n");
+		$self->{is_running}=1;
 	}
 	else {
-		print("Le programme s'est terminé immédiatement avec le code ".$exitcode);
+		print("Le programme s'est terminé immédiatement avec le code $exitcode\n");
 		return $exitcode;
 	}
 }
 
+
+sub kill_pid {
+	my $self=shift;
+	
+	my $pid=shift or croak("usage: kill_pid(pid)");
+	Win32::Process::Open($self->{current_process},
+								$pid,
+								0,
+								)|| die(Win32::FormatMessage( Win32::GetLastError() ));
+
+
+	warn("Annulation du processus : $pid");
+	$self->{current_process}->Kill(201);
+	$self->{is_running}=0;
+	$self->{start_date}=undef;
+}
 
 1;
 

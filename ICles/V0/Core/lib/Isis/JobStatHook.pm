@@ -39,7 +39,7 @@ BEGIN {
     use Exporter   ();
     our (@ISA, @EXPORT_OK);
     @ISA         = qw(Exporter);
-    @EXPORT_OK   = qw(background);
+    @EXPORT_OK   = qw(background timestamp);
 }
 
 
@@ -98,10 +98,8 @@ END {
 		undef $database;
 	}
 }
-
-
-
 # END STATISTIC LOGGER
+
 
 # special import method
 sub import() {
@@ -111,7 +109,7 @@ sub import() {
 	Isis::JobStatHook->export_to_level(1, @_);
 	
 	shift @params;
-	if (@params) {
+	if (grep {$_ eq 'background'} @params) {
 		# import has param, it must be a backgrounding process
 		
 		my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
@@ -127,5 +125,9 @@ sub import() {
 	}
 }
 
+# public accessor
+sub timestamp {
+	return $start_date;
+}
 
 1;

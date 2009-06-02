@@ -1,7 +1,7 @@
 package Isip::IsipLog;
 
 # special module to trace running programs
-use Isis::JobStatHook;
+use Isis::JobStatHook qw(timestamp);
 
 use strict;
 use Carp qw(carp cluck confess croak );
@@ -21,12 +21,12 @@ BEGIN {
 
 
 	@ISA         = qw(Exporter);
-	@EXPORT      = qw(log_screen_only);
+	@EXPORT      = qw(log_screen_only );
 	%EXPORT_TAGS = ( );     # eg: TAG => [ qw!name1 name2! ],
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK   = qw($logger no_log);
+	@EXPORT_OK   = qw($logger no_log tail_log);
 	
 	# DIE and WARN trap
 	
@@ -63,7 +63,7 @@ BEGIN {
 		}
 		
 		$DIE ? $DIE->() : CORE::die(@_);
-		exit 202;
+		#exit 202;
 	};
 }
 
@@ -78,7 +78,7 @@ my %screen_definition=(screen => {
 		timeformat      => '%Y/%m/%d %H:%M:%S',
 		message_layout  => '%T:%L:%m',
 		alias    => 'screen-out',
-		die_on_errors => 0,
+		#die_on_errors => 0,
 		});
 
 my %dbi_definition=(dbi => {
@@ -103,10 +103,10 @@ my %file_definition=(file => {
 				#reopen => 0,
 				autoflush => 0,
 				newline  => 1,
-				maxlevel => 'debug',
+				maxlevel => 'notice',
 				timeformat      => '%Y/%m/%d %H:%M:%S',
 				message_layout  => '%T:%L:%S:%m',
-				filename        => $ENV{ISIP_LOG}.'/Isip.log',
+				filename        => $ENV{ISIP_LOG}."/Isip.".timestamp().".log",
 				mode            => 'append',
 				alias    => 'file-out',
 			});
@@ -141,6 +141,46 @@ sub log_screen_only() {
 sub no_log() {
 	$logger=Log::Handler->create_logger('logger');
 	$logger->add(%screen_definition) if print STDERR "";
+}
+
+# log access
+
+
+my $curpos=0;
+
+sub reset_log {
+	$curpos=0;
+}
+
+sub tail_log {
+	my $timestamp=shift;
+	my $roll_after=shift;
+	
+	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T\d+$/;
+	
+	open(GWFILE,$ENV{ISIP_LOG}."/Isip.$timestamp.log") or croak("Impossible d'ouvrir le fichier de log : ",$!);
+
+	my @rolling_line;
+
+	if (not $curpos and $roll_after) {
+		for (<GWFILE>) {
+			push @rolling_line, $_;
+			shift @rolling_line if @rolling_line > $roll_after;
+		}
+
+		for (@rolling_line) {
+			print;
+		}
+	}
+
+	# enable autoflush
+	$|=1;
+	seek(GWFILE, $curpos, 0);
+	for ($curpos = tell(GWFILE); <GWFILE>; $curpos = tell(GWFILE)) {
+		# search for some stuff and put it into files
+		print ;
+	}
+	close GWFILE;
 }
 
 if (not caller){
