@@ -54,7 +54,7 @@ BEGIN {
 
 	my $DIE = $SIG{__DIE__};
 	$SIG{__DIE__} = sub {
-	
+		
 		# check if we are in eval { }
 		return if $^S;
 		
@@ -70,6 +70,16 @@ BEGIN {
 
 #Check if global logger already initialized
 $logger=eval { Log::Handler->get_logger('logger') };
+
+my %screen_definition=(screen => {
+		log_to   => 'STDERR',
+		newline  => 1,
+		maxlevel => 'notice',
+		timeformat      => '%Y/%m/%d %H:%M:%S',
+		message_layout  => '%T:%L:%m',
+		alias    => 'screen-out',
+		die_on_errors => 0,
+		});
 
 my %dbi_definition=(dbi => {
 				# database connection
@@ -104,15 +114,10 @@ my %file_definition=(file => {
 # if not, create it
 if ($@) {
 	$logger=Log::Handler->create_logger('logger');
-	$logger->add(screen => {
-		log_to   => 'STDERR',
-		newline  => 1,
-		maxlevel => 'notice',
-		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%m',
-		alias    => 'screen-out',
-		});
-		
+	
+	# test STDERR before using it
+	$logger->add(%screen_definition) if print STDERR "";
+	
 	$logger->add(%file_definition) if exists $ENV{ISIP_LOG};
 
 	#$logger->add(%dbi_definition) if exists $ENV{ISIP_LOG};
@@ -129,27 +134,13 @@ sub log_verbose() {
 
 sub log_screen_only() {
 	$logger=Log::Handler->create_logger('logger');
-	$logger->add(screen => {
-		log_to   => 'STDERR',
-		newline  => 1,
-		maxlevel => 'notice',
-		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%m',
-		alias    => 'screen-out',
-		});
+	$logger->add(%screen_definition) if print STDERR "";
 	$logger->add(%dbi_definition);
 }
 
 sub no_log() {
 	$logger=Log::Handler->create_logger('logger');
-	$logger->add(screen => {
-		log_to   => 'STDERR',
-		newline  => 1,
-		maxlevel => 'warning',
-		timeformat      => '%Y/%m/%d %H:%M:%S',
-		message_layout  => '%T:%L:%m',
-		alias    => 'screen-out',
-		});
+	$logger->add(%screen_definition) if print STDERR "";
 }
 
 if (not caller){

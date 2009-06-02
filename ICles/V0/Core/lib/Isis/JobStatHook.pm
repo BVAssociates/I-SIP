@@ -75,6 +75,7 @@ BEGIN {
 			$req->execute($start_date,$user_name,$progname,$pid,$args);
 		}
 		$database->disconnect;
+		undef $database;
 	}
 }
 
@@ -94,6 +95,7 @@ END {
 		}
 		
 		$database->disconnect;
+		undef $database;
 	}
 }
 
@@ -114,9 +116,14 @@ sub import() {
 		
 		my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
 		my $req=$database->prepare('update SCRIPT_STAT set BACKGROUND=?'
-							." where TIMESTAMP='$start_date' AND PID=$pid");
-		$req->execute(1);
+							." where TIMESTAMP=? AND PID=?");
+		$req->execute(1,$start_date, $pid);
 		$database->disconnect;
+		undef $database;
+		
+		close STDIN;
+		close STDOUT;
+		close STDERR;
 	}
 }
 
