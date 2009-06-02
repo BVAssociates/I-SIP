@@ -74,37 +74,41 @@ sub exec_script {
 	my $perl_interpreter='c:\Perl\bin\perl.exe';
 	
 
-	my $full_commant='perl -S -MIsis::JobStatHook=background "'.$progname.'" '.$args;
-	warn("execution en tache de fond : $full_commant","\n");
+	my $full_command='perl.exe -S -MIsis::JobStatHook=background "'.$progname.'" '.$args;
+	warn("execution en tache de fond : $full_command","\n");
 
+	#system(1,$full_command);
+	#return;
+	
 	use POSIX 'strftime';
 	my $timestamp=strftime("%Y%m%dT%H%M%S", localtime);
 	
 	Win32::Process::Create($self->{current_process},
 								$perl_interpreter,
-								$full_commant,
-								1,
-								CREATE_NO_WINDOW||CREATE_NEW_CONSOLE||DETACHED_PROCESS,
-								#CREATE_NEW_CONSOLE||DETACHED_PROCESS,
-								".")|| _raise_error();
+								$full_command,
+								0,
+								#CREATE_NO_WINDOW||CREATE_NEW_CONSOLE||DETACHED_PROCESS,
+								DETACHED_PROCESS,
+								".")|| die(Win32::FormatMessage( Win32::GetLastError() ));
 
 
 
-	print Win32::Process::GetCurrentProcessID()."->".$self->{current_process}->GetProcessID()."\n";
+	# for debugging purpose
+	#print Win32::Process::GetCurrentProcessID()."->".$self->{current_process}->GetProcessID()."\n";
 
 	$self->{current_process}->Wait(2000);
 	
 	my $exitcode;
 	$self->{current_process}->GetExitCode($exitcode);
 	
+	
 	if ($exitcode == STILL_ACTIVE) {
-		warn("Lancement en tâche de fond");
+		print("Lancement en tâche de fond du programme : $progname $args");
 	}
 	else {
-		warn("Le programme s'est terminé immédiatement avec le code ".$exitcode);
+		print("Le programme s'est terminé immédiatement avec le code ".$exitcode);
 		return $exitcode;
 	}
-	
 }
 
 
