@@ -162,11 +162,13 @@ sub run {
 				#my $table=$env->drop_histo_baseline($table_name,$date);
 				
 				$baseline_info{BASELINE}=0;
+				$baseline_info{DESCRIPTION}="";
 			}
 			else {
 				$logger->notice("création d'une baseline pour $table_name à la date $date");
 				my $table=$env->create_histo_baseline($table_name,$date);
 				$baseline_info{BASELINE}=1;
+				$baseline_info{DESCRIPTION}=$message if $message;
 			}
 			$logger->notice("terminé pour $table_name");
 		#	last;
@@ -174,7 +176,6 @@ sub run {
 	}
 	#wait;
 	
-	$baseline_info{DESCRIPTION}=$message if $message;
 	
 	$baseline_list->update_row(%baseline_info);
 	
