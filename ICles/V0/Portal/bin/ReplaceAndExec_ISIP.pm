@@ -124,7 +124,7 @@ sub insert_info($$) {
 	$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime if exists $row{DATE_UPDATE};
 	$row{USER_UPDATE} = $ENV{IsisUser} if exists $row{USER_UPDATE};
 
-	$logger->info("inserting $values into $table_name");
+	$logger->notice("inserting $values into $table_name");
 	$local_table->insert_row( %row );
 }
 

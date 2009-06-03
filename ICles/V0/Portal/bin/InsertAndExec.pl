@@ -135,7 +135,7 @@ my $values=join('',@values);
 
 # if we administrate a table other than FIELD_*, we use the original script
 if ($table_name =~ /^PROJECT_INFO|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
-	$logger->info("use library ReplaceAndExec_ISIP::insert_info");
+	$logger->notice("use library ReplaceAndExec_ISIP::insert_info");
 	insert_info($table_name,$values);
 }
 else {

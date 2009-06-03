@@ -8,4 +8,4 @@ Item~Mode Baseline~Explorer Baseline~expl~~~Explore~DATE_HISTO_BASELINE~0~~Expan
 Item~Mode Comparaison~Comparaison depuis une baseline~expl~~DATE_COMPARE=getListValue("Date source",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=1)~Explore~FILTER_COMPARE~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@Environnement,Description@Environnement != %Environnement%)~Explore~FILTER_COMPARE~0~~Expand
 Item~Mode Comparaison~Comparaison autre environnement, depuis une baseline~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@Environnement,Description@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_HISTO_COMPARE@DATE_COMPARE,DESCRIPTION@BASELINE=1)}~Explore~FILTER_COMPARE~0~~Expand
-Item~Administration~Collecter les données~expl~~~ExecuteProcedure~PC_UPDATE_HISTO.pl -m %Module% %Environnement%~1~~Release
+Item~Administration~Collecter les données~expl~~~ExecuteProcedure~ME_EXEC_JOB PC_UPDATE_HISTO.pl -m %Module% %Environnement%~1~~Release
