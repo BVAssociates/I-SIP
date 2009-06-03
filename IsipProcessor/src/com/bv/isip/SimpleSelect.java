@@ -154,7 +154,12 @@ public class SimpleSelect
      */
     public String getValue(String key, String field)
     {
-        return getValue(_tableData.get(key), field);
+        if (_tableData.containsKey(key)) {
+            return getValue(_tableData.get(key), field);
+        }
+        else {
+            return null;
+        }
     }
 
     /**
@@ -187,7 +192,14 @@ public class SimpleSelect
         return _tableData.keySet().iterator();
     }
 
-    private LinkedHashMap<String, IsisParameter[]> _tableData;
+    /**
+     * Les lignes de la table sont sauvegardés dans une table de hashage ordonnée
+     */
+    protected LinkedHashMap<String, IsisParameter[]> _tableData;
+
+    /**
+     * La definition est sauvegardée en mémoire
+     */
     private IsisTableDefinition _tableDefinition;
 
 }
