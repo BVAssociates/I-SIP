@@ -80,7 +80,7 @@ public class FormComponentListProject extends FormComponentList
                             "Creation de projet",
                             JOptionPane.YES_NO_OPTION);
                     if (result == JOptionPane.YES_OPTION) {
-                        execute("InsertAndExec INTO PROJECT_INFO2 VALUES \"" + new_option + "@" + date_auto + "@@\"");
+                        execute("InsertAndExec INTO PROJECT_INFO VALUES \"" + new_option + "@" + date_auto + "@@\"");
                         _component.addItem(new_option);
                         _component.setSelectedItem(new_option);
                     }
