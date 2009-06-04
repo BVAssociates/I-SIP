@@ -17,7 +17,7 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne IC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-r] [-a|-k clef] [-c environnement_source@date_source] environnement_cible table_name date_cible
+ PC_LIST_FIELD_STATUS.pl [-r] [-s separateur] [-a|-k clef] [-c environnement_source@date_source] environnement_cible table_name date_cible
  
 =head1 DESCRIPTION
 
@@ -57,6 +57,8 @@ exemple : RDNPRCOD=VTS
 =item -h : Affiche l'aide en ligne
 
 =item -v : Mode verbeux
+
+=item -s separateur : force le separateur de champ
 
 =item -r : Formatte la sortie pour un REPORT
 
@@ -111,6 +113,27 @@ sub log_info {
 	$logger->notice(@_);
 }
 
+sub decode_memo {
+	my $memo=shift or die("usage : decode_memo(memo)");
+	
+	# decoding routine
+	# commented because MEMO field has many lines
+	use IO::Uncompress::Gunzip qw(gunzip);
+	use MIME::Base64;
+	my $input=decode_base64($memo);
+	my $output;
+	gunzip(\$input=>\$output);
+	#excel wait for <LF> only
+	##FIXME: don't work on win32,
+	## because PerlIO convert \n into \r\n when writing to the file
+	$output =~ s/\r//g;
+	
+	$output =~ s/^/"/;
+	$output =~ s/$/"/;
+	
+	return $output;
+}
+
 sub run {
 	local @ARGV=@_;
 	
@@ -125,7 +148,7 @@ sub run {
 	@ARGV=grep $_,@ARGV;
 
 	my %opts;
-	getopts('k:hvc:ar', \%opts);
+	getopts('s:k:hvc:ar', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -135,6 +158,8 @@ sub run {
 	my $table_key_value=$opts{k};
 	my $all_key=$opts{a};
 	my $report_mode=$opts{r};
+	
+	my $separator=$opts{s} if $opts{s};
 
 	#  Traitement des arguments
 	###########################################################
@@ -147,7 +172,6 @@ sub run {
 	if ( @ARGV < 2 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
-		sortie(202);
 	}
 
 	my $environnement=shift @ARGV;
@@ -239,9 +263,8 @@ sub run {
 	else {
 		$itools_table=ITools->open("IKOS_FIELD_".$environnement."_".$table_name, {debug => $debug_level});
 	}
-	my $separator=$itools_table->output_separator;
+	$separator=$itools_table->output_separator if not $separator;
 	my @query_field=$itools_table->field;
-	
 
 	# Create IsipRule object
 	my $rules=IsipRules->new($table_name, $env_sip, {debug => $debug_level});
@@ -360,7 +383,11 @@ sub run {
 		# put row in memory
 		$logger->notice("query fields: ",$table_status->query_field());
 		while (my %row=$table_status->fetch_row) {
-		
+			
+			if ($row{MEMO}) {
+				$row{MEMO}=decode_memo($row{MEMO});
+			}
+			
 			if ($filter->is_display_line(%row)) {
 				if ($all_key) {
 					print join($separator,$table_status->hash_to_array(%row))."\n";
@@ -388,18 +415,9 @@ sub run {
 		# put row in memory
 		while (my %row=$table_status->fetch_row) {
 		
-			## decoding routine
-			## commented because MEMO field has many lines
-			#if ($row{MEMO}) {
-			#	use IO::Uncompress::Gunzip qw(gunzip);
-			#	use MIME::Base64;
-			#	my $input=decode_base64($row{MEMO});
-			#	my $output;
-			#	gunzip(\$input=>\$output);
-			#	#excel wait for <LF> only
-			#	$output =~ s/\r//gm;
-			#	$row{MEMO}=$output;
-			#}
+			if ($row{MEMO}) {
+				$row{MEMO}=decode_memo($row{MEMO});
+			}
 			
 			if (not $date_explore) {
 				# don't show hidden fields

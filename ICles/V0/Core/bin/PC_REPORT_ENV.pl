@@ -119,7 +119,7 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('m:hvc:', \%opts);
+getopts('m:hvc:e', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -128,6 +128,7 @@ usage($debug_level+1) if $opts{h};
 
 my $module=$opts{m};
 my $compare_option=$opts{c};
+my $export=$opts{e};
 
 #  Traitement des arguments
 ###########################################################
@@ -148,30 +149,86 @@ my $table_name_arg=shift @ARGV;
 my $bv_severite=0;
 
 use Isip::Environnement;
+use Isip::IsipConfig;
 require "PC_LIST_FIELD_STATUS.pl";
 
 # New SIP Object instance
 my $env_sip = Environnement->new($environnement, {debug => $debug_level});
 my @table_list=($table_name_arg) || $env_sip->get_table_list_module($module);
 
+my $add_option="";
+my $export_file;
+if ($export) {
+	my $config=IsipConfig->new();
+	$export_file =$config->{export_dir}.'/rapport';
+	
+	$compare_option =~ s/\@$//;
+	$export_file .="_differentiel_".$compare_option if $compare_option;
+	
+	$export_file .="_".$environnement;
+	if ($module) {
+		$export_file .="_$module";
+	}
+	elsif($table_name_arg) {
+		$export_file .="_".$table_name_arg;
+	}
+	
+	my @date=localtime();
+	$date[5] += 1900;
+	$export_file .="_".sprintf('%04d-%02d-%02dT%02dh%02dm%02ds',@date[5,4,6,2,1,0]);
+	
+	$export_file .='.csv';
+	
+	
 
-
-foreach my  $table_name (@table_list) {
+	open (XLS, '>',$export_file) or die($export_file,' : ',$!);
+	select(XLS);
+	
+	# recupere à liste de champ à afficher
+	use ITable::ITools;
+	my $itools_table;
 	if ($compare_option) {
-		pc_list_field_status::run("-r","-a","-c".$compare_option,$environnement,$table_name);
+		$itools_table=ITools->open("FIELD_REPORT_COMPARE", {debug => $debug_level});
 	}
 	else {
-		pc_list_field_status::run("-r","-a",$environnement,$table_name);
+		$itools_table=ITools->open("FIELD_REPORT_HISTO", {debug => $debug_level});
+	}
+	my @query_field=$itools_table->field;
+	
+	print(join(';',@query_field),"\n");
+	
+	$add_option="s;";
+}
+
+my $counter=0;
+foreach my  $table_name (@table_list) {
+	log_info(int(100 * $counter / @table_list),'%');
+	$counter++;
+	if ($compare_option) {
+		pc_list_field_status::run("-r","-a$add_option","-c".$compare_option,$environnement,$table_name);
+	}
+	else {
+		pc_list_field_status::run("-r","-a$add_option",$environnement,$table_name);
 	}
 }
 
+log_info(int(100 * $counter / @table_list),'%');
 
-# order the lines in the order of table field
-#my @field_order=$env_sip->get_table_field($table_name);
-#open (XLS, '> D:\ISIP\exports\test.csv');
-#for (@field_order) {
-#	print XLS $memory_row{$_} if exists $memory_row{$_};
-#}
-#close XLS;
+if ($export) {
+	close(XLS);
+	
+	open (XLS, '<',$export_file) or die($export_file,' : ',$!);
+	my $line_counter=0;
+	while(<XLS>) {
+		$line_counter++;
+	}
+	close(XLS);
+	
+	log_info("nom du fichier généré:",$export_file);
+	log_info($line_counter,"lignes écrites");
+	if ($line_counter > 65536) {
+		log_erreur("Le fichier contient trop de ligne pour être ouvert avec MS Excel");
+	}
+}
 
 sortie($bv_severite);

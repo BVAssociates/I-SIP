@@ -3,5 +3,8 @@
 #Item~~Saisie manuelle~expl~perl -e "exit 1 unless not $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getValue("Valeur %FILTER_FIELD%")~Explore~ROOT_TABLE~0~~Expand
 #Item~~Saisie liste~expl~perl -e "exit 1 unless $ENV{FILTER_VALUE_LIST} and ($ENV{FILTER_FIELD} and not $ENV{FILTER_VALUE})"~FILTER_VALUE=getListValue("Valeur %FILTER_FIELD%",%FILTER_VALUE_LIST%)~Explore~ROOT_TABLE~0~~Expand
 
-Item~~Rapport Complet~expl~~~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
-Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
+#Item~~Rapport Complet~expl~~~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
+Item~~Rapport Complet~expl~~~ExecuteProcedure~ME_EXEC_JOB PC_REPORT_ENV.pl -e -m %Module% -c%ENV_COMPARE%@%DATE_COMPARE% %Environnement% %DATE_EXPLORE%~0~~Display
+
+#Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
+Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~ExecuteProcedure~ME_EXEC_JOB PC_REPORT_ENV.pl -e -m %Module% -c%ENV_COMPARE%@%DATE_COMPARE% %Environnement% %DATE_EXPLORE%~0~~Display

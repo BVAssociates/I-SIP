@@ -4,6 +4,7 @@ use fields qw(
 	info_env
 	info_module
 	defaut_odbc_options
+	export_dir
 );
 
 use strict;
@@ -36,6 +37,8 @@ sub new() {
 		username => "ETUDEGF",
 		password => "GFETUDE05",
 	};
+	
+	$self->{export_dir}= $ENV{ISIP_DATA}.'/export';
 	
 	# store global info about tables
 	$self->{info_env}= {};
