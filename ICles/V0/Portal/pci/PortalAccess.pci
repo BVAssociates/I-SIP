@@ -25,3 +25,6 @@ Item~Technique~Version de I-SIP~adm~~~ExecuteProcedure~ME_ISIP_VERSION~0~~Config
 
 #Item~Developpement~Affiche Processor error~adm~~~IsipProcessor~TYPE~0~~Expand
 #Item~Developpement~Affiche Processor error2~adm~~~IsipProcessor~FORM_CONFIG~0~~Expand
+
+Item~Aide~Documentation d'utilisation~adm~~~OpenURL~\\Isip\documentation\Documentation Utilisateur SIP IKOS.doc~0~~Expand
+Item~Aide~Documentation de configuration~adm~~~OpenURL~\\Isip\documentation\Documentation Configuration SIP IKOS.doc~0~~Expand
