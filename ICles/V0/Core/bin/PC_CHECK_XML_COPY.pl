@@ -145,9 +145,9 @@ foreach my $file (@xml_copy_list) {
 	
 	my $table_diff=DataDiff->open($table_master, $table_copy);
 	
-	$table_diff->set_old_field_name("value","old_value");
+	$table_diff->set_old_field_name("value","reference");
 	
-	$table_diff->query_field("DIFF","xml_path","old_value","value");
+	$table_diff->query_field("DIFF","xml_path","reference","value");
 	$table_diff->compare_init;
 	
 	while (my %row=$table_diff->fetch_row) {

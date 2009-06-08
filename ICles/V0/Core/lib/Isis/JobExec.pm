@@ -1,7 +1,6 @@
 package JobExec;
 
 use strict;
-use Isis::JobStat;
 
 use fields qw(
 	current_process
@@ -91,10 +90,6 @@ sub exec_script {
 	
 
 	my $full_command='perl.exe -S -MIsis::JobStatHook=background "'.$progname.'" '.$args;
-	warn("execution en tache de fond : $full_command","\n");
-
-	#system(1,$full_command);
-	#return;
 	
 	use POSIX 'strftime';
 	$self->{start_date}=strftime("%Y%m%dT%H%M%S", localtime);

@@ -114,7 +114,8 @@ my $table_name=shift @ARGV;
 my $bv_severite=0;
 use Isip::Environnement;
 
-my @query_field=("TABLE_NAME", "FIELD_NAME", "DATE_HISTO", "DATE_UPDATE", "USER_UPDATE", "DATA_TYPE", "DATA_LENGTH", "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY", "COLNO");
+#my @query_field=("TABLE_NAME", "FIELD_NAME", "DATE_HISTO", "DATE_UPDATE", "USER_UPDATE", "DATA_TYPE", "DATA_LENGTH", "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY", "COLNO");
+my @query_field=("TABLE_NAME", "FIELD_NAME",  "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY");
 
 my $env=Environnement->new($environnement);
 

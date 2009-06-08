@@ -112,7 +112,7 @@ if ( @ARGV < 4) {
 	sortie(202);
 }
 
-log_info(join(' ',@ARGV));
+$logger->info(join(' ',@ARGV));
 
 my $INTO_WORD=shift;
 my $table_name=shift;
@@ -133,8 +133,10 @@ use ReplaceAndExec_ISIP;
 
 my $values=join('',@values);
 
-# if we administrate a table other than FIELD_*, we use the original script
-if ($table_name =~ /^PROJECT_INFO|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+if ($table_name =~ /^TABLE_INFO$/i) {
+	die("impossible d'ajouter une table depuis ce menu");
+}
+elsif ($table_name =~ /^PROJECT_INFO|XML_INFO|CACHE_.*$/i) {
 	$logger->notice("use library ReplaceAndExec_ISIP::insert_info");
 	insert_info($table_name,$values);
 }

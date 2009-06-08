@@ -125,7 +125,10 @@ use ReplaceAndExec_ISIP;
 my $values=join('',@values);
 
 # use lib to access Sqlite
-if ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+if ($table_name =~ /^TABLE_INFO$/i) {
+	die("impossible de supprimer une table depuis ce menu");
+}
+elsif ($table_name =~ /^XML_INFO|CACHE_.*$/i) {
 	delete_info($table_name,$values);
 }
 else {
