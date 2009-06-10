@@ -25,8 +25,8 @@ Item~Journaux~Log collecte~dev~~~DisplayFile~%ISIP_LOG%\derniere_collecte.log~0~
 
 #Item~Developpement~Affiche Processor error2~adm~~~IsipProcessor~FORM_CONFIG~0~~Expand
 
-Item~Aide~Documentation d'utilisation~adm~~~OpenURL~%ISIP_DOC%\Documentation Utilisateur SIP IKOS.pdf~0~~Expand
-Item~Aide~Documentation de configuration~adm~~~OpenURL~%ISIP_DOC%\Documentation Configuration SIP IKOS.pdf~0~~Expand
+Item~Aide~Documentation d'utilisation~adm~~~OpenURL~%ISIP_DOC%\Documentation Utilisateur ISIP IKOS.pdf~0~~Expand
+Item~Aide~Documentation de configuration~adm~~~OpenURL~%ISIP_DOC%\Documentation Configuration ISIP IKOS.pdf~0~~Expand
 Item~Aide~Version de I-SIP~adm~~~ExecuteProcedure~ME_ISIP_VERSION~0~~Configure
 
 Item~Developpement~Google~dev~~~OpenURL~http://www.google.fr~0~~Expand

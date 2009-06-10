@@ -176,7 +176,7 @@ sub _set_columns_info() {
 		#print Dumper @col;
 		push (@{$self->{field}},       $col[0]);
 		my $size ="";
-		$size="VARCHAR($col[5])"        if $col[4] =~ /^(VAR)?CHAR\s*/;
+		$size="VARCHAR($col[5])"        if $col[4] =~ /^((VAR)?CHAR\s*|VARG)/;
 		$size="BLOB($col[5])"           if $col[4] =~ /LOB\s*$/;
 		$size="INTEGER($col[5])"        if $col[4] =~ /^(NUMERIC|INTEGER|TIMESTMP|SMALLINT)\s*/;
 		$size="DECIMAL($col[5])"        if $col[4] =~ /^DECIMAL\s*/;

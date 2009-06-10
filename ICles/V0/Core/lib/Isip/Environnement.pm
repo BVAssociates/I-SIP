@@ -576,7 +576,7 @@ sub open_source_table() {
 	my $return_table;
 	
 	if (not exists $self->{info_table}->{$table_name}) {
-		$logger->error("La table table_name est inconnue dans ".$self->{environnement});
+		$logger->error("La table $table_name est inconnue dans ".$self->{environnement});
 		return;
 	}
 	
