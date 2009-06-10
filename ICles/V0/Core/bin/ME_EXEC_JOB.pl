@@ -15,7 +15,7 @@ ME_EXEC_JOB - Execute un script Perl en tâche de fond
 
 =head1 SYNOPSIS
 
- ME_EXEC_JOB.pl [-h][-v] script[.pl] [arg1 arg2 ...]
+ ME_EXEC_JOB.pl [-h][-v] [-o fichier] script[.pl] [arg1 arg2 ...]
  
 =head1 DESCRIPTION
 
@@ -36,6 +36,8 @@ Execute un script Perl en tâche de fond
 =item -h : Affiche l'aide en ligne
 
 =item -v : Mode verbeux
+
+=item -o : redirige la sortie du programme dans un fichier
 
 =back
 
@@ -85,10 +87,12 @@ sub ErrorReport {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvo:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
+
+my $output_file = $opts{o} if $opts{o};
 
 usage($debug_level+1) if $opts{h};
 
@@ -110,10 +114,20 @@ $progname=$progname.".pl" if not $progname =~ /\.pl$/;
 ###########################################################
 
 use Isis::JobExec;
-
+use Isis::JobStat;
 
 my $jobs=JobExec->new();
 
+if ($output_file) {
+	# touch the file
+	#open (OUTPUT_FILE, '>',$output_file) or die($output_file,' : ',$!);
+	#close(OUTPUT_FILE);
+	
+	$ENV{OUTPUT_FILE}=$output_file;
+}
+
 $jobs->exec_script($progname,@args);
 
-
+if ($jobs->is_running) {
+	$logger->notice("Veuillez consulter les Jobs pour voir l'avancement du programme");
+}
