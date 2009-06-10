@@ -121,6 +121,15 @@ sub clean_dead_process {
 
 }
 
+sub purge {
+	my $self=shift;
+	
+	my $limit_timestamp=shift or croak("usage : purge(limit_timestamp)");
+	
+	$self->execute("DELETE FROM ".$self->table_name." WHERE TIMESTAMP < '$limit_timestamp'");
+	
+}
+
 sub create_database {
 	my $self=shift;
 	

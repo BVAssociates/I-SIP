@@ -26,7 +26,7 @@ BEGIN {
 
 	# your exported package globals go here,
 	# as well as any optionally exported functions
-	@EXPORT_OK   = qw($logger no_log tail_log);
+	@EXPORT_OK   = qw($logger no_log tail_log delete_log);
 	
 	# DIE and WARN trap
 	
@@ -181,6 +181,22 @@ sub tail_log {
 		print ;
 	}
 	close GWFILE;
+}
+
+sub delete_log {
+	my $timestamp=shift;
+	
+	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T\d+$/;
+	
+	my $logfile=$ENV{ISIP_LOG}."/Isip.$timestamp.log";
+	if (-r $logfile) {
+		$logger->notice("supprime $logfile");
+		unlink($logfile);
+	}
+	else {
+		warn("Aucune log trouvée pour la date $timestamp");
+	}
+	
 }
 
 if (not caller){
