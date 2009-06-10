@@ -110,7 +110,7 @@ sub _init_info() {
 sub enum_type () {
 	my $self=shift;
 	
-	return (KEY => "clef", DATA => "fonctionnel", CONFIG => "technique", MANUAL => "manuel", STAMP => "administratif", HIDDEN => "exclus");
+	return (KEY => "clef", DATA => "", STAMP => "toujours valide", HIDDEN => "exclus");
 }
 
 sub enum_field_status () {

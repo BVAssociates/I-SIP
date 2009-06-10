@@ -102,6 +102,7 @@ use Isip::IsipRules;
 
 my %type_list=IsipRules->enum_type();
 
-foreach (values %type_list) {
-	print $_,"\n";
+foreach (sort keys %type_list) {
+	next if /KEY/;
+	print $type_list{$_},"\n";
 }
