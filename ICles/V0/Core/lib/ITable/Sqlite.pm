@@ -153,7 +153,7 @@ sub _open_database() {
 	# make "like" case sensitive
 	$self->{database_handle}->do("PRAGMA case_sensitive_like=ON");
 
-	$self->{database_handle}->do("PRAGMA cache_size = 800000");
+	$self->{database_handle}->do("PRAGMA cache_size = 100000");
 	
 	# register external sqlite function
 	$self->_register_external_function();
