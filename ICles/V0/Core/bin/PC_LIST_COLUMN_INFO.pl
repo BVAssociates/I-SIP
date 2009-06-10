@@ -115,12 +115,13 @@ my $bv_severite=0;
 use Isip::Environnement;
 
 #my @query_field=("TABLE_NAME", "FIELD_NAME", "DATE_HISTO", "DATE_UPDATE", "USER_UPDATE", "DATA_TYPE", "DATA_LENGTH", "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY", "COLNO");
-my @query_field=("TABLE_NAME", "FIELD_NAME",  "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY");
+my @query_field=("DATE_HISTO","TABLE_NAME", "FIELD_NAME",  "TEXT", "TYPE", "PRIMARY_KEY", "FOREIGN_TABLE", "FOREIGN_KEY");
 
 my $env=Environnement->new($environnement);
 
 my $column_table=$env->open_local_table($table_name."_COLUMN");
 $column_table->query_condition("COLNO > 0");
+$column_table->query_sort("COLNO");
 $column_table->query_field(@query_field);
 
 while (my %row=$column_table->fetch_row()) {
