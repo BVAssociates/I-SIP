@@ -122,7 +122,7 @@ use Date::Calc qw(Now Today Add_Delta_Days Delta_DHMS Today_and_Now);
 
 
 my $sqlite_stat_file=$ENV{ISIP_DATA}.'/tab/SCRIPT_STAT.sqlite';
-if ($create_base) {
+if ($create_base or not -e $sqlite_stat_file) {
 	log_info("Creation de la base de donnée des jobs");
 	JobStat->create_database($sqlite_stat_file);
 }
