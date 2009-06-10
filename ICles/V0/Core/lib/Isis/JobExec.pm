@@ -66,7 +66,12 @@ sub new() {
 sub is_running {
 	my $self=shift;
 	
-	return $self->{is_running};
+	if($self->{is_running}) {
+		return $self->{current_process}->GetProcessID();
+	}
+	else {
+		return;
+	}
 }
 
 sub start_date {

@@ -33,7 +33,6 @@ BV Associates, 2009
 =cut
 
 # stuff to make standard module
-my $background;
 my $start_date;
 BEGIN {
     use Exporter   ();
@@ -44,6 +43,7 @@ BEGIN {
 
 
 # BEGIN STATISTIC LOGGER
+my $output_file_path;
 my $stat_base;
 my $start;
 my $pid;
@@ -66,13 +66,25 @@ BEGIN {
 		else {
 			$user_name=$ENV{USERDOMAIN}."\\".$ENV{USERNAME};
 		}
+
+		my $output_file;
+		if ($ENV{OUTPUT_FILE}) {
+			if (not -w $ENV{ISIP_DATA}.'/export') {
+				die("impossible d'ecrire dans le répertoire ".$ENV{ISIP_DATA}.'/export'," : ",$!);
+			}
+			
+			my ($vol,$dir,undef)=File::Spec->splitpath($ENV{ISIP_DATA}.'/export',1);
+			$output_file=$start_date.'_'.$ENV{OUTPUT_FILE};
+			$output_file =~ s/[:-]//g;
+			
+			$output_file_path=File::Spec->catpath($vol,$dir,$output_file);
+		}
 		
-		warn ("background!") if $background;
 		my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
-		my $req=$database->prepare('insert into SCRIPT_STAT (TIMESTAMP, USER, PROGRAM, PID, ARGV)'
-							.' values (?,?,?,?,?)');
+		my $req=$database->prepare('insert into SCRIPT_STAT (TIMESTAMP, USER, PROGRAM, PID, ARGV, OUTPUT_FILE)'
+							.' values (?,?,?,?,?,?)');
 		if ($req) {
-			$req->execute($start_date,$user_name,$progname,$pid,$args);
+			$req->execute($start_date,$user_name,$progname,$pid,$args,$output_file);
 		}
 		$database->disconnect;
 		undef $database;
@@ -121,6 +133,11 @@ sub import() {
 		
 		close STDIN;
 		close STDOUT;
+		
+		if ($output_file_path) {
+			open STDOUT, '>', $output_file_path or die ($output_file_path, ' ; ',$!);
+		}
+
 		close STDERR;
 	}
 }

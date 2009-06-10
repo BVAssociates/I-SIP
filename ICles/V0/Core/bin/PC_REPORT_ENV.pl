@@ -159,31 +159,6 @@ my @table_list=($table_name_arg) || $env_sip->get_table_list_module($module);
 my $add_option="";
 my $export_file;
 if ($export) {
-	my $config=IsipConfig->new();
-	$export_file =$config->{export_dir}.'/rapport';
-	
-	$compare_option =~ s/\@$//;
-	$export_file .="_differentiel_".$compare_option if $compare_option;
-	
-	$export_file .="_".$environnement;
-	if ($module) {
-		$export_file .="_$module";
-	}
-	elsif($table_name_arg) {
-		$export_file .="_".$table_name_arg;
-	}
-	
-	my @date=localtime();
-	$date[5] += 1900;
-	$export_file .="_".sprintf('%04d-%02d-%02dT%02dh%02dm%02ds',@date[5,4,6,2,1,0]);
-	
-	$export_file .='.csv';
-	
-	
-
-	open (XLS, '>',$export_file) or die($export_file,' : ',$!);
-	select(XLS);
-	
 	# recupere à liste de champ à afficher
 	use ITable::ITools;
 	my $itools_table;
@@ -213,22 +188,5 @@ foreach my  $table_name (@table_list) {
 }
 
 log_info(int(100 * $counter / @table_list),'%');
-
-if ($export) {
-	close(XLS);
-	
-	open (XLS, '<',$export_file) or die($export_file,' : ',$!);
-	my $line_counter=0;
-	while(<XLS>) {
-		$line_counter++;
-	}
-	close(XLS);
-	
-	log_info("nom du fichier généré:",$export_file);
-	log_info($line_counter,"lignes écrites");
-	if ($line_counter > 65536) {
-		log_erreur("Le fichier contient trop de ligne pour être ouvert avec MS Excel");
-	}
-}
 
 sortie($bv_severite);
