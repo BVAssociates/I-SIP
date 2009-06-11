@@ -1,15 +1,3 @@
-v0.6
-
-#8	export sous forme fichier dans I-SIS
-#12	Gestion des champ de type PROJECT
-#1	Filtrer ligne en rapport avec un "PROJECT"
-#13	champ MEMO libre à la saisie
-#16	impossible d'initaliser la table sans clef primaire definie
-#28	Ligne non valide si PROJECT est vide
-#36	integration module ORDRE EXPLOITATION
-#37	integration environnement NEW
-#38	integration environnement PRD
-
 v0.7
 
 #59	probleme collecte lors de l'ajout de colonne
@@ -47,3 +35,15 @@ v0.7
 #50	COLUMN_INFO : ordre des colonnes
 #74	Erreur si groupe contient des espace
 #31	Ecran login : préselectionné le user Windows
+
+v0.6
+
+#8	export sous forme fichier dans I-SIS
+#12	Gestion des champ de type PROJECT
+#1	Filtrer ligne en rapport avec un "PROJECT"
+#13	champ MEMO libre à la saisie
+#16	impossible d'initaliser la table sans clef primaire definie
+#28	Ligne non valide si PROJECT est vide
+#36	integration module ORDRE EXPLOITATION
+#37	integration environnement NEW
+#38	integration environnement PRD
