@@ -1,3 +1,45 @@
+v0.8
+
+Type: adaptation
+
+#72 	filtre cumulés : (non) valide et/ou projet
+#98 	migration commentaires : invalider les valeurs cibles différentes
+#105 	filtrer list table par projet
+
+Type: defect
+
+#93 	Generer DEF pour chaque changement de structure
+#102 	Consulter historique : inclure valeur baseline
+#103 	Table marquée dirty mais lignes OK
+#113 	filtre icon multiple
+#82 	champ TEXT vide si exploration FIELD sur baseline
+
+Type: enhancement
+
+#85 	Traitements executés en tache de fond
+#78 	statistiques execution scripts
+#79 	Créer class LineFilter pour regrouper le code relatif aux filtres
+#96 	forcer à Valide les nouvelles colonnes
+#97 	cloture projet sur baseline
+#107 	DATE_UPDATE dans Sqlite
+#121 	lier un fichier à une tâche de fond
+#22 	utiliser plusieurs CPU pour collecte
+#87 	SCRIPT_STAT dans Sqlite
+
+Type: task
+
+#64 	Documentation Utilisateur
+#100 	Script suppression environnement complet
+#34 	integration module CONTENTIEUX
+#35 	integration module GESTION LOCATIVE
+#106 	optimisation rapport différentiel sur projet
+#108 	Upgrade isis 2.0.3
+#112 	clarifier les type de colonnes
+#122 	purge fichiers techniques
+
+____________________________________________________________________________
+
+
 v0.7
 
 #59	probleme collecte lors de l'ajout de colonne
@@ -35,6 +77,9 @@ v0.7
 #50	COLUMN_INFO : ordre des colonnes
 #74	Erreur si groupe contient des espace
 #31	Ecran login : préselectionné le user Windows
+
+____________________________________________________________________________
+
 
 v0.6
 
