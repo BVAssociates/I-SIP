@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<Mask xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="MaskRule.xsd">
+    <Rule>   
+        <Condition><![CDATA[CODE=EN COURS]]></Condition>
+        <Color>#FF0000</Color>     
+    </Rule>
+    <Rule>
+ <Condition><![CDATA[CODE=ANNULE]]></Condition>
+        <Revert>true</Revert>
+    </Rule>
+    <Rule>
+ <Condition><![CDATA[CODE=ERROR]]></Condition>
+ <BackgroundColor>#884444</BackgroundColor>
+ <Color>#FFFFFF</Color>
+    </Rule>
+ 
+</Mask>  
+
