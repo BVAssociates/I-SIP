@@ -7,13 +7,13 @@
     <Rule>
  <Condition><![CDATA[CODE=ANNULE]]></Condition>
         <BackgroundColor>#FF6620</BackgroundColor>
-		 <Color>#FFFFFF</Color>
+		<Color>#FFFFFF</Color>
+		<Italic>true</Italic>
     </Rule>
     <Rule>
- <Condition><![CDATA[CODE=ERROR]]></Condition>
- <BackgroundColor>#FF0000</BackgroundColor>
- <Color>#FFFFFF</Color>
+		<Condition><![CDATA[CODE=ERROR]]></Condition>
+		<BackgroundColor>#FF0000</BackgroundColor>
+		<Color>#FFFFFF</Color>
     </Rule>
- 
 </Mask>  
 
