@@ -230,6 +230,10 @@ sub run {
 			log_info("Connexion à la table source dans $environnement : $current_table");
 			# open source table depending on TYPE_SOURCE
 			$source_table=$env_sip->open_source_table($current_table);
+			if (not $source_table or not $source_table->key) {
+				$logger->error("la table <$current_table> a besoin d'être configurée");
+				next;
+			}
 		}
 		elsif ($env_compare ne $environnement) {
 			log_info("Connexion à la table $env_compare : $current_table");
@@ -258,7 +262,11 @@ sub run {
 		# set timestamp for all update/insert operation
 		$histo_table->set_update_timestamp($timestamp);
 		
-		my $table_diff=DataDiff->open($source_table, $histo_table);
+		my $table_diff=eval { DataDiff->open($source_table, $histo_table) };
+		if ($@) {
+			$logger->error($@);
+			next;
+		}
 
 		log_info("Debut de la comparaison de $current_table");
 		my $diff_obj=$table_diff->compare();
