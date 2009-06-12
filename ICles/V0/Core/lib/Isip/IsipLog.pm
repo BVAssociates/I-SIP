@@ -135,12 +135,12 @@ sub log_verbose() {
 sub log_screen_only() {
 	$logger=Log::Handler->create_logger('logger');
 	$logger->add(%screen_definition) if print STDERR "";
-	$logger->add(%dbi_definition);
+	#$logger->add(%dbi_definition);
 }
 
 sub no_log() {
 	$logger=Log::Handler->create_logger('logger');
-	$logger->add(%screen_definition) if print STDERR "";
+	#$logger->add(%screen_definition) if print STDERR "";
 }
 
 # log access
