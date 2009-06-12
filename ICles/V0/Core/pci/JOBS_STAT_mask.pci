@@ -2,15 +2,16 @@
 <Mask xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="MaskRule.xsd">
     <Rule>   
         <Condition><![CDATA[CODE=EN COURS]]></Condition>
-        <Color>#FF0000</Color>     
+        <BackgroundColor>#13FF00</BackgroundColor>     
     </Rule>
     <Rule>
  <Condition><![CDATA[CODE=ANNULE]]></Condition>
-        <Revert>true</Revert>
+        <BackgroundColor>#FF6620</BackgroundColor>
+		 <Color>#FFFFFF</Color>
     </Rule>
     <Rule>
  <Condition><![CDATA[CODE=ERROR]]></Condition>
- <BackgroundColor>#884444</BackgroundColor>
+ <BackgroundColor>#FF0000</BackgroundColor>
  <Color>#FFFFFF</Color>
     </Rule>
  
