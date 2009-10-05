@@ -281,6 +281,8 @@ sub run {
 		my $table_from = $env_sip_from->open_histo_field_table($table_name, $date_compare,{debug => $debug_level});
 		my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
 		
+		# simulate empty table
+		#  (ie. if table is missing in an Env)
 		if (not $table_from and $table_to) {
 			use ITable::Null;
 			$table_from=Null->open($table_name);
@@ -328,7 +330,8 @@ sub run {
 			$table_to->query_key_value($table_key_value);
 		}
 		else {
-			if (my @pre_condition=$filter->get_query_condition) {
+			# pre-select list of keys based on condition (not ICON field)
+			if (my @pre_condition = grep { !/^ICON/ } $filter->get_query_condition) {
 				
 			
 				$table_to->query_condition(@pre_condition);
