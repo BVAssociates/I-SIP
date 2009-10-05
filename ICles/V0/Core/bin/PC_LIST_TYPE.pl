@@ -104,5 +104,5 @@ my %type_list=IsipRules->enum_type();
 
 foreach (sort keys %type_list) {
 	next if /KEY/;
-	print $type_list{$_},"\n";
+	print $type_list{$_},";\n";
 }
