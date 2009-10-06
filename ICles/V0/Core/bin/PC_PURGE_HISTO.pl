@@ -135,7 +135,7 @@ sub run {
 		#my $pid = fork();
 		#if (!$pid) {
 
-			$logger->notice("deplacement de $table_name\_HISTO");
+			$logger->notice("deplacement vers la corbeille de $table_name\_HISTO");
 			my $date=$env->drop_histo($table_name);
 			if ($keep_last) {
 				$logger->notice("réinsertion de la dernière collecte dans $table_name\_HISTO");
@@ -168,6 +168,9 @@ sub run {
 	else {
 		$date_update->execute("DELETE FROM DATE_UPDATE WHERE BASELINE=0");
 	}
+	
+	require "PC_UPDATE_CACHE.pl";
+	pc_update_cache::run($environnement);
 	
 	return 1;
 }
