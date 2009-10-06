@@ -1,4 +1,4 @@
 Item~Mode Exploration~Explorer à cette date~expl~~~Explore~ROOT_TABLE~0~~Expand
 Item~Mode Comparaison~Comparaison autre date~expl~~DATE_COMPARE=getListValue("Date source",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=1)~Explore~FILTER_COMPARE~0~~Expand
-Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@ENVIRON,Description@Environnement != %Environnement%)~Explore~FILTER_COMPARE~0~~Expand
-Item~Mode Comparaison~Comparaison autre environnement, autre date~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@ENVIRONDescription@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_HISTO_COMPARE@DATE_COMPARE,DESCRIPTION@BASELINE=1)}~Explore~FILTER_COMPARE~0~~Expand
+Item~Mode Comparaison~Comparaison autre environnement~expl~~ENV_COMPARE=getListValue("Nom de l'environnement",ENVIRON@Environnement,Description@Environnement != %Environnement%)~Explore~FILTER_COMPARE~0~~Expand
+Item~Mode Comparaison~Comparaison autre environnement, autre date~expl~~{ENV_COMPARE=getListValue("Nom de l'environnement source",ENVIRON@Environnement,Description@Environnement != %Environnement%)}{DATE_COMPARE=getListValue("Date source",DATE_HISTO_COMPARE@DATE_COMPARE,DESCRIPTION@BASELINE=1)}~Explore~FILTER_COMPARE~0~~Expand
