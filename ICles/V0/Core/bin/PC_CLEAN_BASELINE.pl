@@ -172,6 +172,14 @@ sub run {
 	}
 	#wait;
 	
+	# if VACUUM, take the occasion to compact TABLE_INFO too
+	if ($vacuum_after) {
+			log_info("Compactage de la base contenant TABLE_INFO");
+			my $database_path=$env->get_sqlite_path("TABLE_INFO");
+			my $info_table=Sqlite->open($database_path, 'sqlite_master');
+			$info_table->execute("VACUUM");
+		}
+	
 	$logger->notice("Nettoyage terminé pour $environnement");
 	
 	return 1;
