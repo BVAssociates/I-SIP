@@ -16,7 +16,7 @@ PC_CLEAN_BASELINE - Supprime les table de baseline qui ne sont pas déclarés comm
 
 =head1 SYNOPSIS
 
- PC_CLEAN_BASELINE.pl [-h] [-v] environnement
+ PC_CLEAN_BASELINE.pl [-h] [-v] [-c] environnement
  
 =head1 DESCRIPTION
 
@@ -38,6 +38,8 @@ qui ne correpsondent pas à une baseline de la liste des baselines
 =item -h : Affiche l'aide en ligne
 
 =item -v : Mode verbeux
+
+=item -c : compacte la base après les suppressions (VACUUM)
 
 =back
 
@@ -88,15 +90,14 @@ sub run {
 
 
 	my %opts;
-	getopts('hvdm:', \%opts);
+	getopts('hvc', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
 
 	usage($debug_level+1) if $opts{h};
 	
-	my $drop_baseline=$opts{d};
-	my $message=$opts{m};
+	my $vacuum_after=$opts{c};
 
 	#  Traitement des arguments
 	###########################################################
@@ -161,6 +162,12 @@ sub run {
 			# table is an unknown baseline
 			log_info("$table_name : $found_baseline n'est pas une baseline connue. Suppression.");
 			$env->drop_histo_baseline($table_name,$found_baseline);
+			
+		}
+		
+		if ($vacuum_after) {
+			log_info("Compactage de la base contenant $table_name");
+			$master_table->execute("VACUUM");
 		}
 	}
 	#wait;
