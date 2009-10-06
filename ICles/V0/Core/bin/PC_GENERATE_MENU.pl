@@ -257,18 +257,18 @@ sub get_pci_table_string($$) {
 	my $display_table=get_display_table($table_name);
 		
 	# TEMPLATES
-	my $pci_template='Table~~Explore~expl~~~Explore~~0~~Expand
+	my $pci_template='Table~~Explore~user~~~Explore~~0~~Expand
 ';
 	
 	if ($display_table eq $table_name) {
-		$pci_template.='Item~Ligne~Explorer les champs~expl~HAS_FIELD_MENU~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
+		$pci_template.='Item~Ligne~Explorer les champs~user~HAS_FIELD_MENU~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
 ';
 	}
-	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~adm~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
-Item~Groupe~Déplacer dans un nouveau groupe~adm~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
+	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
+Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 ';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
-	my $pci_fkey_template='Item~~Explorer sous-tables~expl~~~Explore~[% table_list %]~0~~Expand
+	my $pci_fkey_template='Item~~Explorer sous-tables~user~~~Explore~[% table_list %]~0~~Expand
 ';
 	
 	# TEMPLATE ASSEMBLY
@@ -306,7 +306,7 @@ sub get_pci_field_string($$) {
 	my $table_name=shift;
 	my $display_table=get_display_table($table_name);
 	
-	my $pci_field_template='Table~~Champs filtrés~expl~~~Explore~~0~~Expand
+	my $pci_field_template='Table~~Champs~user~~~Explore~~0~~Expand
 Table~~Information ligne complète~expl~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
 Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,PROJECT,STATUS,COMMENT,BASELINE_TXT~0~~Display
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure

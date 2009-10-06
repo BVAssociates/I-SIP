@@ -7,8 +7,10 @@ Item~~Ajouter/Mettre à jour Requete~adm~~{PARAM_SOURCE=getValue("Requete SQL à a
 Item~~Ajouter fichier XML~adm~~{XML_PATH=getValue("Chemin du XML")}{TABLE_NAME=getValue("Nom dans I-SIP")}{TABLE_MODULE=getListValue("Module",CONF_MODULE)}{TABLE_TYPE="XML"}~ExecuteProcedure~PC_INIT_TABLE.pl -c %Environnement% %TABLE_NAME%~0~~Add
 Item~Importer~Importer Table d'un autre environnement~adm~~{TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)}{TABLE_IMPORT=getListValue("Nom de la table à importer",TABLE_INFO_ENV)}~ExecuteProcedure~PC_INIT_TABLE.pl -c -i %TABLE_ENV% %Environnement% %TABLE_IMPORT%~0~~Add
 Item~Importer~Importer toutes les Tables d'un autre environnement~adm~~TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)~ExecuteProcedure~PC_IMPORT_TABLE.pl -i %TABLE_ENV% %Environnement%~1~~Add
-Item~Test~test STDOUT~dev~~~ExecuteProcedure~test.pl~0~~Add
-Item~Test~test STDOUT~dev~~~ExecuteProcedure~test~0~~Add
-Item~Test~URL~dev~~~OpenURL~C:\Documents and Settings\bauchart\Mes documents~0~~Add
-Item~Test~execute~dev~~~OpenURL~http://www.google.com~0~~Add
+
+# tests
+#Item~Test~test STDOUT~dev~~~ExecuteProcedure~test.pl~0~~Add
+#Item~Test~test STDOUT~dev~~~ExecuteProcedure~test~0~~Add
+#Item~Test~URL~dev~~~OpenURL~C:\Documents and Settings\bauchart\Mes documents~0~~Add
+#Item~Test~execute~dev~~~OpenURL~http://www.google.com~0~~Add
 

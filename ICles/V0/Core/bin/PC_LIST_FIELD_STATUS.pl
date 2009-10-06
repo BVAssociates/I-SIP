@@ -391,6 +391,9 @@ sub run {
 				$row{MEMO}=decode_memo($row{MEMO});
 			}
 			
+			# don't show hidden fields
+			next if $diff_rules->is_field_hidden(%row);
+			
 			if ($filter->is_display_line(%row)) {
 				if ($all_key) {
 					print join($separator,$table_status->hash_to_array(%row))."\n";

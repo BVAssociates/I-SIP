@@ -1,7 +1,7 @@
 #IObject~Group~Method~Responsabilities~Condition~PreProcessing~Processor~Command~Confirm~PostProcessing~Icon
 #===========================================================================================================
 
-Item~~Explorer les données~expl~~~Explore~ENVIRON~0~~Expand
+Item~~Explorer les données~user~~~Explore~ENVIRON~0~~Expand
 
 Item~Configuration SIP~Administrer Tables par Environnement~adm~~~Explore~CONF_ENVIRON~0~~Expand
 Item~Configuration SIP~Ajouter Environnements~adm~~{ODBC_NAME=getListValue("Source de donnée ODBC",DATA_SOURCE)}{VAL_ENVIRON=getListValue("Environnement",SOURCE_ENVIRON)}~ExecuteProcedure~PC_INIT_ENV %ODBC_NAME% %VAL_ENVIRON%~0~~Add
@@ -9,25 +9,22 @@ Item~Configuration SIP~Supprimer Environnements~adm~~VAL_ENVIRON=getListValue("E
 #Item~Configuration SIP~Ajouter/Supprimer Projets~adm~~~Administrate~PROJECT_INFO~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Ajouter/Supprimer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
-Item~Configuration SIP~Ajouter/Supprimer Types de Modules~dev~~~Administrate~CONF_MODULE_TYPE~0~~Configure
+Item~Configuration SIP~Ajouter/Supprimer Types de Modules~adm~~~Administrate~CONF_MODULE_TYPE~0~~Configure
 
 Item~Jobs~Repertoire d'export~dev~~~OpenURL~%ISIP_EXPORT%~0~~Configure
 Item~Jobs~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
 Item~Journaux~Historique Execution, tout le monde~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
-Item~Journaux~Historique Execution~adm~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
-Item~Journaux~Statistique Execution~adm~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
-Item~Journaux~Erreurs de collecte~adm~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\derniere_collecte.log~0~~Configure
-Item~Journaux~Log collecte~dev~~~DisplayFile~%ISIP_LOG%\derniere_collecte.log~0~~Configure
-
-#Item~Configuration SIP~Explorer Etats~adm~~~Explore~ETAT~0~~Expand
-#Item~Configuration SIP~Explorer Types~adm~~~Explore~TYPE~0~~Expand
+Item~Journaux~Historique Execution~expl~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
+Item~Journaux~Statistique Execution~expl~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
+Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\derniere_collecte.log~0~~Configure
+Item~Journaux~Log collecte~adm~~~DisplayFile~%ISIP_LOG%\derniere_collecte.log~0~~Configure
 
 
+Item~Aide~Documentation d'utilisation~user~~~OpenURL~%ISIP_DOC%\Documentation Utilisateur ISIP IKOS.pdf~0~~Expand
+Item~Aide~Documentation de configuration~adm~~~OpenURL~%ISIP_DOC%\Documentation Configuration ISIP IKOS.pdf~0~~Expand
+Item~Aide~Version de I-SIP~dev~~~ExecuteProcedure~ME_ISIP_VERSION~0~~Configure
+
+#Item~Developpement~Google~dev~~~OpenURL~http://www.google.fr~0~~Expand
+#Item~Developpement~Affiche Processor error~dev~~~IsipProcessor~TYPE~0~~Expand
 #Item~Developpement~Affiche Processor error2~adm~~~IsipProcessor~FORM_CONFIG~0~~Expand
 
-Item~Aide~Documentation d'utilisation~adm~~~OpenURL~%ISIP_DOC%\Documentation Utilisateur ISIP IKOS.pdf~0~~Expand
-Item~Aide~Documentation de configuration~adm~~~OpenURL~%ISIP_DOC%\Documentation Configuration ISIP IKOS.pdf~0~~Expand
-Item~Aide~Version de I-SIP~adm~~~ExecuteProcedure~ME_ISIP_VERSION~0~~Configure
-
-Item~Developpement~Google~dev~~~OpenURL~http://www.google.fr~0~~Expand
-Item~Developpement~Affiche Processor error~dev~~~IsipProcessor~TYPE~0~~Expand
