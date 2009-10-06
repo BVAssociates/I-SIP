@@ -737,7 +737,7 @@ sub create_database_histo() {
 	
 	my $database_path=$database_dir."/".$database_filename;
 	
-	$logger->notice("database already exist at <$database_path>") if -s $database_path;
+	$logger->notice("database already exist at <$database_path>, mise à jour de la structure") if -s $database_path;
 	
 	if (! -e $database_path) {
 		$logger->notice("Creating empty file : $database_path");
@@ -751,7 +751,7 @@ sub create_database_histo() {
 	# opening master table
 	my $master_table=Sqlite->open($database_path, 'sqlite_master');
 	
-	$logger->notice("Create table $tablename\_HISTO");
+	$logger->info("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_HISTO (
 	ID INTEGER PRIMARY KEY,
 	DATE_HISTO DATETIME,
@@ -766,7 +766,7 @@ sub create_database_histo() {
 	STATUS VARCHAR(30),
 	MEMO VARCHAR(30))");
 	
-	$logger->notice("Create table $tablename\_COLUMN");
+	$logger->info("Create table $tablename\_COLUMN");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_COLUMN (
 		TABLE_NAME VARCHAR(30) NOT NULL,
 		FIELD_NAME VARCHAR(30) NOT NULL,
@@ -784,22 +784,22 @@ sub create_database_histo() {
 		PRIMARY KEY (TABLE_NAME,FIELD_NAME,DATE_HISTO)
 	)");
 	
-	$logger->notice("Create table $tablename\_LABEL");
+	$logger->info("Create table $tablename\_LABEL");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_LABEL (
 		TABLE_KEY VARCHAR NOT NULL ,
 		FIELD_NAME VARCHAR NOT NULL ,
 		LABEL VARCHAR NOT NULL ,
 		PRIMARY KEY (TABLE_KEY,FIELD_NAME))");
 	
-	$logger->notice("Create table $tablename\_CATEGORY");
+	$logger->info("Create table $tablename\_CATEGORY");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_CATEGORY (
 	TABLE_KEY VARCHAR(30) PRIMARY KEY NOT NULL,
 	CATEGORY VARCHAR(30))");
 	
-	$logger->notice("Replace view $tablename\_HISTO_CATEGORY");
+	$logger->info("Replace view $tablename\_HISTO_CATEGORY");
 	$master_table->execute("DROP VIEW IF EXISTS $tablename\_HISTO_CATEGORY");
 	
-	$logger->notice("Create indexes");
+	$logger->info("Create indexes");
 	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY ON $tablename\_HISTO (TABLE_KEY ASC)");
 	$master_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_FIELD ON $tablename\_HISTO (FIELD_NAME ASC)");
 

@@ -19,11 +19,11 @@ ME_LOG_JOB - Annule script Perl en tâche de fond
 
 =head1 SYNOPSIS
 
- ME_KILL_JOB.pl [-h][-v] PID
+ ME_LOG_JOB.pl [-h][-v] TIMESTAMP
  
 =head1 DESCRIPTION
 
-Annule script Perl en tâche de fond
+Affiche log d'un programme Perl en tâche de fond
 
 =head1 ENVIRONNEMENT
 
@@ -45,7 +45,7 @@ Annule script Perl en tâche de fond
 
 =head1 ARGUMENTS
 
-=item PID : numero de pid
+=item TIMESTAMP : identifiant du programme par son TIMESTAMP
 
 =head1 AUTHOR
 
