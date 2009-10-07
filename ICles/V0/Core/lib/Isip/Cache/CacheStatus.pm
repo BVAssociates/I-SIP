@@ -38,6 +38,7 @@ sub check_before_cache() {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
 				$self->{action}=1 if $value_ref->{OLD_ICON} =~ /^valide/;
 				$self->{action}=-1 if $value_ref->{ICON} =~ /^valide/;
+					# note : match 'valide' and 'valide_label'
 			}
 		}
 		else {
