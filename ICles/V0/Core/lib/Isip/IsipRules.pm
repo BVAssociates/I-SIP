@@ -122,7 +122,7 @@ sub enum_field_status () {
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", STAMP => "stamp", HIDDEN => "cache", ERROR => "erreur");
+	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", TEST => "test", STAMP => "stamp", HIDDEN => "cache", ERROR => "inconnu");
 }
 
 sub enum_line_icon () {
@@ -149,7 +149,7 @@ sub get_field_type() {
 		$type="";
 	}
 	elsif (not defined $type_by_name{$type_txt}) {
-		$type="";
+		$type="ERROR";
 		$logger->error($type_txt." n'est pas un type valide") 
 	} else {
 		$type=$type_by_name{$type_txt};
@@ -249,6 +249,9 @@ sub get_field_icon () {
 	}
 	elsif ($type eq "EXCLUDE") {
 		$return_status=$self->{field_icon}{OK};
+	}
+	elsif ($type eq "ERROR") {
+		$return_status=$self->{field_icon}{ERROR};
 	}
 	else {
 		if ($status eq "OK") {
