@@ -163,7 +163,7 @@ foreach my $environnement ( @environnement_list ) {
 			$logger->error("$physical_table n'existe pas dans $environnement");
 			next;
 		}
-		log_info "execution sur ${environnement}::$physical_table\n";
+		$logger->info("execution sur ${environnement}::$physical_table");
 		
 		my $table = $env->open_local_table($physical_table);
 		
@@ -177,7 +177,8 @@ foreach my $environnement ( @environnement_list ) {
 			}
 		}
 		else {
-			$table->execute($SQL_generated);
+			my $nb = $table->execute($SQL_generated);
+			$logger->notice("$physical_table: ",$nb+0," lignes modifiés");
 		}
 	}
 }
