@@ -15,11 +15,21 @@ PC_EXEC_SQL - Execute une requete SQL
 
 =head1 SYNOPSIS
 
- PC_EXEC_SQL.pl [-h] [-v] [-t tablename [-e environnement]] type "SQL QUERY"
+ PC_EXEC_SQL.pl [-h] [-v] [-e environnement] -t table "SQL QUERY"
  
 =head1 DESCRIPTION
 
-Execute une requete SQL.
+Execute une requete SQL sur toutes les tables "logiques" d'un ou tous les environnements.
+
+La requete SQL est executé sur toutes les tables des environnements. Le nom de la table physique
+est calculée à partir du nom de la table logique representée par "{}".
+
+La forme SQL "SELECT * FROM ..." peut être remplacée par "SELECT FROM ..." pour eviter les
+problèmes d'interpretations du Shell.
+
+Par exemple, pour affiche toutes les colonnes de toutes les tables :
+
+ PC_EXEC_SQL.pl -t {}_COLUMN "SELECT FROM {}_COLUMN"
 
 =head1 ENVIRONNEMENT
 
@@ -37,19 +47,19 @@ Execute une requete SQL.
 
 =item -v : Mode verbeux
 
-=item -i : table_INFO
+=item -e : uniquement sur cet environnement
+
+=item -t : uniquement sur cette table
 
 =back
 
 =head1 ARGUMENTS
 
-=head2 environnement : environnement à utiliser
-
-=head2 tablename : FIELD_INFO ou HISTO
+=head2 SQL : requete SQL à executer sur chaque table. Le nom de la table est représenté par {}
 
 =head1 AUTHOR
 
-Copyright (c) 2008 BV Associates. Tous droits réservés.
+Copyright (c) 2009 BV Associates. Tous droits réservés.
 
 =cut
 
@@ -77,7 +87,7 @@ sub log_erreur {
 
 sub log_info {
 	#print STDERR "INFO: ".join(" ",@_)."\n"; 
-	$logger->notice(@_);
+	$logger->info(@_);
 }
 
 
@@ -96,7 +106,7 @@ $debug_level = 1 if $opts{v};
 usage($debug_level+1) if $opts{h};
 
 my $environnement=$opts{e};
-my $table_name=$opts{t};
+my $table_name=$opts{t} or usage($debug_level);
 
 
 #  Traitement des arguments
@@ -107,19 +117,9 @@ if ( @ARGV < 1 ) {
 	usage($debug_level);
 	sortie(202);
 }
-my $type_table=shift;
 
 my $SQL=join(' ',@ARGV);
 
-if ($type_table eq "FIELD_INFO") {
-	usage($debug_level) if $environnement;
-}
-elsif ($type_table eq "HISTO") {
-	usage($debug_level) if not $environnement;
-}
-else {
-	usage($debug_level);
-}
 
 #  Corps du script
 ###########################################################
@@ -127,51 +127,60 @@ my $bv_severite=0;
 
 use Isip::Environnement;
 use Isip::IsipConfig;
-use ITable::ITools;
-use Isip::ITable::DataDiff;
-use Isip::IsipTreeCache;
 
 
-
-my $config_sip;
+my @environnement_list;
 if ($environnement) {
-	$config_sip = Environnement->new($environnement);
+	@environnement_list = $environnement;
 }
 else {
-	$config_sip = IsipConfig->new($environnement);
+	my $config_sip = IsipConfig->new($environnement);
+	@environnement_list = $config_sip->get_environnement_list();
 }
 
-my %table_info = $config_sip->get_table_info();
-my @list_table;
-if (not $table_name) {
-	@list_table=keys %table_info;
-} else {
-	@list_table=($table_name);
+foreach my $environnement ( @environnement_list ) {
+
+	my $env = Environnement->new($environnement);
+
+	my @list_table;
+	if ( $table_name =~ /\{\}/ ) {
+		@list_table=$env->get_table_list();
+	}
+	else {
+		@list_table=($table_name);
+	}
+	
+	foreach my $logical_table (@list_table) {
+	
+		my $physical_table =  $table_name;
+		my $SQL_generated =  $SQL;
+		
+		# remplace {} par le nom logique de la table
+		$physical_table =~ s/\{\}/$logical_table/g;
+		$SQL_generated  =~ s/\{\}/$logical_table/g;
+		
+		if ( not ($env->exist_local_table($physical_table)) ) {
+			$logger->error("$physical_table n'existe pas dans $environnement");
+			next;
+		}
+		log_info "execution sur ${environnement}::$physical_table\n";
+		
+		my $table = $env->open_local_table($physical_table);
+		
+		if ( $SQL_generated =~/^SELECT/i ) {
+		
+			$SQL_generated =~ s/SELECT\s+FROM/SELECT * FROM/i;
+			
+			$table->custom_select_query($SQL_generated);
+			while ( my @result = $table->fetch_row_array() ) {
+				print join(';',@result)."\n";
+			}
+		}
+		else {
+			$table->execute($SQL_generated);
+		}
+	}
 }
-
-
-
-foreach my $current_table (@list_table) {
-	
-	if ( not ($config_sip->exists_doc_table($current_table)) ) {
-		$logger->error("$current_table n'a pas été initialisée");
-		next;
-	}
-	
-	my $table_obj;
-	my $local_sql=$SQL;
-	if ($type_table eq "FIELD_INFO") {
-		$table_obj=$config_sip->open_documentation_table($current_table);
-		$local_sql =~ s/{}/$current_table\_INFO/g;
-	}
-	elsif ($type_table eq "HISTO") {
-		$table_obj=$config_sip->open_histo_field_table($current_table);
-	}
-	
-	print ($local_sql,"\n");
-	$table_obj->execute($local_sql);
-}
-
 
 
 sortie($bv_severite);
