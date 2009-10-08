@@ -239,26 +239,30 @@ sub get_query()
 	
 	foreach my $condition ($self->query_condition()) {
 		if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
-			if ($1 eq "CATEGORY") {
+			my $cond_field = $1;
+			my $cond_op    = $2;
+			my $cond_value = $3;
+			
+			if ($cond_field eq "CATEGORY") {
 				#Special case of CATEGORY filter
-				if ($3 eq 'vide') {
+				if ($cond_value eq 'vide') {
 					push @select_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE CATEGORY IS NOT NULL )\n"
 				} else {
 					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE $condition )\n"
 				}
 			}
-			elsif ($1 eq "PROJECT") {
+			elsif ($cond_field eq "PROJECT") {
 				#preselection of TABLE_KEY which has PROJECT in history
-				push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE PROJECT = '$condition' )\n"
+				push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE $condition )\n"
 			}
 			else {
 			# check if condition is on one of the keys
-				if (grep {$1 eq $_} @field_key ) {
-					$query_key{$1}=$3;
+				if (grep {$cond_field eq $_} @field_key ) {
+					$query_key{$cond_field}=$cond_value;
 				}
 				else {
 					# else we use request on FIELD_NAME and FIELD_VALUE
-					push @select_conditions, "TABLE_KEY IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$1' and FIELD_VALUE $2 '$3')";
+					push @select_conditions, "TABLE_KEY_2 IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$cond_field' and FIELD_VALUE $cond_op '$cond_value')";
 				}
 			}
 		}
@@ -692,25 +696,39 @@ sub delete_row() {
 	}
 }
 
-# update internal field to set whole row to VALIDE
-sub validate_row_by_key() {
+# update whole table VALIDE
+sub validate_table() {
 	my $self = shift;
 
-	my $key=shift or croak ('validate_row take 1 argument : key');
-	# update line STATUS to VALIDE
+	my $status=shift;
+	my $message=shift or croak ('usage : validate_table(status,message)');
+	
+	my $date_update = $self->{update_timestamp};
+	my $user_update = $ENV{ISIS_USER};
+	my $comment     = "Baseline : ".$message;
 	
 	# need to open to get a valid database_handle
 	$self->{table_histo}->_open_database;
-	$key=$self->{table_histo}->{database_handle}->quote($key);
-	my $updated_value=$self->{table_histo}->{database_handle}->quote($self->{valid_keyword});
-	my $date_update = $self->{table_histo}->{database_handle}->quote(strftime "%Y-%m-%dT%H:%M", localtime);
-	my $user_update = $self->{table_histo}->{database_handle}->quote($ENV{ISIS_USER});
 	
-	my $update_sql="UPDATE ".$self->{table_histo}->table_name." SET STATUS=$updated_value, USER_UPDATE=$user_update, DATE_UPDATE=$date_update where TABLE_KEY=$key";
+	my $update_sql ="UPDATE ".$self->{table_histo}->table_name;
+	$update_sql   .=  " SET COMMENT='$comment', STATUS='$status', USER_UPDATE='$user_update', DATE_UPDATE='$date_update'";
+	$update_sql   .=  " where ID IN (";
+	
+	$update_sql   .=  "
+SELECT
+	max(ID) as ID2
+FROM
+	".$self->{table_histo}->table_name." as HISTO2
+WHERE  TABLE_KEY IN (SELECT TABLE_KEY FROM ".$self->{table_histo}->table_name." WHERE STATUS != 'Valide' OR STATUS IS NULL OR COMMENT='' OR COMMENT IS NULL)
+	GROUP BY FIELD_NAME, TABLE_KEY
+HAVING  STATUS != 'Valide' OR STATUS IS NULL OR COMMENT='' OR COMMENT IS NULL";
+	
+	$update_sql   .=  " )";
+	
 	$self->{table_histo}->execute($update_sql);
 	
-	warn("obsolete method : validate_row_by_key");
 }
+
 
 # add new field
 sub add_field() {

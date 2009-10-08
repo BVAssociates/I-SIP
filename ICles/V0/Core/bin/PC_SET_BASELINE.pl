@@ -16,7 +16,7 @@ PC_SET_BASELINE - Construit une baseline
 
 =head1 SYNOPSIS
 
- PC_SET_BASELINE.pl [-h] [-v] [-d|-m message [-p]] environnement date
+ PC_SET_BASELINE.pl [-h] [-v] [-d|-m message [-p] [-a]] environnement date
  
 =head1 DESCRIPTION
 
@@ -43,6 +43,8 @@ Construit une baseline sur un environnement
 =item -m message : Ajoute une description à la baseline
 
 =item -p : ferme les projets associés à l'environnement
+
+=item -a : valide tous les changements non validés avec le message
 
 =back
 
@@ -95,7 +97,7 @@ sub run {
 
 
 	my %opts;
-	getopts('hvdm:p', \%opts);
+	getopts('hvdm:pa', \%opts);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -103,9 +105,14 @@ sub run {
 	usage($debug_level+1) if $opts{h};
 	
 	my $drop_baseline=$opts{d};
+	
 	my $message=$opts{m};
+	usage($debug_level) if not $drop_baseline and not $message;
+	
 	my $close_project;
 	$close_project=1 if exists $opts{p};
+	
+	my $auto_validate=1 if exists $opts{a};
 
 	#  Traitement des arguments
 	###########################################################
@@ -165,8 +172,23 @@ sub run {
 				$baseline_info{DESCRIPTION}="";
 			}
 			else {
+				if ( $auto_validate )  {
+					$logger->notice("Validation automatique de toutes les modifications");
+					
+					my $table = $env->open_local_from_histo_table($table_name);
+					
+					use POSIX qw(strftime);
+					my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+					$table->set_update_timestamp($timestamp);
+					
+					$table->validate_table('Valide',$message);
+					
+					
+				}
+				
 				$logger->notice("création d'une baseline pour $table_name à la date $date");
 				my $table=$env->create_histo_baseline($table_name,$date);
+				
 				$baseline_info{BASELINE}=1;
 				$baseline_info{DESCRIPTION}=$message if $message;
 			}
