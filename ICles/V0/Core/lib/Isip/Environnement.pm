@@ -319,7 +319,7 @@ sub get_sqlite_filename() {
 	my $database_path;
 	
 	
-	if ($table_name =~ /^USER_RULES|PROJECT_INFO|DATE_UPDATE|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+	if ($table_name =~ /^FIELD_LABEL|PROJECT_INFO|DATE_UPDATE|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {
@@ -329,7 +329,7 @@ sub get_sqlite_filename() {
 		my $table_extension;
 		
 		# table are in format TABLENAME_EXTENSION ou TABLENAME
-		($table_real,$table_extension) = ($table_name =~ /^(\w+)_(COLUMN|HISTO|HISTO_CATEGORY|INFO|\d+T\d+)$/);
+		($table_real,$table_extension) = ($table_name =~ /^(\w+)_(COLUMN|HISTO|HISTO_CATEGORY|INFO|LABEL|\d+T\d+)$/);
 		($table_real,$table_extension) = ($table_name =~ /^(\w+)_(CATEGORY)$/) if not $table_extension;
 		($table_real) = ($table_name =~ /^(\w+)$/) if not $table_real;
 

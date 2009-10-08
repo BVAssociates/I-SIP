@@ -93,21 +93,15 @@ sub _init_info() {
 	# store table columns and their informationns (desc,type..)
 	$self->{column_info}=$self->{environnement}->get_columns($self->{table_name});
 	
-	if ($self->{environnement}->exist_local_table("USER_RULES")) {
-		my $table_status=$self->{environnement}->open_local_table("USER_RULES");
+	if ($self->{environnement}->exist_local_table("FIELD_LABEL")) {
+		my $table_status=$self->{environnement}->open_local_table("FIELD_LABEL");
 		
-		$table_status->query_condition("IGNORE = 1");
 		$table_status->query_condition("TABLE_NAME = '$self->{table_name}'");
 		
 		while (my %row=$table_status->fetch_row()) {
-			my $key;
-			if ( $row{FIELD_NAME} ) {
-				$key=join(',',@row{"TABLE_KEY","FIELD_NAME"});
-			}
-			else {
-				$key=$row{TABLE_KEY};
-			}
-			$self->{label}->{$key}=1;
+			my $key=join(',',@row{"TABLE_KEY","FIELD_NAME"});
+			
+			$self->{label}->{$key}=$row{LABEL};
 		}
 	}
 	
@@ -241,10 +235,11 @@ sub get_field_icon () {
 	my $return_status;
 	
 	my $field_key=join(',',($key,$name));
-	if (exists $self->{label}->{$field_key} or exists $self->{label}->{$key}) {
+	if ( exists $self->{label}->{$field_key} ) {
 	# Use label from table _LABEL
+		my $label_value=$self->{label}->{$field_key};
 		
-		$return_status=$self->{field_icon}{IGNORE};
+		$return_status=$self->{field_icon}{$label_value}."_label";
 	}
 	# case of new line
 	elsif ($type eq "STAMP") {

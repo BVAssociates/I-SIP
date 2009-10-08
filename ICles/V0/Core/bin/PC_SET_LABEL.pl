@@ -121,14 +121,27 @@ my $bv_severite=0;
 use Isip::Environnement;
 
 my $env=Environnement->new($environnement);
-my $table=$env->open_local_table($table_name."_LABEL");
+my $table=$env->open_local_table("FIELD_LABEL");
 
 
 $table->begin_transaction;
 
-$table->delete_row(TABLE_KEY => $key, FIELD_NAME => $field);
+$table->delete_row(TABLE_NAME => $table_name, TABLE_KEY => $key, FIELD_NAME => $field);
 if ($icon) {
-	$table->insert_row(TABLE_KEY => $key, FIELD_NAME => $field, LABEL => $icon);
+
+	# get update info
+	use POSIX qw(strftime);
+	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+	my $current_user=$ENV{IsisUser};
+	
+	$table->insert_row(
+		DATE_UPDATE => $timestamp,
+		USER_UPDATE => $current_user,
+		TABLE_NAME  => $table_name,
+		TABLE_KEY   => $key,
+		FIELD_NAME  => $field,
+		LABEL       => $icon
+	);
 	log_info("$field pour la clef $key de $table_name labellisé $icon");
 }
 else {
