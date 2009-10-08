@@ -15,7 +15,7 @@ PC_LIST_SQLITE - Liste le contenu d'une table sqlite
 
 =head1 SYNOPSIS
 
- PC_LIST_SQLITE.pl [-h][-v] [-s separateur] environnement tablename
+ PC_LIST_SQLITE.pl [-h][-v] [-s separateur] [-c where_clause] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -38,6 +38,8 @@ Affiche le contenu d'une table de la base de donnée d'information de l'environne
 =item -v : Mode verbeux
 
 =item -s : modifie le separateur de sortie
+
+=item -c : condition de selection
 
 =back
 
@@ -88,7 +90,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvs:', \%opts);
+getopts('hvs:c:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -97,6 +99,8 @@ usage($debug_level+1) if $opts{h};
 
 my $separator=',';
 $separator=$opts{s} if exists $opts{s};
+
+my $where_clause=$opts{c};
 
 #  Traitement des arguments
 ###########################################################
@@ -116,6 +120,10 @@ use Isip::Environnement;
 
 my $env=Environnement->new($environnement);
 my $table=$env->open_local_table($table_name);
+
+if ( $where_clause ) {
+	$table->query_condition($where_clause);
+}
 
 die "unable to open local $table_name\_INFO " if not defined $table;
 
