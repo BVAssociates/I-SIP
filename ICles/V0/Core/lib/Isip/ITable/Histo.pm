@@ -787,14 +787,71 @@ sub finish() {
 
 =head1 NAME
 
- Isip::ITable::Histo - Computed ITable::DATA_interface
+Isip::ITable::Histo - Classe ITable pour les tables de type Historique
  
 =head1 SYNOPSIS
 
-Like Sqlite, Histo get lines from a table TABLE, using the last entries from TABLE_HISTO.
+ use Isip::ITable::Histo;
+ my $table=Histo->open("path/to/base.sqlite", "TABLE1");
+ 
+ my @fields = $table->field();
+ while ( my %row = $table->fetch_row() ) {
+	print join(',', @row{@fields} )."\n";
+ }
+
+=head1 DESCRIPTION
+
+La classe Histo est une implementation de l'interface ITools::ITable.
+Elle s'utilise donc globalement de la même manière que les autres
+classes implementant cette interface.
+
+La table est physiquement stockée une table (base Sqlite) nommée avec le nom de
+la table cible, suivit de "_HISTO". Par exemple, la table "NATPROP" sera stockée
+dans la table "NATPROP_HISTO".
+
+Les lignes sont stockées dans cette table de manière à ce qu'une ligne de cette table
+représente un champ d'une ligne la table finale. A chaque collecte, toute modification
+d'une valeur d'un champ signifie l'ajout d'une nouvelle ligne dans la table, avec un 
+champ d'horodatage.
+
+=head2 METHODS
+
+=over 12
+
+=item C<open ($base_path, $table_name, {} )>
+
+Méthode d'initialisation. Prend en paramètre la base Sqlite et le nom de la table.
+
+=item C<query_date ($timestamp)>
+
+Les valeurs renvoyée seront celles qui existaient à la date passée en paramètre.
+Si cette méthode n'est pas appelée avant un C<fetch_row>, les valeurs renvoyée seront
+celle dont l'horodatage est le plus élevé.
+
+=item C<query_key_value (@key_list)>
+
+Ne recupère que les clefs fournies en paramètre. Il s'agit d'une liste de clef de la
+table cible.
+
+=item C<set_update_timestamp ($timestamp)>
+
+Si cette méthode est appelée avant toute mise à jour, les horodatages suivant auront 
+tous cette valeur.
+
+=item C<validate_table ($status, $comment)>
+
+Met à jour le champ STATUS et COMMENT de toutes les champs non validés.
+
+=item C<isip_rules ($isip_rules_object)>
+
+Assigne une instance de classe IsipRules. L'objet assigné sera utilisé pour calculé
+le champ dynamique "ICON"
+
+=back
+
 
 =head1 AUTHOR
 
-Copyright (c) 2008 BV Associates. Tous droits réservés.
+Copyright (c) 2008-2009 BV Associates. Tous droits réservés.
 
 =cut

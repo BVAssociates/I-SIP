@@ -912,9 +912,108 @@ sub drop_histo() {
 
 =head1 NAME
 
- Isip::Environnement - Class to access data from IKOS SIP 
+Isip::Environnement - Classe gérant les données d'un environnement I-SIP 
 
 =head1 SYNOPSIS
+
+ use Isip::Environnement;
+ my $env = Environnement->new('PRD');
+ 
+ my $table      = $env->open_local_from_histo_table('NATPROP');
+ my @table_list = $env->get_table_list();
+
+=head1 DESCRIPTION
+
+La classe Environnement contient les informations d'un environnement.
+
+Voici les informations gérées dans un objet Environnement :
+
+=over
+
+=item * Gestion des bases Sqlite.
+
+=item * Information étendues sur les colonnes des tables.
+
+=item * Liens entre les tables.
+
+=item * Gestion des I<baselines>.
+
+=back
+
+=head2 METHODS
+
+=over 12
+
+=item C<new ($name)>
+
+Méthode d'initialisation. Prend en paramètre le nom de l'environnement.
+
+=item C<open_local_table ($table_name)>
+
+Renvoie un objet de type ITable. La table passée en paramètre peut-être toute table
+physique contenu dans une des bases de l'environnement.
+
+=item C<open_sourcetable ($table_name)>
+
+Renvoie un objet de type ITable. La table passée en paramètre doit être une table
+contenu dans le système d'information source (ODBC).
+
+=item C<open_local_from_histo_table ($table_name [,$date_explore])>
+
+Renvoie un objet de type ITable. La table passée en paramètre doit être une
+table contenu dans le système d'information source. La table renvoyée sera
+la version historisée dans I-SIP de cette table.
+
+Si une date est fourni en paramètre, la table renvoyée sera la version de la table
+source telle qu'elle a été historisée à cette date. Si une I<baseline> existe à cette date
+précise, ce sont les données de cette I<baseline> qui seront renvoyées.
+
+=item C<get_links ($table_name)>
+
+Renvoie un objet de class ITable::ILink, représentant les relations entre les tables.
+
+=item C<get_links_menu ($table_name)>
+
+Renvoie un objet de class ITable::ILink pour être utilisés dans la génération des
+menus et des fichiers de définition de I-SIP. Certaines tables sont renommées dans
+l'objet renvoyée, afin de les rendre unique et de faire transparaitre certaines
+relations dans leur nom.
+
+Par exemple, si la table TTARIFP est une sous table de OGAP, mais que TTARIFP est marqué
+comme étant une table racine, TTARIFP est renommé en TTARIFP__OGAP
+
+=item C<is_root_table ($table_name)>
+
+Renvoie vrai si la table est configurée comme étant une table "racine", c'est à dire
+devant apparaître directement sous l'arborescence du module.
+
+=item C<create_database_histo ($table_name)>
+
+Créer la base Sqlite qui contiendra les informations d'une table et ses valeurs versionnées.
+
+=item C<initialize_column_info ($table_name)>
+
+Met à jour une liste versionnée des colonnes d'une table historisée.
+
+=item C<create_histo_baseline ($table_name,$date)>
+
+Recopie la version d'une table à une date donnée dans une table baseline.
+
+=item C<drop_histo ($table_name)>
+
+Supprime toute les données d'historisation d'une table et renvoie une date.
+
+Les données ne sont pas réellement supprimée, mais déplacée dans une
+baseline, dont la date est cette renvoyée par la méthode.
+Pour la supprimer définitivement, il faut utiliser ensuite C<drop_histo_baseline> sur
+cette date.
+
+
+=item C<drop_histo_baseline ($table_name,$date)>
+
+Supprime une table de baseline à une date données.
+
+=back
 
 =head1 AUTHOR
 

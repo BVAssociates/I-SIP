@@ -320,9 +320,66 @@ sub _find_file() {
 
 =head1 NAME
 
- Isip::Isipconfig - Accede au information globale à un service d'ICle ISIP
+Isip::Isipconfig - Accede au information globale à un service d'ICle I-SIP
 
 =head1 SYNOPSIS
+
+ use Isip::Isipconfig;
+ 
+ my $config = Isipconfig->new();
+ my @env_list = $config->get_environnement_list();
+
+=head1 DESCRIPTION
+
+La classe IsipConfig gère les données globales à une instance I-SIP.
+
+Voici les informations gérées dans un objet IsipConfig :
+
+=over
+
+=item * Gestion des Environnement : Création/suppression/copie.
+
+=item * Gestion des Modules.
+
+=item * Gestion des informations sur la base source de l'historisation (ODBC).
+
+=back
+
+=head1 METHODS
+
+=over 12
+
+=item C<new ()>
+
+Instancie un objet de type IsipConfig.
+
+=item C<get_data_dir ()>
+
+Renvoie le répertoire de stockage des base Sqlite.
+
+=item C<get_odbc_* ()>
+
+Renvoie les différent paramètre de connexion à la base ODBC.
+
+=item C<get_environnement_list()>
+
+Renvoie la liste des environnement déclarés.
+
+=item C<get_module_list()>
+
+Renvoie la liste des modules déclarés.
+
+La définition des modules est commune à tous les environnements.
+
+=item C<exists_database_environnement()>
+
+Test l'existence des données nécessaires à un environnement.
+
+=item C<create_database_environnement()>
+
+Créer les données nécessaires à un environnement.
+
+=back
 
 =head1 AUTHOR
 
