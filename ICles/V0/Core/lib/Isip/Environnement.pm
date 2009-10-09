@@ -819,6 +819,11 @@ sub create_histo_baseline() {
 	
 	my $baseline_name=$table_name.'_'.$baseline_date;
 	
+	if ( $self->exist_local_table($baseline_name) ) {
+		# baseline already created, we reuse it
+		return 0;
+	}
+	
 	my $table_histo = $self->open_local_from_histo_table($table_name);
 	$table_histo->query_date($explore_date);
 	
@@ -848,6 +853,7 @@ sub create_histo_baseline() {
 	$logger->info("Create indexes on $baseline_name dans ".$self->{environnement});
 	$baseline_table->execute("CREATE INDEX IF NOT EXISTS IDX_TABLE_KEY_$baseline_date ON $baseline_name (TABLE_KEY ASC)");
 	
+	return 1;
 }
 
 sub drop_histo_baseline() {

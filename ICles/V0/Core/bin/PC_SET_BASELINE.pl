@@ -131,6 +131,7 @@ sub run {
 	my $bv_severite=0;
 
 	use Isip::Environnement;
+	use Isip::Cache::CacheStatus;
 
 	$logger->notice("création d'une baseline à la date $date");
 	my $env=Environnement->new($environnement);
@@ -183,7 +184,8 @@ sub run {
 					
 					$table->validate_table('Valide',$message);
 					
-					
+					# vidange du cache des icones
+					CacheStatus->new($env)->clear_cache();
 				}
 				
 				$logger->notice("création d'une baseline pour $table_name à la date $date");
