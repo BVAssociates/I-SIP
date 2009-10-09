@@ -144,8 +144,8 @@ sub run {
 		log_erreur("Environnement source est identique à l'environnement cible");
 	}
 	
-	my $save_date;
-	$save_date=1 if not $module_name and not $table_name;
+	my $full_update;
+	$full_update=1 if not $module_name and not $table_name;
 
 	#  Corps du script
 	###########################################################
@@ -329,22 +329,42 @@ sub run {
 
 	}
 
-	#write date in baselines
-	if ($save_date) {
-		log_info("Sauvegarde de la date de collecte dans $environnement");
+	log_info("Sauvegarde de la date de collecte dans $environnement");
+	my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
+	
+	if ($full_update) {
+		log_info("collecte complète : recupératon des statistiques des collecte partielles");
 		
-		my $desc;
+		# recuperation des données depuis la dernière complète
+		$table_date->custom_select_query(
+			q{ SELECT sum(DIFF_VALUE), sum(DIFF_STRUCT) FROM DATE_UPDATE
+			   WHERE DATE_HISTO > (SELECT DATE_HISTO  FROM DATE_UPDATE WHERE FULL_UPDATE=1 ORDER BY DATE_HISTO DESC LIMIT 1)
+			});
+			
+		my ($partial_diff_counter, $partial_struct_diff_counter) = $table_date->fetch_row_array();
+		
+		$total_diff_counter += $partial_diff_counter;
+		$partial_struct_diff_counter += $total_struct_diff_counter;
+	}
+	
+	# on sauvegarde la date des collecte complète
+	# on sauvegarde les dates des collectes partielles si modifs > 0
+	if ( $full_update or $total_diff_counter + $total_struct_diff_counter) {
+		
+		my $desc='';
 		if ($env_compare) {
 			$desc="Recopie de $env_compare";
 			$desc .=" à la date $date_compare" if $date_compare;
 		}
 		
-		my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
-		$table_date->insert_row(DATE_HISTO => $timestamp,
-								DESCRIPTION => "",
-								DIFF_VALUE => $total_diff_counter,
+		#write date
+		$table_date->insert_row(DATE_HISTO  => $timestamp,
+								DESCRIPTION => $desc,
+								DIFF_VALUE  => $total_diff_counter,
 								DIFF_STRUCT => $total_struct_diff_counter,
-								BASELINE => 0);
+								BASELINE    => 0,
+								FULL_UPDATE => $full_update,
+								);
 	}
 
 	#log_info("Mise à jour du cache");
@@ -354,8 +374,9 @@ sub run {
 	# flush cache to disk
 	#$cache->update_dirty_cache();
 
-	log_info("Nombre de modification de structure effectuées au total dans $environnement : $total_struct_diff_counter");
-	log_info("Nombre de lignes mises à jour effectuées au total dans $environnement : $total_diff_counter");
+	log_info("----------------------------------");
+	log_info("Nombre de modification de structure au total dans $environnement : $total_struct_diff_counter");
+	log_info("Nombre de lignes mises à jour au total dans $environnement : $total_diff_counter");
 
 	if (not $no_update_cache and not $no_update_histo and $total_diff_counter+$total_struct_diff_counter) {
 		log_info("mise à jour du cache pour $environnement");
