@@ -170,6 +170,9 @@ sub run {
 		$histo_table->output_separator('@');
 		$histo_table->query_field("ICON","PROJECT",$histo_table->field);
 
+		# optimisation : preselect lines
+		$histo_table->query_condition( q{PROJECT IS NOT NULL OR PROJECT !='' OR STATUS != 'Valide' OR STATUS IS NULL} );
+		
 		while (my %row=$histo_table->fetch_row) {
 			$cache->recurse_line($current_table, \%row);
 		}

@@ -237,38 +237,50 @@ sub get_query()
 	my @field_key=$self->key();
 	my %query_key;
 	
-	foreach my $condition ($self->query_condition()) {
-		if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
-			my $cond_field = $1;
-			my $cond_op    = $2;
-			my $cond_value = $3;
-			
-			if ($cond_field eq "CATEGORY") {
-				#Special case of CATEGORY filter
-				if ($cond_value eq 'vide') {
-					push @select_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE CATEGORY IS NOT NULL )\n"
-				} else {
-					push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE $condition )\n"
-				}
-			}
-			elsif ($cond_field eq "PROJECT") {
-				#preselection of TABLE_KEY which has PROJECT in history
-				push @select_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE $condition )\n"
-			}
-			else {
-			# check if condition is on one of the keys
-				if (grep {$cond_field eq $_} @field_key ) {
-					$query_key{$cond_field}=$cond_value;
+	# parse conditions
+	foreach my $condition_full ($self->query_condition()) {
+		my @or_conditions;
+		
+		# split condition on "OR"
+		foreach my $condition ( split(/\s+OR\s+/, $condition_full) ) {
+		
+			if ($condition =~ /^\s*(\w+)\s*([=]+|like)\s*\'(.*)\'\s*$/) {
+				my $cond_field = $1;
+				my $cond_op    = $2;
+				my $cond_value = $3;
+				
+				if ($cond_field eq "CATEGORY") {
+					#Special case of CATEGORY filter
+					if ($cond_value eq 'vide') {
+						push @or_conditions, "TABLE_KEY_2 NOT IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE CATEGORY IS NOT NULL )\n"
+					} else {
+						push @or_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->table_name."_CATEGORY WHERE $condition )\n"
+					}
 				}
 				else {
-					# else we use request on FIELD_NAME and FIELD_VALUE
-					push @select_conditions, "TABLE_KEY_2 IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$cond_field' and FIELD_VALUE $cond_op '$cond_value')";
+				# check if condition is on one of the keys
+					if (grep {$cond_field eq $_} @field_key ) {
+						$query_key{$cond_field}=$cond_value;
+					}
+					else {
+						# else we use request on FIELD_NAME and FIELD_VALUE
+						push @or_conditions, "TABLE_KEY_2 IN (SELECT table_key FROM $self->{table_name_histo} where FIELD_NAME='$cond_field' and FIELD_VALUE $cond_op '$cond_value')";
+					}
 				}
 			}
+			elsif ($condition =~ /^\s*(PROJECT|STATUS)/) {
+				#Optimisation : preselection of TABLE_KEY which has PROJECT or STATUS 
+				# somewhere in history
+				my $cond_field = $1;
+				
+				push @or_conditions, "TABLE_KEY_2 IN (SELECT TABLE_KEY FROM ".$self->{table_name_histo}." WHERE $condition )\n"
+			}
+			else {
+				croak ("something wrong with condition : $condition");
+			}
 		}
-		else {
-			croak ("something wrong with condition : $condition");
-		}
+		
+		push @select_conditions, '('.join (' OR ', @or_conditions).')' if @or_conditions;
 	}
 
 	#TODO : is it useful?
