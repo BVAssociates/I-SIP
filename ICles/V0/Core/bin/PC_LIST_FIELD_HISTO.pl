@@ -160,13 +160,13 @@ log_info("KEY_VAL=$table_key_value");
 my $table_histo = $env->open_local_table($tablename."_HISTO", {debug => $debug_level});
 $table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
 
-my @field_histo;
+my %field_histo;
 
 my $counter=0;
 while (my %line=$table_histo->fetch_row() ) {
 	$counter++;
 	$line{BASELINE_DESC}="";
-	push @field_histo, \%line;
+	$field_histo{ $line{DATE_HISTO} }=\%line;
 }
 
 # fetch selected row from baselines
@@ -193,11 +193,11 @@ while ( my ($date,$text)=each %baselines) {
 	while (my %line=$table_baseline->fetch_row() ) {
 		$counter++;
 		$line{BASELINE_DESC}=$text;
-		push @field_histo, \%line;
+		$field_histo{ $line{DATE_HISTO} }=\%line;
 	}
 }
 
-foreach my $line(sort {$a->{DATE_HISTO} cmp $b->{DATE_HISTO}} @field_histo) {
+foreach my $line(sort {$a->{DATE_HISTO} cmp $b->{DATE_HISTO}} values %field_histo) {
 	print(join($separator,@$line{$table_histo->query_field(),"BASELINE_DESC"})."\n");
 }
 
