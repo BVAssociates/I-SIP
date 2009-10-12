@@ -128,7 +128,7 @@ my $values=join('',@values);
 if ($table_name =~ /^TABLE_INFO$/i) {
 	die("impossible de supprimer une table depuis ce menu");
 }
-elsif ($table_name =~ /^XML_INFO|CACHE_.*$/i) {
+elsif ($table_name =~ /^XML_INFO|CACHE_.*|FIELD_.*$/i) {
 	delete_info($table_name,$values);
 }
 else {

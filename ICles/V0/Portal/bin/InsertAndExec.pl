@@ -133,8 +133,8 @@ use ReplaceAndExec_ISIP;
 
 my $values=join('',@values);
 
-if ($table_name =~ /^TABLE_INFO$/i) {
-	die("impossible d'ajouter une table depuis ce menu");
+if ($table_name =~ /^TABLE_INFO|FIELD_.*$/i) {
+	die("impossible d'ajouter une entrée depuis ce menu");
 }
 elsif ($table_name =~ /^PROJECT_INFO|XML_INFO|CACHE_.*$/i) {
 	$logger->notice("use library ReplaceAndExec_ISIP::insert_info");

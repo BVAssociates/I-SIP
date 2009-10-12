@@ -158,7 +158,7 @@ elsif ($table_name =~ /^COLUMN_INFO$/i) {
 	$logger->info("use library ReplaceAndExec_ISIP::update_column_info");
 	update_column_info($table_name,$values);
 }
-elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*|FIELD_.*$/i) {
 	$logger->info("use library ReplaceAndExec_ISIP::update_info");
 	update_info($table_name,$values);
 }
