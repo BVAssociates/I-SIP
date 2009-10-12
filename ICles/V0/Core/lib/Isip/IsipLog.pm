@@ -103,7 +103,7 @@ my %file_definition=(file => {
 				#reopen => 0,
 				autoflush => 0,
 				newline  => 1,
-				maxlevel => 'notice',
+				maxlevel => 'debug',
 				timeformat      => '%Y/%m/%d %H:%M:%S',
 				message_layout  => '%T:%L:%S:%m',
 				filename        => $ENV{ISIP_LOG}."/Isip.".timestamp().".log",

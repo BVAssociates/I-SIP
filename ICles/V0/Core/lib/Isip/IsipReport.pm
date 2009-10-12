@@ -4,6 +4,8 @@ package IsipReport;
 use Carp qw(carp croak );
 use strict;
 
+use Isip::IsipRules;
+
 use Date::Calc qw(:all);
 use List::Util qw(sum);
 
@@ -23,7 +25,7 @@ sub new() {
 	}
 	
 	$self->{environnement_ref} = shift;
-	
+
 	
 	bless ($self, $class);
 	
@@ -74,10 +76,30 @@ sub get_update_histo_count() {
 		
 		my $table = $self->{environnement_ref}->open_local_table($table_name."_HISTO");
 		
+		my $rules = IsipRules->new( $table_name, $self->{environnement_ref} );
+		
+		my @hidden_field_list=$rules->get_hidden_field_list();
+		my $field_query="";
+		if ( @hidden_field_list ) {
+			$field_query="AND FIELD_NAME NOT IN (".join(',', map {"'".$_."'"} @hidden_field_list).") ";
+		}
+		
+		my %hidden_key_for=$rules->get_hidden_key_hash();
+		my $key_query="";
+		if ( %hidden_key_for ) {
+			foreach my $key_field ( keys %hidden_key_for ) {
+				$key_query .= " AND NOT (TABLE_KEY = '$key_field' AND FIELD_NAME = '$hidden_key_for{$key_field}' ) ";
+			}
+		}
+		
+		
+		
 		$table->custom_select_query(
 			qq{SELECT count(*), max(date_histo) FROM $table_name\_HISTO
 				WHERE DATE_HISTO >= '$date_begin_txt' AND DATE_HISTO <= '$date_end_txt'
 				AND COMMENT != 'Creation'
+				$field_query
+				$key_query
 				--GROUP BY DATE_HISTO}
 		);
 		
@@ -100,18 +122,23 @@ sub get_update_comment_count() {
 	
 	my ($date_begin_txt, $date_end_txt) = $self->_get_date_interval($day_count, $day_offset);
 	
-	
 	my @table_list=$self->{environnement_ref}->get_table_list();
 	
 	my $total_count=0E0;
 	foreach my $table_name ( @table_list ) {
 		
+		my @hidden_field_list=IsipRules->new( $table_name, $self->{environnement_ref} )->get_hidden_field_list();
 		my $table = $self->{environnement_ref}->open_local_table($table_name."_HISTO");
-		
+		my $field_query="";
+		if ( @hidden_field_list ) {
+			$field_query="AND FIELD_NAME NOT IN (".join(',', map {"'".$_."'"} @hidden_field_list).") ";
+		}
+
 		$table->custom_select_query(
 			qq{SELECT count(*), USER_UPDATE FROM $table_name\_HISTO
 				WHERE DATE_UPDATE >= '$date_begin_txt' AND DATE_UPDATE <= '$date_end_txt'
 				AND USER_UPDATE not like '%isip_service'
+				$field_query
 				GROUP BY USER_UPDATE}
 		);
 		
@@ -121,7 +148,7 @@ sub get_update_comment_count() {
 		}
 	}
 	
-	print "Nombre de modification de valeur de champs : ".$total_count."\n";
+	print "Nombre de modification de commentaires : ".$total_count."\n";
 	
 	return $total_count;
 }
