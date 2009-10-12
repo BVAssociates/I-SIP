@@ -47,7 +47,7 @@ sub new() {
 	my $self= fields::new($class);
 	
 	# member initializations
-	$self->{column_info}={};
+	$self->{column_info}={};  # ref object HistoColumns
 	$self->{label}={};
 	
 	# constants identifiers enumeration
@@ -90,7 +90,7 @@ sub new() {
 sub _init_info() {
 	my $self=shift;
 	
-	# store table columns and their informationns (desc,type..)
+	# get HistoColumns ref object
 	$self->{column_info}=$self->{environnement}->get_columns($self->{table_name});
 	
 	if ($self->{environnement}->exist_local_table("FIELD_LABEL")) {
@@ -101,7 +101,7 @@ sub _init_info() {
 		while (my %row=$table_status->fetch_row()) {
 			my $key=join(',',@row{"TABLE_KEY","FIELD_NAME"});
 			
-			$self->{label}->{$key}=$row{LABEL};
+			$self->{label}->{ $row{"TABLE_KEY"} }->{ $row{"FIELD_NAME"} }=$row{LABEL};
 		}
 	}
 	
@@ -200,7 +200,31 @@ sub is_field_hidden() {
 	}
 }
 
+sub get_hidden_field_list() {
+	my $self=shift;
+	
+	my @field_list=$self->{column_info}->get_field_list();
+	my @hidden_list;
+	foreach my $field ( @field_list ) {
+	
+		my $type=$self->get_field_type($field);
+		push @hidden_list, $field if grep { $type eq $_ } ('HIDDEN','STAMP');
+	}
+	
+	return @hidden_list;
+}
 
+sub get_hidden_key_hash() {
+	my $self=shift;
+	
+	my %hidden_field_for;
+	while (my ($key,$hash) = each %{$self->{label}} ) {
+		while (my ($field,$label) = each %{$hash} ) {
+			$hidden_field_for{$key}=$field if $label eq 'OK';
+		}
+	}
+	return %hidden_field_for;
+}
 
 # compute the validation status of a field
 # param type : type of the field
@@ -235,9 +259,9 @@ sub get_field_icon () {
 	my $return_status;
 	
 	my $field_key=join(',',($key,$name));
-	if ( exists $self->{label}->{$field_key} ) {
+	if ( exists $self->{label}->{$key}->{$name} ) {
 	# Use label from table _LABEL
-		my $label_value=$self->{label}->{$field_key};
+		my $label_value=$self->{label}->{$key}->{$name};
 		
 		$return_status=$self->{field_icon}{$label_value}."_label";
 	}
@@ -261,11 +285,13 @@ sub get_field_icon () {
 		if ($status eq "OK") {
 			# PROJECT must be filled to be OK
 			# except at base creation
-			if ($project or $comment eq "Creation") {
-				$return_status=$self->{field_icon}{OK};
+			
+			#if ($project or $comment eq "Creation") {
+			if ( not $comment ) {
+				$return_status=$self->{field_icon}{TEST};
 			}
 			else {
-				$return_status=$self->{field_icon}{TEST};
+				$return_status=$self->{field_icon}{OK};
 			}
 		}
 		elsif ($status eq "UPDATED") {
