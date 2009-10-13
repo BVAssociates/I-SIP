@@ -1,3 +1,16 @@
+v0.8.1
+
+Première version de production
+
+Type: defect
+#124 	problème dans "baseline->comparer autre environnement"
+
+Type: enhancement
+#125 	Entretien base mensuel
+
+Type: task
+#111 	définir les rôles I-SIS et les droits PCI
+
 v0.8
 
 Type: adaptation
