@@ -6,7 +6,6 @@ use strict;
 
 use Isip::IsipRules;
 
-use Date::Calc qw(:all);
 use List::Util qw(sum);
 
 ##################################################
@@ -36,25 +35,6 @@ sub new() {
 ##  pivate methods  ##
 ##################################################
 
-sub _get_date_interval {
-	my $self=shift;
-	
-	my $day_count=shift or croak("usage: _get_date_interval(day_count [,day_back])");
-	my $day_offset=shift;
-	
-	my @today=Today_and_Now();
-	
-	my @date_begin;
-	my @date_end=@today;
-	
-	@date_begin=Add_Delta_DHMS(@date_end, -$day_count, 0,0,0);
-	@date_end=Add_Delta_DHMS(@today, -$day_offset, 0,0,0) if $day_offset;
-	
-	my $date_begin_txt= sprintf("%d-%02d-%02dT%02d:%02d:%02d", @date_begin);
-	my $date_end_txt= sprintf("%d-%02d-%02dT%02d:%02d:%02d", @date_end);
-	
-	return ($date_begin_txt, $date_end_txt);
-}
 
 ##################################################
 ##  public methods  ##
@@ -63,10 +43,8 @@ sub _get_date_interval {
 sub get_update_histo_count() {
 	my $self=shift;
 	
-	my $day_count=shift or croak("usage: get_update_histo_rate(day_count [,day_back])");
-	my $day_offset=shift;
-	
-	my ($date_begin_txt, $date_end_txt) = $self->_get_date_interval($day_count, $day_offset);
+	my $date_begin_txt=shift or croak("usage: get_update_histo_rate(date_begin [,date_end])");
+	my $date_end_txt=shift;
 	
 	
 	my @table_list=$self->{environnement_ref}->get_table_list();
@@ -117,10 +95,8 @@ sub get_update_histo_count() {
 sub get_update_comment_count() {
 	my $self=shift;
 	
-	my $day_count=shift or croak("usage: get_update_histo_rate(day_count [,day_back])");
-	my $day_offset=shift;
-	
-	my ($date_begin_txt, $date_end_txt) = $self->_get_date_interval($day_count, $day_offset);
+	my $date_begin_txt=shift or croak("usage: get_update_histo_rate(date_begin [,date_end])");
+	my $date_end_txt=shift;
 	
 	my @table_list=$self->{environnement_ref}->get_table_list();
 	
@@ -137,7 +113,8 @@ sub get_update_comment_count() {
 		$table->custom_select_query(
 			qq{SELECT count(*), USER_UPDATE FROM $table_name\_HISTO
 				WHERE DATE_UPDATE >= '$date_begin_txt' AND DATE_UPDATE <= '$date_end_txt'
-				AND USER_UPDATE not like '%isip_service'
+				AND COMMENT != 'Creation'
+				AND ( COMMENT NOT LIKE 'Baseline%' AND STATUS != 'VALIDE')
 				$field_query
 				GROUP BY USER_UPDATE}
 		);
@@ -148,11 +125,47 @@ sub get_update_comment_count() {
 		}
 	}
 	
-	print "Nombre de modification de commentaires : ".$total_count."\n";
+	print "Nombre de modification validés : ".$total_count."\n";
 	
 	return $total_count;
 }
 
+sub get_update_invalid_count() {
+	my $self=shift;
+	
+	my $date_begin_txt=shift or croak("usage: get_update_histo_rate(date_begin [,date_end])");
+	my $date_end_txt=shift;
+	
+	my @table_list=$self->{environnement_ref}->get_table_list();
+	
+	my $total_count=0E0;
+	foreach my $table_name ( @table_list ) {
+		
+		my @hidden_field_list=IsipRules->new( $table_name, $self->{environnement_ref} )->get_hidden_field_list();
+		my $table = $self->{environnement_ref}->open_local_table($table_name."_HISTO");
+		my $field_query="";
+		if ( @hidden_field_list ) {
+			$field_query="AND FIELD_NAME NOT IN (".join(',', map {"'".$_."'"} @hidden_field_list).") ";
+		}
+
+		$table->custom_select_query(
+			qq{SELECT count(*), USER_UPDATE FROM $table_name\_HISTO
+				WHERE DATE_UPDATE >= '$date_begin_txt' AND DATE_UPDATE <= '$date_end_txt'
+				AND STATUS != 'Valide'
+				$field_query
+				GROUP BY USER_UPDATE}
+		);
+		
+		while( my @row = $table->fetch_row_array() ) {
+			#print join(',', $table_name,@row)."\n" if $row[0];
+			$total_count += $row[0];
+		}
+	}
+	
+	print "Nombre de modification à commenter : ".$total_count."\n";
+	
+	return $total_count;
+}
 
 1;
 
