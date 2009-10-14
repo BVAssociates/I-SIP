@@ -5,6 +5,7 @@ use fields qw(
 	info_module
 	defaut_odbc_options
 	export_dir
+	isip_config
 );
 
 use strict;
@@ -20,6 +21,7 @@ use ITable::ODBC;
 use Carp qw(carp croak );
 use Scalar::Util qw(blessed);
 use File::Copy;
+use AppConfig qw(:expand :argcount);
 
 use Isip::IsipLog '$logger';
 
@@ -36,6 +38,11 @@ sub new() {
 	$self->{defaut_odbc_options}={
 		username => "ETUDEGF",
 		password => "GFETUDE05",
+	};
+	
+	$self->{isip_config}={
+		smtp_host => 'smtp.sicf.fr',
+		smtp_from => 'isip@groupeicf.fr',
 	};
 	
 	$self->{export_dir}= $ENV{ISIP_DATA}.'/export';
@@ -171,6 +178,14 @@ sub get_data_dir() {
 	$data_path =~ s|[\\/]$||;
 	
 	return $data_path;
+}
+
+sub get_config_var() {
+	my $self=shift;
+	
+	my $config_var=shift or croak("usage: get_config_var (varname)");
+	
+	return $self->{isip_config}->{$config_var};
 }
 
 sub exists_database_environnement() {
