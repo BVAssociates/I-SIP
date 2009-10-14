@@ -16,7 +16,7 @@ Item~Jobs~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
 Item~Journaux~Historique Execution, tout le monde~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
 Item~Journaux~Historique Execution~expl~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
 Item~Journaux~Statistique Execution~expl~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
-Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\derniere_collecte.log~0~~Configure
+Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\isip_collecte.log~0~~Configure
 Item~Journaux~Log collecte~adm~~~DisplayFile~%ISIP_LOG%\derniere_collecte.log~0~~Configure
 
 
