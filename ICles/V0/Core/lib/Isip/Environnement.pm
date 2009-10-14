@@ -319,7 +319,7 @@ sub get_sqlite_filename() {
 	my $database_path;
 	
 	
-	if ($table_name =~ /^FIELD_LABEL|PROJECT_INFO|DATE_UPDATE|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
+	if ($table_name =~ /^FIELD_MAIL|FIELD_LABEL|PROJECT_INFO|DATE_UPDATE|TABLE_INFO|XML_INFO|CACHE_.*$/i) {
 		$filename = "ISIP_".$environnement."_INFO.sqlite";
 	}
 	else {

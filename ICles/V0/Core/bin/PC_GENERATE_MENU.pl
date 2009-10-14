@@ -314,6 +314,7 @@ Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} a
 
 Item~Surveillance~Ne plus surveiller~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME% OK~0~~Configure
 Item~Surveillance~Surveiller à nouveau~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL [% environnement %] [% table %] %TABLE_KEY% %FIELD_NAME%~0~~Configure
+Item~Surveillance~Etre alerter par Email~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~~ExecuteProcedure~InsertAndExec [% table %] %TABLE_KEY% %FIELD_NAME%~0~~Configure
 ';
 
 	my $environnement=$env_obj->{environnement};

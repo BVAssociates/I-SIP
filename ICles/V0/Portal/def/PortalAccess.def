@@ -1,0 +1,23 @@
+#
+#       BV Associates, 2001-2004
+#
+#	APP : I-SIS
+#
+#       PACK : PORTAL
+#
+#	Table : PortalAccess.def
+#
+#       Dictionnaire des abonnements au Portail I-SIS
+#
+#	$Revision: 1.3 $
+#
+
+SEP=":"
+FORMAT="IsisUser:Role:Email"
+SIZE="12s:10s:30s"
+HEADER="Liste des abonnements au Portail I-SIS"
+KEY="IsisUser"
+SORT="IsisUser"
+NOTNULL="IsisUser:Role"
+
+FKEY="[Role] on roles[Role]"
