@@ -41,7 +41,7 @@ sub new() {
 	};
 	
 	$self->{isip_config}={
-		smtp_host => 'smtp.sicf.fr',
+		smtp_host => $ENV{SMTP_HOST},
 		smtp_from => 'isip@groupeicf.fr',
 	};
 	
