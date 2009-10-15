@@ -160,7 +160,7 @@ sub run {
 		$counter++;
 		
 			
-		log_info("Connexion à la base d'historisation de $current_table");
+		log_info("Mise à jour du cache des icones de $current_table");
 		my $histo_table=$env_sip->open_local_from_histo_table($current_table, {debug => $debug_level, timeout => 100000});
 		
 		my $type_rules = IsipRules->new($current_table,$env_sip);

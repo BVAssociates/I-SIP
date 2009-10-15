@@ -67,6 +67,12 @@ sub add_row_cache() {
 	my $value_ref=shift or croak("usage: add_row_cache(table_name,key_string , value)");
 	
 	
+	if ( $value_ref->{ICON} =~ /_label/ ) {
+		# a value is labeled while going through, we stop the recursion
+		undef $self->{action};
+		return;
+	}
+	
 	$logger->info("add $table_name:$key_string in CacheStatus");
 	
 	croak("check_before_cache must be called before add_row_cache") if not $self->{current_table};

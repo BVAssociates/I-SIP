@@ -455,6 +455,9 @@ sub open_local_from_histo_table() {
 		$table_histo->query_date($date_explore) if $date_explore;
 	}
 	
+	my $type_rules = IsipRules->new($table_name,$self);
+	$table_histo->isip_rules($type_rules);
+		
 	return $table_histo
 }
 

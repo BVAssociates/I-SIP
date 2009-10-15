@@ -133,6 +133,7 @@ sub _recurse_line_action() {
 	
 	
 	my $table=$self->{isip_env}->open_local_from_histo_table($parent_table);
+	$table->query_field("ICON",$table->query_field());
 	
 	# get field from parent (primary keys, I hope!)
 	my @child_field=keys %foreign_keys;

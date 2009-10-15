@@ -93,15 +93,21 @@ sub _init_info() {
 	# get HistoColumns ref object
 	$self->{column_info}=$self->{environnement}->get_columns($self->{table_name});
 	
+	# compute the labels
 	if ($self->{environnement}->exist_local_table("FIELD_LABEL")) {
 		my $table_status=$self->{environnement}->open_local_table("FIELD_LABEL");
 		
 		$table_status->query_condition("TABLE_NAME = '$self->{table_name}'");
 		
 		while (my %row=$table_status->fetch_row()) {
-			my $key=join(',',@row{"TABLE_KEY","FIELD_NAME"});
 			
-			$self->{label}->{ $row{"TABLE_KEY"} }->{ $row{"FIELD_NAME"} }=$row{LABEL};
+			if ( $row{"FIELD_NAME"} ) {
+				$self->{label}->{ $row{"TABLE_KEY"} }->{ $row{"FIELD_NAME"} }=$row{LABEL};
+			}
+			else {
+				# if FIELD_NAME doesn't exists, whole line
+				$self->{label}->{ $row{"TABLE_KEY"} }->{ '*' } =$row{LABEL};
+			}
 		}
 	}
 	
@@ -258,11 +264,17 @@ sub get_field_icon () {
 	# new status
 	my $return_status;
 	
-	my $field_key=join(',',($key,$name));
-	if ( exists $self->{label}->{$key}->{$name} ) {
 	# Use label from table _LABEL
-		my $label_value=$self->{label}->{$key}->{$name};
+	if ( exists $self->{label}->{$key}->{ '*' } ) {
+		# all field are labeled
+		my $label_value=$self->{label}->{$key}->{ '*' };
 		
+		$return_status=$self->{field_icon}{$label_value}."_label";
+	}
+	elsif ( exists $self->{label}->{$key}->{$name} ) {
+		# check if field has a label
+		my $label_value=$self->{label}->{$key}->{$name};
+				
 		$return_status=$self->{field_icon}{$label_value}."_label";
 	}
 	# case of new line
@@ -325,7 +337,11 @@ sub get_line_icon () {
 	foreach (@icon_list) {
 	
 		# remove label information
-		s/_label// if defined;
+		
+		if ( defined and /_label$/ ) {
+			s/_label$//;
+			$counter{IGNORE}++;
+		}
 	
 		my $icon;
 		if (not defined $_) {
@@ -346,7 +362,7 @@ sub get_line_icon () {
 		
 	}
 	
-	#return $self->{line_icon}{IGNORE} if $counter{IGNORE} == @icon_list;
+	return $self->{line_icon}{IGNORE} if $counter{IGNORE} == @icon_list;
 	
 	return $self->{line_icon}{NEW} if $counter{NEW} > 0;
 	return $self->{line_icon}{UPDATED} if $counter{UPDATED} > 0;
