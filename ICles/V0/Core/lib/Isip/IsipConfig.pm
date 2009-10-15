@@ -307,6 +307,27 @@ sub create_database_environnement() {
 		PRIMARY KEY ("PROJECT_NAME")
 	)');
 	
+	
+	$logger->info("Create table FIELD_LABEL");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS FIELD_LABEL (
+		"DATE_UPDATE" TEXT,
+		"USER_UPDATE" TEXT NOT NULL ,
+		"TABLE_NAME" TEXT NOT NULL ,
+		"TABLE_KEY" TEXT,
+		"FIELD_NAME" TEXT,
+		"LABEL" TEXT, PRIMARY KEY ("TABLE_NAME","TABLE_KEY","FIELD_NAME") 
+	)');
+	
+	$logger->info("Create table FIELD_MAIL");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS FIELD_MAIL (
+		"DATE_UPDATE" TEXT,
+		"USER_UPDATE" TEXT NOT NULL,
+		"TABLE_NAME" TEXT NOT NULL,
+		"TABLE_KEY" TEXT,
+		"FIELD_NAME" TEXT,
+		PRIMARY KEY ("USER_UPDATE","TABLE_NAME","TABLE_KEY","FIELD_NAME")
+	)');
+	
 	$master_table->close();
 }
 

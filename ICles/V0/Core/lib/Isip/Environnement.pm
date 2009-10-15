@@ -787,13 +787,6 @@ sub create_database_histo() {
 		PRIMARY KEY (TABLE_NAME,FIELD_NAME,DATE_HISTO)
 	)");
 	
-	$logger->info("Create table $tablename\_LABEL");
-	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_LABEL (
-		TABLE_KEY VARCHAR NOT NULL ,
-		FIELD_NAME VARCHAR NOT NULL ,
-		LABEL VARCHAR NOT NULL ,
-		PRIMARY KEY (TABLE_KEY,FIELD_NAME))");
-	
 	$logger->info("Create table $tablename\_CATEGORY");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_CATEGORY (
 	TABLE_KEY VARCHAR(30) PRIMARY KEY NOT NULL,
