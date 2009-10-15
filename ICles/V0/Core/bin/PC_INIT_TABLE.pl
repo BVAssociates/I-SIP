@@ -159,7 +159,6 @@ if ($create) {
 		$new_line{TYPE_SOURCE}=$table_info_from{type_source};
 		$new_line{LABEL_FIELD}=$table_info_from{label_field};
 		$new_line{DESCRIPTION}=$table_info_from{description};
-		$new_line{ACTIVE}=1;
 		$new_line{ROOT_TABLE}=$table_info_from{root_table};
 	}
 	else {
@@ -221,7 +220,6 @@ if ($create) {
 		$new_line{TYPE_SOURCE}=$ENV{TABLE_TYPE};
 		$new_line{LABEL_FIELD}=$ENV{TABLE_LABEL};
 		$new_line{DESCRIPTION}=$table_desc;
-		$new_line{ACTIVE}=1;
 		
 		# optionnal fields
 		$new_line{ROOT_TABLE}=1 if not $xml_copy;

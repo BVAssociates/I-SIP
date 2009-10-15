@@ -189,7 +189,6 @@ if ($create) {
 	$new_line{TYPE_SOURCE}=$ENV{TABLE_TYPE};
 	$new_line{LABEL_FIELD}=$ENV{TABLE_LABEL};
 	$new_line{DESCRIPTION}=$table_desc;
-	$new_line{ACTIVE}=1;
 	$new_line{ROOT_TABLE}=1 if not $master;
 	
 	my $table=$env_sip->open_local_table("TABLE_INFO");

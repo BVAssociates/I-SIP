@@ -52,7 +52,7 @@ sub new() {
 	# populate class members
 	
 	my $table_info=$self->open_local_table("TABLE_INFO", $self->{options});
-	$table_info->query_condition("ACTIVE = 1");
+	
 	while (my %row=$table_info->fetch_row) {		
 		$self->{info_table}->{$row{TABLE_NAME}}->{module}=$row{MODULE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{root_table}=$row{ROOT_TABLE};
@@ -60,6 +60,7 @@ sub new() {
 		$self->{info_table}->{$row{TABLE_NAME}}->{param_source}=$row{PARAM_SOURCE};
 		$self->{info_table}->{$row{TABLE_NAME}}->{label_field}=$row{LABEL_FIELD};
 		$self->{info_table}->{$row{TABLE_NAME}}->{description}=$row{DESCRIPTION};
+		$self->{info_table}->{$row{TABLE_NAME}}->{allow_ignore}=$row{ALLOW_IGNORE};
 
 		# init structure for columns 
 		$self->{info_table}->{$row{TABLE_NAME}}->{column}={};
@@ -143,6 +144,7 @@ sub get_columns() {
 	return $tmp_return;
 }
 
+#renvoie vrai si la table est une table racine
 sub is_root_table() {
 	my $self = shift;
 	
@@ -150,6 +152,16 @@ sub is_root_table() {
 	
 	return undef if not exists $self->{info_table}->{$table_name};
 	return $self->{info_table}->{$table_name}->{root_table};
+}
+
+# renvoie vrai si la table peut ignorée certaines lignes
+sub can_table_ignore() {
+	my $self = shift;
+	
+	my $table_name=shift or croak("usage : can_table_ignore(table)");
+	
+	return undef if not exists $self->{info_table}->{$table_name};
+	return $self->{info_table}->{$table_name}->{allow_ignore};
 }
 
 sub get_table_info() {

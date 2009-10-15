@@ -101,7 +101,7 @@ sub _init_info() {
 		
 		while (my %row=$table_status->fetch_row()) {
 			
-			if ( $row{"FIELD_NAME"} ) {
+			if ( $row{"FIELD_NAME"} and $row{"FIELD_NAME"} ne '*' ) {
 				$self->{label}->{ $row{"TABLE_KEY"} }->{ $row{"FIELD_NAME"} }=$row{LABEL};
 			}
 			else {

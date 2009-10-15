@@ -11,15 +11,15 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_LIST_TABLE_LOCAL - Liste les tables locales (SQlite)
+upgrade_TABLE_INFO - 
 
 =head1 SYNOPSIS
 
- PC_LIST_TABLE_LOCAL.pl [-h][-v] [-s separateur] environnement
+ upgrade_TABLE_INFO.pl [-h][-v]
  
 =head1 DESCRIPTION
 
-Affiche le contenu d'une table de la base de donnée d'information de l'environnement
+Met à jour les bases de données ISIP avec la nouvelle table TABLE_INFO (see #137) 
 
 =head1 ENVIRONNEMENT
 
@@ -37,17 +37,9 @@ Affiche le contenu d'une table de la base de donnée d'information de l'environne
 
 =item -v : Mode verbeux
 
-=item -s : modifie le separateur de sortie
-
 =back
 
 =head1 ARGUMENTS
-
-=over
-
-=item environnement
-
-=item tablename : table a ouvrir
 
 =back
 
@@ -88,37 +80,62 @@ sub log_info {
 
 
 my %opts;
-getopts('hvs:', \%opts);
+getopts('hv', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $separator=',';
-$separator=$opts{s} if exists $opts{s};
-
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
+
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
+
+use Isip::IsipConfig;
 use Isip::Environnement;
+use Isip::HistoColumns;
 
-my $env=Environnement->new($environnement);
+my $config=IsipConfig->new();
 
-foreach my $table (sort $env->get_table_list()) {
-	my %table_info=$env->get_table_info($table);
-	$table_info{icon}="valide";
-	$table_info{icon}="warn" if not $env->get_table_key($table);;
-	$table_info{table_name}=$table;
-	print join($separator, @table_info{("root_table","table_name","type_source","param_source","module","label_field","description","allow_ignore","icon")}),"\n",
+my @environnement_list=$config->get_environnement_list();
+
+# get update info
+use POSIX qw(strftime);
+my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+my $current_user=$ENV{IsisUser};
+$current_user = "local" if not $current_user;
+
+foreach (@environnement_list) {
+	my $env=Environnement->new($_);
+	
+	# la table FIELD_LABEL sera créée dans la meme base que TABLE_INFO
+	my $table_info = $env->open_local_table("TABLE_INFO");
+	
+	$table_info->execute('ALTER TABLE "main"."TABLE_INFO" RENAME TO "__temp__TABLE_INFO"');
+	
+	$table_info->execute('CREATE TABLE "main"."TABLE_INFO" (
+	"ROOT_TABLE" NUMERIC,
+	"TABLE_NAME" VARCHAR(30) PRIMARY KEY ,
+	"TYPE_SOURCE" VARCHAR(30),
+	"PARAM_SOURCE" VARCHAR(30),
+	"MODULE" VARCHAR(30),
+	"LABEL_FIELD" VARCHAR(30),
+	"DESCRIPTION" VARCHAR(50),
+	"ALLOW_IGNORE" BOOL DEFAULT 0
+	)') ;
+	
+	$table_info->execute('INSERT INTO "main"."TABLE_INFO" SELECT "ROOT_TABLE","TABLE_NAME","TYPE_SOURCE","PARAM_SOURCE","MODULE","LABEL_FIELD","DESCRIPTION",0 FROM "main"."__temp__TABLE_INFO"') ; 
+	
+	$table_info->execute('DROP TABLE "main"."__temp__TABLE_INFO"');
+
 }

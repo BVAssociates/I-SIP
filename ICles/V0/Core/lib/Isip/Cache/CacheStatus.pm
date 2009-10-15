@@ -32,13 +32,20 @@ sub check_before_cache() {
 	my $table=shift;
 	my $value_ref=shift;
 	
+	# reset current action
 	$self->{action}=0;
+	
 	if (exists $value_ref->{ICON} and $value_ref->{ICON}) {
+		
+		# valide <=> valide_label
+		$value_ref->{ICON} =~ s/_label$//;
+		$value_ref->{OLD_ICON} =~ s/_label$//;
+		
 		if (exists $value_ref->{OLD_ICON} and $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
-				$self->{action}=1 if $value_ref->{OLD_ICON} =~ /^valide/;
-				$self->{action}=-1 if $value_ref->{ICON} =~ /^valide/;
-					# note : match 'valide' and 'valide_label'
+				
+				$self->{action}=  1 if $value_ref->{OLD_ICON} =~ /^valide$/;
+				$self->{action}= -1 if $value_ref->{ICON}     =~ /^valide$/;
 			}
 		}
 		else {
@@ -83,6 +90,8 @@ sub add_row_cache() {
 	
 	my $new_value=$old_value + $self->{action};
 	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
+	
+	$logger->info("$table_name.$key_string : $old_value -> $new_value");
 }
 
 sub get_dirty_key {
@@ -263,8 +272,7 @@ sub save_cache() {
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	
 	$table->begin_transaction();
-	
-	
+		
 	
 	my %dirty_temp=%{$self->{memory_cache}};
 	foreach my $dirty_table (keys %dirty_temp) {

@@ -15,7 +15,7 @@ PC_SET_LABEL - force le label d'une clef et d'un champ
 
 =head1 SYNOPSIS
 
- PC_SET_LABEL.pl [-h] [-v] environnement tablename clef champ label
+ PC_SET_LABEL.pl [-h] [-v] [-f champ] environnement tablename clef label
  
 =head1 DESCRIPTION
 
@@ -37,6 +37,8 @@ Force l'icone d'un champ d'une ligne dans un état invariable.
 
 =item -v : Mode verbeux
 
+=item -f : champ spécifique
+
 =back
 
 =head1 ARGUMENTS
@@ -48,8 +50,6 @@ Force l'icone d'un champ d'une ligne dans un état invariable.
 =item tablename
 
 =item clef
-
-=item champ
 
 =item label : code de l'icone (Voir IsipRules)
 
@@ -75,7 +75,7 @@ sub usage($) {
 	sortie(202); 
 }
 
-sub log_erreur {
+sub log_error {
 	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
 	$logger->error(@_);
 	sortie(202);
@@ -92,17 +92,21 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvf:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
+my $field=$opts{f};
+
+$field='*' if not $field;
+
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 4) {
+if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -111,7 +115,6 @@ if ( @ARGV < 4) {
 my $environnement=shift;
 my $table_name=shift;
 my $key=shift;
-my $field=shift;
 my $icon=shift;
 
 #  Corps du script
@@ -150,49 +153,49 @@ else {
 
 $table->commit_transaction;
 
-# update cache
-use Isip::IsipTreeCache;
-use Isip::IsipRules;
-use Isip::Cache::CacheStatus;
+if ( $field eq '*' ) {
 
-# reconstruct the line
-my %new_line;
-my $table_ikos=$env->open_local_from_histo_table($table_name);
-$table_ikos->query_key_value($key);
-%new_line=$table_ikos->fetch_row();
-croak("Problème lors de la récupération de la ligne $key") if $table_ikos->fetch_row() or not %new_line;
-undef $table_ikos;
-
-my %icon_list=IsipRules->enum_field_icon();
-
-if (not $ENV{ICON}) {
-	log_info("impossible de mettre à jour le cache car ICON n'est pas dans l'environnement");
-	$ENV{ICON}="valide_label";
-}
-
-if ($icon) {
-	$new_line{ICON}=$icon_list{$icon};
-	$new_line{OLD_ICON}=$ENV{ICON};
+	my $module=$ENV{Module};
+	log_info("Le cache des icônes doit être reconstruit pour le module $module");
+	
+	require 'PC_UPDATE_CACHE.pl';
+	pc_update_cache::run("-m",$module,$environnement);
+	
 }
 else {
-	#recalcul de l'icone du champ
-	my $rules=IsipRules->new($table_name, $env);
-	
-	my %field_line=%ENV;
-	@field_line{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")}=@ENV{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")};
-	
-	$new_line{ICON}=$rules->get_field_icon(%field_line);
+	# update cache
+	use Isip::IsipTreeCache;
+	use Isip::IsipRules;
+	use Isip::Cache::CacheStatus;
+
+	# reconstruct the line
+	my %new_line;
+	my $table_ikos=$env->open_local_from_histo_table($table_name);
+	$table_ikos->query_field("ICON", $table_ikos->query_field() );
+
+	$table_ikos->query_key_value($key);
+	%new_line=$table_ikos->fetch_row();
+	log_error("Problème lors de la récupération de la ligne $key") if $table_ikos->fetch_row() or not %new_line;
+	undef $table_ikos;
+
+	my %icon_list=IsipRules->enum_field_icon();
+
+	if (not $ENV{ICON}) {
+		log_info("impossible de mettre à jour le cache car ICON n'est pas dans l'environnement");
+		$ENV{ICON}="valide_label";
+	}
+
 	$new_line{OLD_ICON}=$ENV{ICON};
-}
-$new_line{OLD_ICON}=$ENV{ICON};
-@new_line{$env->get_table_key($table_name)}=split(',',$key);
+	#@new_line{$env->get_table_key($table_name)}=split(',',$key);
 
-my $cache=IsipTreeCache->new($env);
-$cache->add_dispatcher(CacheStatus->new($env));
+	my $cache=IsipTreeCache->new($env);
+	$cache->add_dispatcher(CacheStatus->new($env));
 
-log_info("Mise à jour des icônes");
-$cache->recurse_line($table_name, \%new_line);
-eval {$cache->save_cache() };
-if ($@) {
-	log_erreur("Mise à jour des icônes impossible : $@");
+	log_info("Mise à jour des icônes pour $key : $new_line{OLD_ICON} -> $new_line{ICON}");
+	$cache->recurse_line($table_name, \%new_line);
+	eval {$cache->save_cache() };
+	if ($@) {
+		log_error("Mise à jour des icônes impossible : $@");
+	}
+
 }
