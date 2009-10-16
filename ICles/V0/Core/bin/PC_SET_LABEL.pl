@@ -171,6 +171,8 @@ else {
 	# reconstruct the line
 	my %new_line;
 	my $table_ikos=$env->open_local_from_histo_table($table_name);
+	
+	$table_ikos->isip_rules(IsipRules->new($table_name,$env));
 	$table_ikos->query_field("ICON", $table_ikos->query_field() );
 
 	$table_ikos->query_key_value($key);
