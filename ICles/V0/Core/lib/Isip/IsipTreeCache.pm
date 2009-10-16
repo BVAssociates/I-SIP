@@ -3,6 +3,7 @@ use fields qw(isip_env links dispacher_list);
 
 use strict;
 use Isip::IsipLog '$logger';
+use Isip::IsipRules;
 use Isip::Cache::CacheInterface;
 
 use Carp qw(carp croak );
@@ -26,7 +27,9 @@ sub new() {
 
 	$self->{isip_env}=$environnement;
 	$self->{links}=$self->{isip_env}->get_links();
-
+	
+	$self->{rules}=IsipRules->new($table_name,$self);
+	
 	## remember :
 	#$self->{links}->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
 	#$self->{links}->{table_child}->{$table_foreign}->{$table_name}->{$field_foreign} = $field_name;
@@ -71,6 +74,7 @@ sub recurse_key() {
 	}
 	
 	my $table=$self->{isip_env}->open_local_from_histo_table($table_name);
+	$table->isip_rules($self->{rules});
 	$table->query_condition(@fetch_condition);
 	
 	my $count=0;
@@ -133,6 +137,7 @@ sub _recurse_line_action() {
 	
 	
 	my $table=$self->{isip_env}->open_local_from_histo_table($parent_table);
+	$table->isip_rules($self->{rules});
 	$table->query_field("ICON",$table->query_field());
 	
 	# get field from parent (primary keys, I hope!)
