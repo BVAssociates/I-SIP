@@ -535,6 +535,9 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 	if (not @environnement_list) {
 		@environnement_list=$config->get_environnement_list();
 	}
+	
+	
+	my $labels=ITools->open("ICleLabels");
 
 	##### BEGIN CREATE FILE #####
 
@@ -660,21 +663,20 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			write_file($filename,$string);
 			
 		##### CREATE/update Label
-
-			my $labels=ITools->open("ICleLabels");
+			
 			my %label_hash;
 			
 			%label_hash=get_label_table_hash($env,$display_table);
-			$labels->insert_row(%label_hash);
+			$labels->insert_row_pp(%label_hash);
 			
 			%label_hash=get_label_table_item_hash($env,$display_table);
-			$labels->insert_row(%label_hash);
+			$labels->insert_row_pp(%label_hash);
 			
 			%label_hash=get_label_field_hash($env,$display_table);
-			$labels->insert_row(%label_hash);
+			$labels->insert_row_pp(%label_hash);
 			
 			%label_hash=get_label_field_item_hash($env,$display_table);
-			$labels->insert_row(%label_hash);			
+			$labels->insert_row_pp(%label_hash);
 		}
 
 	}

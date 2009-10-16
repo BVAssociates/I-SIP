@@ -2,6 +2,90 @@ package Ft;
 #require ITable::ITools::Legacy;
 @ISA = ("Legacy");
 
+use Carp qw(carp cluck confess croak );
+use Isip::IsipLog '$logger';
+
+sub insert_row_pp() {
+	my $self=shift;
+	
+	my %row = @_;
+
+	my $table_file = $self->{define}->file();
+	
+	# interprets vars
+	$table_file =~s/%(\w+)%/$ENV{$1}/g;
+	
+	open my $table_file_fd, "<",$table_file or croak("Impossible d'ouvrir $table_file : ",$!);
+	
+	# slurp table
+	my @table_lines =  <$table_file_fd>;
+
+	close $table_file_fd;
+
+	# open for writing now to lock the file
+	# TODO: verify race condition
+	open $table_file_fd, ">",$table_file;
+
+	# transform plain text in array of hashes
+	my @table_lines_hash = map {
+			if (! /^(?:#|$)/) {
+				$_ = { $self->array_to_hash(split ( $self->output_separator , $_) )};
+			}
+			else {
+				$_;
+			}
+		} @table_lines;
+	
+	# find if key already exists
+	my $update_key;
+	foreach my $line_hash ( @table_lines_hash ) {
+		if (ref $line_hash) {
+		
+			my $key_match=0;
+			
+			#check all keys
+			foreach my $key_field ( $self->key() ) {
+				if ( $line_hash->{$key_field} eq $row{$key_field} ) {
+					$key_match++;
+				}
+			}
+			
+			# found the line to update
+			if ( $key_match == $self->key() ) {
+				foreach my $set_field ( keys %row ) {
+					$line_hash->{$set_field} = $row{$set_field};
+					$update_key++;
+				}
+			}
+		}
+	}
+	
+	# if not updated, then we add it
+	if (not $update_key) {
+		push @table_lines_hash, \%row or croak("Impossible d'ouvrir $table_file : ",$!);
+	}
+	
+	# convert back to plain text
+	@table_lines = map {
+		if (ref $_) {
+			$_ = join( $self->output_separator , $self->hash_to_array( %{$_} ) );
+			
+			# delete and add endlines
+			chomp;
+			$_.="\n";
+		}
+		else {
+			$_;
+		}
+	} @table_lines_hash;
+	
+	#overwrite old table with the new one
+	print $table_file_fd @table_lines;
+	close $table_file_fd;
+	
+	return;
+}
+
 1;  # so the require or use succeeds
 
 =head1 NAME
@@ -17,13 +101,12 @@ ITable::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
  
  
 package Legacy;
-require ITable::abstract::ITools_interface;
+use ITable::abstract::ITools_interface;
 @ISA = ("ITools_interface");
 
 use ITable::ITools::Define;
 
 use Carp qw(carp cluck confess croak );
-use Data::Dumper;
 use strict;
 
 ##################################################
