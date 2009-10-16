@@ -5,18 +5,18 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use Isip::IsipLog '$logger';
+#use Isip::IsipLog '$logger';
 
 #  Documentation
 ###########################################################
 =head1 NAME
 
-HAS_TABLE_GROUP - sors avec un code retour 0 si une table doit afficher le menu
+HAS_FIELD_MENU - sors avec un code retour 0 si une table doit afficher le menu
 d'exploration des champs
 
 =head1 SYNOPSIS
 
- HAS_TABLE_GROUP.pl [-h][-v]
+ HAS_FIELD_MENU.pl [-h][-v]
  
 =head1 DESCRIPTION
 
@@ -65,14 +65,14 @@ sub usage($) {
 }
 
 sub log_erreur {
-	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
-	$logger->error(@_);
+	print STDERR "ERREUR: ".join(" ",@_)."\n"; 
+	#$logger->error(@_);
 	sortie(202);
 }
 
 sub log_info {
-	#print STDERR "INFO: ".join(" ",@_)."\n"; 
-	$logger->notice(@_);
+	print STDERR "INFO: ".join(" ",@_)."\n"; 
+	#$logger->notice(@_);
 }
 
 
