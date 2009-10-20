@@ -127,7 +127,7 @@ foreach (@environnement_list) {
 	# la table FIELD_LABEL sera créée dans la meme base que TABLE_INFO
 	my $table_info = $env->open_local_table("TABLE_INFO");
 	eval { $table_info->execute(
-	q{CREATE TABLE "FIELD_LABEL" (
+	q{CREATE TABLE IF NOT EXISTS "FIELD_LABEL" (
 		"DATE_UPDATE" TEXT,
 		"USER_UPDATE" TEXT NOT NULL ,
 		"TABLE_NAME" TEXT NOT NULL ,
@@ -142,7 +142,8 @@ foreach (@environnement_list) {
 	
 	foreach my $table_name ( $env->get_table_list() ) {
 		my $sqlite_path = $env->get_sqlite_path($table_name."_HISTO");
-		my $table = Sqlite->open($sqlite_path, $table_name."_LABEL");
+		my $table = eval { Sqlite->open($sqlite_path, $table_name."_LABEL") };
+		next if $@;
 		
 		# import des données de l'ancienne table
 		while (my %row = $table->fetch_row() ) {

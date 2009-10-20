@@ -1,3 +1,16 @@
+v0.9
+
+Type: adaptation
+#115 	validation modifications sur baseline
+#137 	Menu "ignorer ligne" (recursif)
+#130 	Afficher lignes/champs ignorés
+
+Type: defect
+#110 	add DATE_UPDATE si collecte partielle avec DIFF
+#117 	historique : valeur en double baseline/collecte
+
+
+
 v0.8.1
 
 Première version de production

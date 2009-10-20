@@ -121,6 +121,8 @@ foreach (@environnement_list) {
 	# la table FIELD_LABEL sera créée dans la meme base que TABLE_INFO
 	my $table_info = $env->open_local_table("TABLE_INFO");
 	
+	$table_info->execute('DELETE FROM TABLE_INFO WHERE ACTIVE=0');
+	
 	$table_info->execute('ALTER TABLE "main"."TABLE_INFO" RENAME TO "__temp__TABLE_INFO"');
 	
 	$table_info->execute('CREATE TABLE "main"."TABLE_INFO" (
