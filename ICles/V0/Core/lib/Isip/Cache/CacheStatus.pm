@@ -38,8 +38,8 @@ sub check_before_cache() {
 	if (exists $value_ref->{ICON} and $value_ref->{ICON}) {
 		
 		# valide <=> valide_label
-		$value_ref->{ICON} =~ s/_label$//;
-		$value_ref->{OLD_ICON} =~ s/_label$//;
+		$value_ref->{ICON} =~ s/_label$// if $value_ref->{ICON};
+		$value_ref->{OLD_ICON} =~ s/_label$// if $value_ref->{OLD_ICON};
 		
 		if (exists $value_ref->{OLD_ICON} and $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
