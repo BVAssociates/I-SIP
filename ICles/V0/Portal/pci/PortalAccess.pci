@@ -28,3 +28,5 @@ Item~Aide~Version de I-SIP~dev~~~ExecuteProcedure~ME_ISIP_VERSION~0~~Configure
 #Item~Developpement~Affiche Processor error~dev~~~IsipProcessor~TYPE~0~~Expand
 #Item~Developpement~Affiche Processor error2~adm~~~IsipProcessor~FORM_CONFIG~0~~Expand
 
+Item~Journaux~Voir les sessions actives~adm~~~DisplayTable~PortalActiveServiceSessions@@@~0~~Display
+
