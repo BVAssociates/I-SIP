@@ -233,13 +233,20 @@ sub get_links_menu() {
 			
 	my ILink $link_clone = $self->get_links()->clone();
 	
+	use Data::Dumper;
+	#print Dumper($link_clone);
+	#die;
+	
 	my $separator='__';
 	
 	foreach my $table ($self->get_table_list) {
 		next if not $self->{info_table}->{$table}->{root_table};
 		
-		# on recherche la liste des parents d'une table ROOT
-		my @parents=grep {!/$separator/} $link_clone->get_parent_tables($table,1);
+		# on recherche le premier niveau des parents d'une table ROOT
+		my @parents=grep {!/$separator/} $link_clone->get_parent_tables($table,0);
+		
+		#die Dumper(\@parents) if $table eq "TICPETP";
+		
 		next if not @parents;
 		
 		my $child=$table;
@@ -251,11 +258,11 @@ sub get_links_menu() {
 				# on construit une nouvelle relation avec une table parente dédiée
 				$link_clone->add_link($child_ext.$child,$pkey,$table.$separator.$parent,$field{$pkey});
 			}
-			$child_ext=$table.$separator if not $child_ext;
-			$child=$parent;
+			#$child_ext=$table.$separator if not $child_ext;
+			#$child=$parent;
 		}
 	}
-	
+	#die Dumper($link_clone);
 	return $link_clone;
 }
 

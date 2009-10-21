@@ -223,6 +223,7 @@ sub _debug() {
 	my $self = shift;
 	
 	# if debugging mode, promote debug messages to info messages
+ return if not $logger;
 	if ($self->debugging()) {
 		$logger->info(ref($self).".".$self->{table_name}.",",@_);
 	} else {
