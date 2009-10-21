@@ -21,7 +21,6 @@ use ITable::ODBC;
 use Carp qw(carp croak );
 use Scalar::Util qw(blessed);
 use File::Copy;
-use AppConfig qw(:expand :argcount);
 
 use Isip::IsipLog '$logger';
 
@@ -329,6 +328,63 @@ sub create_database_environnement() {
 	)');
 	
 	$master_table->close();
+}
+
+# methode d'envoi de mail
+sub send_mail {
+	my $self=shift;
+	
+	require Mail::Sender;
+
+	my $subject=shift;
+	my $message=shift or croak("usage: send_mail(subject,,message [, dest_role])");
+	my $mailto_responsability =shift;
+	# par défaut to adm
+	$mailto_responsability = 'adm' if not $mailto_responsability;
+	
+	my $smtp_host=$self->get_config_var("smtp_host");
+	my $smtp_from=$self->get_config_var("smtp_from");
+	
+	# collecte roles associés à responsabilité
+	my @mailto_roles;
+	my $roles_table=ITools->open("respRoles");
+	
+	while ( my %right = $roles_table->fetch_row() ) {
+		if ( $right{Responsability} eq $mailto_responsability ) {
+			push @mailto_roles, $right{Role};
+		}
+	}
+	
+	# collecte email associés au roles
+	my @mailto_email;
+	my $user_table=ITools->open("PortalAccess");
+	
+	my %mailto_email_uniq;
+	while (my %user = $user_table->fetch_row() ) {
+		if ( grep { $_ eq $user{Role} } @mailto_roles) {
+			$mailto_email_uniq{$user{Email}}++;
+		}
+	}
+	@mailto_email = keys %mailto_email_uniq;
+
+	$logger->info("Connexion SMTP : $smtp_host");
+	my $sender = Mail::Sender->new(  {smtp => $smtp_host, from => $smtp_from});
+	if (not ref $sender) {
+		log_error("Probleme de connexion à $smtp_host");
+	}
+		
+	$logger->info("Envoi du mail à : ", join(',', @mailto_email) );
+	my $success = $sender->MailMsg({to => \@mailto_email,
+	  subject => $subject,
+	  msg => $message}
+	  );
+	  
+	if (not $success) {
+		$logger->error("Probleme lors de l'envoi du mail");
+	}
+	else {
+		$logger->info("Mail envoyé");
+	}
 }
 
 
