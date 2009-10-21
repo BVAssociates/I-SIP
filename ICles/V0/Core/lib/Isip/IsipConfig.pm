@@ -361,16 +361,20 @@ sub send_mail {
 	
 	my %mailto_email_uniq;
 	while (my %user = $user_table->fetch_row() ) {
-		if ( grep { $_ eq $user{Role} } @mailto_roles) {
+		if ( $user{Email} and grep { $_ eq $user{Role} } @mailto_roles) {
 			$mailto_email_uniq{$user{Email}}++;
 		}
 	}
 	@mailto_email = keys %mailto_email_uniq;
+	
+	if ( not @mailto_email ) {
+		$logger->error("Aucun email trouvé pour la respondabilité $mailto_responsability")
+	}
 
 	$logger->info("Connexion SMTP : $smtp_host");
 	my $sender = Mail::Sender->new(  {smtp => $smtp_host, from => $smtp_from});
 	if (not ref $sender) {
-		log_error("Probleme de connexion à $smtp_host");
+		$logger->error("Probleme de connexion à $smtp_host");
 	}
 		
 	$logger->info("Envoi du mail à : ", join(',', @mailto_email) );
