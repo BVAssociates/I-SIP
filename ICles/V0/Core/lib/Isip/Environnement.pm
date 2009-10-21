@@ -236,23 +236,32 @@ sub get_links_menu() {
 	my $separator='__';
 	
 	foreach my $table ($self->get_table_list) {
+	
+		# on ne va modifier que les tables racines
 		next if not $self->{info_table}->{$table}->{root_table};
 		
-		# on recherche la liste des parents d'une table ROOT
-		my @parents=grep {!/$separator/} $link_clone->get_parent_tables($table,1);
-		next if not @parents;
+		my %parents=$link_clone->get_parent_tables_hash($table,1);
+		
+		next if not %parents;
+		
+		if ( @{ $parents{$table} } > 1 ) {
+			$logger->warning("I-SIP ne sait pas gérer une table racine avec 2 clef étrangères");
+			# on ne garde que la première table
+			$parents{$table}= [ $parents{$table}->[0] ]
+		}
+		my @parents_menu=@{ $parents{$table} };
 		
 		my $child=$table;
 		my $child_ext="";
-		foreach my $parent (@parents) {
+		foreach my $parent ( @parents_menu ) {
 			my %field=$link_clone->get_foreign_fields($child,$parent);
 			$link_clone->remove_link($child,$parent);
 			foreach my $pkey (keys %field) {
 				# on construit une nouvelle relation avec une table parente dédiée
 				$link_clone->add_link($child_ext.$child,$pkey,$table.$separator.$parent,$field{$pkey});
 			}
-			$child_ext=$table.$separator if not $child_ext;
-			$child=$parent;
+			#$child_ext=$table.$separator if not $child_ext;
+			#$child=$parent;
 		}
 	}
 	
