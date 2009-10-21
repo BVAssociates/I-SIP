@@ -79,8 +79,15 @@ sub remove_link() {
 	
 	delete $self->{table_parent}->{$table_name}->{$table_foreign};
 	delete $self->{table_child}->{$table_foreign}->{$table_name}; 
+	
+	if ( not %{ $self->{table_parent}->{$table_name} } ) {
+		delete $self->{table_parent}->{$table_name};
+	}
+	
+	if ( not %{ $self->{table_child}->{$table_foreign} } ) {
+		delete $self->{table_child}->{$table_foreign};
+	}
 }
-
 
 
 # for a table having some foreign_key
@@ -89,6 +96,9 @@ sub get_foreign_fields() {
 	my $self=shift;
 	my $table=shift;
 	my $f_table=shift or croak ("usage : get_child_fields(table,f_table)");
+	
+	use Data::Dumper;
+	croak Dumper($self->{table_parent}) if not exists $self->{table_parent}->{$table}->{$f_table};
 	
 	return %{$self->{table_parent}->{$table}->{$f_table}};
 }
@@ -108,6 +118,32 @@ sub get_parent_fields_OBSOLETE() {
 	} else {
 		return undef;
 	}
+}
+
+sub get_parent_tables_hash() {
+	my $self=shift;
+	my $table=shift or croak ("usage : get_parent_tables(table)");
+	my $depth=shift;
+	
+	return () if not exists $self->{table_parent}->{$table};
+	
+	my %return;
+	
+	my %parent_table=%{ $self->{table_parent}->{$table}};
+	
+	
+	if ($depth) {
+
+		$return{$table} = [ keys %parent_table ];
+		foreach (keys %parent_table) {
+			%return= ( %return, $self->get_parent_tables_hash($_,$depth) );
+		}
+	}
+	else {
+		$return{$table} = [ keys %parent_table ];
+	}
+	
+	return %return;
 }
 
 # renvoie la liste des tables dont la table $table possède une clef etrangère
