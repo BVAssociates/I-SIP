@@ -408,8 +408,8 @@ sub fetch_row() {
 		# split FIELD_NAME when one row contains more than one real field
 		if (grep {/,/} $field_line{FIELD_NAME}) {
 			# case when one row contains several fields
-			my @field_list=split(',',$field_line{FIELD_NAME});
-			my @value_list=split(',',$field_line{FIELD_VALUE});
+			my @field_list=split(',', $field_line{FIELD_NAME} , -1);
+			my @value_list=split(',', $field_line{FIELD_VALUE}, -1);
 			
 			# sanity check
 			croak ("FIELD_VALUE and FIELD_NAME does not match in HISTO for ID=".$field_line{ID}) if @field_list ne @value_list;
