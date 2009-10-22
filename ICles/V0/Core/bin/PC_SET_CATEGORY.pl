@@ -100,6 +100,9 @@ usage($debug_level+1) if $opts{h};
 #  Traitement des arguments
 ###########################################################
 
+use Encode;
+map {$_=encode("cp850",$_)} @ARGV;
+
 if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);

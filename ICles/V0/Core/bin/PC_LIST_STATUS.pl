@@ -119,7 +119,7 @@ sub run {
 	# quirk! because Windows leave "%VAR%" when VAR empty in args
 	map {s/%\w+%//g} @ARGV;
 	@ARGV=grep $_,@ARGV;
-
+	
 	log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 	my %opts;
@@ -317,10 +317,15 @@ sub run {
 		}
 		
 		if ($ENV{CATEGORY}) {
+		
+			#quirk! bad encoding in ENV by I-SIS
+			use Encode;
+			my $category=encode("cp850",$ENV{CATEGORY});
+			
 			my %info=$env_sip->get_table_info($table_name);
 			if ($info{root_table} and $ENV{TABLE_NAME} and $ENV{TABLE_NAME} eq $table_name) {
-				log_info("affiche les lignes de la categorie $ENV{CATEGORY}");
-				$table_explore->query_condition("CATEGORY = '$ENV{CATEGORY}'",$table_explore->query_condition());
+				log_info("affiche les lignes de la categorie $category");
+				$table_explore->query_condition("CATEGORY = '$category'",$table_explore->query_condition());
 			}
 		}
 	}
