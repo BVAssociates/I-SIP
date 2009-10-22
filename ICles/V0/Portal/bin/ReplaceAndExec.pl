@@ -89,6 +89,49 @@ sub log_info {
 }
 
 
+# gestion des triggers PCI
+my %execute_when;
+
+sub init_trigger {
+	my $table_name = shift or log_erreur("usage: init_trigger(table_name)");
+	
+	my @replace_actions=`get_pci -s for $table_name where Group=Replace`;
+	if ($? >> 8) {
+		log_info("Erreur lors de la recuperation du PCI");
+		sortie(0);
+	}
+	
+	foreach my $action ( @replace_actions ) {
+		my @field_action=split('~', $action);
+		$execute_when{ $field_action[2] } = $field_action[7];
+	}
+	
+	return;
+}
+
+sub execute_trigger {
+	my $action = shift or log_erreur("usage: execute_trigger(action)");
+	
+	if ( exists $execute_when{$action} ) {
+		my $command=$execute_when{$action};
+		
+		if ( $command ) {
+			log_info("Execution de la Post Action : ",$command);
+			
+			system($command);
+			if ($? >> 8) {
+				log_info("Erreur lors de l'execution de la PostAction");
+				sortie(202);
+			}
+		}
+		else {
+			log_info("Trigger $action ne contient pas de commande");
+		}
+	}
+	
+	return;
+}
+
 #  Traitement des Options
 ###########################################################
 use Encode;
@@ -144,23 +187,27 @@ if (uc($INTO_WORD) ne 'INTO' or uc($VALUES_WORD) ne 'VALUES') {
 ###########################################################
 my $bv_severite=0;
 
-use File::Spec::Functions qw/path splitpath catfile catpath/;
-
 use ReplaceAndExec_ISIP;
 
-my ($current_vol,$current_dir,$current_script)=splitpath($0);
+init_trigger($table_name);
 
 if ($table_name =~ /^ISIP_FIELD|IKOS_FIELD/) {
+	execute_trigger('PreAction');
 	$logger->info("use library ReplaceAndExec_ISIP::update_field");
 	update_field($table_name,$values);
+	execute_trigger('PostAction');
 }
 elsif ($table_name =~ /^COLUMN_INFO$/i) {
+	execute_trigger('PreAction');
 	$logger->info("use library ReplaceAndExec_ISIP::update_column_info");
 	update_column_info($table_name,$values);
+	execute_trigger('PostAction');
 }
 elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*|FIELD_.*$/i) {
+	execute_trigger('PreAction');
 	$logger->info("use library ReplaceAndExec_ISIP::update_info");
 	update_info($table_name,$values);
+	execute_trigger('PostAction');
 }
 else {
 	# otherwise,  we use the original script
