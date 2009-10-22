@@ -745,7 +745,7 @@ public class EditFormProcessor extends ProcessorFrame {
      * Constante stockant la commande d'insertion
      */
     //TODO prévoir l'ajout/suppression?
-    protected final String replaceCommand="ReplaceAndExec.pl";
+    protected final String replaceCommand="ReplaceAndExec";
 
      /**
      * Membre stockant la definition de la table en cours d'edition
