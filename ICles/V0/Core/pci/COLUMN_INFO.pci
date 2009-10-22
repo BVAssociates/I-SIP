@@ -1,1 +1,10 @@
 Item~~Propriétés~adm~~~IsipProcessor~FORM_COLUMN~0~~Expand
+
+# TRIGGERS
+
+#~Insert~PreAction~~~~ExecuteProcedure~~0~~
+~Insert~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
+#~Remove~PreAction~~~~ExecuteProcedure~~0~~
+~Remove~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
+#~Replace~PreAction~~~~ExecuteProcedure~~0~~
+~Replace~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
