@@ -123,16 +123,22 @@ my $table_source;
 
 if ($ENV{param_source}) {
 	$logger->info("Connexion à ODBC : $ENV{param_source}");
-	$table_source = ODBC_Query->open($config->get_odbc_database_name($module,$environnement),
+	eval { $table_source = ODBC_Query->open($config->get_odbc_database_name($module,$environnement),
 				$table,
 				$ENV{param_source},
 				$config->get_odbc_option($environnement) );
+	};
 }
 else {
 	$logger->info("Connexion à ODBC : $table");
-	$table_source = ODBC->open($config->get_odbc_database_name($module,$environnement),
+	eval {$table_source = ODBC->open($config->get_odbc_database_name($module,$environnement),
 				$table,
 				$config->get_odbc_option($environnement) );
+	};
+}
+
+if ($@) {
+	log_erreur("Impossible d'acceder à la table $table depuis ce module");
 }
 
 if (not defined $table_source) {
