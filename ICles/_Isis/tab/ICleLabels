@@ -13,5 +13,5 @@ DATE_HISTO.Item;isip_date;%[DATE_EXPLORE] %[DESCRIPTION]
 DATE_HISTO_BASELINE.Item;isip_date;%[DATE_EXPLORE] (%[DESCRIPTION])
 FILTER.Item;I_Transitions;%[FILTER_DESC]
 FILTER_COMPARE.Item;I_Transitions;%[FILTER_DESC]
-CATEGORY.Item;I_Versions;
+CATEGORY.Item;isip_%[ICON];
 

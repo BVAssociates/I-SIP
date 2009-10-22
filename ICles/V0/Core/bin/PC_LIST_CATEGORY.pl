@@ -15,7 +15,7 @@ PC_LIST_CATEGORY - Liste les etats possibles
 
 =head1 SYNOPSIS
 
- PC_LIST_CATEGORY.pl [-h] [-v] environnement tablename
+ PC_LIST_CATEGORY.pl [-h] [-v] [-s sep] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -36,6 +36,8 @@ Liste les etats possibles
 =item -h : Affiche l'aide en ligne
 
 =item -v : Mode verbeux
+
+=item -s : separateur de champ en sortie
 
 =back
 
@@ -86,12 +88,15 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvs:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
+
+my $separator=',';
+$separator=$opts{s} if $opts{s};
 
 #  Traitement des arguments
 ###########################################################
@@ -110,17 +115,54 @@ my $table_name=shift;
 my $bv_severite=0;
 
 use Isip::Environnement;
+use Isip::Cache::CacheStatus;
+use Isip::IsipFilter;
 
 my $env=Environnement->new($environnement);
+
+my $cache = CacheStatus->new($env);
+$cache->load_cache($table_name);
+
+my $filter=IsipFilter->new();
+
 my $table=$env->open_local_table($table_name."_CATEGORY");
 
 #$table->custom_select_query("SELECT DISTINCT * FROM ".$table_name."_CATEGORY");
-$table->query_field("CATEGORY");
-$table->query_distinct(1);
+#$table->query_field("CATEGORY");
+#$table->query_distinct(1);
+
+my %dirty_for_category;
 
 while (my %row=$table->fetch_row()) {
-	print $row{"CATEGORY"}."\n" if $row{"CATEGORY"} and $row{"CATEGORY"} ne 'vide';
+	
+	# add category to the list
+	if ( not exists $dirty_for_category{ $row{CATEGORY} } ){
+		$dirty_for_category{ $row{CATEGORY} } = 0;
+	}
+	
+	# look for dirtyness of key in table
+	if ( $cache->is_dirty_key($table_name, $row{TABLE_KEY})  #look for line's childs
+	   or $cache->is_dirty_key($table_name, $row{TABLE_KEY},$table_name) ) {  #look for line
+		
+		$dirty_for_category{ $row{CATEGORY} }++ ;
+	}	
 }
+
+my $icon_root="category";
+
+foreach my $category ( keys %dirty_for_category ) {
+	
+	my $icon = $icon_root;
+	if ( $dirty_for_category{$category} ) {
+		$icon .= '_dirty';
+	}
+	
+	if ( $filter->is_display_line(ICON => $icon) ) {
+		print join($separator, $icon, $category)."\n";
+	}
+}
+
+
 #affiche le groupe vide
-print "vide\n";
+print join($separator, $icon_root.'_other', 'vide')."\n";
 

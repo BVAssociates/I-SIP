@@ -1,6 +1,6 @@
 
 Item~~Dernière collecte~user~~~Explore~ROOT_TABLE~0~~Expand
-Item~Filtres~Dernière collecte (nouveaux)~user~~FILTER_ICON=!valide,!valide_label,!stamp,!none~Explore~ROOT_TABLE~0~~Expand
+Item~Filtres~Dernière collecte (nouveaux)~user~~FILTER_ICON=!valide,!valide_label,!stamp,!none,!category~Explore~ROOT_TABLE~0~~Expand
 Item~Filtres~Dernière collecte (projet)~user~~FILTER_PROJECT=getListValue("Nom du projet",PROJECT_INFO)~Explore~ROOT_TABLE~0~~Expand
 Item~Filtres~Dernière collecte (nouveaux+projet)~user~~{FILTER_ICON=!valide,!stamp,!none}{FILTER_PROJECT=getListValue("Nom du projet",PROJECT_INFO)}~Explore~ROOT_TABLE~0~~Expand
 
