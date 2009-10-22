@@ -62,7 +62,8 @@ BEGIN {
 			$logger->critical( @_ );
 		}
 		
-		$DIE ? $DIE->() : CORE::die(@_);
+		#$DIE ? $DIE->() : CORE::die(@_);
+		$DIE ? $DIE->() : CORE::die("terminaison du programme");
 		#exit 202;
 	};
 }
@@ -200,7 +201,12 @@ sub delete_log {
 }
 
 if (not caller){
-	$logger->notice("it is a test");
+	$logger->notice("it is a noticetest");
+	$logger->critical("it is an error test");
+	$logger->critical("it is a critical test");
+	eval { die("it is a eval dying test") };
+	print "eval result: ",$@;
+	die("it is a dying test");
 }
 
 1;
