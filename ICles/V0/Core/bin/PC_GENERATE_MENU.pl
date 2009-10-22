@@ -203,7 +203,7 @@ SORT="[% sort %]"
 	
 =begin comment
 	# add one FKEY entry per foreign tables
-	my $link_obj=$env_obj->get_links();
+	my $_obj=$env_obj->get_links();
 	foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
 	
 		my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
@@ -250,10 +250,11 @@ FKEY="[PROJECT] on PROJECT_INFO[PROJECT_NAME]"
 	
 	return $string;
 }
-sub get_pci_table_string($$) {
+sub get_pci_table_string {
 
 	my $env_obj=shift;
-	my $table_name=shift;
+	my $link_obj=shift;
+	my $table_name=shift or croak("usage: get_pci_table_string(env_obj,table_name)");
 	my $display_table=get_display_table($table_name);
 		
 	# TEMPLATES
@@ -285,7 +286,6 @@ Item~Surveillance~Surveiller à nouveau cette clef et ses sous-tables~adm~perl -e
 	}
 	
 	# get all table having current table as F_KEY
-	my $link_obj=$env_obj->get_links_menu();
 	my @child_table=$link_obj->get_child_tables($table_name);
 	
 	$string .= $pci_fkey_template if @child_table;
@@ -358,10 +358,11 @@ sub get_label_table_hash($$) {
 		Label => $label_table_desc);
 }
 
-sub get_label_table_item_hash($$) {
+sub get_label_table_item_hash {
 	
 	my $env_obj=shift;
-	my $table_name=shift;
+	my $link_obj=shift;
+	my $table_name=shift or croak("usage: get_label_table_item_hash(env_obj,link_obj,table_name)");
 	my $display_table=get_display_table($table_name);
 	
 	my @pkey_list=$env_obj->get_table_key($display_table);
@@ -370,8 +371,6 @@ sub get_label_table_item_hash($$) {
 	my %table_info=$env_obj->get_table_info($display_table);
 	my $label_field=$table_info{label_field};
 	
-	my $link_obj=$env_obj->get_links();
-
 	my $label_table_name='IKOS_TABLE_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
 	my $label_table_desc='[% keys %] [% description %]';
@@ -593,8 +592,8 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			}
 		}
 		else {
-			$logger->info("Cleaning all old labels");
-			system("Delete from ICleLabels where NodeId ~ IKOS_$environnement");
+			$logger->notice("Cleaning all old labels");
+			system(qq{Delete from ICleLabels where NodeId ~ "IKOS_$environnement"});
 		}
 
 		foreach my $current_table (sort @list_table) {
@@ -648,7 +647,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 		##### CREATE PCI
 			
 			
-			$string = get_pci_table_string($env,$display_table);
+			$string = get_pci_table_string($env,$link_obj,$display_table);
 			
 			$filename=sprintf($pci_filename,$pci_path,$source_data_table);
 			
@@ -669,7 +668,7 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 			%label_hash=get_label_table_hash($env,$display_table);
 			$labels->insert_row_pp(%label_hash);
 			
-			%label_hash=get_label_table_item_hash($env,$display_table);
+			%label_hash=get_label_table_item_hash($env,$link_obj,$display_table);
 			$labels->insert_row_pp(%label_hash);
 			
 			%label_hash=get_label_field_hash($env,$display_table);
