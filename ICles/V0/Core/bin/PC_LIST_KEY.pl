@@ -114,7 +114,7 @@ use ITable::ITools;
 
 my $env=Environnement->new($environnement);
 
-
+print join($separator, ('') x 2)."\n";
 foreach my $table ($env->get_table_list()) {
 	my $column_table=$env->open_local_table($table."_COLUMN");
 	while (my %row=$column_table->fetch_row) {
