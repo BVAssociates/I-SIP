@@ -1,6 +1,6 @@
 package ITools_interface;
 
-require ITable::abstract::DATA_interface;
+use ITable::abstract::DATA_interface;
 @ISA=("DATA_interface");
 
 use ITable::ITools::Define;
