@@ -108,6 +108,9 @@ public class ObjectLeasingHolder
 			"ObjectLeasingHolder", "getLeasedObject");
 
 		trace_methods.beginningOfMethod();
+        
+        _lastUsed = System.currentTimeMillis();
+
 		trace_methods.endOfMethod();
 		return _leasedObject;
 	}
@@ -127,6 +130,8 @@ public class ObjectLeasingHolder
 		trace_methods.beginningOfMethod();
 		// On incrémente le compteur
 		_leasingsCounter ++;
+        _lastUsed = System.currentTimeMillis();
+        
 		trace_methods.endOfMethod();
 	}
 
@@ -147,6 +152,7 @@ public class ObjectLeasingHolder
 		if(_leasingsCounter > 0)
 		{
 			_leasingsCounter --;
+            _lastUsed = System.currentTimeMillis();
 		}
 		trace_methods.endOfMethod();
 	}
@@ -163,12 +169,21 @@ public class ObjectLeasingHolder
 	* ----------------------------------------------------------*/
 	public synchronized boolean isFreeOfLeasing()
 	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"ObjectLeasingHolder", "isFreeOfLeasing");
+		Trace trace_methods = TraceAPI.declareTraceErrors("Console");
 
 		trace_methods.beginningOfMethod();
+
+        if (_leasingsCounter <= 0) {
+
+            // garde le leasing tant que la dernière utilisation date de
+            // moins de 5s
+            if (System.currentTimeMillis() - _lastUsed > 5000) {
+                return true;
+            }
+        }
+
 		trace_methods.endOfMethod();
-		return (_leasingsCounter <= 0);
+		return false;
 	}
 
 	/*----------------------------------------------------------
@@ -222,6 +237,15 @@ public class ObjectLeasingHolder
 	* nombre de leasings en cours sur l'objet.
 	* ----------------------------------------------------------*/
 	private int _leasingsCounter;
+
+    /*----------------------------------------------------------
+	* Nom: _lastUsed
+	*
+	* Description:
+	* Cet attribut contient la date Epoch (ms) de la dernière utilisation
+    *
+	* ----------------------------------------------------------*/
+	private long _lastUsed;
 
 	/*----------------------------------------------------------
 	* Nom: _leasedObject

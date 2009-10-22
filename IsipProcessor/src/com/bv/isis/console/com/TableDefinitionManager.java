@@ -484,14 +484,6 @@ public class TableDefinitionManager
                         leasing_holder.getNumberOfLeasings());
 
                 // Si plus personne ne l'utilise, on la supprime du cache
-                if (leasing_holder.isFreeOfLeasing()) {
-                    try {
-                        dumpTableDefinition(agent_name, icles_name, service_type, file_path);
-                        fireTableDefinitionRemoved(agent_name, icles_name, service_type, file_path);
-                    } catch (InnerException ex) {
-                        // C'est normalement impossible car on verifie avant
-                    }
-                }
 
 
                 trace_methods.endOfMethod();
@@ -572,14 +564,6 @@ public class TableDefinitionManager
 			definitionFilePath, leasing_holder.getNumberOfLeasings());
 
         // Si plus personne ne l'utilise, on la supprime du cache
-        if (leasing_holder.isFreeOfLeasing()) {
-            try {
-                dumpTableDefinition(agentName, iClesName, serviceType, definitionFilePath);
-                fireTableDefinitionRemoved(agentName, iClesName, serviceType, definitionFilePath);
-            } catch (InnerException ex) {
-                // C'est normalement impossible car on verifie avant
-            }
-        }
 
 		trace_methods.endOfMethod();
  	}
@@ -716,6 +700,61 @@ public class TableDefinitionManager
 		trace_methods.endOfMethod();
 	}
 
+    /*----------------------------------------------------------
+	* Nom: clean_unused
+	*
+	* Description:
+	* Cette méthode permet de supprimer tous les dictionnaires en cache, avec
+	* notification des interfaces en écoute pour chaque suppression.
+	* Elle est destinée à être appelée lors de l'ouverture d'une session sur
+	* un nouveau Portail.
+	* ----------------------------------------------------------*/
+	public synchronized void clean_unused() throws InnerException {
+        Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"TableDefinitionManager", "clean_unused");
+		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
+        Trace trace_errors = TraceAPI.declareTraceErrors("Console");
+
+		trace_methods.beginningOfMethod();
+		// On va récupérer la liste des clés de cache
+		Enumeration cache_keys = _definitions.keys();
+		// On va supprimer les dictionnaires un par un
+		while(cache_keys.hasMoreElements() == true)
+		{
+			String cache_key = (String)cache_keys.nextElement();
+            ObjectLeasingHolder leasing_holder =
+				(ObjectLeasingHolder)_definitions.get(cache_key);
+            if (leasing_holder.isFreeOfLeasing()) {
+
+                UtilStringTokenizer tokenizer =
+                        new UtilStringTokenizer(cache_key, ";");
+                String agent_name = tokenizer.nextToken();
+                String icles_name = tokenizer.nextToken();
+                String service_type = tokenizer.nextToken();
+                String definition_file_path = tokenizer.nextToken();
+                trace_debug.writeTrace("agent_name=" + agent_name);
+                trace_debug.writeTrace("icles_name=" + icles_name);
+                trace_debug.writeTrace("service_type=" + service_type);
+                trace_debug.writeTrace("definition_file_path=" +
+                        definition_file_path);
+                try {
+                    // On commande la suppression du dictionnaire
+                    dumpTableDefinition(agent_name, icles_name, service_type, definition_file_path);
+                } catch (InnerException ex) {
+                    trace_errors.writeTrace("Impossible de nettoyer le cache");
+                    // On lève une exception
+                    trace_methods.endOfMethod();
+                    throw new InnerException(
+                            MessageManager.getMessage("Impossible de nettoyer le cache"),
+                            cache_key, null);
+                }
+                // On informe les listeners de la suppression
+                fireTableDefinitionRemoved(agent_name, icles_name, service_type,
+                        definition_file_path);
+            }
+		}
+		trace_methods.endOfMethod();
+    }
 
 	/*----------------------------------------------------------
 	* Nom: clear
@@ -890,7 +929,7 @@ public class TableDefinitionManager
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"TableDefinitionManager", "fireTableDefinitionRemoved");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
-
+        
 		trace_methods.beginningOfMethod();
 		trace_arguments.writeTrace("agentName=" + agentName);
 		trace_arguments.writeTrace("iClesName=" + iClesName);
@@ -936,6 +975,14 @@ public class TableDefinitionManager
 			"TableDefinitionManager", "fireTableDefinitionUseChanged");
 		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
 
+        Trace trace_debug = TraceAPI.declareTraceDebug("Console");
+
+        try {
+            clean_unused();
+        } catch (InnerException ex) {
+            trace_debug.writeTrace("Probleme lors du nettoyage. Ignoré.");
+        }
+        
 		trace_methods.beginningOfMethod();
 		trace_arguments.writeTrace("agentName=" + agentName);
 		trace_arguments.writeTrace("iClesName=" + iClesName);
@@ -950,6 +997,7 @@ public class TableDefinitionManager
 			listener.tableDefinitionUseChanged(agentName, iClesName, 
 				serviceType, definitionFilePath, uses);
 		}
+        
 		trace_methods.endOfMethod();
  	}
 }

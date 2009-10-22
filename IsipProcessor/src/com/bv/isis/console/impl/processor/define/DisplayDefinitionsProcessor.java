@@ -1125,10 +1125,26 @@ public class DisplayDefinitionsProcessor
  	* ----------------------------------------------------------*/
     private void remove_unused()
     {
-        for (int row=_model.getRowCount()-1; row >= 0 ; row--) {
-            if(((String)_model.getValueAt(row, 5)).equals("0")) {
-                removeDefinition(row);
-            }
-        }
+        Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"DisplayDefinitionsProcessor", "removeDefinition");
+		Trace trace_errors = TraceAPI.declareTraceErrors("Console");
+        
+        // On tente de supprimer la définition
+		TableDefinitionManager manager = TableDefinitionManager.getInstance();
+		try
+		{
+			manager.clean_unused();
+		}
+		catch(Exception exception)
+		{
+			trace_errors.writeTrace("Erreur lors de la suppression de " +
+				"la définition: " + exception);
+			// On affiche l'erreur à l'utilisateur
+			getMainWindowInterface().showPopupForException(
+				"&ERR_CannotRemoveDefinition", exception);
+			// On sort
+			trace_methods.endOfMethod();
+			return;
+		}
     }
 }
