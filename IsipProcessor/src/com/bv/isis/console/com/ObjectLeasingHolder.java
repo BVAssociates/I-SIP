@@ -169,7 +169,7 @@ public class ObjectLeasingHolder
 	* ----------------------------------------------------------*/
 	public synchronized boolean isFreeOfLeasing()
 	{
-		Trace trace_methods = TraceAPI.declareTraceErrors("Console");
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 
 		trace_methods.beginningOfMethod();
 
