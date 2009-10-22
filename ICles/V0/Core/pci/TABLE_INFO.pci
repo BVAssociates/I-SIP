@@ -1,8 +1,18 @@
 
-Item~~Configuer colonnes~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~Administrate~COLUMN_INFO~0~~Configure
+Item~~Propriétés de la table~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~FormProcessor~FORM_TABLE_INFO~0~~Configure
+Item~~Propriétés des colonnes~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~Administrate~COLUMN_INFO~0~~Configure
 #Item~~Configuer colonnes~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "ODBC""~~Explore~COLUMN_INFO~0~~Configure
 #Item~~Ajouter un fichier XML repliqué~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML""~{TABLE_MODULE=%[Module]}{TABLE_TYPE="XML"}{XML_PATH=getValue("Chemin complet du fichier XML")}~ExecuteProcedure~PC_INIT_TABLE.pl -c -x %Environnement% %TABLE_NAME%~0~~Configure
 Item~~Configurer les XML repliqués~adm~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML""~~Administrate~XML_INFO~0~~Configure
 Item~~Vérifier et mettre à jour structure~adm~~~ExecuteProcedure~PC_INIT_TABLE.pl %Environnement% %TABLE_NAME%~0~~Save
 Item~Suppression~Supprimer la définition de la table~adm~~~ExecuteProcedure~PC_REMOVE_TABLE.pl %Environnement% %TABLE_NAME%~1~~Remove
 Item~Suppression~Supprimer la table et ses données~adm~~~ExecuteProcedure~PC_REMOVE_TABLE.pl -f %Environnement% %TABLE_NAME%~1~~Remove
+
+# TRIGGERS
+
+#~Insert~PreAction~~~~ExecuteProcedure~~0~~
+~Insert~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
+#~Remove~PreAction~~~~ExecuteProcedure~~0~~
+~Remove~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
+#~Replace~PreAction~~~~ExecuteProcedure~~0~~
+~Replace~PostAction~~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement% %TABLE_NAME%~0~~
