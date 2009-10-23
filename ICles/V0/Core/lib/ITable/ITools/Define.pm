@@ -154,8 +154,14 @@ sub _eval_vars() {
     my $self = shift;
 	
 	my $line=shift;
-	($line)=`echo $line`;
-	chomp $line;
+	
+	#($line)=`echo $line`;
+	#chomp $line;
+	
+	$line =~s/\$\{(\w+)\}/$ENV{$1}/g;
+	$line =~s/\$(\w+)/$ENV{$1}/g;
+	$line =~s/%(\w+)%/$ENV{$1}/g;
+	
 	return $line;
 }
 
