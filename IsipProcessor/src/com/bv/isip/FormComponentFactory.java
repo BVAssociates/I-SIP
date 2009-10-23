@@ -34,6 +34,8 @@ public class FormComponentFactory  {
             form_value = new FormComponentListProject(_selected_node, field_name);
         } else if (component_name.equals("EditMulti")) {
             form_value = new FormComponentEditArea();
+        } else if (component_name.equals("Bool")) {
+            form_value = new FormComponentBool();
         } else {
             throw new InnerException("Type " + component_name + " non reconnu", "Erreur", null);
         }
