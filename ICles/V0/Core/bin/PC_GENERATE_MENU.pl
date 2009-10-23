@@ -201,31 +201,9 @@ SORT="[% sort %]"
 	$string =~ s/\[% sort %\]/$sort/g;
 	$string =~ s/\[% option %\]/$no_icon_option/g;
 	
-=begin comment
-	# add one FKEY entry per foreign tables
-	my $_obj=$env_obj->get_links();
-	foreach my $f_table ($link_obj->get_parent_tables($display_table)) {
-	
-		my %foreign_field=$link_obj->get_foreign_fields($display_table,$f_table);
-		my @sorted_keys=sort keys %foreign_field;
-		
-		# create FKEY entry
-		my $fkeys=join(',', @sorted_keys);
-		my $foreign_table="IKOS_TABLE_$environnement\_".$f_table;
-		my $foreign_field=join(',', @foreign_field{@sorted_keys} );
-		
-		my $string_fkey = $fkey_def_template;
-		$string_fkey =~ s/\[% fkeys %\]/$fkeys/g;
-		$string_fkey =~ s/\[% foreign_table %\]/$foreign_table/g;
-		$string_fkey =~ s/\[% foreign_field %\]/$foreign_field/g;
-		
-		$string .= $string_fkey;
-	}
-=cut
-	
 	return $string;
-	
 }
+
 sub get_def_field_string($$) {
 	
 	my $env_obj=shift;
@@ -516,6 +494,11 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 
 
 	##### BEGIN CLEANUP ##### 
+	
+	if ($opts{a}) {
+		$logger->notice("Purge des labels");
+		system(qq{Delete from ICleLabels where NodeId ~ "IKOS_"});
+	}
 
 	#find first def path
 	my $def_path=find_file($ENV{BV_DEFPATH},'');
@@ -581,21 +564,6 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 		}
 		
 		
-		
-		
-
-		if ($table_name) {
-			foreach (@list_table) {
-				$logger->info("Cleaning old labels for", $_);
-				system('Delete from ICleLabels where NodeId ~ IKOS_TABLE_'.$_.'_'.$environnement);
-				system('Delete from ICleLabels where NodeId ~ IKOS_FIELD_'.$_.'_'.$environnement);
-			}
-		}
-		else {
-			$logger->notice("Cleaning all old labels");
-			system(qq{Delete from ICleLabels where NodeId ~ "IKOS_$environnement"});
-		}
-
 		foreach my $current_table (sort @list_table) {
 		
 			# check if table is a menu table (virtual)
