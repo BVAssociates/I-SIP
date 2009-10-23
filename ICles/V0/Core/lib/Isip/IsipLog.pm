@@ -63,7 +63,7 @@ BEGIN {
 		}
 		
 		#$DIE ? $DIE->() : CORE::die(@_);
-		$DIE ? $DIE->() : CORE::die("terminaison du programme");
+		$DIE ? $DIE->() : CORE::die("terminaison du programme\n");
 		#exit 202;
 	};
 }
