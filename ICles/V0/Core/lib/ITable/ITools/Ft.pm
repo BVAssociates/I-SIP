@@ -1,56 +1,191 @@
 package Ft;
 #require ITable::ITools::Legacy;
-@ISA = ("Legacy");
+our @ISA = ("Legacy");
+
+use strict;
 
 use Carp qw(carp cluck confess croak );
+use Fcntl qw(:DEFAULT :flock);
+
 use Isip::IsipLog '$logger';
 
-sub insert_row_pp() {
+
+####################################################
+# private methods
+####################################################
+
+# open and lock
+sub _open_table_file {
+	my $self=shift;
+	
+	my $mode=shift;
+	$mode = O_RDONLY if not $mode;
+	
+	my $lock_mode=LOCK_SH;
+	$lock_mode= LOCK_EX if $mode == O_RDWR;
+	
+	# recupere le chemin de la table
+	my $table_file = $self->{define}->file();
+	
+	# interprets vars
+	$table_file =~s/\$\{(\w+)\}/$ENV{$1}/g;
+	$table_file =~s/\$(\w+)/$ENV{$1}/g;
+	$table_file =~s/%(\w+)%/$ENV{$1}/g;
+	
+	if ( not $table_file) {
+		croak("fichier tab non défini ou table virtuelle : ".$self->table_name);
+	}
+	
+	if ( not -e $table_file) {
+		croak("fichier tab introuvable : ".$table_file);
+	}
+	
+	$logger->info("opening ITools table ".$self->table_name);
+	
+	sysopen(my $table_fh, $table_file, $mode)
+	##remplace ouverture simple par idiome Perl de lock
+	#open( my $table_fh, "+< $table_file")
+        or die "can't open $table_file: $!";
+    
+	# autoflush $table_fh (idiome Perl)
+    my $stdout = select($table_fh); # STDOUT->$table_fh
+	$| = 1;                         # autoflush STDOUT
+	select ($stdout);               # restore STDOUT
+	
+	# lock exclusif avec attente
+    flock($table_fh, $lock_mode)
+        or die "can't write-lock ".$self->table_name().": ".$!;
+	seek($table_fh, 0, 0)
+        or die "can't rewind ".$self->table_name().": ".$!;
+	
+	$self->{select_descriptor}=$table_fh;
+}
+
+sub _write_table_file {
+	my $self=shift;
+	
+	my @content=@_;
+
+	if ( not $self->{select_descriptor} ) {
+		croak("Aucune table ouverte");
+	}
+
+	print { $self->{select_descriptor} } @content
+        or die "can't write ".$self->table_name().": ".$!;
+}
+
+sub _empty_table_file {
+	my $self=shift;
+
+	if ( not $self->{select_descriptor} ) {
+		croak("Aucune table ouverte");
+	}
+
+	# vide la table
+	truncate($self->{select_descriptor}, 0)
+        or die "can't truncate ".$self->table_name().": ".$!;
+	# retour au debut
+	seek($self->{select_descriptor}, 0, 0)
+        or die "can't rewind ".$self->table_name().": ".$!;
+}
+
+sub _close_table_file {
+	my $self=shift;
+	
+	if ( not $self->{select_descriptor} ) {
+		croak("Aucune table ouverte");
+	}
+	
+	close($self->{select_descriptor})
+        or die "can't close ".$self->table_name().": ".$!;
+}
+
+####################################################
+# public methods
+####################################################
+
+# recupere les données de la table ligne à ligne
+# renvoie un tableau vide à la fin du fichier
+sub fetch_row_array_pp {
+	my $self = shift;
+	
+	my $separator=$self->output_separator();
+	my @temp_return;
+	
+	if (not defined $self->{select_descriptor} ) {
+		$self->_open_table_file(O_RDONLY);
+	}
+	
+	my $select_output=readline( $self->{select_descriptor} );
+	
+	$self->_close_table_file() if not defined $select_output;
+	
+	if (defined $select_output) {
+		chomp $select_output;
+		
+		@temp_return=split($separator,$select_output,-1);
+		
+		## ITools BUG : don't return end separators if fields are NULL
+		my $field_num_diff=0;
+		$field_num_diff= $self->query_field() - @temp_return if @temp_return;
+		if ( $field_num_diff != 0 ) {
+			push  @temp_return, (undef) x $field_num_diff;
+		}
+		##
+	}
+	
+	## TODO: QUERY FIELD
+	## TODO: CONDITION
+	## TODO: SORT
+	
+	return @temp_return
+}
+
+# ITools' Insert remplacement en pure Perl
+# fonctionne en INSERT OR REPLACE
+sub insert_row_pp {
 	my $self=shift;
 	
 	my %row = @_;
 
-	my $table_file = $self->{define}->file();
+	# declare le filehandle de la table
+	$self->_open_table_file(O_RDWR);
 	
-	# interprets vars
-	$table_file =~s/%(\w+)%/$ENV{$1}/g;
 	
-	open my $table_file_fd, "<",$table_file or croak("Impossible d'ouvrir $table_file : ",$!);
+    # avale toute la table dans la mémoire
+	my @table_lines;
+	while ( my $line = readline($self->{select_descriptor}) ) {
+		push @table_lines, $line;
+	}
 	
-	# slurp table
-	my @table_lines =  <$table_file_fd>;
-
-	close $table_file_fd;
-
-	# open for writing now to lock the file
-	# TODO: verify race condition
-	open $table_file_fd, ">",$table_file;
-
-	# transform plain text in array of hashes
+	
+	# transforme texte en tableau de dictionnaire
 	my @table_lines_hash = map {
-			if (! /^(?:#|$)/) {
+			if (! /^(?:#|\s*$)/) {
+				# sauvegarde du hash sous forme d'une référence
 				$_ = { $self->array_to_hash(split ( $self->output_separator , $_) )};
 			}
 			else {
+				# les commentaires et les lignes vides ne sont pas transformés
 				$_;
 			}
 		} @table_lines;
 	
-	# find if key already exists
+	# cherche si clef déjà présente
 	my $update_key;
 	foreach my $line_hash ( @table_lines_hash ) {
 		if (ref $line_hash) {
 		
 			my $key_match=0;
 			
-			#check all keys
+			# sur chaque ligne, verifie toutes les clefs
 			foreach my $key_field ( $self->key() ) {
 				if ( $line_hash->{$key_field} eq $row{$key_field} ) {
 					$key_match++;
 				}
 			}
 			
-			# found the line to update
+			# si on a trouvé toutes les clefs, on met à jour
 			if ( $key_match == $self->key() ) {
 				foreach my $set_field ( keys %row ) {
 					$line_hash->{$set_field} = $row{$set_field};
@@ -60,28 +195,34 @@ sub insert_row_pp() {
 		}
 	}
 	
-	# if not updated, then we add it
+	# Si pas de mise à jour, alors insertion simple
 	if (not $update_key) {
-		push @table_lines_hash, \%row or croak("Impossible d'ouvrir $table_file : ",$!);
+		push @table_lines_hash, \%row;
 	}
 	
-	# convert back to plain text
+	# retransforme les dictionnaires en texte
 	@table_lines = map {
+		# si c'est une référence, ce sont des données
 		if (ref $_) {
 			$_ = join( $self->output_separator , $self->hash_to_array( %{$_} ) );
 			
-			# delete and add endlines
+			# supprime et recree fin de ligne
 			chomp;
 			$_.="\n";
 		}
+		# sinon, on garde tel quel
 		else {
 			$_;
 		}
 	} @table_lines_hash;
+
 	
-	#overwrite old table with the new one
-	print $table_file_fd @table_lines;
-	close $table_file_fd;
+	# réécrit entierment le fichier avec la table modifiée
+	$self->_empty_table_file();
+	
+	$self->_write_table_file( @table_lines );
+    
+    $self->_close_table_file();
 	
 	return;
 }
@@ -102,7 +243,7 @@ ITable::ITools::Ft is a wrapper class to ITools::DATA::ITools::Legacy
  
 package Legacy;
 use ITable::abstract::ITools_interface;
-@ISA = ("ITools_interface");
+our @ISA = ("ITools_interface");
 
 use ITable::ITools::Define;
 
