@@ -1,0 +1,13 @@
+#	Table : MY_GROUPS.def
+#
+#       Dictionnaire des abonnements au Portail I-SIS
+#
+#	$Revision: 1.3 $
+#
+
+COMMAND="PC_LIST_GROUP %IsisUSer%"
+SEP=":"
+FORMAT="Group"
+SIZE="30s"
+HEADER="Liste de mes groupes"
+KEY="Group"

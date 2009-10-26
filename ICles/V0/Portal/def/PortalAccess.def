@@ -13,8 +13,8 @@
 #
 
 SEP=":"
-FORMAT="IsisUser:Role:Email"
-SIZE="12s:10s:30s"
+FORMAT="IsisUser:Role:Email:Groups"
+SIZE="12s:10s:30s:30s"
 HEADER="Liste des abonnements au Portail I-SIS"
 KEY="IsisUser"
 SORT="IsisUser"
