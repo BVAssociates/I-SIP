@@ -18,7 +18,7 @@ PC_REPORT_UPDATE - Verification de valeurs particulières
 
 =head1 SYNOPSIS
 
- PC_REPORT_UPDATE.pl [-h][-v] [-m] [-g groupe] Environnement
+ PC_REPORT_UPDATE.pl [-h][-v] [-m] [-g groupe] [-a | Environnement]
  
 =head1 DESCRIPTION
 
@@ -43,6 +43,8 @@ Verification de lignes/champs particuliers et envoi de mail en cas de non-valida
 =item -m : Effectue l'envoie du courriel
 
 =item -g : verifie uniquement pour le groupe spécifié
+
+=item -a : tous les environnements
 
 =back
 
@@ -99,7 +101,7 @@ sub swrite {
 my $debug_level = 0;
 
 my %opts;
-getopts('hvmg:', \%opts) or usage($debug_level+1);
+getopts('hvmg:a', \%opts) or usage($debug_level+1);
 
 $debug_level = 1 if $opts{v};
 
@@ -113,13 +115,16 @@ my $check_group = $opts{g};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
-	sortie(202);
 }
 
-my $environnement = shift;
+my $environnement_arg = shift;
+
+if ( not ($environnement_arg xor $opts{a} ) ) {
+	usage($debug_level);
+}
 
 #  Corps du script
 ###########################################################
@@ -128,128 +133,139 @@ use Isip::IsipConfig;
 use Isip::IsipRules;
 use Isip::Environnement;
 
-my %row_array_for;
 
 my $config = IsipConfig->new();
 
-my $env = Environnement->new($environnement);
-
-my $mail_table = eval { $env->open_local_table("FIELD_MAIL") };
-next if $@;
-
-if ( $check_group ) {
-	$mail_table->query_condition("MAIL_GROUP = '$check_group'");
+my @environnement_list;
+if ( $environnement_arg ) {
+	@environnement_list = ( $environnement_arg );
+}
+else {
+	@environnement_list = $config->get_environnement_list();
 }
 
-while ( my %row = $mail_table->fetch_row() ) {
-	
-	my $group      = $row{MAIL_GROUP};
-	my $table_name = $row{TABLE_NAME};
-	my $table_key  = $row{TABLE_KEY};
-	my $field_name = $row{FIELD_NAME};
-	
-	my $table_to_check = $env->open_histo_field_table($table_name);
-	$table_to_check->query_key_value($table_key);
-	$table_to_check->query_condition("FIELD_NAME = '$field_name'");
-	$table_to_check->query_field("ICON", $table_to_check->query_field() );
+foreach my $environnement (@environnement_list) {
 
-	$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
+	my $env = Environnement->new($environnement);
+
+	my %row_array_for;
 	
-	while ( my %row_to_check = $table_to_check->fetch_row() ) {
-		
-		if ( $row_to_check{ICON} !~ /^valide/ ) {
-			log_info("Dans la table $table_name, le champ $field_name  de la clef $table_key n'est pas validé");
-			
-			# garde la ligne en mémoire
-			push @{ $row_array_for{$group} } , \%row_to_check;
-		}
+	my $mail_table = eval { $env->open_local_table("FIELD_MAIL") };
+	next if $@;
+
+	if ( $check_group ) {
+		$mail_table->query_condition("MAIL_GROUP = '$check_group'");
 	}
-}
 
-
-# première passe pour recuperer la taille des colonnes du tableau
-my %max_length_of;
-while (my ($group, $rows_ref) = each %row_array_for) {
-	
-	my %message_for;
-	foreach my $row_hash_ref (@$rows_ref) {
-		my %row = %$row_hash_ref;
+	while ( my %row = $mail_table->fetch_row() ) {
 		
-		foreach my $field ("TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+		my $group      = $row{MAIL_GROUP};
+		my $table_name = $row{TABLE_NAME};
+		my $table_key  = $row{TABLE_KEY};
+		my $field_name = $row{FIELD_NAME};
+		
+		my $table_to_check = $env->open_histo_field_table($table_name);
+		$table_to_check->query_key_value($table_key);
+		$table_to_check->query_condition("FIELD_NAME = '$field_name'");
+		$table_to_check->query_field("ICON", $table_to_check->query_field() );
+
+		$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
+		
+		while ( my %row_to_check = $table_to_check->fetch_row() ) {
 			
-			# max()
-			if ( not exists $max_length_of{$field} or (length $row{$field}) > $max_length_of{$field} ) {
-				$max_length_of{$field} = length $row{$field};
-			}
-		}
-	}
-}
-
-# entete
-my %title_for=(
-	"TABLE_NAME" => "Table",
-	"TABLE_KEY" => "Clef",
-	"FIELD_NAME" => "Champ",
-	"FIELD_VALUE" => "Valeur",
-);
-my $space_between=4;
-
-while (my ($group, $rows_ref) = each %row_array_for) {
-	
-	log_info("Verification pour le groupe $group");
-	
-	my %message_for;
-	foreach my $row_hash_ref (@$rows_ref) {
-		my %row = %$row_hash_ref;
-		
-		# entete pour chaque date de collecte
-		my $total_padding=0;
-		if ( not $message_for{ $row{DATE_HISTO} } ) {
-			foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
-				my $padding = $max_length_of{$field} - length $title_for{$field};
-				$message_for{ $row{DATE_HISTO} } .= $title_for{$field}. ' ' x ($padding+$space_between);
+			if ( $row_to_check{ICON} !~ /^valide/ ) {
+				log_info("Dans la table $table_name, le champ $field_name  de la clef $table_key n'est pas validé");
 				
-				$total_padding += $max_length_of{$field}+$space_between;
+				# garde la ligne en mémoire
+				push @{ $row_array_for{$group} } , \%row_to_check;
+			}
+		}
+	}
+
+	# première passe pour recuperer la taille des colonnes du tableau
+	my %max_length_of;
+	while (my ($group, $rows_ref) = each %row_array_for) {
+		
+		my %message_for;
+		foreach my $row_hash_ref (@$rows_ref) {
+			my %row = %$row_hash_ref;
+			
+			foreach my $field ("TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+				
+				# max()
+				if ( not exists $max_length_of{$field} or (length $row{$field}) > $max_length_of{$field} ) {
+					$max_length_of{$field} = length $row{$field};
+				}
+			}
+		}
+	}
+	
+	# entete
+	my %title_for=(
+		"TABLE_NAME" => "Table",
+		"TABLE_KEY" => "Clef",
+		"FIELD_NAME" => "Champ",
+		"FIELD_VALUE" => "Valeur",
+	);
+	my $space_between=4;
+
+	while (my ($group, $rows_ref) = each %row_array_for) {
+		
+		log_info("Verification pour le groupe $group");
+		
+		my %message_for;
+		foreach my $row_hash_ref (@$rows_ref) {
+			my %row = %$row_hash_ref;
+			
+			# entete pour chaque date de collecte
+			my $total_padding=0;
+			if ( not $message_for{ $row{DATE_HISTO} } ) {
+				foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+					my $padding = $max_length_of{$field} - length $title_for{$field};
+					$message_for{ $row{DATE_HISTO} } .= $title_for{$field}. ' ' x ($padding+$space_between);
+					
+					$total_padding += $max_length_of{$field}+$space_between;
+				}
+				$message_for{ $row{DATE_HISTO} } .= "\n";
+				$message_for{ $row{DATE_HISTO} } .= "-" x $total_padding;
+				$message_for{ $row{DATE_HISTO} } .= "\n";
+			}
+			
+			# valeur
+			foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE" ) {
+				my $padding = $max_length_of{$field} - length $row{$field};
+				$message_for{ $row{DATE_HISTO} } .= $row{$field}. ' ' x ($padding+$space_between);
 			}
 			$message_for{ $row{DATE_HISTO} } .= "\n";
-			$message_for{ $row{DATE_HISTO} } .= "-" x $total_padding;
-			$message_for{ $row{DATE_HISTO} } .= "\n";
+			
 		}
 		
-		# valeur
-		foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE" ) {
-			my $padding = $max_length_of{$field} - length $row{$field};
-			$message_for{ $row{DATE_HISTO} } .= $row{$field}. ' ' x ($padding+$space_between);
+		
+			
+			my @full_message;
+			my $send_ok;
+			
+			push @full_message, "\nLes changements suivants doivent être validées: \n";
+			
+			foreach my $date_histo (sort {$a lt $b} keys %message_for) {
+				$send_ok++;
+				
+				my $date_histo_format = $date_histo;
+				$date_histo_format =~ s/T/ à /;
+				push @full_message, " * Collecté le $date_histo_format :\n";
+				
+				push @full_message, $message_for{$date_histo}
+				
+			}
+			
+			print join("\n",@full_message)."\n";
+			
+		if ( $send_mail and $send_ok) {
+			log_info("Envoi de l'email");
+			$config->send_mail("Alertes I-SIP pour l'environnement $environnement", join("\n",@full_message), { group => $group } );
 		}
-		$message_for{ $row{DATE_HISTO} } .= "\n";
 		
 	}
-	
-	
-		
-		my @full_message;
-		my $send_ok;
-		
-		push @full_message, "\nLes changements suivants doivent être validées: \n";
-		
-		foreach my $date_histo (sort {$a lt $b} keys %message_for) {
-			$send_ok++;
-			
-			my $date_histo_format = $date_histo;
-			$date_histo_format =~ s/T/ à /;
-			push @full_message, " * Collecté le $date_histo_format :\n";
-			
-			push @full_message, $message_for{$date_histo}
-			
-		}
-		
-		print join("\n",@full_message)."\n";
-		
-	if ( $send_mail and $send_ok) {
-		log_info("Envoi de l'email");
-		$config->send_mail("Alertes I-SIP pour l'environnement $environnement", join("\n",@full_message), { group => $group } );
-	}
-	
 }
 
 
