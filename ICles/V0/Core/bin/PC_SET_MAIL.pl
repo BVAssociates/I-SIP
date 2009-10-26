@@ -15,7 +15,7 @@ PC_SET_MAIL - ajouter le champ dans la table FIELD_MAIL
 
 =head1 SYNOPSIS
 
- PC_SET_MAIL.pl [-h] [-v] [-d] environnement tablename clef champ label
+ PC_SET_MAIL.pl [-h] [-v] (-d|-a) environnement tablename clef champ groupe
  
 =head1 DESCRIPTION
 
@@ -37,6 +37,10 @@ Force l'icone d'un champ d'une ligne dans un état invariable.
 
 =item -v : Mode verbeux
 
+=item -d : supprime l'entrée (delete) 
+
+=item -a : ajoute l'entrée à un groupe (add) 
+
 =back
 
 =head1 ARGUMENTS
@@ -51,7 +55,7 @@ Force l'icone d'un champ d'une ligne dans un état invariable.
 
 =item champ
 
-=item label : code de l'icone (Voir IsipRules)
+=item groupe
 
 =back
 
@@ -75,7 +79,7 @@ sub usage($) {
 	sortie(202); 
 }
 
-sub log_erreur {
+sub log_error {
 	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
 	$logger->error(@_);
 	sortie(202);
@@ -92,17 +96,21 @@ sub log_info {
 
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hvda', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
+usage($debug_level+1) if not ($opts{a} xor $opts{d} );
+
+my $add_group=$opts{a};
+
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 4) {
+if ( @ARGV < 5) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -112,87 +120,43 @@ my $environnement=shift;
 my $table_name=shift;
 my $key=shift;
 my $field=shift;
-my $icon=shift;
+my $group=shift;
 
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
 
+use ITable::ITools;
 use Isip::Environnement;
 
 my $env=Environnement->new($environnement);
-my $table=$env->open_local_table("FIELD_LABEL");
+
+my $alert_table=$env->open_local_table("FIELD_MAIL");
 
 
-$table->begin_transaction;
+my %alert_table_line=(
+		MAIL_GROUP => $group,
+		TABLE_NAME => $table_name,
+		TABLE_KEY => $key,
+		FIELD_NAME => $field,
+	);
 
-$table->delete_row(TABLE_NAME => $table_name, TABLE_KEY => $key, FIELD_NAME => $field);
-if ($icon) {
+$alert_table->delete_row(%alert_table_line);
 
-	# get update info
+if ( $add_group ) {
+
+	log_info("Ajout de la ligne au groupe : ".$group);
+	# add update info
 	use POSIX qw(strftime);
 	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
 	my $current_user=$ENV{IsisUser};
 	
-	$table->insert_row(
-		DATE_UPDATE => $timestamp,
-		USER_UPDATE => $current_user,
-		TABLE_NAME  => $table_name,
-		TABLE_KEY   => $key,
-		FIELD_NAME  => $field,
-		LABEL       => $icon
-	);
-	log_info("$field pour la clef $key de $table_name labellisé $icon");
-}
-else {
-	log_info("Label retiré de $field pour la clef $key de $table_name");
-}
-
-$table->commit_transaction;
-
-# update cache
-use Isip::IsipTreeCache;
-use Isip::IsipRules;
-use Isip::Cache::CacheStatus;
-
-# reconstruct the line
-my %new_line;
-my $table_ikos=$env->open_local_from_histo_table($table_name);
-$table_ikos->query_key_value($key);
-%new_line=$table_ikos->fetch_row();
-croak("Problème lors de la récupération de la ligne $key") if $table_ikos->fetch_row() or not %new_line;
-undef $table_ikos;
-
-my %icon_list=IsipRules->enum_field_icon();
-
-if (not $ENV{ICON}) {
-	log_info("impossible de mettre à jour le cache car ICON n'est pas dans l'environnement");
-	$ENV{ICON}="valide_label";
-}
-
-if ($icon) {
-	$new_line{ICON}=$icon_list{$icon};
-	$new_line{OLD_ICON}=$ENV{ICON};
-}
-else {
-	#recalcul de l'icone du champ
-	my $rules=IsipRules->new($table_name, $env);
+	$alert_table_line{DATE_UPDATE} = $timestamp;
+	$alert_table_line{USER_UPDATE} = $current_user;
 	
-	my %field_line=%ENV;
-	@field_line{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")}=@ENV{("TABLE_KEY","FIELD_NAME","STATUS","PROJECT","COMMENT")};
-	
-	$new_line{ICON}=$rules->get_field_icon(%field_line);
-	$new_line{OLD_ICON}=$ENV{ICON};
+	$alert_table->insert_row(%alert_table_line);
 }
-$new_line{OLD_ICON}=$ENV{ICON};
-@new_line{$env->get_table_key($table_name)}=split(',',$key);
 
-my $cache=IsipTreeCache->new($env);
-$cache->add_dispatcher(CacheStatus->new($env));
 
-log_info("Mise à jour des icônes");
-$cache->recurse_line($table_name, \%new_line);
-eval {$cache->save_cache() };
-if ($@) {
-	log_erreur("Mise à jour des icônes impossible : $@");
-}
+
+
