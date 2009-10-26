@@ -98,14 +98,16 @@ sub get_query()
 	my @select_conditions;
 	my @having_conditions;
 	
-	# aware of concatened keys
 	my @query_field=$self->{column_histo}->get_field_list();
+
+	# aware of concatened keys
 	my @key_field=$self->{column_histo}->get_key_list();
 	foreach my $field (@key_field) {
 		@query_field = grep {$_ ne $field} @query_field;
 	}
 	push @query_field, join(',',@key_field);
 	
+	# get only field at specified date if any
 	push @select_conditions, "FIELD_NAME IN (".join(',',map {"'".$_."'"} @query_field).")";
 	
 	my $date_format = "%Y-%m-%dT%H:%M";
@@ -127,7 +129,7 @@ sub get_query()
 		}
 		else {
 			# add condition
-			push @select_conditions, $condition ;
+			push @having_conditions, $condition ;
 		}
 	}
 	
@@ -146,11 +148,11 @@ sub get_query()
 			$self->{table_name}";
 	
 	# Add a condition
-	$select_histo.= " WHERE ".join(" AND ", @select_conditions) if @select_conditions;
+	$select_histo.= "\n\t\t\tWHERE ".join(" AND ", @select_conditions) if @select_conditions;
 	# GROUP BY
-	$select_histo.= " GROUP BY FIELD_NAME_2, TABLE_KEY_2";
+	$select_histo.= "\n\t\t\tGROUP BY FIELD_NAME_2, TABLE_KEY_2";
 	# HAVING metadata
-	$select_histo.= " HAVING ".join(" AND ", @having_conditions) if @having_conditions;
+	$select_histo.= "\n\t\t\tHAVING ".join(" AND ", @having_conditions) if @having_conditions;
 	
 	$select_histo.= ")
 		ON  (TABLE_KEY = TABLE_KEY_2) AND (FIELD_NAME = FIELD_NAME_2) AND (DATE_HISTO = DATE_MAX)
