@@ -248,6 +248,12 @@ sub get_field_icon () {
 	my $project=$line{PROJECT};
 	my $comment=$line{COMMENT};
 	
+	if ( grep { not defined $_ } ($key, $name, $status_desc) ) {
+		$logger->error("Impossible de determiner le status de la ligne");
+		return $self->{field_icon}{ERROR};
+	}
+	
+	
 	my %status_by_name= reverse %{$self->{field_status}};
 	
 	#$logger->debug("get type of ",$name);
