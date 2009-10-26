@@ -18,7 +18,7 @@ PC_REPORT_UPDATE - Verification de valeurs particulières
 
 =head1 SYNOPSIS
 
- PC_REPORT_UPDATE.pl [-h][-v] [-m] [-g groupe]
+ PC_REPORT_UPDATE.pl [-h][-v] [-m] [-g groupe] Environnement
  
 =head1 DESCRIPTION
 
@@ -50,7 +50,7 @@ Verification de lignes/champs particuliers et envoi de mail en cas de non-valida
 
 =over
 
-=item environnement
+=item environnement : l'environnement à verifier
 
 =back
 
@@ -113,12 +113,13 @@ my $check_group = $opts{g};
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 0) {
+if ( @ARGV < 1) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
 
+my $environnement = shift;
 
 #  Corps du script
 ###########################################################
@@ -131,39 +132,36 @@ my %row_array_for;
 
 my $config = IsipConfig->new();
 
-# for each environnement
-foreach my $environnement ( $config->get_environnement_list() ) {
-	my $env = Environnement->new($environnement);
+my $env = Environnement->new($environnement);
 
-	my $mail_table = eval { $env->open_local_table("FIELD_MAIL") };
-	next if $@;
-	
-	if ( $check_group ) {
-		$mail_table->query_condition("MAIL_GROUP = '$check_group'");
-	}
-	
-	while ( my %row = $mail_table->fetch_row() ) {
-		
-		my $group      = $row{MAIL_GROUP};
-		my $table_name = $row{TABLE_NAME};
-		my $table_key  = $row{TABLE_KEY};
-		my $field_name = $row{FIELD_NAME};
-		
-		my $table_to_check = $env->open_histo_field_table($table_name);
-		$table_to_check->query_key_value($table_key);
-		$table_to_check->query_condition("FIELD_NAME = '$field_name'");
-		$table_to_check->query_field("ICON", $table_to_check->query_field() );
+my $mail_table = eval { $env->open_local_table("FIELD_MAIL") };
+next if $@;
 
-		$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
+if ( $check_group ) {
+	$mail_table->query_condition("MAIL_GROUP = '$check_group'");
+}
+
+while ( my %row = $mail_table->fetch_row() ) {
+	
+	my $group      = $row{MAIL_GROUP};
+	my $table_name = $row{TABLE_NAME};
+	my $table_key  = $row{TABLE_KEY};
+	my $field_name = $row{FIELD_NAME};
+	
+	my $table_to_check = $env->open_histo_field_table($table_name);
+	$table_to_check->query_key_value($table_key);
+	$table_to_check->query_condition("FIELD_NAME = '$field_name'");
+	$table_to_check->query_field("ICON", $table_to_check->query_field() );
+
+	$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
+	
+	while ( my %row_to_check = $table_to_check->fetch_row() ) {
 		
-		while ( my %row_to_check = $table_to_check->fetch_row() ) {
+		if ( $row_to_check{ICON} !~ /^valide/ ) {
+			log_info("Dans la table $table_name, le champ $field_name  de la clef $table_key n'est pas validé");
 			
-			if ( $row_to_check{ICON} !~ /^valide/ ) {
-				log_info("Dans la table $table_name, le champ $field_name  de la clef $table_key n'est pas validé");
-				
-				# garde la ligne en mémoire
-				push @{ $row_array_for{$group} } , \%row_to_check;
-			}
+			# garde la ligne en mémoire
+			push @{ $row_array_for{$group} } , \%row_to_check;
 		}
 	}
 }
@@ -248,7 +246,8 @@ while (my ($group, $rows_ref) = each %row_array_for) {
 		print join("\n",@full_message)."\n";
 		
 	if ( $send_mail and $send_ok) {
-		$config->send_mail("Alertes I-SIP pour le groupe $group", join("\n",@full_message), { group => $group } );
+		log_info("Envoi de l'email");
+		$config->send_mail("Alertes I-SIP pour l'environnement $environnement", join("\n",@full_message), { group => $group } );
 	}
 	
 }
