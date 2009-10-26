@@ -336,39 +336,61 @@ sub send_mail {
 	
 	require Mail::Sender;
 
-	my $subject=shift;
-	my $message=shift or croak("usage: send_mail(subject,,message [, dest_role])");
-	my $mailto_responsability =shift;
-	# par défaut to adm
-	$mailto_responsability = 'adm' if not $mailto_responsability;
+	my $subject     = shift;
+	my $message     = shift;
+	my $dest_option = shift or croak("usage: send_mail(subject,message, {responsablity => 'resp', user => 'user', group => 'group'} )");
+	
+	my $mailto_responsability = $dest_option->{responsablity};
+	my $mailto_user           = $dest_option->{user};
+	my $mailto_group          = $dest_option->{group};
+	
+	if ( 3 == grep {not defined} values %{ $dest_option } ) {
+		croak("send_mail() attend au moins une option de destination");
+	}
 	
 	my $smtp_host=$self->get_config_var("smtp_host");
 	my $smtp_from=$self->get_config_var("smtp_from");
 	
 	# collecte roles associés à responsabilité
 	my @mailto_roles;
-	my $roles_table=ITools->open("respRoles");
-	
-	while ( my %right = $roles_table->fetch_row() ) {
-		if ( $right{Responsability} eq $mailto_responsability ) {
-			push @mailto_roles, $right{Role};
+	if ( $mailto_responsability ) {
+		my $roles_table=ITools->open("respRoles");
+		while ( my %right = $roles_table->fetch_row() ) {
+			if ( $right{Responsability} eq $mailto_responsability ) {
+				push @mailto_roles, $right{Role};
+			}
 		}
 	}
 	
-	# collecte email associés au roles
+	# collecte email associés au roles,groupe et user
 	my @mailto_email;
 	my $user_table=ITools->open("PortalAccess");
 	
 	my %mailto_email_uniq;
 	while (my %user = $user_table->fetch_row() ) {
-		if ( $user{Email} and grep { $_ eq $user{Role} } @mailto_roles) {
-			$mailto_email_uniq{$user{Email}}++;
+		
+		if ( $mailto_responsability ) {
+			if ( $user{Email} and grep { $_ eq $user{Role} } @mailto_roles) {
+				$mailto_email_uniq{$user{Email}}++;
+			}
+		}
+		
+		if ( $mailto_group ) {
+			if ( $user{Groups} =~ /(^|,)$mailto_group(,|$)/ ) {
+				$mailto_email_uniq{$user{Email}}++;
+			}
+		}
+		
+		if ( $mailto_user ) {
+			if ( $user{IsisUser} eq  $mailto_user ) {
+				$mailto_email_uniq{$user{Email}}++;
+			}
 		}
 	}
 	@mailto_email = keys %mailto_email_uniq;
 	
 	if ( not @mailto_email ) {
-		$logger->error("Aucun email trouvé pour la respondabilité $mailto_responsability")
+		$logger->error("Aucun email correspondant")
 	}
 
 	$logger->info("Connexion SMTP : $smtp_host");
