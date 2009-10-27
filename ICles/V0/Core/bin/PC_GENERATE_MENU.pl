@@ -297,7 +297,7 @@ Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exi
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 
 Item~Surveillance~Ne plus surveiller~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%" OK~0~~Configure
-Item~Surveillance~Surveiller à nouveau~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "% environnement %]" "[% table %]" "%TABLE_KEY%"~0~~Configure
+Item~Surveillance~Surveiller à nouveau~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%"~0~~Configure
 Item~Surveillance~Etre alerter par Email~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%TABLE_KEY%" "%FIELD_NAME%" "%GROUP_ALERT%"~0~~Configure
 ';
 
