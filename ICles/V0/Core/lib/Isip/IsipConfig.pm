@@ -400,7 +400,7 @@ sub send_mail {
 		$logger->error("Probleme de connexion à $smtp_host");
 	}
 		
-	$logger->info("Envoi du mail à : ", join(',', @mailto_email) );
+	$logger->notice("Envoi du mail à : ", join(',', @mailto_email) );
 	my $success = $sender->MailMsg({to => \@mailto_email,
 	  subject => $subject,
 	  msg => $message}

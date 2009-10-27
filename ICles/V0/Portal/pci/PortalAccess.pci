@@ -15,9 +15,9 @@ Item~Jobs~Repertoire d'export~dev~~~OpenURL~%ISIP_EXPORT%~0~~Configure
 Item~Jobs~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
 Item~Journaux~Historique Execution, tout le monde~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
 #Item~Journaux~Calcul des lignes à commenter~sys~~~DisplayTable~REPORT_ACTIVITY~0~~Configure
-Item~Journaux~Calcul des lignes à commenter (txt)~sys~~~ExecuteProcedure~PC_REPORT_ACTIVITY -a~0~~Configure
+Item~Journaux~Avancement commentaires~sys~~~ExecuteProcedure~PC_REPORT_ACTIVITY -a~0~~Configure
 Item~Journaux~Historique Execution~expl~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
-Item~Journaux~Statistique Execution~expl~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
+Item~Journaux~Statistique Execution~sys~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
 Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\isip_collecte.log~0~~Configure
 Item~Journaux~Log collecte~adm~~~DisplayFile~%ISIP_LOG%\isip_collecte.log~0~~Configure
 
