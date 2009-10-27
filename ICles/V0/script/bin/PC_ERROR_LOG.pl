@@ -119,13 +119,19 @@ while(<>)  {
 }
 
 # affiche les erreurs à l'ecran
-print @error_list;
+if (@error_list) {
+	print @error_list;
 
-# Envoi les erreurs dans un Mail
-if ( $mail_to_resp and grep { /(ERROR|CRITICAL)/ } @error_list ) {
+	# Envoi les erreurs dans un Mail
+	if ( $mail_to_resp ) {
 
-	unshift @error_list, "Voici la liste des erreurs detectés pendant la dernière collecte : \n\n";
-	
-	my $config = IsipConfig->new();
-	$config->send_mail("I-SIP : Erreurs de collecte", join('', @error_list), $mail_to_resp);
+		unshift @error_list, "Voici la liste des erreurs detectés pendant la dernière collecte : \n\n";
+		
+		my $config = IsipConfig->new();
+		$config->send_mail("I-SIP : Erreurs de collecte", join('', @error_list), { responsablity => $mail_to_resp } );
+	}
+}
+
+else {
+	print "Aucune erreur pendant la collecte";
 }
