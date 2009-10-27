@@ -2,7 +2,7 @@ package CacheStatus;
 
 use Isip::Cache::CacheInterface;
 use base 'CacheInterface';
-use fields qw(action current_table);
+use fields qw(action current_table _rollback_cache);
 
 use strict;
 use Carp qw(carp croak );
@@ -23,6 +23,8 @@ sub new() {
 	$self->{action}=0;
 	$self->{current_table}="";
 	
+	$self->{_rollback_cache}={};
+	
 	return $self;
 }
 
@@ -34,6 +36,7 @@ sub check_before_cache() {
 	
 	# reset current action
 	$self->{action}=0;
+	$self->_commit();
 	
 	if (exists $value_ref->{ICON} and $value_ref->{ICON}) {
 		
@@ -64,6 +67,44 @@ sub check_before_cache() {
 	return $dirty;
 }
 
+
+#####################################
+# _commit() and _rollback()
+# add transaction support for the memory_cache structure
+#####################################
+
+sub _rollback {
+	my $self=shift;
+	
+	my %rollback_temp=%{$self->{_rollback_cache}};
+	foreach my $rollback_table (keys %rollback_temp) {
+		my %rollback_source=%{$rollback_temp{$rollback_table}};
+		
+		foreach my $table_source (keys %rollback_source) {
+		my %rollback_keys=%{$rollback_source{$table_source}};
+		
+			foreach my $rollback_key ( keys %rollback_keys ) {
+				
+				# setting old value
+				$logger->debug("Rollback dirty from $rollback_table/$table_source/$rollback_key");
+				$self->{memory_cache}->{$rollback_table}->{$table_source}->{$rollback_key}
+					= $self->{_rollback_cache}->{$rollback_table}->{$table_source}->{$rollback_key}
+				;
+			}
+		}
+	}
+	
+	$self->{_rollback_cache}={};
+}
+
+sub _commit {
+	my $self=shift;
+	
+	$self->{_rollback_cache}={};
+}
+
+#####################################
+
 sub add_row_cache() {
 	my $self=shift;
 	
@@ -75,8 +116,9 @@ sub add_row_cache() {
 	
 	
 	if ( $value_ref->{ICON} =~ /_label/ ) {
-		# a value is labeled while going through, we stop the recursion
+		# a value is labeled while going through, we stop the recursion and rollback values
 		undef $self->{action};
+		$self->_rollback();
 		return;
 	}
 	
@@ -88,15 +130,21 @@ sub add_row_cache() {
 	my $old_value=$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string};
 	$old_value=0 if not defined $old_value;
 	
+	# keep old value to be able to rollback
+	$self->{_rollback_cache}->{$table_name}->{$table_fired}->{$key_string}=$old_value;
+	
 	my $new_value=$old_value + $self->{action};
 	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 	
 	$logger->info("$table_name.$key_string : $old_value -> $new_value");
 }
 
+# recupère les clefs a commenter d'une table
+# si "table_source" est spécifiée, ne recupère que les clefs impacté par une sous-table
 sub get_dirty_key {
 	my $self=shift;
-	my $table_name=shift or croak("usage : get_dirty_key(table_name)");
+	my $table_name=shift or croak("usage : get_dirty_key(table_name [, table_source])");
+	my $table_source=shift;
 	
 	my @return_list;
 	
@@ -105,6 +153,11 @@ sub get_dirty_key {
 		if (exists $self->{memory_cache}->{$table_name}) {
 			my %tables=%{$self->{memory_cache}->{$table_name}};
 			foreach my $source_name (keys %tables) {
+			
+				if ( $table_source and $source_name eq $table_source ){
+					next;
+				}
+				
 				foreach my $table_key (keys %{$tables{$source_name}}) {
 					push @return_list, $table_key;
 				}
@@ -122,6 +175,11 @@ sub get_dirty_key {
 	
 	my @condition;
 	push @condition, "TABLE_NAME='$table_name' ";
+	
+	if ( $table_source ) {
+		push @condition, "TABLE_SOURCE='$table_source' ";
+	}
+	
 	$table->query_condition(@condition);
 	
 	while (my ($table_key)=$table->fetch_row_array()) {
