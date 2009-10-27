@@ -10,6 +10,8 @@ use Date::Calc qw(:all);
 use Isip::IsipLog '$logger';
 use Mail::Sender;
 
+my $debug_level = 0;
+
 #  Documentation
 ###########################################################
 =head1 NAME
@@ -18,7 +20,7 @@ PC_REPORT_ACTIVITY - Liste le contenu d'une table sqlite
 
 =head1 SYNOPSIS
 
- PC_REPORT_ACTIVITY.pl [-h][-v] [-m] [-b nb_jours_fin] -c nb_jours environnement
+ PC_REPORT_ACTIVITY.pl [-h][-v] [-m] [-l] [-t [-s sep] ] [-a|environnement]
  
 =head1 DESCRIPTION
 
@@ -42,9 +44,9 @@ Affiche des compte-rendu d'activité sur la base I-SIP
 
 =item -m : Effectue l'envoie du courriel
 
-=item -b : spécifie le nombre de jours à partir duquel est fait le calcul
+=item -l : affiche la liste des tables à commenter
 
-=item -c : spécifie le nombre de jours de l'intervale de calcul
+=item -t : sortie sous forme de table ITools
 
 =back
 
@@ -52,7 +54,7 @@ Affiche des compte-rendu d'activité sur la base I-SIP
 
 =over
 
-=item environnement
+=item environnement (ou -a pour tous les environnements)
 
 =back
 
@@ -87,155 +89,195 @@ sub log_info {
 	$logger->notice(@_);
 }
 
-sub get_date_interval {
-	
-	my $day_count=shift;
-	my $day_offset=shift;
-	
-	my @today=Today_and_Now();
-	
-	my @date_begin;
-	my @date_end=@today;
-	
-	if ($day_offset ) {
-		@date_end=Add_Delta_DHMS(@today, -$day_offset, 0,0,0);
-	}
-	
-	if ($day_count ) {
-		@date_begin=Add_Delta_DHMS(@date_end, -$day_count, 0,0,0);
-	}
-	
-	
-	my $date_begin_txt;
-	$date_begin_txt= sprintf("%d-%02d-%02dT%02d:%02d", @date_begin) if @date_begin;
-	
-	my $date_end_txt;
-	$date_end_txt= sprintf("%d-%02d-%02dT%02d:%02d", @date_end);
-	
-	return ($date_begin_txt, $date_end_txt);
-}
-
 
 #  Traitement des Options
 ###########################################################
 
 
 my %opts;
-getopts('hvc:b:m', \%opts);
+getopts('hvmalts:', \%opts) or usage($debug_level+1);
 
-my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-my $day_count=$opts{c};
-my $day_offset=$opts{b};
 
 my $send_mail=$opts{m};
+
+my $long_display=$opts{l};
+
+my $table_display=$opts{t};
+
+my $separator=$opts{s};
+$separator = ',' if not $separator;
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 1) {
+if ( @ARGV < 0) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
 }
-my $environnement=shift;
+
+my $environnement_arg = shift;
+
+if ( not ($environnement_arg xor $opts{a} ) ) {
+	usage($debug_level);
+}
 
 #  Corps du script
 ###########################################################
-my $bv_severite=0;
-use Isip::IsipReport;
-use Isip::IsipConfig;
+
+#use Isip::IsipReport;
+use List::Util qw(sum);
+
+use Isip::Cache::CacheStatus;
 use Isip::Environnement;
+use Isip::IsipConfig;
 
-# dates en francais
-Language(2);
 
-my @date_today=Today;
-my $date_today_txt=Date_to_Text_Long(@date_today[0..2]);
+my $config = IsipConfig->new();
 
-my $mail_subject = q{Rapport d'activité du }.$date_today_txt;
-my $mail_message = $mail_subject."\n\n";
 
-my ($date_begin,$date_end)=get_date_interval($day_count, $day_offset);
-
-my $date_begin_txt;
-my $date_end_txt;
-if ($date_begin and $date_begin =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+)$/) {
-	$date_begin_txt=Date_to_Text_Long($1,$2,$3)." ($4h$5)";
-}
-if ($date_end =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+)$/) {
-	$date_end_txt=Date_to_Text_Long($1,$2,$3)." ($4h$5)";
-}
-
-if ( $date_begin ) {
-	$mail_message .= "Calculs pour la période comprises entre le ".$date_begin_txt." et le ".$date_end_txt."\n\n";
+my @environnement_list;
+if ( $environnement_arg ) {
+	@environnement_list = ( $environnement_arg );
 }
 else {
-	$mail_message .= "Calculs pour la période avant le ".$date_end_txt."\n\n";
+	@environnement_list = $config->get_environnement_list();
 }
 
+my $mail_subject;
+my $mail_message;
 
-my $env=Environnement->new($environnement);
+my $table_max_length=0;
+my $module_max_length=0;
 
-my $report=IsipReport->new($env);
-my $histo_count=$report->get_update_histo_count($date_begin, $date_end);
-my $comment_count=$report->get_update_comment_count($date_begin, $date_end);
-my $invalid_count=$report->get_update_invalid_count($date_begin, $date_end);
+foreach my $environnement (@environnement_list) {
+	
+	my $env = Environnement->new($environnement);
 
-$mail_message .= "Nombre de modification de valeur de champs : ".$histo_count."\n";
-$mail_message .= "Nombre de modification validés : ".$comment_count."\n";
-$mail_message .= "Nombre de modification à commenter : ".$invalid_count."\n";
+	my $cache_icon = CacheStatus->new($env);
+	
+	my %total_lines_for_table;
+	my %dirty_lines_for_table;
+	
+	my %total_lines_for_module;
+	my %dirty_lines_for_module;
 
-if ( $histo_count ) {
-	$mail_message .= "Taux de mise à jour utilisateur : ". sprintf ('%.2f %%',100 * $comment_count / $histo_count)."\n";	
+	foreach my $table_name ($env->get_table_list() ) {
+
+		# recupère la taille max des noms de table
+		if ( $table_max_length < length $table_name ) {
+			$table_max_length = length $table_name;
+		}
+		
+		#
+		# get lines count
+		#
+
+		# get key field
+		my $key_fields_txt;
+		my $table_temp = $env->open_local_from_histo_table($table_name);
+		$key_fields_txt= join(',', sort $table_temp->key());
+
+		my $table_histo = $env->open_local_table($table_name."_HISTO");
+		$table_histo->custom_select_query(
+		"SELECT  count(*)
+		FROM $table_name\_HISTO as HISTO1
+		INNER JOIN (
+		SELECT
+		max(ID) as ID2,
+		HISTO2.TABLE_KEY as TABLE_KEY_2,
+		HISTO2.FIELD_NAME as FIELD_NAME_2
+		FROM $table_name\_HISTO as HISTO2
+			WHERE FIELD_NAME = '$key_fields_txt'
+			GROUP BY FIELD_NAME_2, TABLE_KEY_2
+			HAVING FIELD_VALUE != '__delete'
+		) ON  (ID= ID2)"
+			);
+			
+		( $total_lines_for_table{$table_name} ) = $table_histo->fetch_row_array();
+
+		#
+		# get dirty lines count
+		#
+
+		$dirty_lines_for_table{$table_name} = $cache_icon->get_dirty_key($table_name, $table_name);
+
+	}
+
+	# stocke les statistiques par module
+	foreach my $module ( $config->get_module_list() ) {
+	
+		# recupère la taille max des noms de module
+		if ( $module_max_length < length $module ) {
+			$module_max_length = length $module;
+		}
+		
+		my @tables = $env->get_table_list_module($module);
+		$total_lines_for_module{ $module } = sum( @total_lines_for_table{ @tables } );
+		
+		my $dirty_lines_temp = sum( @dirty_lines_for_table{ @tables } );
+		$dirty_lines_for_module{ $module } = $dirty_lines_temp if $dirty_lines_temp;
+	}
+
+	# stocke les statistiques globales
+	my $dirty_lines = sum( values %dirty_lines_for_table );
+	my $total_lines = sum( values %total_lines_for_table );
+
+	
+	#
+	# construction du message
+	#
+	
+	if ( $table_display ) {
+		$mail_message .= join( $separator, ($environnement,'', $dirty_lines,$total_lines))."\n";
+		
+		foreach my $module ( keys %dirty_lines_for_module) {
+			
+			$mail_message .= join( $separator, ('', $module, $dirty_lines_for_module{$module}, $total_lines_for_module{$module}) )."\n";
+			if ( $long_display ) {
+				foreach my $table ( $env->get_table_list_module($module) ) {
+					if ($dirty_lines_for_table{$table} ) {
+						$mail_message .= join( $separator, ('',$table,$dirty_lines_for_table{$table},$total_lines_for_table{$table}) )."\n";
+					}
+				}
+			}
+		}
+	}
+	else {
+		$mail_message .= "Environnement $environnement\n\n";
+		
+		foreach my $module ( keys %dirty_lines_for_module) {
+			$mail_message .= sprintf (" * Module %-${module_max_length}s : $dirty_lines_for_module{$module}\n", $module);
+			
+			if ( $long_display ) {
+				foreach my $table ( $env->get_table_list_module($module) ) {
+					if ($dirty_lines_for_table{$table} ) {
+						$mail_message .= sprintf ("    - Table %-${table_max_length}s : $dirty_lines_for_table{$table}\n",$table);
+					}
+				}
+				$mail_message .= "\n";
+			}
+		}
+		
+		
+		#print "Nombre de lignes à commenter pour $table_name: $dirty_lines_for_table{$table_name} (sur $total_lines_for_table{$table_name})\n" if $dirty_lines_for_table{$table_name};
+
+
+		#$mail_message .= "Nombre de modification de valeur de champs : ".$histo_count."\n";
+		#$mail_message .= "Nombre de modification validés : ".$comment_count."\n";
+		$mail_message .= "Nombre de lignes totales  à commenter : $dirty_lines lignes (sur un total de $total_lines lignes)\n";
+		
+		$mail_message .= "\n------------------------\n";
+	}
 }
 
-$mail_message .= "Taux de mise à jour validées : ". sprintf ('%.2f %%',100 * ($histo_count - $invalid_count) / $histo_count)."\n";
 
 print $mail_message."\n";
 
 if ( $send_mail ) {
-
-	my $config=IsipConfig->new();
-	my $smtp_host=$config->get_config_var("smtp_host");
-	my $smtp_from=$config->get_config_var("smtp_from");
-
-	log_info("Connexion SMTP : $smtp_host");
-	my $sender = Mail::Sender->new(  {smtp => $smtp_host, from => $smtp_from});
-	if (not ref $sender) {
-		log_error("Probleme de connexion à $smtp_host");
-	}
 	
-	log_info("Envoi du mail");
-	my $success = $sender->MailMsg({to => 'bauchart@bvassociates.fr',
-	  subject => $mail_subject,
-	  msg => $mail_message}
-	  );
-	  
-	if (not $success) {
-		log_error("Probleme lors de l'envoi du mail");
-	}
-	else {
-		log_info("Mail envoyé");
-	}
 }
-
-
-
-sub swrite {
-	die "usage: swrite PICTURE ARGS" unless @_;
-	my $format = shift;
-	$^A = "";
-	formline($format,@_);
-	return $^A;
-}
-
-my $string = swrite(<<'END', 10000, 2, 3);
-Check me out
-@<<<  @|||
-@>>>
-END
-print $string;
