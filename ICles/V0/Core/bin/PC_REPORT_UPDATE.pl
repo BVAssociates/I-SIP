@@ -245,7 +245,7 @@ foreach my $environnement (@environnement_list) {
 			my @full_message;
 			my $send_ok;
 			
-			push @full_message, "\nLes changements suivants doivent être validées: \n";
+			push @full_message, "\nLes changements suivants doivent être validées sur $environnement : \n";
 			
 			foreach my $date_histo (sort {$a lt $b} keys %message_for) {
 				$send_ok++;
@@ -262,7 +262,7 @@ foreach my $environnement (@environnement_list) {
 			
 		if ( $send_mail and $send_ok) {
 			log_info("Envoi de l'email");
-			$config->send_mail("Alertes I-SIP pour l'environnement $environnement", join("\n",@full_message), { group => $group } );
+			$config->send_mail("Alertes I-SIP pour le groupe $group sur $environnement", join("\n",@full_message), { group => $group } );
 		}
 		
 	}
