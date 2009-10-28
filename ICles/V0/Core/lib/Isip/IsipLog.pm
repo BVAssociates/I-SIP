@@ -158,7 +158,7 @@ sub tail_log {
 	my $timestamp=shift;
 	my $roll_after=shift;
 	
-	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T\d+$/;
+	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T\d+/;
 	
 	open(GWFILE,$ENV{ISIP_LOG}."/Isip.$timestamp.log") or croak("Impossible d'ouvrir le fichier de log : ",$!);
 

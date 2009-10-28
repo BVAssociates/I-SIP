@@ -172,7 +172,7 @@ while (my %proc=$sqlite_stat->fetch_row()) {
 		($sec,$min,$hour,undef,$month,undef,undef,$days,undef) = gmtime($proc{TIME});	
 	}
 	else {
-		my @start_date=$proc{TIMESTAMP} =~ /^(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2}):?(\d{2})$/;
+		my @start_date=$proc{TIMESTAMP} =~ /^(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2}):?(\d{2})/;
 		
 		($days,$hour,$min,$sec) = Delta_DHMS(@start_date, Today_and_Now());
 	}

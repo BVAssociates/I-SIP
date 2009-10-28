@@ -54,10 +54,11 @@ BEGIN {
 
 		my $args=join(' ',@ARGV);
 		my (undef,undef,$progname)=File::Spec->splitpath( $0 );
-		$pid=$$;
+		$pid=abs($$);
 		
 		$start=time();
-		$start_date=strftime "%Y%m%dT%H%M%S", localtime($start);
+		
+		$start_date=strftime "%Y%m%dT%H%M%S-$pid", localtime($start);
 		
 		my $user_name;
 		if (exists $ENV{IsisUser}) {
