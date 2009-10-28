@@ -69,7 +69,7 @@ sub usage($) {
 	sortie(202); 
 }
 
-sub log_erreur {
+sub log_error {
 	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
 	$logger->error(@_);
 	sortie(202);
@@ -104,19 +104,31 @@ if ( @ARGV < 1) {
 	sortie(202);
 }
 
-#my $log_file=shift @ARGV;
+my $log_file=shift @ARGV;
 
 #  Corps du script
 ###########################################################
 
 use Isip::IsipConfig;
 
+if ( ! -e $log_file ) {
+	$log_file=$ENV{ISIP_LOG}."/Isip.$log_file.log";
+}
+
+if ( ! -r $log_file ) {
+	log_error("$log_file n'est pas accessible en lecture");
+}
+
 my @error_list;
-while(<>)  {	
+open (my $log_file_fd, "<$log_file") or log_erreur($!);
+while(<$log_file_fd>)  {	
 	if ( m{\d+/\d+/\d+ \d+:\d+:\d+:(ERROR|CRITICAL)} ) {
 		push @error_list, $_;
 	}
 }
+
+close ($log_file_fd) or log_erreur($!);
+
 
 # affiche les erreurs à l'ecran
 if (@error_list) {
@@ -133,5 +145,5 @@ if (@error_list) {
 }
 
 else {
-	print "Aucune erreur pendant la collecte";
+	print "Aucune erreur dans la log\n";
 }

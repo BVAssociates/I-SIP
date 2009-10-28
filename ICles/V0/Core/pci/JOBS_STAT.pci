@@ -1,5 +1,6 @@
 
 Item~~Suivre l'execution~expl~perl -e "exit !($ENV{CODE} eq 'EN COURS')"~~ExecuteProcedure~PC_LOG_JOB -f %TIMESTAMP%~0~~ViewFile
 Item~~Voir les messages~expl~perl -e "exit !($ENV{CODE} ne 'EN COURS')"~~ExecuteProcedure~PC_LOG_JOB %TIMESTAMP%~0~~ViewFile
+Item~~Voir les erreurs~expl~perl -e "exit !($ENV{CODE} eq 'ERREUR')"~~ExecuteProcedure~PC_ERROR_LOG %TIMESTAMP%~0~~ViewFile
 Item~~Voir le fichier généré~expl~perl -e "exit !($ENV{CODE} eq 'TERMINE' and $ENV{OUTPUT_FILE})"~~OpenURL~%ISIP_EXPORT%\%OUTPUT_FILE%~0~~Save
 Item~~Annuler commande~expl~perl -e "exit !($ENV{CODE} eq 'EN COURS')"~~ExecuteProcedure~ME_KILL_JOB %PID%~1~~Close

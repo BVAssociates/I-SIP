@@ -11,7 +11,7 @@
 		<Italic>true</Italic>
     </Rule>
     <Rule>
-		<Condition><![CDATA[CODE=ERROR]]></Condition>
+		<Condition><![CDATA[CODE=ERREUR]]></Condition>
 		<BackgroundColor>#FF0000</BackgroundColor>
 		<Color>#FFFFFF</Color>
     </Rule>
