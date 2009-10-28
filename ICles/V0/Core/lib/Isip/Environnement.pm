@@ -24,6 +24,7 @@ sub new() {
     my $proto = shift;
     my $class = ref($proto) || $proto;
 	
+	$Carp::Internal{ __PACKAGE__ }++;
 	
 	# Arguments
 	my $environnement = shift or croak "Environnement->new take 1 argument";
@@ -42,7 +43,7 @@ sub new() {
 		croak "Unable to get information of Environnement : $self->{environnement}";
 	}
 	
-	$logger->notice("Chargement de l'environnement $environnement");
+	$logger->info("Chargement de l'environnement $environnement");
 	
 	$self->{description}=$self->{isip_config}->{info_env}->{$environnement}->{description};
 	
@@ -126,9 +127,11 @@ sub get_columns() {
 	my $table_column=$table_name."_COLUMN";
 	
 	my $sqlite_path=$self->get_sqlite_path($table_column,$self->{environnement});
+	if (not $sqlite_path) {
+		croak ("Impossible de trouver la base contenant $table_column dans $self->{environnement}");
+	}
 	if (not -e $sqlite_path) {
-		$logger->warning ("Impossible d'acceder à la base de $table_column dans $self->{environnement}");
-		return;
+		croak ("Impossible d'acceder à la base contenant $table_column dans $self->{environnement}");
 	}
 	
 	my $options = {date => $query_date} if $query_date;
@@ -204,8 +207,8 @@ sub get_links() {
 	
 	# get links for all table
 	foreach ($self->get_table_list) {
-		my $columns=$self->get_columns($_);
-		next if not $columns;
+		my $columns=eval { $self->get_columns($_) };
+		next if $@;
 		
 		my $link_add=$columns->get_links();
 		$links->add_link($link_add);
@@ -280,8 +283,8 @@ sub get_table_key() {
 		@key= "xml_path";
 	} 
 	else {
-		my $col_obj=$self->get_columns($tablename);
-		return if not $col_obj;
+		my $col_obj=eval { $self->get_columns($tablename) };
+		return if $@;
 		
 		@key=$col_obj->get_key_list();
 	}
@@ -378,7 +381,8 @@ sub get_sqlite_path() {
 	
 	if ($dir) {
 		if (not -e $filepath) {
-			carp("$filepath n'existe pas");
+			$logger->info("$filepath n'existe pas");
+			$filepath=undef;
 		}
 	}
 	else {
@@ -410,11 +414,14 @@ sub is_baseline_date() {
 			croak("is_baseline_date($date):La date n'est pas au format 1977-04-22T06:00 (ISO 8601)");
 	}
 	
-	my $baseline_list=$self->open_local_table("DATE_UPDATE");
-	$baseline_list->query_condition("DATE_HISTO='$date'");
-	
-	my %baseline_info=$baseline_list->fetch_row();
-	$baseline_list->finish;
+	my %baseline_info;
+	my $baseline_list=eval { $self->open_local_table("DATE_UPDATE") };
+	if ( not $@ ) {
+		$baseline_list->query_condition("DATE_HISTO='$date'");
+		
+		%baseline_info=$baseline_list->fetch_row();
+		$baseline_list->finish;
+	}
 	
 	if (not %baseline_info) {
 		$logger->debug("$date:La date n'est pas une date de collecte");
@@ -447,6 +454,9 @@ sub open_local_from_histo_table() {
 	
 	my $options=shift;
 	$options->{columns}=$self->get_columns($table_name);
+	if ( $@ ) {
+		croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}.": $@");
+	}
 	
 	my $table_histo;
 	
@@ -598,7 +608,7 @@ sub open_source_table() {
 	my $return_table;
 	
 	if (not exists $self->{info_table}->{$table_name}) {
-		$logger->error("La table $table_name est inconnue dans ".$self->{environnement});
+		$logger->error("La table $table_name n'est pas déclarée dans ".$self->{environnement});
 		return;
 	}
 	
@@ -634,9 +644,10 @@ sub open_source_table() {
 			if (not $return_table->key($self->get_table_key($table_name))) {
 				my $table_logical=$table_name;
 				$table_logical =~ s/P$/L0/;
-				carp ("PRIMARY KEY non défini pour $table_name dans ".$self->{environnement}." : tentative de récupration à partir de $table_logical") ;
+				$logger->warning ("PRIMARY KEY non défini pour $table_name dans ".$self->{environnement}) ;
 				
 				# connect to DB2 catalog
+				$logger->notice ("Récupration PRIMARY KEY depuis la table $table_logical") ;
 				my $sys_table=ODBC->open("QSYS","QADBKFLD",$self->{isip_config}->get_odbc_option($self->{environnement}));
 				$sys_table->query_condition("DBKLIB='$library' AND DBKFIL = '$table_logical'");
 				$sys_table->query_field("DBKFLD");
@@ -675,7 +686,7 @@ sub open_source_table() {
 sub initialize_column_info() {
 	my $self=shift;
 	
-	my $itable_obj=shift or croacroak("usage initialize_column_info(DATA_interface)");
+	my $itable_obj=shift or croak("usage initialize_column_info(DATA_interface)");
 	my $links=shift;
 	
 	if (not blessed($itable_obj) or not $itable_obj->isa("DATA_interface")) {
@@ -686,7 +697,6 @@ sub initialize_column_info() {
 		warn("Les fichiers de type XML ne peuvent pas être importés");
 	}
 
-	my $column_info=$self->get_columns($itable_obj->table_name);
 	
 	my %size_hash=$itable_obj->size();
 	my %field_txt_hash=$itable_obj->field_txt();
@@ -721,8 +731,12 @@ sub initialize_column_info() {
 		$all_fields{$field}++;
 	}
 	
-	foreach my $field ($column_info->get_field_list) {
-		$all_fields{$field}--;
+	# check champs qui existent déjà
+	my $column_info=eval { $self->get_columns($itable_obj->table_name) };
+	if (not $@) {
+		foreach my $field ($column_info->get_field_list) {
+			$all_fields{$field}--;
+		}
 	}
 	
 	foreach my $field (keys %all_fields) {

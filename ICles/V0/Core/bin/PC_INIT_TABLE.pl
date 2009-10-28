@@ -246,19 +246,22 @@ if (not %table_info) {
 	sortie(202);
 }
 else {
-	$logger->notice("Create database for table",$table_name);
 	
 	my $current_table;
 	my $links;
+	
+	# import d'une autre table ou nouvelle table
 	if ($import) {
-		
 		$current_table=$env_sip_from->open_local_from_histo_table($table_name);
 		$links=$env_sip_from->get_links();
 	}
 	else {
 		$current_table=$env_sip->open_source_table($table_name);
 	}
+	
 	if ($current_table) {
+	
+		$logger->notice("Create database for table",$table_name);
 		$env_sip->create_database_histo($table_name);
 		
 		$env_sip->initialize_column_info($current_table,$links);

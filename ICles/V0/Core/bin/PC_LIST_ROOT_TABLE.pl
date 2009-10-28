@@ -152,6 +152,10 @@ foreach my $table ($env->get_table_list_module($module)) {
 foreach my $table (sort keys %list_table_uniq) {
 	my $def_name=$table;
 	my ($real_table,$display_table) = ($table =~ /^([^_]+)(?:__([^_]+))?/);
+	
+	# n'affiche pas les tables sans clef primaire
+	next if not $env->get_table_key($real_table);
+	
 	my %table_info=$env->get_table_info($real_table);
 	my $icon="valide";
 	
