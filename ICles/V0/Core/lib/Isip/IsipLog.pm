@@ -121,6 +121,7 @@ if ($@) {
 	
 	$logger->add(%file_definition) if exists $ENV{ISIP_LOG};
 
+	# commenté, car trop lent sans transaction
 	#$logger->add(%dbi_definition) if exists $ENV{ISIP_LOG};
 
 	#Log::WarnDie may be used, but it put everything from STDERR

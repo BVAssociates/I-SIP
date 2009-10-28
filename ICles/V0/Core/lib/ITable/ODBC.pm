@@ -191,7 +191,7 @@ sub _set_columns_info() {
 	}
 	
 	if (not $self->field() or $self->field() == 1) {
-		croak("Error reading information of table : $self->{table_name}");
+		croak("Problemes lors de la recuperation des informations ODBC de $self->{table_name}");
 	}
 }
 

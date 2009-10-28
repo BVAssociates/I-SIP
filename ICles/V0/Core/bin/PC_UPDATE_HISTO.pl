@@ -220,7 +220,7 @@ sub run {
 	foreach my $current_table (@list_table) {
 		
 		if ( not $env_sip->exists_histo_table($current_table) )  {
-			$logger->error("$current_table n'a pas été initialisée");
+			$logger->error("$current_table n'a pas été initialisée dans $environnement");
 			next;
 		}
 		
@@ -231,7 +231,7 @@ sub run {
 			# open source table depending on TYPE_SOURCE
 			$source_table=$env_sip->open_source_table($current_table);
 			if (not $source_table or not $source_table->key) {
-				$logger->error("la table <$current_table> a besoin d'être configurée");
+				$logger->error("la table <$current_table> a besoin d'être configurée dans $environnement");
 				next;
 			}
 		}
