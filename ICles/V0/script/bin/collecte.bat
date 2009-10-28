@@ -11,7 +11,8 @@ call "%~dp0\..\..\..\..\..\Portal\product\conf\IsisPortal_WIN32.bat"
 
 
 echo lancement de la collecte
-ME_COLLECTE_ALL -p 2> "%ISIP_LOG%\isip_collecte.log"
+REM ME_COLLECTE_ALL -p 2> "%ISIP_LOG%\isip_collecte.log"
+ME_COLLECTE_ALL -p
 
 PC_ERROR_LOG -m sys "%ISIP_LOG%\isip_collecte.log"
 

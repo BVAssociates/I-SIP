@@ -111,7 +111,13 @@ require "PC_CLEAN_BASELINE.pl";
 my $config=IsipConfig->new();
 my @env_list=$config->get_environnement_list();
 
-log_screen_only() if $fork;
+#log_screen_only() if $fork;
+
+#needed with fork()
+$| = 1;
+my $old_fh = select(STDERR);
+$| = 1;
+select($old_fh);
 
 my $return_code=0;
 my $pid=0;
@@ -120,27 +126,33 @@ foreach my $env (@env_list) {
 	if (!$pid) {
 		# child process
 		log_info("nettoyage avant collecte de l'environnement $env");
-		eval { pc_clean_baseline::run($env) };
-		if ($@) {
+		#eval { pc_clean_baseline::run($env) };
+		system('PC_CLEAN_BASELINE',$env);
+		if ( ($? >> 8) ) {
 			$return_code = 202;
 			log_info("Problème lors du nettoyage des bases de $env");
 		}
 		
 		log_info("Collecte de l'environnement $env");
-		eval { pc_update_histo::run("-e",$env) };
-		if ($@) {
-			$logger->error($@);
+		#eval { pc_update_histo::run("-e",$env) };
+		system('PC_UPDATE_HISTO',"-e",$env);
+		if ( ($? >> 8) ) {
+			$logger->error($!);
 			$return_code = 202;
 		}
 		log_info("Terminé pour l'environnement $env avec le code $return_code");
 		last if $fork;
 	}
+	sleep 1;
 }
 
 if ($fork and $pid) {
 	log_info("Attente que tous les process se termine");
-	wait;
-	$return_code=$?;
+	
+	while (wait != -1) {
+		log_info("Processus terminé avec le code $?");
+		$return_code += $?;
+	}
 	log_info("Collecte complète avec le code $return_code");
 }
 
