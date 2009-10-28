@@ -99,7 +99,7 @@ sub run {
 	log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvtf', \%opts);
+	getopts('hvtf', \%opts) or usage($debug_level+1);
 
 	$debug_level = 1 if $opts{v};
 
@@ -122,7 +122,7 @@ sub run {
 
 	#  Corps du script
 	###########################################################
-	my $bv_severite=0;
+	my $error_count=0;
 
 	use Isip::Environnement;
 	use Isip::IsipConfig;
@@ -131,32 +131,68 @@ sub run {
 	my $winservice_name="IsisPortalV202_ISIP";
 	my $winservice_check=`net start |findstr $winservice_name`;
 	if ( not $winservice_check ) {
-		die("Service Portail \t: OFF");
+		$logger->error("Service Portail $winservice_name\t: OFF");
+		$error_count++;
 	}
 	else {
-		log_info("Service Portail \t: ON");
+		$logger->notice("Service Portail $winservice_name\t: ON");
 	}
 	
 	my $config_sip = IsipConfig->new();
 	my @environnement_list = $config_sip->get_environnement_list();
 
-	my $error_count=0;
 	if ( $check_connection or $check_all_table ) {
-		foreach my $environnement ( @environnement_list ) {
+		
+		foreach my $environnement ( sort @environnement_list ) {
 			
-			my $env = Environnement->new($environnement);
+			my $env = eval { Environnement->new($environnement) };
+			if ( $@ ) {
+				$logger->error($@);
+				$logger->error( "$environnement \t: ERROR" );
+				$error_count++;
+				next;
+			}
+			else {
+				$logger->info( "$environnement \t: OK" );
+			}
+			
 			my @list_table=$env->get_table_list();
 			
 			TABLE:
-			foreach my $table_name (@list_table) {
+			foreach my $table_name (sort @list_table) {
+				
+				if ( $check_all_table ) {
+					$logger->notice("test de connexion ODBC pour $table_name sur $environnement");
+				}
+				else {
+					$logger->notice("test de connexion ODBC sur $environnement");
+				}
 				
 				my $source_table=eval { $env->open_source_table($table_name) };
-				if ( $@ ) {
-					$logger->warning( "$environnement.$table_name \t: ERROR" );
+				if ( not $source_table) {
+					$logger->error($@) if $@;
+					$logger->error( "$environnement.$table_name (ODBC) \t: ERROR" );
 					$error_count++;
 				}
 				else {
-					log_info( "$environnement.$table_name \t: OK" );
+					$logger->info( "$environnement.$table_name (ODBC) \t: OK" );
+				}
+				
+				if ( $check_all_table ) {
+					$logger->notice("test de la base locale pour $table_name sur $environnement");
+				}
+				else {
+					$logger->notice("test de la base locale sur $environnement");
+				}
+				
+				my $histo_table=eval { $env->open_local_from_histo_table($table_name) };
+				if ( not $histo_table) {
+					$logger->error($@) if $@;
+					$logger->warning( "$environnement.$table_name (local) \t: ERROR" );
+					$error_count++;
+				}
+				else {
+					$logger->info( "$environnement.$table_name (local) \t: OK" );
 				}
 
 				# on ne verifie que la première table si pas de check complet
@@ -167,10 +203,13 @@ sub run {
 		}
 	}
 	
+	
 	if ( $error_count ) {
+		$logger->notice("---------------------------------");
 		$logger->notice("Etat de I-SIP \t: ERROR");
 	}
 	else {
+		$logger->notice("---------------------------------");
 		$logger->notice("Etat de I-SIP \t: OK");
 	}
 	
