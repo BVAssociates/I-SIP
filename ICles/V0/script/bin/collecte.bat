@@ -11,11 +11,10 @@ call "%~dp0\..\..\..\..\..\Portal\product\conf\IsisPortal_WIN32.bat"
 
 
 echo lancement de la collecte
-REM ME_COLLECTE_ALL -p 2> "%ISIP_LOG%\isip_collecte.log"
-ME_COLLECTE_ALL -p
+ME_COLLECTE_ALL -p 2> "%ISIP_LOG%\isip_collecte.log"
 
 PC_ERROR_LOG -m sys "%ISIP_LOG%\isip_collecte.log"
 
 PC_REPORT_UPDATE -am 2>> "%ISIP_LOG%\isip_collecte.log"
 
-PC_PURGE_FILES -d 90 2>> "%ISIP_LOG%\isip_collecte.log"
+PC_PURGE_FILES -d 60 2>> "%ISIP_LOG%\isip_collecte.log"
