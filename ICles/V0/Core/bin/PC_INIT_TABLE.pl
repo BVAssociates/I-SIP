@@ -235,6 +235,24 @@ if ($create) {
 }
 
 #######################
+# import FIELD_LABEL
+#######################
+
+if ( $import ) {
+	my $field_label_source = $env_sip_from->open_local_table("FIELD_LABEL");
+	$field_label_source->query_condition("TABLE_NAME = '$table_name'");
+	
+	my $field_label = $env_sip->open_local_table("FIELD_LABEL");
+		
+	while ( my %row_label = $field_label_source->fetch_row() ) {
+		eval { $field_label->insert_row(%row_label) };
+		if ($@) {
+			$logger->warning("Probleme lors de l'import des champs ignorés");
+		}
+	}
+}
+
+#######################
 # mise à jour COLUMN_INFO
 #######################
 
