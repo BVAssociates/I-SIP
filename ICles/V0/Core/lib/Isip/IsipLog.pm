@@ -165,13 +165,19 @@ sub tail_log {
 	my @rolling_line;
 
 	if (not $curpos and $roll_after) {
-		for (<GWFILE>) {
-			push @rolling_line, $_;
-			shift @rolling_line if @rolling_line > $roll_after;
+		if ( $roll_after == -1 ) {
+			seek(GWFILE, 0,2);
+			$curpos=tell(GWFILE);
 		}
+		else {
+			for (<GWFILE>) {
+				push @rolling_line, $_;
+				shift @rolling_line if @rolling_line > $roll_after;
+			}
 
-		for (@rolling_line) {
-			print;
+			for (@rolling_line) {
+				print;
+			}
 		}
 	}
 
