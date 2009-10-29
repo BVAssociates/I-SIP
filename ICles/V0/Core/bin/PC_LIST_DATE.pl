@@ -123,7 +123,7 @@ my $sip=Environnement->new($environ);
 my $table=$sip->open_local_table("DATE_UPDATE", {debug => $debug_level });
 
 $table->query_field("DATE_HISTO","DESCRIPTION","BASELINE");
-$table->query_condition("DIFF_VALUE+DIFF_STRUCT >0") if not $all_date;
+$table->query_condition("DIFF_VALUE+DIFF_STRUCT >0 AND FULL_UPDATE=1") if not $all_date;
 $table->query_condition("BASELINE = 1") if $baseline;
 
 die "unable to open local DATE_UPDATE in env $environ" if not defined $table;

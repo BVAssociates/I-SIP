@@ -14,4 +14,4 @@ Item~Gestion historique~Supprime et import historique d'un autre environnement (
 Item~Baselines~Ajouter Baseline~sys~~{DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=0)}{MESSAGE=getValue("Description de la baseline")}~ExecuteProcedure~ME_EXEC_JOB PC_SET_BASELINE -ap -m "%MESSAGE%" %Environnement% %DATE_BASELINE%~0~~Add
 Item~Baselines~Supprimer Baseline~sys~~DATE_BASELINE=getListValue("Choisir une date de collecte",DATE_UPDATE_ENV@DATE_UPDATE,DESCRIPTION@BASELINE=1)~ExecuteProcedure~PC_SET_BASELINE.pl -d %Environnement% %DATE_BASELINE%~0~~Remove
 
-Item~Baselines~Voir Baselines~dev~~~DisplayTable~DATE_UPDATE_ENV~0~~Configure
+Item~Baselines~Voir Dates de collecte et Baselines~dev~~~DisplayTable~DATE_UPDATE_ENV~0~~Configure

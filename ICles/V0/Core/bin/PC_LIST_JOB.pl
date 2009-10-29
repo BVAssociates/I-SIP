@@ -181,9 +181,11 @@ while (my %proc=$sqlite_stat->fetch_row()) {
 	$proc{TIME}='';
 	$proc{TIME}.=sprintf("%dd",$days) if $days;
 	$proc{TIME}.=sprintf("%dh",$hour) if $hour or $days;
-	$proc{TIME}.=sprintf("%dm",$min) if $min or $hour or $days;
+	$proc{TIME}.=sprintf("%dm",$min)  if $min or $hour or $days;
 	$proc{TIME}.=sprintf("%ds",$sec);
-	$proc{TIME} ='erreur' if $month or $proc{CODE} eq "ANNULE"; # no script runs for month!
+	
+	$proc{TIME} ='erreur' if $month; 			# no script runs for month!
+	$proc{TIME} =''       if $proc{CODE} eq "ANNULE";
 	
 	print(join($separator,@proc{"TIMESTAMP","PID","USER","PROGRAM","TIME","ARGV","CODE","OUTPUT_FILE"}),"\n");
 }
