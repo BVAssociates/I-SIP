@@ -294,6 +294,7 @@ sub create_database_environnement() {
 		"DIFF_VALUE" INTEGER,
 		"DIFF_STRUCT" INTEGER,
 		"BASELINE" INTEGER,
+		FULL_UPDATE INTEGER,
 		PRIMARY KEY ("DATE_HISTO")
 	)');
 	
