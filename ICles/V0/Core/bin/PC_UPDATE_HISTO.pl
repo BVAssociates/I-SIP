@@ -196,6 +196,31 @@ sub run {
 	# set global timestamp for update
 	use POSIX qw(strftime);
 	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
+	
+	
+	log_info("Verification de la date de collecte dans $environnement");
+	my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
+	#write line to "lock" date
+	eval {
+		$table_date->insert_row(DATE_HISTO  => $timestamp,
+								DESCRIPTION => undef,
+								DIFF_VALUE  => undef,
+								DIFF_STRUCT => undef,
+								BASELINE    => 0,
+								FULL_UPDATE => 0,
+								);
+	};
+	
+	if ($@) {
+		if ( $@ =~ /DATE_HISTO is not unique/ ) {
+			log_erreur("Un collecte semble déjà en cours, veuillez réessayer dans quelques minutes");
+		}
+		else {
+			#$@ =~ s{^\d+/\d+/\d+ \d+:\d+:\d+:(ERROR|CRITICAL)}{};
+			log_erreur($@);
+		}
+	}
+	
 	log_info("$environnement Date de collecte utilisée : $timestamp");
 
 
@@ -330,7 +355,7 @@ sub run {
 	}
 
 	log_info("Sauvegarde de la date de collecte dans $environnement");
-	my $table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
+	$table_date=$env_sip->open_local_table("DATE_UPDATE", {debug => $debug_level});
 	
 	if ($full_update) {
 		log_info("collecte complète : recupératon des statistiques des collecte partielles");
@@ -357,7 +382,8 @@ sub run {
 			$desc .=" à la date $date_compare" if $date_compare;
 		}
 		
-		#write date
+		#write date (insert or update)
+		$table_date->delete_row(DATE_HISTO  => $timestamp);
 		$table_date->insert_row(DATE_HISTO  => $timestamp,
 								DESCRIPTION => $desc,
 								DIFF_VALUE  => $total_diff_counter,
@@ -365,6 +391,9 @@ sub run {
 								BASELINE    => 0,
 								FULL_UPDATE => $full_update,
 								);
+	}
+	else {
+		$table_date->delete_row(DATE_HISTO  => $timestamp);
 	}
 
 	#log_info("Mise à jour du cache");

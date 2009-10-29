@@ -47,15 +47,12 @@ Supprime les fichiers temporaires et journaux plus vieux que N jours.
 
 =item -v : Mode verbeux
 
+=item -d : nombre de jours à garder
+
 =back
 
 =head1 ARGUMENTS
 
-=over
-
-=item log_file : log à analyser
-
-=back
 
 =head1 AUTHOR
 
@@ -117,6 +114,9 @@ if ( @ARGV < 0) {
 #  Corps du script
 ###########################################################
 
+use Isip::IsipConfig;
+use Isip::Environnement;
+
 use Isis::Jobstat;
 use Isip::IsipLog qw(delete_log);
 use Date::Calc qw(Now Today Add_Delta_Days);
@@ -168,3 +168,11 @@ foreach my $file (@file_name) {
 $logger->notice("supprime historique < $timestamp_back");
 $sqlite_stat->purge($timestamp_back);
 
+# clean DATE_UPDATE
+$logger->notice("nettoyage des locks de baselines");
+foreach my $environnement ( IsipConfig->new()->get_environnement_list() ) {
+	my $env = Environnement->new($environnement);
+	
+	my $date_update_table = $env->open_local_table("DATE_UPDATE");
+	$date_update_table->execute("DELETE FROM DATE_UPDATE WHERE DIFF_VALUE IS NULL AND DIFF_STRUCT IS NULL");
+}
