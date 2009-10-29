@@ -14,7 +14,7 @@ Select_Sqlite - Affiche une table Sqlite à la manière d'un Select
 
 =head1 SYNOPSIS
 
- Select_Sqlite.pl [-h][-v] [-s sep] [-d] [-f [/path/to/]base.sqlite"] tablename
+ Select_Sqlite.pl [-h][-v] [-s sep] [-r nb] [-d] [-f [/path/to/]base.sqlite"] tablename
  
 =head1 DESCRIPTION
 
@@ -45,6 +45,8 @@ si celui-ci porte un nom different.
 =item -d : affiche la définition au lieu des données
 
 =item -f [/path/to/]fichier.sqlite : nom ou chemin du fichier Sqlite
+
+=item -r nb : n'affiche que les nb première lignes
 
 =back
 
@@ -93,7 +95,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvs:df:', \%opts) or usage(0);
+getopts('hvs:df:r:', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -101,9 +103,9 @@ $debug_level = 1 if $opts{v};
 my $separator=',';
 $separator=$opts{s} if $opts{s};
 
-my $definition++ if exists $opts{d};
-
-my $sqlite_file=$opts{f} if $opts{f};
+my $definition=$opts{d};
+my $sqlite_file=$opts{f};
+my $row_limit=$opts{r};
 
 usage($debug_level+1) if $opts{h};
 
@@ -156,6 +158,12 @@ my $itable=Sqlite->open($sqlite_path, $table_name);
 $itable->output_separator($separator);
 
 if (not $definition) {
+
+	# modification directe de la requete
+	my $tmp_query=$itable->get_query();
+	$tmp_query .= " LIMIT $row_limit";
+	$itable->custom_select_query($tmp_query);
+	
 	$itable->display_table;
 }
 else {
