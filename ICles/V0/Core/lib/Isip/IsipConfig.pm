@@ -394,6 +394,10 @@ sub send_mail {
 	if ( not @mailto_email ) {
 		$logger->error("Aucun email correspondant")
 	}
+	
+	if ( not $smtp_host ) {
+		$logger->error("La variable d'environnement SMTP_HOST n'est pas définie")
+	}
 
 	$logger->info("Connexion SMTP : $smtp_host");
 	my $sender = Mail::Sender->new(  {smtp => $smtp_host, from => $smtp_from});
