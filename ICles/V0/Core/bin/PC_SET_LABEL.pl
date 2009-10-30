@@ -158,6 +158,14 @@ if ( $field eq '*' ) {
 	my $module=$ENV{Module};
 	log_info("Le cache des icônes doit être reconstruit pour le module $module");
 	
+	# Suppression immédiate de la ligne correspondante afin de ne pas perturber
+	# l'affichage
+	my $cache_table = $env->open_local_table("CACHE_ICON");
+	$cache_table->execute("DELETE FROM CACHE_ICON
+	WHERE TABLE_NAME ='$table_name'
+	AND TABLE_KEY='$key'");
+	undef $cache_table;
+	
 	require 'PC_UPDATE_CACHE.pl';
 	pc_update_cache::run("-m",$module,$environnement);
 	
