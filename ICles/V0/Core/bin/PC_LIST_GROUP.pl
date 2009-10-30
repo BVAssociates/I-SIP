@@ -113,10 +113,11 @@ $user_table->query_field("Groups");
 $user_table->query_condition("IsisUser=".$user);
 
 my ($group_list) = $user_table->fetch_row_array();
-
+$group_list =~ s/^\s*//;
+$group_list =~ s/\s*$//;
 if ( $group_list ) {
 
-	foreach my $group ( split( /,/, $group_list) ) {
+	foreach my $group ( split( /\s*,\s*/, $group_list) ) {
 		print $group."\n";
 	}
 }
