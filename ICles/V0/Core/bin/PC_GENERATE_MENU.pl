@@ -246,8 +246,8 @@ sub get_pci_table_string {
 	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 ';
-	my $pci_template_ignore='Item~Surveillance~Ne plus surveiller cette clef et ses sous-tables~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~0~~Configure
-Item~Surveillance~Surveiller à nouveau cette clef et ses sous-tables~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~0~~Configure
+	my $pci_template_ignore='Item~Surveillance~Ne plus surveiller cette clef et ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~0~~Configure
+Item~Surveillance~Surveiller à nouveau cette clef et ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~0~~Configure
 ';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
 	my $pci_fkey_template='Item~~Explorer sous-tables~user~~~Explore~[% table_list %]~0~~Expand
@@ -291,14 +291,14 @@ sub get_pci_field_string($$) {
 	my $display_table=get_display_table($table_name);
 	
 	my $pci_field_template='Table~~Champs~user~~~Explore~~0~~Expand
-Table~~Information ligne complète~expl~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
-Item~~Historique Complet~expl~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,PROJECT,STATUS,COMMENT,BASELINE_TXT~0~~Display
+Table~~Information ligne complète~user~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
+Item~~Historique Complet~user~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,PROJECT,STATUS,COMMENT,BASELINE_TXT~0~~Display
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 
-Item~Surveillance~Ne plus surveiller~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%" OK~0~~Configure
-Item~Surveillance~Surveiller à nouveau~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%"~0~~Configure
-Item~Surveillance~Etre alerter par Email~adm~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%TABLE_KEY%" "%FIELD_NAME%" "%GROUP_ALERT%"~0~~Configure
+Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label"~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%" OK~0~~Configure
+Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%"~0~~Configure
+Item~Surveillance~Etre alerter par Email~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%TABLE_KEY%" "%FIELD_NAME%" "%GROUP_ALERT%"~0~~Configure
 ';
 
 	my $environnement=$env_obj->{environnement};
