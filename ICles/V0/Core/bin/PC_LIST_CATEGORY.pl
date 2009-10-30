@@ -150,7 +150,7 @@ while (my %row=$table->fetch_row()) {
 
 my $icon_root="category";
 
-foreach my $category ( keys %dirty_for_category ) {
+foreach my $category ( sort keys %dirty_for_category ) {
 	
 	my $icon = $icon_root;
 	if ( $dirty_for_category{$category} ) {
