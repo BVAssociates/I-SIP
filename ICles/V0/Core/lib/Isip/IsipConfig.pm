@@ -378,7 +378,7 @@ sub send_mail {
 		}
 		
 		if ( $mailto_group ) {
-			if ( $user{Groups} =~ /(^|,)$mailto_group(,|$)/ ) {
+			if ( $user{Groups} =~ /(^|,)\s*$mailto_group\s*(,|$)/ ) {
 				$mailto_email_uniq{$user{Email}}++;
 			}
 		}
