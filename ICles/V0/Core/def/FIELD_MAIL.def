@@ -1,5 +1,5 @@
 HEADER="Table des valeurs de champs surveillés par Email"
-COMMAND="PC_LIST_SQLITE.pl -c"USER_UPDATE = '%IsisUser%'" -s; %Environnement% FIELD_MAIL"
+COMMAND="PC_LIST_FIELD_MAIL -s; %Environnement% %IsisUser%"
 SEP=";"
 FORMAT="DATE_UPDATE;USER_UPDATE;MAIL_GROUP;TABLE_NAME;TABLE_KEY;FIELD_NAME"
 SIZE="20s;20s;20s;20s;20s;20s"
