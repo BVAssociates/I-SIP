@@ -93,7 +93,8 @@ sub _push_node() {
 		
 		# Simple::Xml use UTF-8 as internal representation
 		# So we must decode back it before use
-		utf8::decode($node) ;
+		use Encode qw(from_to);
+		from_to($node, "utf8","iso-8859-1");
 		
 		$self->{node_hash}->{$current_tree}=$node;
 	}
