@@ -1,4 +1,4 @@
-COMMAND="PC_REPORT_ACTIVITY -ts; -a"
+COMMAND="PC_REPORT_ACTIVITY -ts; -na"
 SEP=";"
 FORMAT="Environnement;Module;LigneNonValides;LignesTotal"
 SIZE="20s;20s;10n;10n"

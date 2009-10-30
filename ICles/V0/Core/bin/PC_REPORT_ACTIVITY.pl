@@ -20,7 +20,7 @@ PC_REPORT_ACTIVITY - Liste le contenu d'une table sqlite
 
 =head1 SYNOPSIS
 
- PC_REPORT_ACTIVITY.pl [-h][-v] [-m] [-l] [-t [-s sep] ] [-a|environnement]
+ PC_REPORT_ACTIVITY.pl [-h][-v] [-n] [-m] [-l] [-t [-s sep] ] [-a|environnement]
  
 =head1 DESCRIPTION
 
@@ -47,6 +47,8 @@ Affiche des compte-rendu d'activité sur la base I-SIP
 =item -l : affiche la liste des tables à commenter
 
 =item -t : sortie sous forme de table ITools
+
+=item -n : affiche les nombres de lignes totaux
 
 =back
 
@@ -95,7 +97,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvmalts:', \%opts) or usage($debug_level+1);
+getopts('hvmalts:n', \%opts) or usage($debug_level+1);
 
 $debug_level = 1 if $opts{v};
 
@@ -103,6 +105,8 @@ usage($debug_level+1) if $opts{h};
 
 
 my $send_mail=$opts{m};
+
+my $print_total=$opts{n};
 
 my $long_display=$opts{l};
 
@@ -156,6 +160,8 @@ my $module_max_length=0;
 
 foreach my $environnement (@environnement_list) {
 	
+	$logger->notice("Calcul sur l'environnement $environnement");
+	
 	my $env = Environnement->new($environnement);
 
 	my $cache_icon = CacheStatus->new($env);
@@ -168,6 +174,8 @@ foreach my $environnement (@environnement_list) {
 
 	foreach my $table_name ($env->get_table_list() ) {
 
+		$logger->info("Calcul sur la table $table_name sur $environnement");
+		
 		# recupère la taille max des noms de table
 		if ( $table_max_length < length $table_name ) {
 			$table_max_length = length $table_name;
@@ -177,29 +185,31 @@ foreach my $environnement (@environnement_list) {
 		# get lines count
 		#
 
-		# get key field
-		my $key_fields_txt;
-		my $table_temp = $env->open_local_from_histo_table($table_name);
-		$key_fields_txt= join(',', sort $table_temp->key());
+		if ( $print_total ) {
+			# get key field
+			my $key_fields_txt;
+			my $table_temp = $env->open_local_from_histo_table($table_name);
+			$key_fields_txt= join(',', sort $table_temp->key());
 
-		my $table_histo = $env->open_local_table($table_name."_HISTO");
-		$table_histo->custom_select_query(
-		"SELECT  count(*)
-		FROM $table_name\_HISTO as HISTO1
-		INNER JOIN (
-		SELECT
-		max(ID) as ID2,
-		HISTO2.TABLE_KEY as TABLE_KEY_2,
-		HISTO2.FIELD_NAME as FIELD_NAME_2
-		FROM $table_name\_HISTO as HISTO2
-			WHERE FIELD_NAME = '$key_fields_txt'
-			GROUP BY FIELD_NAME_2, TABLE_KEY_2
-			HAVING FIELD_VALUE != '__delete'
-		) ON  (ID= ID2)"
-			);
-			
-		( $total_lines_for_table{$table_name} ) = $table_histo->fetch_row_array();
-
+			my $table_histo = $env->open_local_table($table_name."_HISTO");
+			$table_histo->custom_select_query(
+			"SELECT  count(*)
+			FROM $table_name\_HISTO as HISTO1
+			INNER JOIN (
+			SELECT
+			max(ID) as ID2,
+			HISTO2.TABLE_KEY as TABLE_KEY_2,
+			HISTO2.FIELD_NAME as FIELD_NAME_2
+			FROM $table_name\_HISTO as HISTO2
+				WHERE FIELD_NAME = '$key_fields_txt'
+				GROUP BY FIELD_NAME_2, TABLE_KEY_2
+				HAVING FIELD_VALUE != '__delete'
+			) ON  (ID= ID2)"
+				);
+				
+			( $total_lines_for_table{$table_name} ) = $table_histo->fetch_row_array();
+		}
+		
 		#
 		# get dirty lines count
 		#
@@ -215,17 +225,25 @@ foreach my $environnement (@environnement_list) {
 		if ( $module_max_length < length $module ) {
 			$module_max_length = length $module;
 		}
-		
+
 		my @tables = $env->get_table_list_module($module);
-		$total_lines_for_module{ $module } = sum( @total_lines_for_table{ @tables } );
+		
+		if ( $print_total ) {
+			$total_lines_for_module{ $module } = sum( @total_lines_for_table{ @tables } );
+		}
+		else {
+			$total_lines_for_module{ $module } = 0;
+		}
 		
 		my $dirty_lines_temp = sum( @dirty_lines_for_table{ @tables } );
 		$dirty_lines_for_module{ $module } = $dirty_lines_temp if $dirty_lines_temp;
 	}
 
 	# stocke les statistiques globales
-	my $dirty_lines = sum( values %dirty_lines_for_table );
-	my $total_lines = sum( values %total_lines_for_table );
+	my $dirty_lines = sum( grep  { defined } values %dirty_lines_for_module );
+	$dirty_lines = 0 if not defined $dirty_lines;
+	my $total_lines = sum( grep  { defined } values %total_lines_for_module );
+	$total_lines = 0 if not defined $total_lines;
 
 	
 	#
@@ -248,7 +266,7 @@ foreach my $environnement (@environnement_list) {
 		}
 	}
 	else {
-		$mail_message .= "Environnement $environnement\n\n";
+		$mail_message .= "Lignes à commenter sur l'environnement $environnement\n\n";
 		
 		foreach my $module ( keys %dirty_lines_for_module) {
 			$mail_message .= sprintf (" * Module %-${module_max_length}s : $dirty_lines_for_module{$module}\n", $module);
@@ -256,7 +274,13 @@ foreach my $environnement (@environnement_list) {
 			if ( $long_display ) {
 				foreach my $table ( $env->get_table_list_module($module) ) {
 					if ($dirty_lines_for_table{$table} ) {
-						$mail_message .= sprintf ("    - Table %-${table_max_length}s : $dirty_lines_for_table{$table}\n",$table);
+						$mail_message .= sprintf ("    - Table %-${table_max_length}s : $dirty_lines_for_table{$table}",$table);
+						
+						if ( $print_total ) {
+							$mail_message .= "(total : $total_lines_for_table{$table}";
+						}
+						
+						$mail_message .= "\n";
 					}
 				}
 				$mail_message .= "\n";
@@ -269,7 +293,12 @@ foreach my $environnement (@environnement_list) {
 
 		#$mail_message .= "Nombre de modification de valeur de champs : ".$histo_count."\n";
 		#$mail_message .= "Nombre de modification validés : ".$comment_count."\n";
-		$mail_message .= "Nombre de lignes totales  à commenter : $dirty_lines lignes (sur un total de $total_lines lignes)\n";
+		$mail_message .= "Nombre de lignes totales  à commenter : $dirty_lines lignes";
+		
+		$mail_message .= "(sur un total de $total_lines lignes)\n" if $print_total;
+		
+		$mail_message .= "\n";
+		
 		
 		$mail_message .= "\n------------------------\n";
 	}
@@ -279,5 +308,8 @@ foreach my $environnement (@environnement_list) {
 print $mail_message."\n";
 
 if ( $send_mail ) {
+	
+	my $config = IsipConfig->new();
+	$config->send_mail("I-SIP : Tableau de bord", $mail_message, { responsablity => "sys" } );
 	
 }
