@@ -121,11 +121,11 @@ my $config=IsipConfig->new();
 
 my $table_source;
 
-if ($ENV{param_source}) {
-	$logger->info("Connexion à ODBC : $ENV{param_source}");
+if ($ENV{PARAM_SOURCE}) {
+	$logger->info("Connexion à ODBC : $ENV{PARAM_SOURCE}");
 	eval { $table_source = ODBC_Query->open($config->get_odbc_database_name($module,$environnement),
 				$table,
-				$ENV{param_source},
+				$ENV{PARAM_SOURCE},
 				$config->get_odbc_option($environnement) );
 	};
 }
