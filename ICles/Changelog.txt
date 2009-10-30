@@ -1,3 +1,14 @@
+v1.0
+
+Type: adaptation
+#101 	Envoi mail si changement sur ligne
+#92  	 rapport indicateurs
+
+Type: defect
+diverses corrections et optimisations
+
+____________________________________________________________________________
+
 v0.9
 
 Type: adaptation
@@ -8,8 +19,7 @@ Type: adaptation
 Type: defect
 #110 	add DATE_UPDATE si collecte partielle avec DIFF
 #117 	historique : valeur en double baseline/collecte
-
-
+____________________________________________________________________________
 
 v0.8.1
 
@@ -23,6 +33,7 @@ Type: enhancement
 
 Type: task
 #111 	définir les rôles I-SIS et les droits PCI
+____________________________________________________________________________
 
 v0.8
 
@@ -103,9 +114,7 @@ v0.7
 #50	COLUMN_INFO : ordre des colonnes
 #74	Erreur si groupe contient des espace
 #31	Ecran login : préselectionné le user Windows
-
 ____________________________________________________________________________
-
 
 v0.6
 
