@@ -7,3 +7,4 @@ Entry conf/Console_config.ini_patch
 Entry lib/I-SIP_IKOS.jar
 Entry lib/isisconsole.jar
 Entry data/fr/console.mdb
+Entry xsd.zip

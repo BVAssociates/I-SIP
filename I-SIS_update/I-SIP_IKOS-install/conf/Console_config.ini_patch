@@ -1,2 +1,4 @@
 ADD_PARAMETER Processors:IsipProcessorLine "com.bv.isip.EditFormProcessorIsipLine"
 ADD_PARAMETER Processors:FormProcessor "com.bv.isip.EditFormProcessor"
+ADD_PARAMETER Console:XSDDirectory "xsd"
+ADD_PARAMETER Console:MaskRule.XSD "MaskRule.xsd"
