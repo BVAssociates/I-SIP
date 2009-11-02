@@ -87,6 +87,8 @@ import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.corbacom.IsisParameter;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*----------------------------------------------------------
 * Nom: ProcessingHandler
@@ -635,6 +637,33 @@ public abstract class ProcessingHandler
         // On recupere le Proxy associé
         ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
 
+        // traite le cas simple où parameters est une liste fixe
+        // Le format est: "item1" [, "item2" [, ...]]
+        Pattern custom_list_pattern = Pattern.compile("\"([^,]+)\"");
+        Matcher custom_list_matcher = custom_list_pattern.matcher(parameters);
+        Vector<String> text_options = new Vector();
+        while (custom_list_matcher.find()) {
+            for (int i = 1; i <= custom_list_matcher.groupCount(); i++) {
+                text_options.add(custom_list_matcher.group(i));
+            }
+        }
+        if ( ! text_options.isEmpty()) {
+            String text_choice = (String) JOptionPane.showInputDialog(parent, message,
+                    MessageManager.getMessage("&YesNoQuestion"),
+                    JOptionPane.QUESTION_MESSAGE, null, text_options.toArray(), text_options.firstElement());
+
+            if (text_choice == null) {
+                // L'utilisateur a annulé, on lève une exception
+                trace_methods.endOfMethod();
+                throw new InnerException("&ERR_InputCanceled", null, null);
+            }
+            trace_debug.writeTrace("L'utilisateur a saisi=" + text_choice);
+            trace_methods.endOfMethod();
+            return text_choice;
+        }
+        
+        // On continue avec le format suivant
+        
         // condition des paramètres.
         // Le format est: <table>[@<colonnes>[@<condition>[@<sort>[@<log?>]]]
         UtilStringTokenizer tokenizer =
@@ -716,7 +745,7 @@ public abstract class ProcessingHandler
         trace_debug.writeTrace("L'utilisateur a saisi=" + choice.getKey());
 		trace_methods.endOfMethod();
 		return choice.getKey();
-	}
+}
 
 	/*----------------------------------------------------------
 	* Nom: getValue
