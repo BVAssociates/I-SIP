@@ -156,6 +156,7 @@ foreach my $file (@xml_copy_list) {
 		next if $row{xml_path} =~ /sysnetServerName$/;
 		next if $row{xml_path} =~ /sysnetCodeBase$/;
 		next if $row{xml_path} =~ /lieuPC$/;
+		next if $row{xml_path} =~ /URL_IKOS$/;
 		
 		print join($separator,($file,@row{$table_diff->query_field}))."\n" if $row{DIFF} ne "OK";
 	}
