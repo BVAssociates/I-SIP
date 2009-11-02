@@ -1058,7 +1058,6 @@ public class GenericTreeObjectNode
 			"GenericTreeObjectNode", "getNodeState");
 		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
 		int node_state = _nodeState;
-		int number_of_children = 0;
 		
 		trace_methods.beginningOfMethod();
 		trace_debug.writeTrace("_nodeState=" + _nodeState);
@@ -1073,8 +1072,7 @@ public class GenericTreeObjectNode
 		}
 		// On va aller interroger tous les enfants pour connaître leur
 		// état
-		number_of_children = getChildCount();
-		for(int index = 0 ; index < number_of_children ; index ++)
+		for(int index = 0 ; index < getChildCount() ; index ++)
 		{
 			GenericTreeObjectNode child =
 				(GenericTreeObjectNode)getChildAt(index);
