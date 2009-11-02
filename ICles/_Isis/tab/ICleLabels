@@ -14,4 +14,717 @@ DATE_HISTO_BASELINE.Item;isip_date;%[DATE_EXPLORE] (%[DESCRIPTION])
 FILTER.Item;I_Transitions;%[FILTER_DESC]
 FILTER_COMPARE.Item;I_Transitions;%[FILTER_DESC]
 CATEGORY.Item;isip_%[ICON];
-
+IKOS_TABLE_FOR_ACTPERP.Table;isip_table_open;Clefs de ACTPERP (Action / évt personnalisé)
+IKOS_TABLE_FOR_ACTPERP.Item;isip_%[ICON];%[G3CDTYDOS],%[G3INDNATAC],%[G3NOACTEVT]  
+IKOS_FIELD_FOR_ACTPERP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ACTPERP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ACTPERP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_ACTPERP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_OGAP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ACTPERP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ADRMSGP.Table;isip_table_open;Clefs de ADRMSGP (Table adresses messagerie)
+IKOS_TABLE_FOR_ADRMSGP.Item;isip_%[ICON];%[CDDSTME],%[CDTYME],%[CDTYRLDM],%[TYDSTME]  
+IKOS_FIELD_FOR_ADRMSGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ADRMSGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ADRMSGP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_ADRMSGP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_ADRMSGP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_CATACTP.Table;isip_table_open;Clefs de CATACTP (Catalogue actions / évts)
+IKOS_TABLE_FOR_CATACTP.Item;isip_%[ICON];%[G4CDCATACT],%[G4CDTYDOS] (%[G4LBLCATAC])
+IKOS_FIELD_FOR_CATACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_CATACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_CATACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_CATACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_CATACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_CRITRTP.Table;isip_table_open;Clefs de CRITRTP (Types parametres)
+IKOS_TABLE_FOR_CRITRTP.Item;isip_%[ICON];%[FKNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_FOR_CRITRTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_CRITRTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_CROEXPP2.Table;isip_table_open;Clefs de CROEXPP2 (Critères traitements)
+IKOS_TABLE_FOR_CROEXPP2.Item;isip_%[ICON];%[FNNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_FOR_CROEXPP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_CROEXPP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_CTXNOTP.Table;isip_table_open;Clefs de CTXNOTP (Table User - base Notes)
+IKOS_TABLE_FOR_CTXNOTP.Item;isip_%[ICON];%[GDCDTUSER]  
+IKOS_FIELD_FOR_CTXNOTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_CTXNOTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ETAPEP.Table;isip_table_open;Clefs de ETAPEP (Etape)
+IKOS_TABLE_FOR_ETAPEP.Item;isip_%[ICON];%[GRCDETAPE] (%[GRLBLETAPE])
+IKOS_FIELD_FOR_ETAPEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ETAPEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ETAPEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_ETAPEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_ETAPEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ETAPRCP.Table;isip_table_open;Clefs de ETAPRCP (Etapes par procédure)
+IKOS_TABLE_FOR_ETAPRCP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED] (%[LBLETPRC])
+IKOS_FIELD_FOR_ETAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ETAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ETAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_ETAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_ETAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ETPTYPP.Table;isip_table_open;Clefs de ETPTYPP (Etapes Type)
+IKOS_TABLE_FOR_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
+IKOS_FIELD_FOR_ETPTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_KPLACPP.Table;isip_table_open;Clefs de KPLACPP (Plan comptable)
+IKOS_TABLE_FOR_KPLACPP.Item;isip_%[ICON];%[LYNOCPTCPT] (%[LYLBRCPTE])
+IKOS_FIELD_FOR_KPLACPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_KPLACPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_KPLACPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_KPLACPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_KPLACPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_NATPROP.Table;isip_table_open;Clefs de NATPROP (Nature de Processus)
+IKOS_TABLE_FOR_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
+IKOS_FIELD_FOR_NATPROP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_ORDEXPP.Table;isip_table_open;Clefs de ORDEXPP (Programme Type)
+IKOS_TABLE_FOR_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
+IKOS_FIELD_FOR_ORDEXPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_OREXOGP2.Table;isip_table_open;Clefs de OREXOGP2 (Organismes)
+IKOS_TABLE_FOR_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
+IKOS_FIELD_FOR_OREXOGP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_OREXOGP2__ORDEXPP.Table;isip_table_open;Clefs de ORDEXPP (Programme Type)
+IKOS_TABLE_FOR_OREXOGP2__ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
+IKOS_FIELD_FOR_OREXOGP2__ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_PHASEP.Table;isip_table_open;Clefs de PHASEP (Phase)
+IKOS_TABLE_FOR_PHASEP.Item;isip_%[ICON];%[GOCDPHASE] (%[GOLBLPHASE])
+IKOS_FIELD_FOR_PHASEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_PHASEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_PHASEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_PHASEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_PHASEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_PROCEDP.Table;isip_table_open;Clefs de PROCEDP (Procédure)
+IKOS_TABLE_FOR_PROCEDP.Item;isip_%[ICON];%[GMCDPROCED] (%[GMLBLPROCD])
+IKOS_FIELD_FOR_PROCEDP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_PROCEDP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_PROCEDP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_PROCEDP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_PROCEDP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus Type)
+IKOS_TABLE_FOR_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_FIELD_FOR_PROTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TACHMNP.Table;isip_table_open;Clefs de TACHMNP (Acheminement)
+IKOS_TABLE_FOR_TACHMNP.Item;isip_%[ICON];%[KDCDTACHMN] (%[KDLBLACHMN])
+IKOS_FIELD_FOR_TACHMNP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TACHMNP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TACHMNP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TACHMNP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TACHMNP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TBSTEXP.Table;isip_table_open;Clefs de TBSTEXP (Table tiers externes)
+IKOS_TABLE_FOR_TBSTEXP.Item;isip_%[ICON];%[CDBTIER] (%[LBLTIER])
+IKOS_FIELD_FOR_TBSTEXP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TBSTEXP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TCORRPP.Table;isip_table_open;Clefs de TCORRPP (Tiers externes -Cor catég)
+IKOS_TABLE_FOR_TCORRPP.Item;isip_%[ICON];%[CATTIE],%[CDBTIER]  
+IKOS_FIELD_FOR_TCORRPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TCORRPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TCORRPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TCORRPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TCORRPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TCORTIP.Table;isip_table_open;Clefs de TCORTIP (Tiers externes -Cor titre)
+IKOS_TABLE_FOR_TCORTIP.Item;isip_%[ICON];%[CDBTIER],%[CDOGA],%[CTITIE]  
+IKOS_FIELD_FOR_TCORTIP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TCORTIP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TDLJURP.Table;isip_table_open;Clefs de TDLJURP (Table délais /juridiction)
+IKOS_TABLE_FOR_TDLJURP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED],%[CDTTYRLP],%[CDTYACT],%[INDTYACT],%[NOPRT]  
+IKOS_FIELD_FOR_TDLJURP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TDLJURP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TDLJURP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TDLJURP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TDLJURP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TNAPRCP.Table;isip_table_open;Clefs de TNAPRCP (Table nature de procédure)
+IKOS_TABLE_FOR_TNAPRCP.Item;isip_%[ICON];%[MDCDNAPRC],%[MDCDTYDOS] (%[MDLBLNAPRC])
+IKOS_FIELD_FOR_TNAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TNAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TNAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TNAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TNAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TPROGP.Table;isip_table_open;Clefs de TPROGP (Programmes)
+IKOS_TABLE_FOR_TPROGP.Item;isip_%[ICON];%[LKCDTPROG] (%[LKCOMPROG])
+IKOS_FIELD_FOR_TPROGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TRAITP.Table;isip_table_open;Clefs de TRAITP (Programmes)
+IKOS_TABLE_FOR_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]  
+IKOS_FIELD_FOR_TRAITP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TRAITP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TTARIFP.Table;isip_table_open;Clefs de TTARIFP (Table tarif)
+IKOS_TABLE_FOR_TTARIFP.Item;isip_%[ICON];%[JSCDTTARIF] (%[JSLBLTARIF])
+IKOS_FIELD_FOR_TTARIFP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TTARIFP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TTARIFP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TTARIFP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TTARIFP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TTYACTP.Table;isip_table_open;Clefs de TTYACTP (Table types actes)
+IKOS_TABLE_FOR_TTYACTP.Item;isip_%[ICON];%[CDTYPACT] (%[LBLCTACT])
+IKOS_FIELD_FOR_TTYACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TTYACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TTYACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TTYACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TTYACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TYPACTP.Table;isip_table_open;Clefs de TYPACTP (Type action / évt)
+IKOS_TABLE_FOR_TYPACTP.Item;isip_%[ICON];%[GZCDTYACT],%[GZINDTYACT] (%[GZLBLTYACT])
+IKOS_FIELD_FOR_TYPACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TYPACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TYPACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TYPACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TYPACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TYPDOSP.Table;isip_table_open;Clefs de TYPDOSP (Type dossier)
+IKOS_TABLE_FOR_TYPDOSP.Item;isip_%[ICON];%[GNCDTYDOS] (%[GNLBLTYDOS])
+IKOS_FIELD_FOR_TYPDOSP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_TYPDOSP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_TYPDOSP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_FOR_TYPDOSP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_FOR_TYPDOSP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_FOR_VALPARP.Table;isip_table_open;Clefs de VALPARP (Valeurs particulières)
+IKOS_TABLE_FOR_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
+IKOS_FIELD_FOR_VALPARP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_FOR_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ACTCOMP.Table;isip_table_open;Clefs de ACTCOMP (Action com type)
+IKOS_TABLE_SIT_ACTCOMP.Item;isip_%[ICON];%[RGCDDECORG],%[RGCDETTYP],%[RGCDORDTY],%[RGCDTCHTY],%[RGNOLGNCOM],%[RGPTYCOD] (%[RGREFCOM])
+IKOS_FIELD_SIT_ACTCOMP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ACTCOMP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ACTPERP.Table;isip_table_open;Clefs de ACTPERP (Action / évt personnalisé)
+IKOS_TABLE_SIT_ACTPERP.Item;isip_%[ICON];%[G3CDTYDOS],%[G3INDNATAC],%[G3NOACTEVT]  
+IKOS_FIELD_SIT_ACTPERP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ACTPERP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ACTPERP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_ACTPERP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_OGAP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ACTPERP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ADRMSGP.Table;isip_table_open;Clefs de ADRMSGP (Table adresses messagerie)
+IKOS_TABLE_SIT_ADRMSGP.Item;isip_%[ICON];%[CDDSTME],%[CDTYME],%[CDTYRLDM],%[TYDSTME]  
+IKOS_FIELD_SIT_ADRMSGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ADRMSGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ADRMSGP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_ADRMSGP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_ADRMSGP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_CATACTP.Table;isip_table_open;Clefs de CATACTP (Catalogue actions / évts)
+IKOS_TABLE_SIT_CATACTP.Item;isip_%[ICON];%[G4CDCATACT],%[G4CDTYDOS] (%[G4LBLCATAC])
+IKOS_FIELD_SIT_CATACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_CATACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_CATACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_CATACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_CATACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_CRITRTP.Table;isip_table_open;Clefs de CRITRTP (Types parametres)
+IKOS_TABLE_SIT_CRITRTP.Item;isip_%[ICON];%[FKNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_SIT_CRITRTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_CRITRTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_CROEXPP2.Table;isip_table_open;Clefs de CROEXPP2 (Critères traitements)
+IKOS_TABLE_SIT_CROEXPP2.Item;isip_%[ICON];%[FNNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_SIT_CROEXPP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_CROEXPP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_CTXNOTP.Table;isip_table_open;Clefs de CTXNOTP (Table User - base Notes)
+IKOS_TABLE_SIT_CTXNOTP.Item;isip_%[ICON];%[GDCDTUSER]  
+IKOS_FIELD_SIT_CTXNOTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_CTXNOTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ETAPEP.Table;isip_table_open;Clefs de ETAPEP (Etape)
+IKOS_TABLE_SIT_ETAPEP.Item;isip_%[ICON];%[GRCDETAPE] (%[GRLBLETAPE])
+IKOS_FIELD_SIT_ETAPEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ETAPEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ETAPEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_ETAPEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_ETAPEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ETAPRCP.Table;isip_table_open;Clefs de ETAPRCP (Etapes par procédure)
+IKOS_TABLE_SIT_ETAPRCP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED] (%[LBLETPRC])
+IKOS_FIELD_SIT_ETAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ETAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ETAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_ETAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_ETAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ETPTYPP.Table;isip_table_open;Clefs de ETPTYPP (Etapes Type)
+IKOS_TABLE_SIT_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
+IKOS_FIELD_SIT_ETPTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_KPLACPP.Table;isip_table_open;Clefs de KPLACPP (Plan comptable)
+IKOS_TABLE_SIT_KPLACPP.Item;isip_%[ICON];%[LYNOCPTCPT] (%[LYLBRCPTE])
+IKOS_FIELD_SIT_KPLACPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_KPLACPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_KPLACPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_KPLACPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_KPLACPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_NATPROP.Table;isip_table_open;Clefs de NATPROP (Gestion locative)
+IKOS_TABLE_SIT_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
+IKOS_FIELD_SIT_NATPROP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_ORDEXPP.Table;isip_table_open;Clefs de ORDEXPP (Programme Type)
+IKOS_TABLE_SIT_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
+IKOS_FIELD_SIT_ORDEXPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_OREXOGP2.Table;isip_table_open;Clefs de OREXOGP2 (Organismes)
+IKOS_TABLE_SIT_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
+IKOS_FIELD_SIT_OREXOGP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_PHASEP.Table;isip_table_open;Clefs de PHASEP (Phase)
+IKOS_TABLE_SIT_PHASEP.Item;isip_%[ICON];%[GOCDPHASE] (%[GOLBLPHASE])
+IKOS_FIELD_SIT_PHASEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_PHASEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_PHASEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_PHASEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_PHASEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_PROCEDP.Table;isip_table_open;Clefs de PROCEDP (Procédure)
+IKOS_TABLE_SIT_PROCEDP.Item;isip_%[ICON];%[GMCDPROCED] (%[GMLBLPROCD])
+IKOS_FIELD_SIT_PROCEDP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_PROCEDP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_PROCEDP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_PROCEDP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_PROCEDP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus type)
+IKOS_TABLE_SIT_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_FIELD_SIT_PROTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TACHMNP.Table;isip_table_open;Clefs de TACHMNP (Acheminement)
+IKOS_TABLE_SIT_TACHMNP.Item;isip_%[ICON];%[KDCDTACHMN] (%[KDLBLACHMN])
+IKOS_FIELD_SIT_TACHMNP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TACHMNP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TACHMNP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TACHMNP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TACHMNP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TBSTEXP.Table;isip_table_open;Clefs de TBSTEXP (Table tiers externes)
+IKOS_TABLE_SIT_TBSTEXP.Item;isip_%[ICON];%[CDBTIER] (%[LBLTIER])
+IKOS_FIELD_SIT_TBSTEXP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TBSTEXP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TCORRPP.Table;isip_table_open;Clefs de TCORRPP (Tiers externes -Cor catég)
+IKOS_TABLE_SIT_TCORRPP.Item;isip_%[ICON];%[CATTIE],%[CDBTIER]  
+IKOS_FIELD_SIT_TCORRPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TCORRPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TCORRPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TCORRPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TCORRPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TCORTIP.Table;isip_table_open;Clefs de TCORTIP (Tiers externes -Cor titre)
+IKOS_TABLE_SIT_TCORTIP.Item;isip_%[ICON];%[CDBTIER],%[CTITIE]  
+IKOS_FIELD_SIT_TCORTIP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TCORTIP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TCORTIP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TCORTIP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TCORTIP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TDLJURP.Table;isip_table_open;Clefs de TDLJURP (Table délais /juridiction)
+IKOS_TABLE_SIT_TDLJURP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED],%[CDTTYRLP],%[CDTYACT],%[INDTYACT],%[NOPRT]  
+IKOS_FIELD_SIT_TDLJURP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TDLJURP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TDLJURP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TDLJURP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TDLJURP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TICPETP.Table;isip_table_open;Clefs de TICPETP (Table infos cpl proc/etp)
+IKOS_TABLE_SIT_TICPETP.Item;isip_%[ICON];%[HYNOLGNIC] (%[HYLBLFMTIC])
+IKOS_FIELD_SIT_TICPETP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TICPETP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TICPETP__PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus type)
+IKOS_TABLE_SIT_TICPETP__PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_FIELD_SIT_TICPETP__PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TNAPRCP.Table;isip_table_open;Clefs de TNAPRCP (Table nature de procédure)
+IKOS_TABLE_SIT_TNAPRCP.Item;isip_%[ICON];%[MDCDNAPRC],%[MDCDTYDOS] (%[MDLBLNAPRC])
+IKOS_FIELD_SIT_TNAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TNAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TNAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TNAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TNAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TPROGP.Table;isip_table_open;Clefs de TPROGP (Programmes)
+IKOS_TABLE_SIT_TPROGP.Item;isip_%[ICON];%[LKCDTPROG] (%[LKCOMPROG])
+IKOS_FIELD_SIT_TPROGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TRAITP.Table;isip_table_open;Clefs de TRAITP (Programmes)
+IKOS_TABLE_SIT_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]  
+IKOS_FIELD_SIT_TRAITP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TRAITP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TTARIFP.Table;isip_table_open;Clefs de TTARIFP (Table tarif)
+IKOS_TABLE_SIT_TTARIFP.Item;isip_%[ICON];%[JSCDTTARIF] (%[JSLBLTARIF])
+IKOS_FIELD_SIT_TTARIFP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TTARIFP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TTARIFP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TTARIFP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TTARIFP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TTYACTP.Table;isip_table_open;Clefs de TTYACTP (Table types actes)
+IKOS_TABLE_SIT_TTYACTP.Item;isip_%[ICON];%[CDTYPACT] (%[LBLCTACT])
+IKOS_FIELD_SIT_TTYACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TTYACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TTYACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TTYACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TTYACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TYPACTP.Table;isip_table_open;Clefs de TYPACTP (Type action / évt)
+IKOS_TABLE_SIT_TYPACTP.Item;isip_%[ICON];%[GZCDTYACT],%[GZINDTYACT] (%[GZLBLTYACT])
+IKOS_FIELD_SIT_TYPACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TYPACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TYPACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TYPACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TYPACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TYPDOSP.Table;isip_table_open;Clefs de TYPDOSP (Type dossier)
+IKOS_TABLE_SIT_TYPDOSP.Item;isip_%[ICON];%[GNCDTYDOS] (%[GNLBLTYDOS])
+IKOS_FIELD_SIT_TYPDOSP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_TYPDOSP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_TYPDOSP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_SIT_TYPDOSP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_SIT_TYPDOSP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_SIT_VALPARP.Table;isip_table_open;Clefs de VALPARP (Valeur particulière)
+IKOS_TABLE_SIT_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
+IKOS_FIELD_SIT_VALPARP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_SIT_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ACTCOMP.Table;isip_table_open;Clefs de ACTCOMP (Action com type)
+IKOS_TABLE_RE2_ACTCOMP.Item;isip_%[ICON];%[RGCDDECORG],%[RGCDETTYP],%[RGCDORDTY],%[RGCDTCHTY],%[RGNOLGNCOM],%[RGPTYCOD] (%[RGREFCOM])
+IKOS_FIELD_RE2_ACTCOMP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ACTCOMP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ACTPERP.Table;isip_table_open;Clefs de ACTPERP (Action / évt personnalisé)
+IKOS_TABLE_RE2_ACTPERP.Item;isip_%[ICON];%[G3CDTYDOS],%[G3INDNATAC],%[G3NOACTEVT]  
+IKOS_FIELD_RE2_ACTPERP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ACTPERP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ACTPERP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_ACTPERP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_OGAP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ACTPERP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ADRMSGP.Table;isip_table_open;Clefs de ADRMSGP (Table adresses messagerie)
+IKOS_TABLE_RE2_ADRMSGP.Item;isip_%[ICON];%[CDDSTME],%[CDTYME],%[CDTYRLDM],%[TYDSTME]  
+IKOS_FIELD_RE2_ADRMSGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ADRMSGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ADRMSGP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_ADRMSGP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_ADRMSGP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_CATACTP.Table;isip_table_open;Clefs de CATACTP (Catalogue actions / évts)
+IKOS_TABLE_RE2_CATACTP.Item;isip_%[ICON];%[G4CDCATACT],%[G4CDTYDOS] (%[G4LBLCATAC])
+IKOS_FIELD_RE2_CATACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_CATACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_CATACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_CATACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_CATACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_CRITRTP.Table;isip_table_open;Clefs de CRITRTP (Types parametres)
+IKOS_TABLE_RE2_CRITRTP.Item;isip_%[ICON];%[FKNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_RE2_CRITRTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_CRITRTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_CROEXPP2.Table;isip_table_open;Clefs de CROEXPP2 (Critères traitements)
+IKOS_TABLE_RE2_CROEXPP2.Item;isip_%[ICON];%[FNNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_RE2_CROEXPP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_CROEXPP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_CTXNOTP.Table;isip_table_open;Clefs de CTXNOTP (Table User - base Notes)
+IKOS_TABLE_RE2_CTXNOTP.Item;isip_%[ICON];%[GDCDTUSER]  
+IKOS_FIELD_RE2_CTXNOTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_CTXNOTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ETAPEP.Table;isip_table_open;Clefs de ETAPEP (Etape)
+IKOS_TABLE_RE2_ETAPEP.Item;isip_%[ICON];%[GRCDETAPE] (%[GRLBLETAPE])
+IKOS_FIELD_RE2_ETAPEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ETAPEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ETAPEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_ETAPEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_ETAPEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ETAPRCP.Table;isip_table_open;Clefs de ETAPRCP (Etapes par procédure)
+IKOS_TABLE_RE2_ETAPRCP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED] (%[LBLETPRC])
+IKOS_FIELD_RE2_ETAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ETAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ETAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_ETAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_ETAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ETPTYPP.Table;isip_table_open;Clefs de ETPTYPP (Etapes Type)
+IKOS_TABLE_RE2_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
+IKOS_FIELD_RE2_ETPTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_KPLACPP.Table;isip_table_open;Clefs de KPLACPP (Plan comptable)
+IKOS_TABLE_RE2_KPLACPP.Item;isip_%[ICON];%[LYNOCPTCPT] (%[LYLBRCPTE])
+IKOS_FIELD_RE2_KPLACPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_KPLACPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_KPLACPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_KPLACPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_KPLACPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_NATPROP.Table;isip_table_open;Clefs de NATPROP (Gestion locative)
+IKOS_TABLE_RE2_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
+IKOS_FIELD_RE2_NATPROP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_ORDEXPP.Table;isip_table_open;Clefs de ORDEXPP (Programme Type)
+IKOS_TABLE_RE2_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
+IKOS_FIELD_RE2_ORDEXPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_OREXOGP2.Table;isip_table_open;Clefs de OREXOGP2 (Organismes)
+IKOS_TABLE_RE2_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
+IKOS_FIELD_RE2_OREXOGP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_PHASEP.Table;isip_table_open;Clefs de PHASEP (Phase)
+IKOS_TABLE_RE2_PHASEP.Item;isip_%[ICON];%[GOCDPHASE] (%[GOLBLPHASE])
+IKOS_FIELD_RE2_PHASEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_PHASEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_PHASEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_PHASEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_PHASEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_PROCEDP.Table;isip_table_open;Clefs de PROCEDP (Procédure)
+IKOS_TABLE_RE2_PROCEDP.Item;isip_%[ICON];%[GMCDPROCED] (%[GMLBLPROCD])
+IKOS_FIELD_RE2_PROCEDP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_PROCEDP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_PROCEDP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_PROCEDP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_PROCEDP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus type)
+IKOS_TABLE_RE2_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_FIELD_RE2_PROTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TACHMNP.Table;isip_table_open;Clefs de TACHMNP (Acheminement)
+IKOS_TABLE_RE2_TACHMNP.Item;isip_%[ICON];%[KDCDTACHMN] (%[KDLBLACHMN])
+IKOS_FIELD_RE2_TACHMNP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TACHMNP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TACHMNP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TACHMNP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TACHMNP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TBSTEXP.Table;isip_table_open;Clefs de TBSTEXP (Table tiers externes)
+IKOS_TABLE_RE2_TBSTEXP.Item;isip_%[ICON];%[CDBTIER] (%[LBLTIER])
+IKOS_FIELD_RE2_TBSTEXP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TBSTEXP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TCORRPP.Table;isip_table_open;Clefs de TCORRPP (Tiers externes -Cor catég)
+IKOS_TABLE_RE2_TCORRPP.Item;isip_%[ICON];%[CATTIE],%[CDBTIER]  
+IKOS_FIELD_RE2_TCORRPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TCORRPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TCORRPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TCORRPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TCORRPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TCORTIP.Table;isip_table_open;Clefs de TCORTIP (Tiers externes -Cor titre)
+IKOS_TABLE_RE2_TCORTIP.Item;isip_%[ICON];%[CDBTIER],%[CTITIE]  
+IKOS_FIELD_RE2_TCORTIP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TCORTIP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TCORTIP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TCORTIP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TCORTIP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TDLJURP.Table;isip_table_open;Clefs de TDLJURP (Table délais /juridiction)
+IKOS_TABLE_RE2_TDLJURP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED],%[CDTTYRLP],%[CDTYACT],%[INDTYACT],%[NOPRT]  
+IKOS_FIELD_RE2_TDLJURP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TDLJURP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TDLJURP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TDLJURP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TDLJURP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TICPETP.Table;isip_table_open;Clefs de TICPETP (Table infos cpl proc/etp)
+IKOS_TABLE_RE2_TICPETP.Item;isip_%[ICON];%[HYNOLGNIC] (%[HYLBLFMTIC])
+IKOS_FIELD_RE2_TICPETP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TICPETP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TICPETP__PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus type)
+IKOS_TABLE_RE2_TICPETP__PROTYPP.Item;isip_%[ICON];%[AAPTYCOD] (%[AAPTYLIB])
+IKOS_FIELD_RE2_TICPETP__PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TNAPRCP.Table;isip_table_open;Clefs de TNAPRCP (Table nature de procédure)
+IKOS_TABLE_RE2_TNAPRCP.Item;isip_%[ICON];%[MDCDNAPRC],%[MDCDTYDOS] (%[MDLBLNAPRC])
+IKOS_FIELD_RE2_TNAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TNAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TNAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TNAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TNAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TOMCAT.Table;isip_table_open;Clefs de TOMCAT (Fichier XML TOMCAT)
+IKOS_TABLE_RE2_TOMCAT.Item;isip_%[ICON];%[xml_path]  
+IKOS_FIELD_RE2_TOMCAT.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TOMCAT.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TPROGP.Table;isip_table_open;Clefs de TPROGP (Programmes)
+IKOS_TABLE_RE2_TPROGP.Item;isip_%[ICON];%[LKCDTPROG] (%[LKCOMPROG])
+IKOS_FIELD_RE2_TPROGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TRAITP.Table;isip_table_open;Clefs de TRAITP (Programmes)
+IKOS_TABLE_RE2_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]  
+IKOS_FIELD_RE2_TRAITP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TRAITP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TTARIFP.Table;isip_table_open;Clefs de TTARIFP (Table tarif)
+IKOS_TABLE_RE2_TTARIFP.Item;isip_%[ICON];%[JSCDTTARIF] (%[JSLBLTARIF])
+IKOS_FIELD_RE2_TTARIFP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TTARIFP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TTARIFP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TTARIFP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TTARIFP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TTYACTP.Table;isip_table_open;Clefs de TTYACTP (Table types actes)
+IKOS_TABLE_RE2_TTYACTP.Item;isip_%[ICON];%[CDTYPACT] (%[LBLCTACT])
+IKOS_FIELD_RE2_TTYACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TTYACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TTYACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TTYACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TTYACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TYPACTP.Table;isip_table_open;Clefs de TYPACTP (Type action / évt)
+IKOS_TABLE_RE2_TYPACTP.Item;isip_%[ICON];%[GZCDTYACT],%[GZINDTYACT] (%[GZLBLTYACT])
+IKOS_FIELD_RE2_TYPACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TYPACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TYPACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TYPACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TYPACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TYPDOSP.Table;isip_table_open;Clefs de TYPDOSP (Type dossier)
+IKOS_TABLE_RE2_TYPDOSP.Item;isip_%[ICON];%[GNCDTYDOS] (%[GNLBLTYDOS])
+IKOS_FIELD_RE2_TYPDOSP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_TYPDOSP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_TYPDOSP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_RE2_TYPDOSP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_RE2_TYPDOSP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_RE2_VALPARP.Table;isip_table_open;Clefs de VALPARP (Valeur particulière)
+IKOS_TABLE_RE2_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
+IKOS_FIELD_RE2_VALPARP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_RE2_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ACTPERP.Table;isip_table_open;Clefs de ACTPERP (Action / évt personnalisé)
+IKOS_TABLE_PRD_ACTPERP.Item;isip_%[ICON];%[G3CDTYDOS],%[G3INDNATAC],%[G3NOACTEVT]  
+IKOS_FIELD_PRD_ACTPERP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ACTPERP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ACTPERP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_ACTPERP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_OGAP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ACTPERP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ADRMSGP.Table;isip_table_open;Clefs de ADRMSGP (Table adresses messagerie)
+IKOS_TABLE_PRD_ADRMSGP.Item;isip_%[ICON];%[CDDSTME],%[CDTYME],%[CDTYRLDM],%[TYDSTME]  
+IKOS_FIELD_PRD_ADRMSGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ADRMSGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ADRMSGP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_ADRMSGP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_ADRMSGP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_CATACTP.Table;isip_table_open;Clefs de CATACTP (Catalogue actions / évts)
+IKOS_TABLE_PRD_CATACTP.Item;isip_%[ICON];%[G4CDCATACT],%[G4CDTYDOS] (%[G4LBLCATAC])
+IKOS_FIELD_PRD_CATACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_CATACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_CATACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_CATACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_CATACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_CRITRTP.Table;isip_table_open;Clefs de CRITRTP (Types parametres)
+IKOS_TABLE_PRD_CRITRTP.Item;isip_%[ICON];%[FKNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_PRD_CRITRTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_CRITRTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_CROEXPP2.Table;isip_table_open;Clefs de CROEXPP2 (Critères traitements)
+IKOS_TABLE_PRD_CROEXPP2.Item;isip_%[ICON];%[FNNOCRITRT] (%[FKLBLCRITR])
+IKOS_FIELD_PRD_CROEXPP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_CROEXPP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_CTXNOTP.Table;isip_table_open;Clefs de CTXNOTP (Table User - base Notes)
+IKOS_TABLE_PRD_CTXNOTP.Item;isip_%[ICON];%[GDCDTUSER]  
+IKOS_FIELD_PRD_CTXNOTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_CTXNOTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ETAPEP.Table;isip_table_open;Clefs de ETAPEP (Etape)
+IKOS_TABLE_PRD_ETAPEP.Item;isip_%[ICON];%[GRCDETAPE] (%[GRLBLETAPE])
+IKOS_FIELD_PRD_ETAPEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ETAPEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ETAPEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_ETAPEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_ETAPEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ETAPRCP.Table;isip_table_open;Clefs de ETAPRCP (Etapes par procédure)
+IKOS_TABLE_PRD_ETAPRCP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED] (%[LBLETPRC])
+IKOS_FIELD_PRD_ETAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ETAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ETAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_ETAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_ETAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ETPTYPP.Table;isip_table_open;Clefs de ETPTYPP (Etapes Type)
+IKOS_TABLE_PRD_ETPTYPP.Item;isip_%[ICON];%[AECDETTYP] (%[AELBLETTY])
+IKOS_FIELD_PRD_ETPTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ETPTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_KPLACPP.Table;isip_table_open;Clefs de KPLACPP (Plan comptable)
+IKOS_TABLE_PRD_KPLACPP.Item;isip_%[ICON];%[LYNOCPTCPT] (%[LYLBRCPTE])
+IKOS_FIELD_PRD_KPLACPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_KPLACPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_KPLACPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_KPLACPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_KPLACPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_NATPROP.Table;isip_table_open;Clefs de NATPROP (Nature de processus)
+IKOS_TABLE_PRD_NATPROP.Item;isip_%[ICON];%[RDNPRCOD] (%[RDNPRLIB])
+IKOS_FIELD_PRD_NATPROP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_NATPROP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_ORDEXPP.Table;isip_table_open;Clefs de ORDEXPP (Programme Type)
+IKOS_TABLE_PRD_ORDEXPP.Item;isip_%[ICON];%[FLTYPTRAIT] (%[FLTITRESTD])
+IKOS_FIELD_PRD_ORDEXPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_ORDEXPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_OREXOGP2.Table;isip_table_open;Clefs de OREXOGP2 (Organismes)
+IKOS_TABLE_PRD_OREXOGP2.Item;isip_%[ICON];%[FNCDOGA]  
+IKOS_FIELD_PRD_OREXOGP2.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_OREXOGP2.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_PHASEP.Table;isip_table_open;Clefs de PHASEP (Phase)
+IKOS_TABLE_PRD_PHASEP.Item;isip_%[ICON];%[GOCDPHASE] (%[GOLBLPHASE])
+IKOS_FIELD_PRD_PHASEP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_PHASEP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_PHASEP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_PHASEP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_PHASEP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_PROCEDP.Table;isip_table_open;Clefs de PROCEDP (Procédure)
+IKOS_TABLE_PRD_PROCEDP.Item;isip_%[ICON];%[GMCDPROCED] (%[GMLBLPROCD])
+IKOS_FIELD_PRD_PROCEDP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_PROCEDP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_PROCEDP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_PROCEDP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_PROCEDP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_PROTYPP.Table;isip_table_open;Clefs de PROTYPP (Processus type)
+IKOS_TABLE_PRD_PROTYPP.Item;isip_%[ICON];%[AAPTYCOD]  
+IKOS_FIELD_PRD_PROTYPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_PROTYPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TACHMNP.Table;isip_table_open;Clefs de TACHMNP (Acheminement)
+IKOS_TABLE_PRD_TACHMNP.Item;isip_%[ICON];%[KDCDTACHMN] (%[KDLBLACHMN])
+IKOS_FIELD_PRD_TACHMNP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TACHMNP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TACHMNP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TACHMNP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TACHMNP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TBSTEXP.Table;isip_table_open;Clefs de TBSTEXP (Table tiers externes)
+IKOS_TABLE_PRD_TBSTEXP.Item;isip_%[ICON];%[CDBTIER] (%[LBLTIER])
+IKOS_FIELD_PRD_TBSTEXP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TBSTEXP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TCORRPP.Table;isip_table_open;Clefs de TCORRPP (Tiers externes -Cor catég)
+IKOS_TABLE_PRD_TCORRPP.Item;isip_%[ICON];%[CATTIE],%[CDBTIER]  
+IKOS_FIELD_PRD_TCORRPP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TCORRPP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TCORRPP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TCORRPP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TCORRPP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TCORTIP.Table;isip_table_open;Clefs de TCORTIP (Tiers externes -Cor titre)
+IKOS_TABLE_PRD_TCORTIP.Item;isip_%[ICON];%[CDBTIER],%[CTITIE]  
+IKOS_FIELD_PRD_TCORTIP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TCORTIP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TCORTIP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TCORTIP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TCORTIP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TDLJURP.Table;isip_table_open;Clefs de TDLJURP (Table délais /juridiction)
+IKOS_TABLE_PRD_TDLJURP.Item;isip_%[ICON];%[CDETAPE],%[CDPROCED],%[CDTTYRLP],%[CDTYACT],%[INDTYACT],%[NOPRT]  
+IKOS_FIELD_PRD_TDLJURP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TDLJURP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TDLJURP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TDLJURP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TDLJURP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TNAPRCP.Table;isip_table_open;Clefs de TNAPRCP (Table nature de procédure)
+IKOS_TABLE_PRD_TNAPRCP.Item;isip_%[ICON];%[MDCDNAPRC],%[MDCDTYDOS] (%[MDLBLNAPRC])
+IKOS_FIELD_PRD_TNAPRCP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TNAPRCP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TNAPRCP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TNAPRCP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TNAPRCP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TOMCAT.Table;isip_table_open;Clefs de TOMCAT (Fichier XML TOMCAT)
+IKOS_TABLE_PRD_TOMCAT.Item;isip_%[ICON];%[xml_path]  
+IKOS_FIELD_PRD_TOMCAT.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TOMCAT.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TPROGP.Table;isip_table_open;Clefs de TPROGP (Programmes)
+IKOS_TABLE_PRD_TPROGP.Item;isip_%[ICON];%[LKCDTPROG] (%[LKCOMPROG])
+IKOS_FIELD_PRD_TPROGP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TPROGP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TRAITP.Table;isip_table_open;Clefs de TRAITP (Programmes)
+IKOS_TABLE_PRD_TRAITP.Item;isip_%[ICON];%[FHCDTRAIT]  
+IKOS_FIELD_PRD_TRAITP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TRAITP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TTARIFP.Table;isip_table_open;Clefs de TTARIFP (Table tarif)
+IKOS_TABLE_PRD_TTARIFP.Item;isip_%[ICON];%[JSCDTTARIF] (%[JSLBLTARIF])
+IKOS_FIELD_PRD_TTARIFP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TTARIFP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TTARIFP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TTARIFP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TTARIFP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TTYACTP.Table;isip_table_open;Clefs de TTYACTP (Table types actes)
+IKOS_TABLE_PRD_TTYACTP.Item;isip_%[ICON];%[CDTYPACT] (%[LBLCTACT])
+IKOS_FIELD_PRD_TTYACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TTYACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TTYACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TTYACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TTYACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TYPACTP.Table;isip_table_open;Clefs de TYPACTP (Type action / évt)
+IKOS_TABLE_PRD_TYPACTP.Item;isip_%[ICON];%[GZCDTYACT],%[GZINDTYACT] (%[GZLBLTYACT])
+IKOS_FIELD_PRD_TYPACTP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TYPACTP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TYPACTP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TYPACTP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TYPACTP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TYPDOSP.Table;isip_table_open;Clefs de TYPDOSP (Type dossier)
+IKOS_TABLE_PRD_TYPDOSP.Item;isip_%[ICON];%[GNCDTYDOS] (%[GNLBLTYDOS])
+IKOS_FIELD_PRD_TYPDOSP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_TYPDOSP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_TYPDOSP__OGAP.Table;isip_table_open;Clefs de OGAP (Organisme)
+IKOS_TABLE_PRD_TYPDOSP__OGAP.Item;isip_%[ICON];%[OGCDOGA] (%[OGRAISOC])
+IKOS_FIELD_PRD_TYPDOSP__OGAP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
+IKOS_TABLE_PRD_VALPARP.Table;isip_table_open;Clefs de VALPARP (Valeurs particulières)
+IKOS_TABLE_PRD_VALPARP.Item;isip_%[ICON];%[HMCDVALPAR] (%[HMLBLVALPA])
+IKOS_FIELD_PRD_VALPARP.Table;isip_table_key;Liste des champs
+IKOS_FIELD_PRD_VALPARP.Item;isip_%[ICON];%[FIELD_NAME] (%[TEXT])
