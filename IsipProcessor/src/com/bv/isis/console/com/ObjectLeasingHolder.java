@@ -45,6 +45,7 @@ package com.bv.isis.console.com;
 //
 import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
+import com.bv.isis.corbacom.IsisTableDefinition;
 
 //
 // Imports du projet
@@ -90,6 +91,9 @@ public class ObjectLeasingHolder
 		_leasedObject = leasedObject;
 		// Le compteur passe à 1
 		_leasingsCounter = 1;
+        //met à jour la date de dernière utilisation
+        _lastUsed=System.currentTimeMillis();
+        
 		trace_methods.endOfMethod();
 	}
 
@@ -109,8 +113,6 @@ public class ObjectLeasingHolder
 
 		trace_methods.beginningOfMethod();
         
-        _lastUsed = System.currentTimeMillis();
-
 		trace_methods.endOfMethod();
 		return _leasedObject;
 	}
@@ -170,14 +172,14 @@ public class ObjectLeasingHolder
 	public synchronized boolean isFreeOfLeasing()
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"ObjectLeasingHolder", "getNumberOfLeasings");
 
 		trace_methods.beginningOfMethod();
 
         if (_leasingsCounter <= 0) {
 
-            // garde le leasing tant que la dernière utilisation date de
-            // moins de 5s
-            if (System.currentTimeMillis() - _lastUsed > 5000) {
+            // garde le leasing tant que le timeout n'est pas dépassé
+            if ( (System.currentTimeMillis() - _lastUsed) > (_leaseTimeout * 1000)) {
                 return true;
             }
         }
@@ -246,6 +248,16 @@ public class ObjectLeasingHolder
     *
 	* ----------------------------------------------------------*/
 	private long _lastUsed;
+
+    /*----------------------------------------------------------
+	* Nom: _leaseTimeout
+	*
+	* Description:
+	* Cet attribut contient l'attente minimum en secondes à attendre avant
+    * la suppression du cache
+    *
+	* ----------------------------------------------------------*/
+	final private long _leaseTimeout=10;
 
 	/*----------------------------------------------------------
 	* Nom: _leasedObject
