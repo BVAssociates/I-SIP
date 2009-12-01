@@ -153,8 +153,14 @@ sub _recurse_line_action() {
 	# We want to retrieve parent line related to current line
 	my @condition_array;
 	foreach my $primary_field (keys %condition_hash) {
-		croak("Impossible de retrouver la ligne parente dans $parent_table car $primary_field n'est pas défini") if not $condition_hash{$primary_field};
-		push (@condition_array, "$primary_field = '$condition_hash{$primary_field}'");
+		if (not defined $condition_hash{$primary_field}
+				or $condition_hash{$primary_field} eq '') {
+			carp("Impossible de retrouver la ligne parente dans $env_name->$parent_table car $primary_field n'est pas défini");
+			return;
+		}
+		else {
+			push (@condition_array, "$primary_field = '$condition_hash{$primary_field}'");
+		}
 	}
 
 	$table->query_condition(@condition_array);
@@ -164,7 +170,7 @@ sub _recurse_line_action() {
 	my %parent_line;
 	while (my %row=$table->fetch_row) {
 		%parent_line=%row;
-		croak ("too many lines linked in $env_name->$parent_table for ",join(',',@condition_array),"(key:$current_key_string)") if $count++;
+		croak ("too many lines linked in $env_name->$parent_table for ",join(',',@condition_array),"(key:$table_name->$current_key_string)") if $count++;
 	}
 	if (not $count) {
 		carp("unable to find key in $env_name->$parent_table for : ",join(',',@condition_array));
