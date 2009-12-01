@@ -111,6 +111,7 @@ sub _recurse_line_action() {
 	my $table_name=shift;
 	my $line_hash_ref=shift or croak("usage : add_dirty_line(table_name, {field1 => 'value',field2 => 'value',...})");
 
+	my $env_name=$self->{isip_env}->{environnement};
 	
 	my %line_hash=%{$line_hash_ref};
 	
@@ -123,11 +124,13 @@ sub _recurse_line_action() {
 	my $current_key_string=@line_hash{@table_key};
 	
 	my %parent_hash=%{ $self->{links}->{table_parent}->{$table_name} } if exists $self->{links}->{table_parent}->{$table_name} ;
-
-	croak("Unable to get ancestor for :$table_name : more than 1 parent") if keys %parent_hash > 1;
 	
 	# stop recursion
 	return if keys %parent_hash == 0;
+	
+	croak("Une table ne peux pas avoir plus d'une table parente : $env_name->$table_name a des clefs étrangère vers ".join(',',keys %parent_hash)) if keys %parent_hash > 1;
+	
+	
 	
 	#get information about parent table name
 	my ($parent_table)=(keys %parent_hash);
@@ -145,7 +148,7 @@ sub _recurse_line_action() {
 	my %condition_hash;
 	@condition_hash{@foreign_keys{@child_field}}=@line_hash{@child_field};
 	
-	croak("provided line do not contains any foreign key") if not %condition_hash;
+	croak("$env_name->$table_name : provided line do not contains any foreign key") if not %condition_hash;
 	
 	# We want to retrieve parent line related to current line
 	my @condition_array;
@@ -161,10 +164,10 @@ sub _recurse_line_action() {
 	my %parent_line;
 	while (my %row=$table->fetch_row) {
 		%parent_line=%row;
-		croak ("too many lines linked in $parent_table for ",join(',',@condition_array),"(key:$current_key_string)") if $count++;
+		croak ("too many lines linked in $env_name->$parent_table for ",join(',',@condition_array),"(key:$current_key_string)") if $count++;
 	}
 	if (not $count) {
-		carp("unable to find key in $parent_table for : ",join(',',@condition_array));
+		carp("unable to find key in $env_name->$parent_table for : ",join(',',@condition_array));
 		return;
 	}
 	
@@ -173,11 +176,11 @@ sub _recurse_line_action() {
 	my $key_string=join(',',@parent_line{sort $table->key});
 	
 	
-	$logger->info("add in cache : $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$logger->info("add in cache : $env_name->$parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
 	$self->dispatch_action($parent_table,$key_string,\%parent_line);
 	
 	# go deep
-	$logger->info("recurse into $parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
+	$logger->info("recurse into $env_name->$parent_table:'$key_string' because of $table_name:".join(',', @line_hash{@child_field}));
 	$self->_recurse_line_action($parent_table,\%parent_line);
 	
 }
