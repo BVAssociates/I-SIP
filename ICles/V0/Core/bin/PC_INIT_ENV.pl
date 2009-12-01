@@ -146,7 +146,7 @@ sub run {
 	$new_row{DEFAUT_ODBC}=$odbc_name;
 
 	my $conf_environ=ITools->open("CONF_ENVIRON");
-	$conf_environ->insert_row(%new_row);
+	$conf_environ->insert_row_pp(%new_row);
 
 	my $config_sip = IsipConfig->new();
 
