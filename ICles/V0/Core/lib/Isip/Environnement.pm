@@ -585,11 +585,15 @@ sub open_local_table() {
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
 	my $sqlite_path=$self->get_sqlite_path($table_name,$self->{environnement});
-	if (not -e $sqlite_path) {
-		croak ("Impossible d'ouvrir le fichier $sqlite_path dans $self->{environnement}");
+	if (not defined $sqlite_path) {
+		croak("Impossible de trouver la table SQLite $table_name dans $self->{environnement}");
 	}
+	elsif (not -r $sqlite_path) {
+		croak("Impossible d'ouvrir le fichier $sqlite_path dans $self->{environnement}");
+	}
+	
 	my $tmp_return = eval {Sqlite->open($sqlite_path, $table_name, @_)};
-	croak "Impossible d'ouvrir la table SQLite $table_name : $@" if $@;
+	croak "Impossible d'ouvrir la table SQLite $table_name dans $self->{environnement} : $@" if $@;
 	return $tmp_return;
 }
 
