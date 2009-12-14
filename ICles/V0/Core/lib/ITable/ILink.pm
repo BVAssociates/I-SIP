@@ -43,17 +43,16 @@ sub add_link() {
 	if (blessed $first_arg and $first_arg->isa("ILink")) {
 		my $self_add=$first_arg;
 		
-		foreach my $parent (keys %{$self_add->{table_parent}}) {
-			foreach (keys %{$self_add->{table_parent}->{$parent}}) {
-				$self->{table_parent}->{$parent}->{$_}=$self_add->{table_parent}->{$parent}->{$_};
+		foreach my $parent (keys %{ $self_add->{table_parent} }) {
+
+			foreach my $table_foreign (keys %{ $self_add->{table_parent}->{$parent} }) {
+
+				foreach my $field_name (keys %{ $self_add->{table_parent}->{$parent}->{$table_foreign} }) {
+					my $field_foreign=$self_add->{table_parent}->{$parent}->{$table_foreign}->{$field_name};
+					$self->add_link($parent, $field_name, $table_foreign ,$field_foreign);
+				}
 			}
-		}
-		foreach my $child (keys %{$self_add->{table_child}}) {	
-			foreach (keys %{$self_add->{table_child}->{$child}}) {
-				$self->{table_child}->{$child}->{$_}=$self_add->{table_child}->{$child}->{$_};
-			}
-		}
-		
+		}		
 	}
 	else {	
 		my $table_name=$first_arg;
@@ -61,6 +60,11 @@ sub add_link() {
 		my $table_foreign=shift;
 		my $field_foreign=shift or croak "usage: add_link(table_name, field_name, table_foreign, field_foreign) or add_link(ILink_ref)";
 		
+		# check for loop in graph by looking for inverted path
+		if ( my @path=$self->find_path($table_name, $table_foreign)) {
+			croak("Erreur lors de l'ajout de $table_foreign comme table parente de $table_name, car un cycle à été détécté : ".join(',',@path));
+		}
+
 		# store the same information in 2 structs
 		$self->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
 		$self->{table_child}->{$table_foreign}->{$table_name}->{$field_foreign} = $field_name;
@@ -120,30 +124,35 @@ sub get_parent_fields_OBSOLETE() {
 	}
 }
 
+# renvoie la liste des paires (parent,enfant) parente de la table donnée
+# param table (string)
+# param depth (integer) : 1 pour renvoyer tous les ascendants, 0 pour juste le père
+# return (hash) : %father_of{$table}
 sub get_parent_tables_hash() {
 	my $self=shift;
-	my $table=shift or croak ("usage : get_parent_tables(table)");
+	my $table=shift or croak ("usage : get_parent_tables_hash(table)");
 	my $depth=shift;
 	
 	return () if not exists $self->{table_parent}->{$table};
 	
-	my %return;
+	my %father_of;
 	
-	my %parent_table=%{ $self->{table_parent}->{$table}};
-	
+	my %parent_tables=%{ $self->{table_parent}->{$table}};
 	
 	if ($depth) {
 
-		$return{$table} = [ keys %parent_table ];
-		foreach (keys %parent_table) {
-			%return= ( %return, $self->get_parent_tables_hash($_,$depth) );
+		$father_of{$table} = [ keys %parent_tables ];
+		foreach (keys %parent_tables) {
+			# appel recursif
+			my %deep_father_of = $self->get_parent_tables_hash($_,$depth);
+			%father_of= ( %father_of, %deep_father_of );
 		}
 	}
 	else {
-		$return{$table} = [ keys %parent_table ];
+		$father_of{$table} = [ keys %parent_tables ];
 	}
 	
-	return %return;
+	return %father_of;
 }
 
 # renvoie la liste des tables dont la table $table possède une clef etrangère
@@ -223,11 +232,39 @@ Veuiller vérifier ses liens (F_KEY).");
 	return (@child_list,$current_table);
 }
 
-# return true if graph is a tree (no cycle)
-sub is_tree_graph() {
+# return a path of table between 2 tables
+sub find_path() {
 	my $self=shift;
+	
+	my $table_first = shift;
+	my $table_last  = shift;
+	
+	if (not defined $table_first) {
+		croak('usage: find_path(table_first ,table_last)');
+	}
+	
+	if (not defined $table_last) {
+		return;
+	}
+	
+	my @path_list = ($table_first);
+	
+	foreach my $child ( $self->get_child_tables($table_first) ) {
+		
+		if ( $child eq $table_last) {
+			return (@path_list, $child);
+		}
+		else {
+			# appel recursif aux enfants
+			my @partial_path = $self->find_path( $child, $table_last);
+			if ( @partial_path ) {
+				return (@path_list, @partial_path);
+			}
+		}
+	}
+	
+	return;
 }
-
 
 1;
 
