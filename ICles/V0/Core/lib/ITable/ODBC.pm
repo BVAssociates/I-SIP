@@ -5,9 +5,10 @@ package ODBC_TXT;
 use Carp qw(carp croak );
 
 # get table name depending the driver
-sub _set_tablename() {
+sub _init_driver() {
 	my $self = shift;
 
+	# name of tables must be suffixed with this driver
 	$self->_debug("$self->{table_name} -> $self->{table_name}.txt");
 	$self->{table_name}=$self->{table_name}.".txt";
 }
@@ -51,6 +52,36 @@ sub _set_columns_info() {
 	
 	if (not $self->field() or $self->field() == 1) {
 		croak("Error reading information of table : $self->{table_name}");
+	}
+}
+
+1;
+
+# Special Class for the Text ODBC Driver
+package ODBC_SQLITE;
+@ISA = ("ODBC");
+
+use Carp qw(carp croak );
+
+sub _init_driver() {
+	my $self = shift;
+
+	# right truncated error (SQL-01004) fix
+	$self->{database_handle}->{'LongTruncOk'} = 1;
+	$self->{database_handle}->{'LongReadLen'} = 500; 
+	
+	# attach databases in one database
+	my $data_dir = $ENV{ISIP_DATA}.'/ODBC_copy';
+	
+	my @sqlite_databases = glob("'".$data_dir."/$self->{odbc_name}.*.sqlite'");
+	
+	foreach my $database ( @sqlite_databases ) {
+		
+		$database =~ /(\w+)\.(\w+)\.sqlite/;
+		my ($host, $database_name) = ($1 , $2);
+		
+		#warn("ATTACH DATABASE '$database' as $database_name");
+		$self->{database_handle}->do("ATTACH DATABASE '$database' as $database_name");
 	}
 }
 
@@ -100,6 +131,9 @@ sub open() {
 	# Some features of TXT driver differ from others
 	if ($self->{driver_name} eq 'odbcjt32.dll') {
 		$self=bless($self,'ODBC_TXT');
+	}
+	elsif ( $self->{driver_name} =~ /sqlite3odbc.dll$/ ) {
+		$self=bless($self,'ODBC_SQLITE');
 	} else {
 		$self=bless($self,$class);
 	}
@@ -112,7 +146,7 @@ sub open() {
 	croak "Error openning sqlite database : $self->{database_path}" unless $self->{database_handle}->ping();
 	
 	# set the table name depending the ODBC Driver
-	$self->_set_tablename();
+	$self->_init_driver();
 	
 	# put fields list in memory
 	$self->_debug("Get info for table : ",$self->{table_name});
@@ -133,7 +167,8 @@ sub open() {
 	$self->{driver_name}="";
 	
 	# free any LOCK
-	$self->_close_database();
+	## ODBC_SQLITE need not to close the connexion
+	#$self->_close_database();
 	
 
     return $self;
@@ -150,10 +185,10 @@ sub key {
 }
 
 # get table name depending the driver
-sub _set_tablename() {
+sub _init_driver() {
 	my $self = shift;
 
-	# keep name 
+	# nothing to do 
 }
 
 # Get information from database
@@ -206,7 +241,7 @@ sub _open_database() {
 	$self->_debug("Open database DSN : ",$odbc_dsn);
 	# use RaiseError exception to stop the script at first error
 	$self->{database_handle} = DBI->connect($odbc_dsn,$self->{odbc_username} ,$self->{odbc_password} ,{ RaiseError => 1});
-
+	
 	# remove trailing spaces in CHAR fields
 	$self->{database_handle}->{ChopBlanks}=1;
 	
