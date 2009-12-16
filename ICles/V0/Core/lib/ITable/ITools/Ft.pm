@@ -143,6 +143,8 @@ sub fetch_row_array_pp {
 
 # ITools' Insert remplacement en pure Perl
 # fonctionne en INSERT OR REPLACE
+# param list : hash de la forme CHAMP => VALEUR
+# note : seul les champs présent dans le hash seront mis à jour
 sub insert_row_pp {
 	my $self=shift;
 	
@@ -158,12 +160,26 @@ sub insert_row_pp {
 		push @table_lines, $line;
 	}
 	
+	# nettoie la ligne à inserer
+	foreach my $field ( %row ) {
+		# transforme les undef en chaine vide (pas de NULL en I-TOOLS)
+		$field='' if not defined $field;
+	}
 	
 	# transforme texte en tableau de dictionnaire
 	my @table_lines_hash = map {
 			if (! /^(?:#|\s*$)/) {
+				# enleve les fin de ligne
+				chomp;
+				
+				# tranforme la ligne en tableau de valeur
+				my @fields = split ( $self->output_separator , $_ , -1);
+				
+				# transforme les undef en chaine vide (pas de NULL en I-TOOLS)
+				map {$_='' if not defined $_} @fields;
+				
 				# sauvegarde du hash sous forme d'une référence
-				$_ = { $self->array_to_hash(split ( $self->output_separator , $_) )};
+				$_ = { $self->array_to_hash( @fields )};
 			}
 			else {
 				# les commentaires et les lignes vides ne sont pas transformés
@@ -171,8 +187,10 @@ sub insert_row_pp {
 			}
 		} @table_lines;
 	
+	my $update_key=0;  # >0 si clef trouvée (mode UPDATE)
+	my $touch_file=0;  # >0 si des valeurs ont été modifiées
 	# cherche si clef déjà présente
-	my $update_key;
+	ROW:
 	foreach my $line_hash ( @table_lines_hash ) {
 		if (ref $line_hash) {
 		
@@ -187,10 +205,41 @@ sub insert_row_pp {
 			
 			# si on a trouvé toutes les clefs, on met à jour
 			if ( $key_match == $self->key() ) {
+				
+				# on est en mode mise à jour
+				$update_key++;
+				
+				FIELD:
 				foreach my $set_field ( keys %row ) {
-					$line_hash->{$set_field} = $row{$set_field};
-					$update_key++;
+				
+					if ( ! grep { /^$set_field$/ } $self->field() ) {
+						warn("$set_field est un champ inconnu");
+						next FIELD;
+					}
+					
+					
+					# gère les cas ou la valeur est undef
+					# normalement pas nécéssaire
+					my $defined_vars=0;
+					$defined_vars++ if defined $line_hash->{$set_field};
+					$defined_vars++ if defined $row{$set_field};
+					
+					if ( $defined_vars != 0) {
+						# au moins 1 des 2 est défini
+						
+						if ( $defined_vars != 2
+							or $line_hash->{$set_field} ne $row{$set_field} )
+						{
+							warn("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
+							# 1 des 2 n'est pas défini ou les 2 sont differents
+							$line_hash->{$set_field} = $row{$set_field};
+							$touch_file++;
+						}
+					}
 				}
+				
+				# une clef est unique, on sort de la boucle
+				last ROW;
 			}
 		}
 	}
@@ -198,31 +247,44 @@ sub insert_row_pp {
 	# Si pas de mise à jour, alors insertion simple
 	if (not $update_key) {
 		push @table_lines_hash, \%row;
+		$touch_file++;
 	}
 	
-	# retransforme les dictionnaires en texte
-	@table_lines = map {
-		# si c'est une référence, ce sont des données
-		if (ref $_) {
-			$_ = join( $self->output_separator , $self->hash_to_array( %{$_} ) );
-			
-			# supprime et recree fin de ligne
-			chomp;
-			$_.="\n";
-		}
-		# sinon, on garde tel quel
-		else {
-			$_;
-		}
-	} @table_lines_hash;
+	# le fichier doit être modifié
+	if ( $touch_file ) {
+	
+		# retransforme les dictionnaires en texte
+		@table_lines = map {
+			# si c'est une référence, ce sont des données
+			if (ref $_) {
+				# transforme le hash en tableau
+				my @fields = $self->hash_to_array( %{$_} );
+				
+				# transforme les undef en chaine vide
+				map {$_='' if not defined $_} @fields;
+				
+				# tranforme les champs en ligne
+				$_ = join( $self->output_separator , @fields );
+				
+				# supprime et recree fin de ligne au cas où
+				chomp;
+				$_.="\n";
+			}
+			# sinon, on garde tel quel
+			else {
+				$_;
+			}
+		} @table_lines_hash;
 
-	
-	# réécrit entierment le fichier avec la table modifiée
-	$self->_empty_table_file();
-	
-	$self->_write_table_file( @table_lines );
-    
-    $self->_close_table_file();
+		
+		# réécrit entierment le fichier avec la table modifiée
+		$self->_empty_table_file();
+		
+		$self->_write_table_file( @table_lines );
+	}
+
+	# fermeture du fichier
+	$self->_close_table_file();
 	
 	return;
 }
