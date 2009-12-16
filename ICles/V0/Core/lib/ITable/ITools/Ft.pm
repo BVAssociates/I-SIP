@@ -213,7 +213,7 @@ sub insert_row_pp {
 				foreach my $set_field ( keys %row ) {
 				
 					if ( ! grep { /^$set_field$/ } $self->field() ) {
-						warn("$set_field est un champ inconnu");
+						$logger->debug("$set_field est un champ inconnu");
 						next FIELD;
 					}
 					
@@ -230,7 +230,7 @@ sub insert_row_pp {
 						if ( $defined_vars != 2
 							or $line_hash->{$set_field} ne $row{$set_field} )
 						{
-							warn("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
+							$logger->debug("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
 							# 1 des 2 n'est pas défini ou les 2 sont differents
 							$line_hash->{$set_field} = $row{$set_field};
 							$touch_file++;
