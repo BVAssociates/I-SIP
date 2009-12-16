@@ -16,10 +16,10 @@ Item~Jobs~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
 Item~Journaux~Historique Execution, tout le monde~dev~~~DisplayTable~SCRIPT_STAT~0~~Configure
 Item~Journaux~Historique Execution~expl~~~DisplayTable~SCRIPT_STAT@@USER=%IsisUser%~0~~Configure
 Item~Journaux~Statistique Execution~sys~~~DisplayTable~SCRIPT_STAT_AVERAGE~0~~Configure
-Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG %ISIP_LOG%\isip_collecte.log~0~~Configure
+Item~Journaux~Erreurs de collecte~expl~~~ExecuteProcedure~PC_ERROR_LOG "%ISIP_LOG%\isip_collecte.log"~0~~Configure
 #Item~Journaux~Tableau commentaires restants~sys~~~DisplayTable~REPORT_ACTIVITY~0~~Configure
 Item~Journaux~Commentaires restants~sys~~~ExecuteProcedure~PC_REPORT_ACTIVITY -a~0~~Configure
-Item~Journaux~Log collecte~adm~~~DisplayFile~%ISIP_LOG%\isip_collecte.log~0~~Configure
+Item~Journaux~Log collecte~adm~~~DisplayFile~"%ISIP_LOG%\isip_collecte.log"~0~~Configure
 
 
 Item~Aide~Documentation d'utilisation~user~~~OpenURL~%ISIP_DOC%\Documentation Utilisateur ISIP IKOS.pdf~0~~Expand
