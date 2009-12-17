@@ -254,7 +254,11 @@ sub run {
 		if (not $env_compare) {
 			log_info("Connexion à la table source dans $environnement : $current_table");
 			# open source table depending on TYPE_SOURCE
-			$source_table=$env_sip->open_source_table($current_table);
+			$source_table=eval { $env_sip->open_source_table($current_table)};
+			if ($@) {
+				$logger->error($@);
+				next;
+			}
 			if (not $source_table or not $source_table->key) {
 				$logger->error("la table <$current_table> a besoin d'être configurée dans $environnement");
 				next;
@@ -294,7 +298,12 @@ sub run {
 		}
 
 		log_info("Debut de la comparaison de $current_table");
-		my $diff_obj=$table_diff->compare();
+		my $diff_obj=eval { $table_diff->compare() };
+		if ($@) {
+			$logger->error($@);
+			next;
+		}
+		
 		log_info("Nombre de différences : ".$diff_obj->count);
 
 		if ($no_update_histo) {
