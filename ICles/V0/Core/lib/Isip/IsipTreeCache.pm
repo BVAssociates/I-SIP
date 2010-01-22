@@ -146,14 +146,14 @@ sub _recurse_line_action() {
 		my %condition_hash;
 		@condition_hash{@foreign_keys{@child_field}}=@line_hash{@child_field};
 		
-		croak("$env_name->$table_name : provided line do not contains any foreign key") if not %condition_hash;
+		croak("$env_name : $table_name (clef: $current_key_string) : cette ligne ne contient pas de clef étrangère") if not %condition_hash;
 		
 		# We want to retrieve parent line related to current line
 		my @condition_array;
 		foreach my $primary_field (keys %condition_hash) {
 			if (not defined $condition_hash{$primary_field}
 					or $condition_hash{$primary_field} eq '') {
-				carp("Impossible de retrouver la ligne parente dans $env_name->$parent_table car $primary_field n'est pas défini");
+				carp("$env_name : $table_name (clef: $current_key_string) : $primary_field n'est pas défini dans la table $parent_table");
 				return;
 			}
 			else {
@@ -168,10 +168,10 @@ sub _recurse_line_action() {
 		my %parent_line;
 		while (my %row=$table->fetch_row) {
 			%parent_line=%row;
-			croak ("too many lines linked in $env_name->$parent_table for ",join(',',@condition_array),"(key:$table_name->$current_key_string)") if $count++;
+			croak ("$env_name : $table_name (clef: $current_key_string) : plusieurs valeurs correspondent dans $parent_table (",join(',',@condition_array),")") if $count++;
 		}
 		if (not $count) {
-			carp("unable to find key in $env_name->$parent_table for : ",join(',',@condition_array));
+			carp("$env_name : $table_name (clef: $current_key_string) n'a pas de correspondance dans la table $parent_table (".join(',',@condition_array).")");
 			return;
 		}
 		

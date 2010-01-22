@@ -248,7 +248,8 @@ sub get_links_menu() {
 		next if not %parents;
 		
 		if ( @{ $parents{$table} } > 1 ) {
-			$logger->warning("Table $table : I-SIP ne sait pas gérer une table racine avec 2 clef étrangères");
+			$logger->warning("Table $table : I-SIP ne sait pas gérer une table racine avec plusieurs tables parentes."
+							."Veuillez la retirer des tables racines ou configurer une table parmis : ".join(',',@{ $parents{$table} }));
 			# on ne garde que la première table
 			$parents{$table}= [ $parents{$table}->[0] ]
 		}
