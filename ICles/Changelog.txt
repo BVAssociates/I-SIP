@@ -1,3 +1,14 @@
+v1.1
+
+Clarification des mesages d'erreurs
+Ajout de restriction de configuration pour empecher les erreurs logiques
+Rend non-bloquant les erreurs de collectes
+
+____________________________________________________________________________
+
+Type: defect
+diverses corrections et optimisations
+
 v1.0
 
 Type: adaptation

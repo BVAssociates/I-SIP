@@ -101,7 +101,7 @@ sub run {
 	#  Corps du script
 	###########################################################
 
-	print "I-SIP, Version 1.1-dev\n";
+	print "I-SIP, Version 1.2-dev\n";
 }
 
 exit !run(@ARGV) if !caller;
