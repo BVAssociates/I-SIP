@@ -104,7 +104,7 @@ my %file_definition=(file => {
 				#reopen => 0,
 				autoflush => 0,
 				newline  => 1,
-				maxlevel => 'debug',
+				maxlevel => 'info',
 				timeformat      => '%Y/%m/%d %H:%M:%S',
 				message_layout  => '%T:%L:%S:%m',
 				filename        => $ENV{ISIP_LOG}."/Isip.".timestamp().".log",
@@ -194,7 +194,7 @@ sub tail_log {
 sub delete_log {
 	my $timestamp=shift;
 	
-	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T\d+$/;
+	croak("usage : tail_log(timestamp [, nb_last])") if $timestamp !~ /^\d+T[\d-]+$/;
 	
 	my $logfile=$ENV{ISIP_LOG}."/Isip.$timestamp.log";
 	if (-r $logfile) {
@@ -202,7 +202,7 @@ sub delete_log {
 		unlink($logfile);
 	}
 	else {
-		warn("Aucune log trouvée pour la date $timestamp");
+		warn("Aucune log trouvée pour la date $timestamp ($logfile)");
 	}
 	
 }
