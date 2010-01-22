@@ -138,9 +138,14 @@ sub clone_table {
 	while (my %row=$source->fetch_row()) {
 		$counter++;
 		$sqlite_table->insert_row(%row);
-		#$sqlite_table->commit_transaction() if not $counter % 10000;
+		if (! ($counter % 50000)) {
+			log_info("Commit at $counter");
+			$sqlite_table->{database_handle}->commit();
+			$sqlite_table->{database_handle}->begin_work();
+		}
 	}
 	$sqlite_table->commit_transaction();
+	log_info("copy to Sqlite->".$source->table_name." : OK");
 	
 	return;
 }
