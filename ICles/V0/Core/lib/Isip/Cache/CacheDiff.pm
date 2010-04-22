@@ -126,7 +126,9 @@ sub is_dirty_key() {
 	$table->custom_select_query("SELECT TABLE_NAME,TABLE_KEY, sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
 			GROUP BY TABLE_NAME,TABLE_KEY
-			WHERE TABLE_NAME=$table_name' AND TABLE_KEY='$table_key'");
+			WHERE
+			TABLE_NAME="$table->quote($table_name)."
+			AND TABLE_KEY="$table->quote($table_key));
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -149,7 +151,7 @@ sub load_cache() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	$table->query_condition("TABLE_NAME ='$table_name'");
+	$table->query_condition("TABLE_NAME =".$table->quote($table_name));
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {

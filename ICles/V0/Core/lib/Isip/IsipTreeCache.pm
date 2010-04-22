@@ -65,13 +65,13 @@ sub recurse_key() {
 		croak("key must have ",scalar @table_key_field," fields (get ".scalar @table_key_value.")");
 	}
 	
+	my $table=$self->{isip_env}->open_local_from_histo_table($table_name);
+	
 	# construct table line
 	my @fetch_condition;
 	foreach my $field (@table_key_field) {
-		push @fetch_condition, $field ." = '". shift(@table_key_value)."'";
+		push @fetch_condition, $field ." = ". $table->quote(shift(@table_key_value));
 	}
-	
-	my $table=$self->{isip_env}->open_local_from_histo_table($table_name);
 	
 	$table->isip_rules(IsipRules->new($table_name,$self->{isip_env}));
 	$table->query_condition(@fetch_condition);
@@ -157,7 +157,7 @@ sub _recurse_line_action() {
 				return;
 			}
 			else {
-				push (@condition_array, "$primary_field = '$condition_hash{$primary_field}'");
+				push (@condition_array, "$primary_field = ".$table->quote($condition_hash{$primary_field}) );
 			}
 		}
 

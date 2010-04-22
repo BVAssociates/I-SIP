@@ -186,7 +186,7 @@ while ( my ($date,$text)=each %baselines) {
 	next if not $env->exist_local_table($baseline_name);
 	
 	my $table_baseline = $env->open_local_table($baseline_name, {debug => $debug_level});
-	$table_baseline->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
+	$table_baseline->query_condition("TABLE_KEY = ".$table_baseline->quote($table_key_value)." AND FIELD_NAME =".$table_baseline->quote($field) );
 
 	log_info("récupération de la valeur dans la baseline $date");
 

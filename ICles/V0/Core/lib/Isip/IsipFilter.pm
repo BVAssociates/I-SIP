@@ -142,6 +142,9 @@ sub get_query_condition() {
 			foreach my $filter_value (@filter_list) {
 			
 				my $neg = $filter_value =~ s/^!//;
+				
+				#quirk to escape quote "à la" SQL
+				$filter_value =s/\'/\'\'/g;
 
 				if (not exists $self->{filter_multi}->{$filter}) {
 					
@@ -168,7 +171,8 @@ sub get_field_value() {
 	my $self=shift;
 	my $wanted_field=shift or croak("usage: get_field_value(field)");
 	
-	while ( my ($filter, $field) = each %{$self->{filter_register}}) {
+	my %filter_temp=%{$self->{filter_register}};
+	while ( my ($filter, $field) = each %filter_temp) {
 		if ($field eq $wanted_field) {
 			if (exists $ENV{$filter} and $ENV{$filter} ) {
 				return $ENV{$filter};

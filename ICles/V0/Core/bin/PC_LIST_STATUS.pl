@@ -213,18 +213,6 @@ sub run {
 	#$filter_field='FHCDTRAIT' ; $bv_severite=202;
 	#$filter_value='ACH%' ; $bv_severite=202;
 	##DEBUG
-	foreach my $parent_table ($links->get_parent_tables($table_name) ) {
-		my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);
-		
-		foreach my $foreign_field (keys %foreign_fields) {
-			my $var=$foreign_fields{$foreign_field};
-			if ( exists $ENV{$var} ) {
-				$logger->info("Clef etrangère pour filtrage : $foreign_field = '$ENV{$var}'");
-				push @query_condition, "$foreign_field = '$ENV{$var}'";
-			}
-		}
-	}
-
 
 	# table qui sera affichée
 	my $table_explore;
@@ -236,6 +224,18 @@ sub run {
 	if (not $table_current) {
 		log_info("aucune table à afficher");
 		return 1;
+	}
+	
+	foreach my $parent_table ($links->get_parent_tables($table_name) ) {
+		my %foreign_fields=$links->get_foreign_fields($table_name,$parent_table);
+		
+		foreach my $foreign_field (keys %foreign_fields) {
+			my $var=$foreign_fields{$foreign_field};
+			if ( exists $ENV{$var} ) {
+				$logger->info("Clef etrangère pour filtrage : $foreign_field = '$ENV{$var}'");
+				push @query_condition, "$foreign_field = ".$table_current->quote($ENV{$var});
+			}
+		}
 	}
 
 	my $project_cache;
@@ -340,7 +340,11 @@ sub run {
 		my $string_key=join(',',@row{@keys});
 		
 		# force PROJECT if a child has this PROJECT
-		$row{PROJECT}=$filter->get_field_value("PROJECT") if $project_cache and $project_cache->is_dirty_key($table_name, $string_key);
+		if ($project_cache
+			and $project_cache->is_dirty_key($table_name, $string_key))
+		{
+			$row{PROJECT}=$filter->get_field_value("PROJECT");
+		}
 		
 		# append _dirty to get special icon
 		$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source);

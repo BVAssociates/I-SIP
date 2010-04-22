@@ -118,9 +118,10 @@ sub is_dirty_key() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
-	$table->query_condition("TABLE_NAME ='$table_name'",
-							"TABLE_KEY ='$table_key'",
-							"PROJECT_CHILD ='$project'");
+	$table->query_condition("TABLE_NAME =".$table->quote($table_name),
+							"TABLE_KEY =".$table->quote($table_key),
+							"PROJECT_CHILD =".$table->quote($project),
+						);
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
@@ -154,7 +155,8 @@ sub is_dirty_table() {
 	$table->query_field("NUM_CHILD");
 	$table->custom_select_query("SELECT sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_PROJECT
-			WHERE TABLE_NAME='$table_name' AND PROJECT_CHILD='$project'
+			WHERE TABLE_NAME=".$table->quote($table_name)."
+			AND PROJECT_CHILD=".$table->quote($project)."
 			GROUP BY TABLE_NAME");
 	
 	my $count=0;
@@ -177,7 +179,7 @@ sub load_cache() {
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
-	$table->query_condition("TABLE_NAME ='$table_name'");
+	$table->query_condition("TABLE_NAME =".$table->quote($table_name));
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {

@@ -117,7 +117,7 @@ sub quote()
 	my $string=shift;
 	
 	# in most SQL database ' are escaped by ''
-	$string =~ s/\'/\'\'/;
+	$string =~ s/\'/\'\'/g;
 	return "'".$string."'";
 }
 

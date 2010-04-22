@@ -174,10 +174,10 @@ sub get_dirty_key {
 	$table->query_distinct(1);
 	
 	my @condition;
-	push @condition, "TABLE_NAME='$table_name' ";
+	push @condition, "TABLE_NAME=".$table->quote($table_name);
 	
 	if ( $table_source ) {
-		push @condition, "TABLE_SOURCE='$table_source' ";
+		push @condition, "TABLE_SOURCE=".$table->quote($table_source);
 	}
 	
 	$table->query_condition(@condition);
@@ -237,11 +237,11 @@ sub is_dirty_key() {
 	$table->query_field("TABLE_NAME","TABLE_SOURCE","TABLE_KEY","NUM_CHILD");
 	
 	my @condition;
-	push @condition, "TABLE_NAME='$table_name' ";
-	push @condition, "TABLE_KEY='$table_key'";
-	push @condition, "TABLE_SOURCE <> '$table_name'";
+	push @condition, "TABLE_NAME=".$table->quote($table_name);
+	push @condition, "TABLE_KEY=".$table->quote($table_key);
+	push @condition, "TABLE_SOURCE <> ".$table->quote($table_name);
 	if ($table_source) {
-		push @condition, " TABLE_SOURCE = '$table_source'";
+		push @condition, " TABLE_SOURCE = ".$table->quote($table_source);
 	}
 	
 	$table->query_condition(@condition);
@@ -307,7 +307,7 @@ sub load_cache() {
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	#$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
-	$table->query_condition("TABLE_NAME = '$table_name'");
+	$table->query_condition("TABLE_NAME = ".$table->quote($table_name) );
 	
 	my $count=0;
 	while (my %row=$table->fetch_row) {
