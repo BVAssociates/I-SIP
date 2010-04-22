@@ -110,6 +110,17 @@ sub _execute_select_query() {
 ##  public methods        ##
 ##############################################
 
+# quote and escape special char
+sub quote()
+{
+	my $self=shift;
+	my $string=shift;
+	
+	# in most SQL database ' are escaped by ''
+	$string =~ s/\'/\'\'/;
+	return "'".$string."'";
+}
+
 # 
 sub begin_transaction() {
 	my $self=shift;

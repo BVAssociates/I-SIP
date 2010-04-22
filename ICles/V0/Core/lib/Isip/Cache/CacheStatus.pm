@@ -278,8 +278,7 @@ sub is_dirty_table() {
 	
 	my $cache_select="SELECT TABLE_SOURCE,sum(NUM_CHILD) as NUM_CHILD
 			FROM CACHE_ICON
-			WHERE TABLE_NAME='$table_name'
-			GROUP BY TABLE_SOURCE";
+			WHERE TABLE_NAME= ".$table->quote($table_name)." GROUP BY TABLE_SOURCE";
 
 	$table->custom_select_query($cache_select);
 	
@@ -341,7 +340,11 @@ sub save_cache() {
 		
 			foreach my $dirty_key ( keys %dirty_keys ) {
 			
-				$table->query_condition("TABLE_NAME = '$dirty_table'","TABLE_KEY = '$dirty_key'","TABLE_SOURCE = '$table_source'");
+				$table->query_condition(
+							"TABLE_NAME = ".$table->quote($dirty_table),
+							"TABLE_KEY = ".$table->quote($dirty_key),
+							"TABLE_SOURCE = ".$table->quote($table_source),
+						);
 				
 				my $num_child;
 				while (my %row=$table->fetch_row()) {

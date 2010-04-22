@@ -212,9 +212,10 @@ sub save_cache() {
 
 			# foreach project
 			foreach my $project (keys %projets) {
-				$table->query_condition("TABLE_NAME = '$dirty_table'",
-										"TABLE_KEY = '$dirty_key'",
-										"PROJECT_CHILD = '$project'");
+				$table->query_condition("TABLE_NAME = ".$table->quote($dirty_table),
+										"TABLE_KEY = ".$table->quote($dirty_key),
+										"PROJECT_CHILD = ".$table->quote($project),
+										);
 				
 				my $num_child;
 				while (my %row=$table->fetch_row()) {

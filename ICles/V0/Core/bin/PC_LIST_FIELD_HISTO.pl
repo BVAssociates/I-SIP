@@ -158,7 +158,7 @@ log_info("KEY_VAL=$table_key_value");
 
 # fetch selected row from histo table
 my $table_histo = $env->open_local_table($tablename."_HISTO", {debug => $debug_level});
-$table_histo->query_condition("TABLE_KEY = '$table_key_value' AND FIELD_NAME ='$field'");
+$table_histo->query_condition("TABLE_KEY = ".$table_histo->quote($table_key_value)." AND FIELD_NAME = ".$table_histo->quote($field));
 
 my %field_histo;
 

@@ -253,6 +253,16 @@ sub _error() {
 ##  public methods        ##
 ##############################################
 
+# quote and escape special char
+sub quote()
+{
+	my $self=shift;
+	my $string=shift;
+	
+	$string =~ s/\'/\\'/;
+	return "'".$string."'";
+}
+
 # set custom SQL query
 sub custom_select_query()
 {

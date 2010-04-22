@@ -183,7 +183,10 @@ sub save_cache() {
 		
 			foreach my $dirty_key ( keys %dirty_keys ) {
 			
-				$table->query_condition("TABLE_NAME = '$dirty_table'","TABLE_KEY = '$dirty_key'","TABLE_SOURCE = '$table_source'");
+				$table->query_condition("TABLE_NAME = ".$table->quote($dirty_table),
+							"TABLE_KEY = ".$table->quote($dirty_key),
+							"TABLE_SOURCE = ".$table->quote($table_source),
+						);
 				
 				my $num_child;
 				while (my %row=$table->fetch_row()) {

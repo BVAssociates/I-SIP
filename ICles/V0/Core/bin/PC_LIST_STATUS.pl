@@ -325,7 +325,7 @@ sub run {
 			my %info=$env_sip->get_table_info($table_name);
 			if ($info{root_table} and $ENV{TABLE_NAME} and $ENV{TABLE_NAME} eq $table_name) {
 				log_info("affiche les lignes de la categorie $category");
-				$table_explore->query_condition("CATEGORY = '$category'",$table_explore->query_condition());
+				$table_explore->query_condition("CATEGORY = ".$table_explore->quote($category),$table_explore->query_condition());
 			}
 		}
 	}

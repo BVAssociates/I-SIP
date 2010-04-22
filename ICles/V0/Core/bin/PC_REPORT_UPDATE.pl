@@ -166,7 +166,7 @@ foreach my $environnement (@environnement_list) {
 		
 		my $table_to_check = $env->open_histo_field_table($table_name);
 		$table_to_check->query_key_value($table_key);
-		$table_to_check->query_condition("FIELD_NAME = '$field_name'");
+		$table_to_check->query_condition("FIELD_NAME = ".$table_to_check->quote($field_name));
 		$table_to_check->query_field("ICON", $table_to_check->query_field() );
 
 		$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
