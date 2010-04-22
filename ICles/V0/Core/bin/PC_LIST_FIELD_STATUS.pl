@@ -422,7 +422,8 @@ sub run {
 		while (my %row=$table_status->fetch_row) {
 		
 			if ($row{MEMO}) {
-				$row{MEMO}=decode_memo($row{MEMO});
+				# done in Processor
+				#$row{MEMO}=decode_memo($row{MEMO});
 			}
 			
 			if (not $date_explore) {
