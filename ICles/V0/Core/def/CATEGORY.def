@@ -1,4 +1,4 @@
-COMMAND="PC_LIST_CATEGORY.pl -s, %Environnement% %TABLE_NAME%"
+COMMAND="PC_LIST_CATEGORY -s, %Environnement% %TABLE_NAME%"
 SEP=","
 FORMAT="ICON,CATEGORY"
 SIZE="20s,20s"

@@ -5,7 +5,7 @@ Item~~Explore~expl~perl -e "exit 1 unless not $ENV{FILTER_ICON}"~~Explore~ROOT_T
 
 #Item~~Rapport Complet~expl~~~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
 #Item~~Explorer tout~expl~~~Explore~FIELD_REPORT_COMPARE~0~~Display
-Item~~Rapport Complet~expl~~~ExecuteProcedure~ME_EXEC_JOB -o rapport_diff_%ENV_COMPARE%@%DATE_COMPARE%_%Environnement%@%DATE_EXPLORE%_%Module%.csv PC_REPORT_ENV.pl -e -m %Module% -c%ENV_COMPARE%@%DATE_COMPARE% %Environnement%~0~~Display
+Item~~Rapport Complet~expl~~~ExecuteProcedure~ME_EXEC_JOB -o rapport_diff_%ENV_COMPARE%@%DATE_COMPARE%_%Environnement%@%DATE_EXPLORE%_%Module%.csv PC_REPORT_ENV -e -m %Module% -c%ENV_COMPARE%@%DATE_COMPARE% %Environnement%~0~~Display
 
 #Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~DisplayTable~FIELD_REPORT_COMPARE~0~~Display
 Item~~Rapport sur un projet~expl~~FILTER_PROJECT=getListValue("Choisir un projet",PROJECT_INFO)~ExecuteProcedure~ME_EXEC_JOB -o rapport_diff_%ENV_COMPARE%@%DATE_COMPARE%_%Environnement%@%DATE_EXPLORE%_%Module%.csv PC_REPORT_ENV.pl -e -m %Module% -c%ENV_COMPARE%@%DATE_COMPARE% %Environnement%~0~~Display

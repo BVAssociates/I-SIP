@@ -1,4 +1,4 @@
-COMMAND="PC_LIST_DATE.pl -s@ -b %Environnement%"
+COMMAND="PC_LIST_DATE -s@ -b %Environnement%"
 SEP="@"
 FORMAT="DATE_EXPLORE@DESCRIPTION@BASELINE"
 SIZE="20s@20s@2b"

@@ -154,7 +154,7 @@ sub get_def_table_string($$) {
 	
 	my $string;
 
-	my $def_template = 'COMMAND="PC_LIST_STATUS.pl [% option %] -c %ENV_COMPARE%@%DATE_COMPARE% [% environnement %] [% table %] %DATE_EXPLORE%"
+	my $def_template = 'COMMAND="PC_LIST_STATUS [% option %] -c %ENV_COMPARE%@%DATE_COMPARE% [% environnement %] [% table %] %DATE_EXPLORE%"
 SEP="[% separator %]"
 FORMAT="[% format %]"
 SIZE="[% size %]"
@@ -210,7 +210,7 @@ sub get_def_field_string($$) {
 	my $table_name=shift;
 	my $display_table=get_display_table($table_name);
 	
-	my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS.pl [% environnement %] [% table %] %DATE_EXPLORE%"
+	my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS [% environnement %] [% table %] %DATE_EXPLORE%"
 SEP="@"
 FORMAT="ID@DATE_HISTO@DATE_UPDATE@USER_UPDATE@TABLE_NAME@TABLE_KEY@FIELD_NAME@FIELD_VALUE@COMMENT@STATUS@ICON@TYPE@TEXT@PROJECT@MEMO"
 SIZE="10n@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s@20s"

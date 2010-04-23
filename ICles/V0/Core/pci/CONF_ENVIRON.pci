@@ -2,9 +2,9 @@
 
 
 Item~~Modules~expl~~~Explore~CONF_MODULE~0~~Expand
-Item~Importer~Importer Table d'un autre environnement~adm~~{TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)}{TABLE_IMPORT=getListValue("Nom de la table à importer",TABLE_INFO_ENV)}~ExecuteProcedure~PC_INIT_TABLE.pl -c -i %TABLE_ENV% %Environnement% %TABLE_IMPORT%~0~~Add
-Item~Importer~Importer toutes les Tables d'un autre environnement~adm~~TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)~ExecuteProcedure~PC_IMPORT_TABLE.pl -i %TABLE_ENV% %Environnement%~1~~Add
-Item~Avancé~Recalculer structure complète~adm~~~ExecuteProcedure~PC_GENERATE_MENU.pl %Environnement%~0~~Method
+Item~Importer~Importer Table d'un autre environnement~adm~~{TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)}{TABLE_IMPORT=getListValue("Nom de la table à importer",TABLE_INFO_ENV)}~ExecuteProcedure~PC_INIT_TABLE -c -i %TABLE_ENV% %Environnement% %TABLE_IMPORT%~0~~Add
+Item~Importer~Importer toutes les Tables d'un autre environnement~adm~~TABLE_ENV=getListValue("Environnement de la table à importer",ENVIRON@@Environnement!=%Environnement%)~ExecuteProcedure~PC_IMPORT_TABLE -i %TABLE_ENV% %Environnement%~1~~Add
+Item~Avancé~Recalculer structure complète~adm~~~ExecuteProcedure~PC_GENERATE_MENU %Environnement%~0~~Method
 # tests
 #Item~Test~test STDOUT~dev~~~ExecuteProcedure~test.pl~0~~Add
 #Item~Test~test STDOUT~dev~~~ExecuteProcedure~test~0~~Add
