@@ -291,15 +291,14 @@ sub is_dirty_table() {
 		
 		while (my %row=$table->fetch_row) {
 		
-			# exclude root_table from result
-			# OOPS don't remember why...
+			# exclude virtual root tables from result
 			if ($row{TABLE_NAME} ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
-				#next;
+				next;
 			}
 			
 			if ( $row{NUM_CHILD} ) {
 				# precache tables in memory for next calls
-				$self->{dirty_table}->{ $row{TABLE_SOURCE} } += $row{NUM_CHILD};
+				$self->{dirty_table}->{ $row{TABLE_NAME} } += $row{NUM_CHILD};
 			}
 		}
 	}
