@@ -111,7 +111,6 @@ my $filter=IsipFilter->new();
 $icon =~ s/_dirty//;
 
 my $display_field_menu=0;
-log_info("checking icon=$icon");
 if ($filter->is_display_line(ICON => $icon)) {
 	$display_field_menu=1;
 }

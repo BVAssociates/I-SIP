@@ -2,7 +2,12 @@ package CacheStatus;
 
 use Isip::Cache::CacheInterface;
 use base 'CacheInterface';
-use fields qw(action current_table _rollback_cache);
+use fields qw(
+		action
+		current_table
+		_rollback_cache
+		dirty_table
+	);
 
 use strict;
 use Carp qw(carp croak );
@@ -24,6 +29,7 @@ sub new() {
 	$self->{current_table}="";
 	
 	$self->{_rollback_cache}={};
+	$self->{dirty_table}=undef;
 	
 	return $self;
 }
@@ -270,29 +276,36 @@ sub is_dirty_table() {
 	
 	my $table_name=shift or croak("usage : is_dirty_table(table_name)");
 	
-
-	# check on disk	
-	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
-	#$table->query_condition("TABLE_NAME ='$table_name'","TABLE_KEY ='$table_key'");
-	$table->query_field("TABLE_SOURCE","NUM_CHILD");
+	# check if tables was preloaded
+	if (not defined $self->{dirty_table} ) {
 	
-	my $cache_select="SELECT TABLE_SOURCE,sum(NUM_CHILD) as NUM_CHILD
-			FROM CACHE_ICON
-			WHERE TABLE_NAME= ".$table->quote($table_name)." GROUP BY TABLE_SOURCE";
+		# load information in memory	
+		my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+		$table->query_field("TABLE_NAME", "TABLE_SOURCE", "NUM_CHILD");
+		
+		my $cache_select="SELECT TABLE_NAME, TABLE_SOURCE,sum(NUM_CHILD) as NUM_CHILD ";
+		$cache_select.="FROM CACHE_ICON ";
+		$cache_select.="GROUP BY TABLE_NAME, TABLE_SOURCE ";
 
-	$table->custom_select_query($cache_select);
-	
-	my $count=0;
-	while (my %row=$table->fetch_row) {
-		# exclude root_table from result
-		if ($table_name ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
-			next;
+		$table->custom_select_query($cache_select);
+		
+		while (my %row=$table->fetch_row) {
+		
+			# exclude root_table from result
+			# OOPS don't remember why...
+			if ($row{TABLE_NAME} ne $row{TABLE_SOURCE} and $self->{isip_env}->is_root_table($row{TABLE_SOURCE})) {
+				#next;
+			}
+			
+			if ( $row{NUM_CHILD} ) {
+				# precache tables in memory for next calls
+				$self->{dirty_table}->{ $row{TABLE_SOURCE} } += $row{NUM_CHILD};
+			}
 		}
-		$count += $row{NUM_CHILD} if $row{NUM_CHILD};
 	}
 
-	if ($count > 0) {
-		return $count;
+	if ($self->{dirty_table}->{$table_name} > 0) {
+		return $self->{dirty_table}->{$table_name};
 	}
 	else {
 		return 0;
