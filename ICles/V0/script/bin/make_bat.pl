@@ -19,6 +19,20 @@ if (not exists $ENV{BV_HOME} or not exists $ENV{ISIP_HOME}) {
 # CONFIG
 ############
 
+my %extension_for_converter=(
+		perl2exe  => ".exe",
+		pl2bat  => ".bat",
+	);
+
+my %param_for_converter=(
+		perl2exe  => "-I",
+		pl2bat  => "",
+	);
+	
+my $converter=shift;
+if ( ! grep { $_ eq $converter } keys %extension_for_converter)  {
+	die( "usage: ".basename($0)." (".join('|', keys %extension_for_converter).")" );
+}
 
 my $bat_dir=canonpath ("$ENV{ISIP_HOME}/V0/bat/bin");
 
@@ -40,7 +54,7 @@ sub wanted {
 	my %already_done;
 	if ( $File::Find::name =~ /^(.+)\.pl$/i ) {
 		
-		my $bat_name=$1.".bat";
+		my $bat_name=$1.$extension_for_converter{$converter};
 		
 		if ( $already_done{$_} ) {
 			warn "duplicate $_!";
@@ -49,16 +63,19 @@ sub wanted {
 			$already_done{$_}++;
 		}
 		print $File::Find::name."\n";
-		system('pl2bat',$File::Find::name);
+		system($converter,$File::Find::name);
 		
 		move($bat_name, $bat_dir) or die "$bat_dir : $!";
 	}
 	
 }
 
+# nettoyage
 my $glob_dir=$bat_dir;
 $glob_dir =~ s/\\/\//g;
 $glob_dir =~ s/(\s)/\\$1/g;
-unlink $_  or die $! foreach glob("$glob_dir/*.bat");
+foreach my $extension ( values %extension_for_converter) {
+	unlink $_  or die $! foreach glob("$glob_dir/*".$extension);
+}
 
 find( { wanted => \&wanted}, @find_dir);
