@@ -27,7 +27,7 @@ sub new (){
 	$self->{deffile} = undef;
 	$self->{header} = undef;
 	$self->{type} = "FT";
-	$self->{separator} = undef;
+	$self->{separator} = "\t";
 	$self->{command} = undef;
 	$self->{file} = $self->{name};
 	$self->{key} = [];
@@ -165,42 +165,52 @@ sub _eval_vars() {
 	return $line;
 }
 
+# "Search_File" implementation
+sub get_bv_file() {
+	my $self = shift;
+
+	use File::Spec;
+	my $file_name = shift or croak("usage: search_def(file_name [,extension] )");
+	my $file_extension = shift;
+	
+	$file_extension="" if not defined $file_extension;
+	
+	my %path_for_extension = (
+			".def" => $ENV{BV_DEFPATH},
+			"" => $ENV{BV_TABPATH},
+			".pci" => $ENV{BV_PCIPATH},
+		);
+	
+	my @bv_path = split( /;/, $path_for_extension{$file_extension} );
+	
+	foreach my $dir ( @bv_path ) {
+	
+		my $found_file = File::Spec->catfile($dir, $file_name.$file_extension);
+		if ( -r $found_file ) {
+			return $found_file;
+		}
+	}
+	
+	return;
+}
+
 # compute definition of Table by the .def file
 sub define()
 {
     my $self = shift;
-	
-=begin comment opening DEF file
-	
-	# look for the DEF file with the Search_file command
-	my @search_output;
-	my $search_command="Search_File -d " . $self->{name};
 
-	@search_output=`$search_command `;
-	if ($? == -1) {
-		croak "failed to execute: $!\n";
-    }
-    elsif (($? >> 8) != 0) {
-		croak sprintf ("'$search_command' died with signal %d, %s",($?  >> 8))
-    }
-	
-	$self->{deffile}=$search_output[0];
-
-	open DEFINE_FILE, "$self->{deffile}"  or croak "Error reading $self->{deffile} : $!";
-	
-=end comment
-=cut
-	
 	$self->_debug("Define_Table $self->{name}");
-	open DEFINE_FILE, "Define_Table $self->{name} |"  or croak "Error reading Define_Table $self->{name} | : $!";
+	my $def_file=$self->get_bv_file($self->{name}, ".def");
+	open DEFINE_FILE, '<', $def_file  or croak "Error reading $def_file : $!";
+	
 	
 	# Temp vars
 	my @size_array;
 	my @row_array;
 	
 	my $rex_before=qr/^(?:|.*\s)/;
-	#my $rex_after=qr/\s*=\s*[\'\"]?(.*)[\'\"]?(?:|;.*)$/;
-	my $rex_after=qr/\s*=\s*(.*)$/;
+	my $rex_after=qr/\s*=\s*(['"])(.*)\1\s*$/;
+	#my $rex_after=qr/\s*=\s*(.*)$/;
 	
 	# parse output
 	while (<DEFINE_FILE>) {
@@ -212,18 +222,22 @@ sub define()
 
 		# parse the file
 				
-		$self->{header} = $1 if /${rex_before}HEADER${rex_after}/;
-		$self->{type} = $1 if /${rex_before}TYPE${rex_after}/;
-		$self->separator($1) if /${rex_before}SEP${rex_after}/;
+		$self->{header} = $2 if /${rex_before}HEADER${rex_after}/;
+		$self->{type} = $2 if /${rex_before}TYPE${rex_after}/;
+		$self->{separator} = $2 if /${rex_before}SEP${rex_after}/;
 		
-		$self->{file} = $1 if /${rex_before}FILE${rex_after}/;
-		$self->{sort} = $1 if /${rex_before}SORT${rex_after}/;
-		$self->{key} = [ split(/\Q$self->{separator}/,$1) ] if /${rex_before}KEY${rex_after}/;
-		$self->{not_null} = [ split(/\Q$self->{separator}/,$1) ] if /${rex_before}NOT_NULL${rex_after}/;
+		$self->{file} = $2 if /${rex_before}FILE${rex_after}/;
+		$self->{command} = $2 if /${rex_before}COMMAND${rex_after}/;
+		$self->{sort} = $2 if /${rex_before}SORT${rex_after}/;
+		$self->{key} = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}KEY${rex_after}/;
+		$self->{not_null} = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}NOT_NULL${rex_after}/;
 		
-		$self->{field} = [ split(/\Q$self->{separator}/,$1) ] if /${rex_before}FORMAT${rex_after}/;
-		@size_array =  split(/\Q$self->{separator}/,$1)  if /${rex_before}SIZE${rex_after}/;
-		@row_array =  split(/\Q$self->{separator}/,$1)  if /${rex_before}ROW${rex_after}/;
+		# prepare I-TOOLS separator
+		my $separator=qr/\s*\Q$self->{separator}\E\s*/;
+		
+		$self->{field} = [ split(/$separator/, $2) ] if /${rex_before}FORMAT${rex_after}/;
+		@size_array =  split(/$separator/, $2)  if /${rex_before}SIZE${rex_after}/;
+		@row_array =  split(/$separator/, $2)  if /${rex_before}ROW${rex_after}/;
 	}
 	
 	# convert Array into Dictonary
@@ -232,7 +246,21 @@ sub define()
 		$self->{row}->{$_} = shift @row_array;
 	}
 	
-	close DEFINE_FILE or croak "Error reading Define_Table $self->{name} | : $!";;
+	# optimisation COMMAND="Select -s from Table"
+	if ( $self->{command} and $self->{command} =~ /^\s*Select\s+\-s\s+\*?\s*from\s+(\S+)\s*$/i ) {
+		$self->{file}    = $self->get_bv_file($1);
+		$self->{command} = undef;
+	}
+	
+	
+	# default table when no COMMAND neither FILE
+	if ( ! $self->{command} and ! $self->{file} ) {
+		$self->{file}=$self->get_bv_file($self->{name});
+	}
+	
+	croak("Impossible d'obtenir la source de donnée de $self->{name}") if ! $self->{file} and ! $self->{command};
+	
+	close DEFINE_FILE or croak "Error closing $def_file : $!";
 }
 
 

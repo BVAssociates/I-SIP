@@ -33,32 +33,47 @@ sub _open_table_file {
 	$table_file =~s/%(\w+)%/$ENV{$1}/g;
 	
 	if ( not $table_file) {
-		croak("fichier tab non défini ou table virtuelle : ".$self->table_name);
+		#croak("fichier tab non défini ou table virtuelle : ".$self->table_name);
+		
+		croak("fichier tab ou command manquant") if not $self->{define}->command();
+		
+		my $command = $self->{define}->command();
+		# interprets vars
+		$command =~s/\$\{(\w+)\}/$ENV{$1}/g;
+		$command =~s/\$(\w+)/$ENV{$1}/g;
+		$command =~s/%(\w+)%/$ENV{$1}/g;
+		
+		my $command_pipe;
+		open ( $command_pipe, "$command |") or die "can't fork $command : $!";
+		
+		$self->{select_descriptor}=$command_pipe;
 	}
-	
-	if ( not -e $table_file) {
-		croak("fichier tab introuvable : ".$table_file);
+	else {
+		
+		if ( not -e $table_file) {
+			croak("fichier tab introuvable : ".$table_file);
+		}
+		
+		$logger->info("opening ITools table ".$self->table_name);
+		
+		sysopen(my $table_fh, $table_file, $mode)
+		##remplace ouverture simple par idiome Perl de lock
+		#open( my $table_fh, "+< $table_file")
+			or die "can't open $table_file: $!";
+		
+		# autoflush $table_fh (idiome Perl)
+		my $stdout = select($table_fh); # STDOUT->$table_fh
+		$| = 1;                         # autoflush STDOUT
+		select ($stdout);               # restore STDOUT
+		
+		# lock exclusif avec attente
+		flock($table_fh, $lock_mode)
+			or die "can't write-lock ".$self->table_name().": ".$!;
+		seek($table_fh, 0, 0)
+			or die "can't rewind ".$self->table_name().": ".$!;
+		
+		$self->{select_descriptor}=$table_fh;
 	}
-	
-	$logger->info("opening ITools table ".$self->table_name);
-	
-	sysopen(my $table_fh, $table_file, $mode)
-	##remplace ouverture simple par idiome Perl de lock
-	#open( my $table_fh, "+< $table_file")
-        or die "can't open $table_file: $!";
-    
-	# autoflush $table_fh (idiome Perl)
-    my $stdout = select($table_fh); # STDOUT->$table_fh
-	$| = 1;                         # autoflush STDOUT
-	select ($stdout);               # restore STDOUT
-	
-	# lock exclusif avec attente
-    flock($table_fh, $lock_mode)
-        or die "can't write-lock ".$self->table_name().": ".$!;
-	seek($table_fh, 0, 0)
-        or die "can't rewind ".$self->table_name().": ".$!;
-	
-	$self->{select_descriptor}=$table_fh;
 }
 
 sub _write_table_file {
@@ -103,6 +118,42 @@ sub _close_table_file {
 ####################################################
 # public methods
 ####################################################
+
+
+#get hash of row by one based on query
+sub fetch_row_pp()
+{
+	my $self = shift;
+
+	my @row=$self->fetch_row_array_pp();
+	my %row_object;
+	
+	return () if not @row;
+	
+	my $regex=$self->{_dynamic_field_re};
+	foreach my $temp_field (@{ $self->{query_field} }) {
+		if ($temp_field =~ $regex) {
+			$row_object{$temp_field}="";
+		}
+		else {
+			croak "fetch_row_array returned wrong number of values (need more field)" if not @row;
+			$row_object{$temp_field}=shift @row;
+		}
+	}
+	
+	# internal test
+	croak "fetch_row_array returned wrong number of values (too much field)" if  @row;
+
+	#for (my $i=0; $i < @real_fields; $i++) {
+	#	$row_object{$real_fields[$i]}=$row[$i];
+	#}
+	#for (@dyna_fields) {
+	#	$row_object{$_}="";
+	#}
+		
+	return %row_object;
+}
+
 
 # recupere les données de la table ligne à ligne
 # renvoie un tableau vide à la fin du fichier

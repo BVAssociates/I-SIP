@@ -296,13 +296,13 @@ sub update_row() {
 	my @conditions;
 	foreach my $field (keys %row) {
 		if ( grep(/^$field$/,@primary_keys) ) {
-			push @conditions,$field."=".$self->{database_handle}->quote($row{$field});
+			push @conditions,$field."=".$self->quote($row{$field});
 		} else {
 			if (not defined $row{$field}) {
 				$row{$field} ="NULL";
 			}
 			elsif (not $row{$field} or $row{$field} !~ s/^sql\((.+)\)$/$1/) {
-				$row{$field} = $self->{database_handle}->quote($row{$field});
+				$row{$field} = $self->quote($row{$field});
 			}
 			push @updated_fields,$field."=".$row{$field};
 		}
