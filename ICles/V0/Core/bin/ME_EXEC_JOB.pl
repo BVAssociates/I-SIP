@@ -108,8 +108,6 @@ if ( @ARGV < 1) {
 my $progname=shift;
 my @args=@ARGV;
 
-$progname=$progname.".pl" if not $progname =~ /\.pl$/;
-
 #  Corps du script
 ###########################################################
 
