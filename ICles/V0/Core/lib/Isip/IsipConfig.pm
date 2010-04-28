@@ -51,7 +51,7 @@ sub new() {
 
 	#store information about Environnements and ODBC Datasouces
 	my $table_environ=ITools->open("ENVIRON",$self->{options});
-	while (my %row=$table_environ->fetch_row) {
+	while (my %row=$table_environ->fetch_row_pp) {
 		$self->{info_env}->{$row{Environnement}}->{description}=$row{Description};
 		$self->{info_env}->{$row{Environnement}}->{defaut_datasource}=$row{DEFAUT_ODBC};
 		$self->{info_env}->{$row{Environnement}}->{defaut_library}=$row{DEFAUT_LIBRARY};
@@ -60,7 +60,7 @@ sub new() {
 
 	#store information about Modules and DB2 Libraries
 	my $table_module=ITools->open("MODULE",$self->{options});
-	while (my %row=$table_module->fetch_row) {
+	while (my %row=$table_module->fetch_row_pp) {
 		$self->{info_module}->{$row{Module}}->{description}=$row{Description};
 		$self->{info_module}->{$row{Module}}->{library_type}=$row{BIBTYP};
 	}
