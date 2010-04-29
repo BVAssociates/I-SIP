@@ -27,11 +27,6 @@ sub _open_table_file {
 	# recupere le chemin de la table
 	my $table_file = $self->{define}->file();
 	
-	# interprets vars
-	$table_file =~s/\$\{(\w+)\}/$ENV{$1}/g;
-	$table_file =~s/\$(\w+)/$ENV{$1}/g;
-	$table_file =~s/%(\w+)%/$ENV{$1}/g;
-	
 	if ( not $table_file) {
 		#croak("fichier tab non défini ou table virtuelle : ".$self->table_name);
 		
@@ -49,6 +44,11 @@ sub _open_table_file {
 		$self->{select_descriptor}=$command_pipe;
 	}
 	else {
+		
+		# interprets vars
+		$table_file =~s/\$\{(\w+)\}/$ENV{$1}/g;
+		$table_file =~s/\$(\w+)/$ENV{$1}/g;
+		$table_file =~s/%(\w+)%/$ENV{$1}/g;
 		
 		if ( not -e $table_file) {
 			croak("fichier tab introuvable : ".$table_file);

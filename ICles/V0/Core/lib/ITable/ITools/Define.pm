@@ -29,7 +29,7 @@ sub new (){
 	$self->{type} = "FT";
 	$self->{separator} = "\t";
 	$self->{command} = undef;
-	$self->{file} = $self->{name};
+	$self->{file} = undef;
 	$self->{key} = [];
 	$self->{field}= [];
 	$self->{size}= {} ;
