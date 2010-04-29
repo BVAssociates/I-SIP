@@ -127,6 +127,10 @@ foreach my $env (@env_list) {
 	$pid = fork() if $fork;
 	if (!$pid) {
 		# child process
+		
+		# quirks : sleep little time to avoid obvious locks
+		select(undef, undef, undef, rand(10));
+		
 		log_info("nettoyage avant collecte de l'environnement $env");
 		eval { pc_clean_baseline::run($env) };
 		if ($@) {
