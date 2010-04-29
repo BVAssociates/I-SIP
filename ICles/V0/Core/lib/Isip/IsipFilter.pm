@@ -71,6 +71,10 @@ sub _log_filter {
 	
 	while ( my ($filter, $field) = each %{$self->{filter_register}}) {
 		if (exists $ENV{$filter} and $ENV{$filter}) {
+		
+			# quirk : something wrong with encoding when using pl2bat
+			$ENV{$filter}=encode("cp850",$ENV{$filter});
+		
 			$logger->notice("Filtrage activé pour $filter=$ENV{$filter}");
 		}
 	}
@@ -170,6 +174,8 @@ sub get_query_condition() {
 sub get_field_value() {
 	my $self=shift;
 	my $wanted_field=shift or croak("usage: get_field_value(field)");
+	
+	use Encode;
 	
 	my %filter_temp=%{$self->{filter_register}};
 	while ( my ($filter, $field) = each %filter_temp) {
