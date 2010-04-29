@@ -132,7 +132,7 @@ sub run {
 	my $source_environ=ITools->open("SOURCE_ENVIRON");
 	$source_environ->query_condition("ENVIRON = '$environnement'");
 
-	my %env_row=$source_environ->fetch_row();
+	my %env_row=$source_environ->fetch_row_pp();
 	undef $source_environ;
 
 	if (not %env_row) {
