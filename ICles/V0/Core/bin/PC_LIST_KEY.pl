@@ -125,7 +125,7 @@ my $env=Environnement->new($environnement);
 # recupère les tables qui ont une clef étrangère sur la table
 # restricton utile seulement sur les ROOT_TABLE
 my %parent_tables;
-if ($env->is_root_table($table_foreign) && $table_foreign) {
+if ($table_foreign && $env->is_root_table($table_foreign) ) {
 	my $column_table=$env->open_local_table($table_foreign."_COLUMN");
 	
 	while (my %row=$column_table->fetch_row) {
@@ -147,7 +147,13 @@ else {
 # affiche les clefs primaire de la liste des tables
 print join($separator, ('') x 2)."\n";
 foreach my $table (@table_list) {
-	my $column_table=$env->open_local_table($table."_COLUMN");
+	my $column_table=eval { $env->open_local_table($table."_COLUMN") };
+	# traitement d'une exception
+	if ($@) {
+		$logger->warning("Réference à une table inconnue : $table_foreign");
+		next;
+	}
+	
 	while (my %row=$column_table->fetch_row) {		
 		print join($separator,@row{$column_table->query_field})."\n" if $row{PRIMARY_KEY};
 	}

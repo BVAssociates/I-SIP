@@ -454,9 +454,9 @@ sub open_local_from_histo_table() {
 	}
 	
 	my $options=shift;
-	$options->{columns}=$self->get_columns($table_name);
+	eval { $options->{columns}=$self->get_columns($table_name) };
 	if ( $@ ) {
-		croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}.": $@");
+		croak("Impossible d'ouvrir $table_name dans ".$self->{environnement}." : $@");
 	}
 	
 	my $table_histo;

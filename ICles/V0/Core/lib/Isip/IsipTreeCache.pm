@@ -136,7 +136,11 @@ sub _recurse_line_action() {
 		my %foreign_keys=%{$parent_hash{$parent_table}};
 		
 		
-		my $table=$self->{isip_env}->open_local_from_histo_table($parent_table);
+		my $table= eval { $self->{isip_env}->open_local_from_histo_table($parent_table) };
+		if ($@) {
+			$logger->warning("$table_name : Impossible d'acceder à la table parente $parent_table, veuillez verifier la configuration");
+			next;
+		}
 		
 		$table->isip_rules(IsipRules->new($parent_table,$self->{isip_env}));
 		$table->query_field("ICON",$table->query_field());
