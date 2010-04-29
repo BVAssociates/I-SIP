@@ -272,6 +272,102 @@ sub get_links_menu() {
 	return $link_clone;
 }
 
+# check table tree
+# arg1 : check ODBC connexion if True
+# return list of bad tables
+# return undef if OK
+sub check_bad_table() {
+	my $self=shift;
+	
+	my $opt_source=shift;
+	
+	my %table_depend;
+	my %table_ok;
+	
+	foreach my $table_name ( $self->get_table_list() ) {
+		
+		$table_ok{$table_name} = 0;
+		
+		#check base
+		$logger->info($self->{environnement}.":Test connexion locale à $table_name");
+		my $table = eval { $self->open_local_from_histo_table($table_name); };
+		if ($@) {
+			$logger->warning($self->{environnement}.":Impossible d'acceder à $table_name : ".$@);
+			next;
+		}
+		
+		# check columns
+		$logger->info($self->{environnement}.":Test colonnes locale de $table_name");
+		my $column = eval { $self->get_columns($table_name) };
+		if ($@) {
+			$logger->warning($self->{environnement}.":Impossible d'acceder aux colonnes de $table_name");
+			next;
+		}
+		
+		if ( $opt_source ) {
+			#check ODBC
+			$logger->info($self->{environnement}.":Test connexion ODBC à $table_name");
+			my $table = eval { $self->open_source_table($table_name); };
+			if ($@) {
+				$logger->warning($self->{environnement}.":Impossible d'acceder à la connexion ODBC de $table_name : ".$@);
+				next;
+			}
+		}
+		
+		# store dependent tables
+		my @table_depend = $column->get_links()->get_parent_tables($table_name);
+		foreach my $depend_table (@table_depend) {
+			if ( $table_depend{ $depend_table } ) {
+				$table_depend{ $depend_table } .= ",".$table_name;
+			}
+			else {
+				$table_depend{ $depend_table } = $table_name;
+			}
+		}
+		
+		# everything's good
+		$table_ok{$table_name} = 1;
+	}
+	
+	foreach my $table_name ( keys %table_depend) {
+	
+		# check on new tables (should always append)
+		if ( not exists $table_ok{ $table_name } ) {
+		
+			$table_ok{$table_name} = 0;
+			#check base
+			$logger->info($self->{environnement}.":Test connexion locale à $table_name");
+			my $table = eval { $self->open_histo_from_local_table($table_name); };
+			if ($@) {
+				$logger->warning($self->{environnement}.":Impossible d'acceder à la table locale $table_name (dependance de $table_depend{$table_name})");
+				next;
+			}
+			
+			# check columns
+			$logger->info($self->{environnement}.":Test colonnes locale de $table_name");
+			my $column = eval { $self->get_columns($table_name) };
+			if ($@) {
+				$logger->warning($self->{environnement}.":Impossible d'acceder aux colonnes de $table_name (dependance de $table_depend{$table_name})");
+				next;
+			}
+			
+			if ( $opt_source ) {
+				#check base
+				$logger->info($self->{environnement}.":Test connexion ODBC à $table_name");
+				my $table = eval { $self->open_source_table($table_name); };
+				if ($@) {
+					$logger->warning($self->{environnement}.":Impossible d'acceder à la connexion ODBC $table_name (dependance de $table_depend{$table_name}) (dependance de $table_depend{$table_name})");
+					next;
+				}
+			}
+			
+			$table_ok{$table_name} = 1;
+		}
+	}
+	
+	return grep { $table_ok{$_} == 0 } keys %table_ok;
+}
+
 #found the table primary key
 sub get_table_key() {
 	my $self = shift;
@@ -280,7 +376,10 @@ sub get_table_key() {
 	my @key;
 	
 	# fixed key for XML sources
-	if ($self->{info_table}->{$tablename}->{type_source} eq "XML") {
+	if (not exists $self->{info_table}->{$tablename}) {
+		return;
+	}
+	elsif ($self->{info_table}->{$tablename}->{type_source} eq "XML") {
 		@key= "xml_path";
 	} 
 	else {

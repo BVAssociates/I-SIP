@@ -132,6 +132,12 @@ my %table_info_save=$env_sip->get_table_info($table_name);
 
 log_erreur("$table_name est inconnue dans $environnement") if not %table_info_save;
 
+my @dependant_table = $env_sip->get_links()->get_child_tables($table_name);
+
+if ( @dependant_table ) {
+	log_erreur("Impossible de supprimer $table_name car les tables suivantes ont une clef étrangère sur cette table : <".join(', ', @dependant_table).">. Retirez ces dependances et réessayez.");
+}
+
 
 #######################
 # suppression fichier physique

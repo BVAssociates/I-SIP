@@ -11,4 +11,6 @@ call "%~dp0\..\..\..\..\..\Portal\product\conf\IsisPortal_WIN32.bat"
 
 
 echo verification de l'etat
-PC_ISIP_STATUS -t IsisPortalV202_ISIP
+PC_ISIP_STATUS -tf -sIsisPortalV202_ISIP
+
+timeout /T 100

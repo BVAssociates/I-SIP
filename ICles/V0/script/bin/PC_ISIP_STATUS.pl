@@ -17,7 +17,7 @@ PC_EXEC_SQL - Execute une requete SQL
 
 =head1 SYNOPSIS
 
- PC_ISIP_STATUS.pl [-h] [-v] [-f] [-t]
+ PC_ISIP_STATUS.pl [-h] [-v] [-s win_service] [-t [-f] ]
  
 =head1 DESCRIPTION
 
@@ -39,9 +39,11 @@ PC_EXEC_SQL - Execute une requete SQL
 
 =item -v : Mode verbeux
 
-=item -t : diagnostic technique
+=item -s : verifie l'etat du service
 
-=item -f : diagnostic fonctionnel
+=item -t : diagnostic base locale
+
+=item -f : diagnostic connexion ODBC
 
 =back
 
@@ -99,26 +101,30 @@ sub run {
 	log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvtf', \%opts) or usage($debug_level+1);
+	getopts('hvtfs:', \%opts) or usage($debug_level+1);
 
 	$debug_level = 1 if $opts{v};
 
 	usage($debug_level+1) if $opts{h};
 
-	my $check_connection=$opts{t};
-	my $check_all_table=$opts{f};
+	my $winservice_name=$opts{s};
+	my $check_local=$opts{t};
+	my $check_remote=$opts{f};
 
+	if ( $check_remote and ! $check_local ) {
+		usage($debug_level);
+		sortie(202);
+	}
 
 	#  Traitement des arguments
 	###########################################################
 
-	if ( @ARGV < 1 ) {
+	if ( @ARGV < 0 ) {
 		log_info("Nombre d'argument incorrect (".@ARGV.")");
 		usage($debug_level);
 		sortie(202);
 	}
 
-	my $winservice_name=shift @ARGV;
 
 	#  Corps du script
 	###########################################################
@@ -127,79 +133,49 @@ sub run {
 
 	use Isip::Environnement;
 	use Isip::IsipConfig;
-
-	# test du portail
-	my $winservice_check=`net start |findstr $winservice_name`;
-	if ( not $winservice_check ) {
-		$logger->error("Service Portail $winservice_name\t: OFF");
-		$service_off++;
-	}
-	else {
 	
-		$logger->notice("Service Portail $winservice_name\t: ON");
+	$logger->notice("Debut de la verification");
 
+	if ( $winservice_name ) {
+		# test du portail
+		my $winservice_check=`net start |findstr $winservice_name`;
+		
+		if ( $winservice_check ) {
+			$logger->notice("Service Portail $winservice_name\t: ON");
+		}
+		else{
+			$logger->error("Service Portail $winservice_name\t: OFF");
+			$error_count++;
+		}
+	}
+	
+
+	if ( $check_local ) {
 		my $config_sip = IsipConfig->new();
 		my @environnement_list = $config_sip->get_environnement_list();
 
-		if ( $check_connection or $check_all_table ) {
+		
+		foreach my $environnement ( sort @environnement_list ) {
 			
-			foreach my $environnement ( sort @environnement_list ) {
-				
-				my $env = eval { Environnement->new($environnement) };
-				if ( $@ ) {
-					$logger->error($@);
-					$logger->error( "$environnement \t: ERROR" );
-					$error_count++;
-					next;
-				}
-				else {
-					$logger->info( "$environnement \t: OK" );
-				}
-				
-				my @list_table=$env->get_table_list();
-				
-				TABLE:
-				foreach my $table_name (sort @list_table) {
-					
-					if ( $check_all_table ) {
-						$logger->notice("test de connexion ODBC pour $table_name sur $environnement");
-					}
-					else {
-						$logger->notice("test de connexion ODBC sur $environnement");
-					}
-					
-					my $source_table=eval { $env->open_source_table($table_name) };
-					if ( not $source_table) {
-						$logger->error($@) if $@;
-						$logger->error( "$environnement.$table_name (ODBC) \t: ERROR" );
-						$error_count++;
-					}
-					else {
-						$logger->info( "$environnement.$table_name (ODBC) \t: OK" );
-					}
-					
-					if ( $check_all_table ) {
-						$logger->notice("test de la base locale pour $table_name sur $environnement");
-					}
-					else {
-						$logger->notice("test de la base locale sur $environnement");
-					}
-					
-					my $histo_table=eval { $env->open_local_from_histo_table($table_name) };
-					if ( not $histo_table) {
-						$logger->error($@) if $@;
-						$logger->warning( "$environnement.$table_name (local) \t: ERROR" );
-						$error_count++;
-					}
-					else {
-						$logger->info( "$environnement.$table_name (local) \t: OK" );
-					}
-
-					# on ne verifie que la première table si pas de check complet
-					if ( not $check_all_table ) {
-						last TABLE;
-					}
-				}
+			my $env = eval { Environnement->new($environnement) };
+			if ( $@ ) {
+				$logger->error($@);
+				$logger->error( "$environnement \t: ERROR" );
+				$error_count++;
+				next;
+			}
+			else {
+				$logger->info( "$environnement \t: OK" );
+			}
+			
+			my $tmp_error_count = $env->check_bad_table($check_remote);
+			
+			if ( $tmp_error_count ) {
+				$logger->error("tables de $environnement \t: KO");
+				$error_count += $tmp_error_count
+			}
+			else {
+				$logger->error("tables de $environnement \t: OK");
 			}
 		}
 	}
@@ -207,18 +183,14 @@ sub run {
 	
 	if ( $error_count ) {
 		$logger->notice("---------------------------------");
-		$logger->notice("Etat de I-SIP \t: ERROR");
-	}
-	elsif ( $service_off ) {
-		$logger->notice("---------------------------------");
-		$logger->notice("Etat de I-SIP \t: OFF");
+		$logger->notice("Etat de I-SIP \t: ERROR ($error_count)");
 	}
 	else {
 		$logger->notice("---------------------------------");
-		$logger->notice("Etat de I-SIP \t: ON");
+		$logger->notice("Etat de I-SIP \t: OK");
 	}
 	
-return $error_count;
+return !$error_count;
 # END RUN
 }
 

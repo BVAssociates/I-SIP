@@ -10,6 +10,7 @@ Item~Configuration SIP~Supprimer Environnements~adm~~VAL_ENVIRON=getListValue("E
 Item~Configuration SIP~Administrer Utilisateurs~adm~~~Administrate~PortalAccess~0~~Configure
 Item~Configuration SIP~Administrer Modules~adm~~~Administrate~CONF_MODULE~0~~Configure
 Item~Configuration SIP~Administrer Types de Modules~adm~~~Administrate~CONF_MODULE_TYPE~0~~Configure
+Item~Configuration SIP~Verifier configuration globale~adm~~~ExecuteProcedure~PC_ISIP_STATUS -t~0~~StatusOther
 
 Item~Jobs~Repertoire d'export~dev~~~OpenURL~%ISIP_EXPORT%~0~~Configure
 Item~Jobs~Jobs en cours~expl~~~DisplayTable~JOBS_STAT~0~~Configure
