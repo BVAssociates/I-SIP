@@ -62,7 +62,7 @@ sub wanted {
 		else {
 			$already_done{$_}++;
 		}
-		print $File::Find::name."\n";
+		#print $File::Find::name."\n";
 		system($converter,$File::Find::name);
 		
 		move($bat_name, $bat_dir) or die "$bat_dir : $!";
@@ -75,7 +75,7 @@ my $glob_dir=$bat_dir;
 $glob_dir =~ s/\\/\//g;
 $glob_dir =~ s/(\s)/\\$1/g;
 foreach my $extension ( values %extension_for_converter) {
-	unlink $_  or die $! foreach glob("$glob_dir/*".$extension);
+	unlink $_  or warn ("Impossible de supprimer $_ : $!") foreach glob("$glob_dir/*".$extension);
 }
 
 find( { wanted => \&wanted}, @find_dir);
