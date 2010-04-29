@@ -123,13 +123,17 @@ select($old_fh);
 
 my $return_code=0;
 my $pid=0;
+my $sleep_time=0;
 foreach my $env (@env_list) {
+
+	$sleep_time += 5;
+	
 	$pid = fork() if $fork;
 	if (!$pid) {
 		# child process
 		
 		# quirks : sleep little time to avoid obvious locks
-		select(undef, undef, undef, rand(10));
+		sleep $sleep_time;
 		
 		log_info("nettoyage avant collecte de l'environnement $env");
 		eval { pc_clean_baseline::run($env) };
@@ -147,7 +151,6 @@ foreach my $env (@env_list) {
 		log_info("Terminé pour l'environnement $env avec le code $return_code");
 		last if $fork;
 	}
-	sleep 2;
 }
 
 if ($fork and $pid) {
