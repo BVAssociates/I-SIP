@@ -38,7 +38,7 @@ my $bat_dir=canonpath ("$ENV{ISIP_HOME}/V0/bat/bin");
 
 my @find_dir=("$ENV{ISIP_HOME}/V0/");
 
-my @exclude=("/batch/", "/old/");
+my @exclude=("/batch/", "/old/", "/.svn");
 
 ############
 # MAIN
@@ -55,6 +55,7 @@ sub wanted {
 	if ( $File::Find::name =~ /^(.+)\.pl$/i ) {
 		
 		my $bat_name=$1.$extension_for_converter{$converter};
+		my $bat_dest=$bat_dir."/".basename($1).$extension_for_converter{$converter};
 		
 		if ( $already_done{$_} ) {
 			warn "duplicate $_!";
@@ -62,20 +63,23 @@ sub wanted {
 		else {
 			$already_done{$_}++;
 		}
-		#print $File::Find::name."\n";
+		
+		if ( -r $bat_dest ) {
+			my $time_ori = (stat($File::Find::name))[9];
+			my $time_new = (stat($bat_dest))[9];
+			
+			if ( $time_ori < $time_new ) {
+				return;
+			}
+		}
+				
+		print $File::Find::name."\n";
 		system($converter,$File::Find::name);
 		
-		move($bat_name, $bat_dir) or die "$bat_dir : $!";
+		move($bat_name, $bat_dest) or die "$bat_dest : $!";
 	}
 	
-}
-
-# nettoyage
-my $glob_dir=$bat_dir;
-$glob_dir =~ s/\\/\//g;
-$glob_dir =~ s/(\s)/\\$1/g;
-foreach my $extension ( values %extension_for_converter) {
-	unlink $_  or warn ("Impossible de supprimer $_ : $!") foreach glob("$glob_dir/*".$extension);
+	return;
 }
 
 find( { wanted => \&wanted}, @find_dir);
