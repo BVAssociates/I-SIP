@@ -141,7 +141,7 @@ sub get_def_table_string($$) {
 	
 	my $columns_ref=$env_obj->get_columns($display_table,$query_date);
 	
-	my $keys=$columns_ref->get_key_list();
+	my @keys=$columns_ref->get_key_list();
 	my @field=$columns_ref->get_field_list();
 
 	my $no_icon_option="";
@@ -167,6 +167,7 @@ SORT="[% sort %]"
 	# fill standards value of DEF
 	my @field_list=(@virtual_field,@field);
 	my $format = join($separator, @field_list);
+	my $keys = join($separator, @keys);
 	
 	my @size_list;
 	foreach my $field (@field_list) {
