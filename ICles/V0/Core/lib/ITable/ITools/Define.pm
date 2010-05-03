@@ -91,6 +91,12 @@ sub table {
     return $self->{name};
 }
 
+sub def_file {
+    my $self = shift;
+    if (@_) { $self->{deffile} = shift }
+    return $self->{deffile};
+}
+
 sub command {
     my $self = shift;
     if (@_) { croak("'command' member is read-only") }
@@ -139,6 +145,12 @@ sub fkey {
     return @{ $self->{fkey} };
 }
 
+sub sort {
+    my $self = shift;
+    if (@_) { @{ $self->{sort} } = @_ }
+    return @{ $self->{sort} };
+}
+
 sub debugging {
     my $self = shift;
     if (@_) { $self->{debugging} = shift }
@@ -146,7 +158,7 @@ sub debugging {
 }
 
 ##############################################
-## public methods        ##
+## private methods         ##
 ##############################################
 
 # use "echo" as OS level to resolve environnement vars
@@ -158,12 +170,27 @@ sub _eval_vars() {
 	#($line)=`echo $line`;
 	#chomp $line;
 	
+	return "" if not $line;
+	
 	$line =~s/\$\{(\w+)\}/$ENV{$1}/g;
 	$line =~s/\$(\w+)/$ENV{$1}/g;
 	$line =~s/%(\w+)%/$ENV{$1}/g;
 	
 	return $line;
 }
+
+# _get_var_format('VAR ') => %VAR% or $VAR
+sub _get_var_format {
+	my $self=shift;
+	my $var_name = shift or croak("usage: _get_var_format(VAR)");
+	
+	#TODO system dependant format
+	return "%".$var_name."%";
+}
+
+##############################################
+## public methods        ##
+##############################################
 
 # "Search_File" implementation
 sub get_bv_file() {
@@ -176,12 +203,12 @@ sub get_bv_file() {
 	$file_extension="" if not defined $file_extension;
 	
 	my %path_for_extension = (
-			".def" => $ENV{BV_DEFPATH},
-			"" => $ENV{BV_TABPATH},
-			".pci" => $ENV{BV_PCIPATH},
+			".def" => 'BV_DEFPATH',
+			"" => 'BV_TABPATH',
+			".pci" => 'BV_PCIPATH',
 		);
 	
-	my @bv_path = split( /;/, $path_for_extension{$file_extension} );
+	my @bv_path = split( /;/, $ENV{ $path_for_extension{$file_extension} });
 	
 	foreach my $dir ( @bv_path ) {
 	
@@ -200,8 +227,12 @@ sub define()
     my $self = shift;
 
 	$self->_debug("Define_Table $self->{name}");
-	my $def_file=$self->get_bv_file($self->{name}, ".def");
-	open DEFINE_FILE, '<', $def_file  or croak "Error reading $def_file : $!";
+	$self->def_file($self->get_bv_file($self->{name}, ".def"));
+	
+	if ( ! $self->def_file() ) {
+		croak("Impossible de trouver la table $self->{name}");
+	}
+	open DEFINE_FILE, '<', $self->def_file()  or croak "Error reading ".$self->def_file." : $!";
 	
 	
 	# Temp vars
@@ -222,28 +253,49 @@ sub define()
 
 		# parse the file
 				
-		$self->{header} = $2 if /${rex_before}HEADER${rex_after}/;
-		$self->{type} = $2 if /${rex_before}TYPE${rex_after}/;
+		$self->{header}    = $2 if /${rex_before}HEADER${rex_after}/;
+		$self->{type}      = $2 if /${rex_before}TYPE${rex_after}/;
 		$self->{separator} = $2 if /${rex_before}SEP${rex_after}/;
 		
-		$self->{file} = $2 if /${rex_before}FILE${rex_after}/;
-		$self->{command} = $2 if /${rex_before}COMMAND${rex_after}/;
-		$self->{sort} = $2 if /${rex_before}SORT${rex_after}/;
-		$self->{key} = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}KEY${rex_after}/;
-		$self->{not_null} = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}NOT_NULL${rex_after}/;
+		$self->{file}      = $2 if /${rex_before}FILE${rex_after}/;
+		$self->{command}   = $2 if /${rex_before}COMMAND${rex_after}/;
+		$self->{sort}      = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}SORT${rex_after}/;
+		$self->{key}       = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}KEY${rex_after}/;
+		$self->{not_null}  = [ split(/\Q$self->{separator}/, $2) ] if /${rex_before}NOT_NULL${rex_after}/;
+
+		push @{ $self->{fkey} }, $2 if /${rex_before}FKEY${rex_after}/;
 		
 		# prepare I-TOOLS separator
 		my $separator=qr/\s*\Q$self->{separator}\E\s*/;
 		
 		$self->{field} = [ split(/$separator/, $2) ] if /${rex_before}FORMAT${rex_after}/;
 		@size_array =  split(/$separator/, $2)  if /${rex_before}SIZE${rex_after}/;
-		@row_array =  split(/$separator/, $2)  if /${rex_before}ROW${rex_after}/;
+		
+		# no ROW field in definition
+		#@row_array =  split(/$separator/, $2)  if /${rex_before}ROW${rex_after}/;
 	}
 	
-	# convert Array into Dictonary
+	# get field's sizes
 	foreach (@{ $self->{field} }) {
-		$self->{size}->{$_} = shift @size_array;
-		$self->{row}->{$_} = shift @row_array;
+		if ( ! @size_array ) {
+			croak("Le champs SIZE n'a pas assez de valeur");
+		}
+		
+		my $size = shift @size_array;
+		if ( $size !~ /^\d+[snpbd]/) {
+			croak("Le champs SIZE est mal formé : $size");
+		}
+	
+		$self->{size}->{$_} = $size;
+	}
+	if ( @size_array ) {
+		croak("Le champs SIZE a trop de valeur");
+	}
+	
+	# get field's rows
+	foreach (@{ $self->{field} }) {
+		
+		$self->{row}->{$_} = $self->_get_var_format($_);
 	}
 	
 	# optimisation COMMAND="Select -s from Table"
@@ -252,6 +304,10 @@ sub define()
 		$self->{command} = undef;
 	}
 	
+	# handle special table "pci"
+	if ( $self->{name} eq "pci" ) {
+		$self->{file}=$self->get_bv_file($ENV{TableName}, ".pci");
+	}
 	
 	# default table when no COMMAND neither FILE
 	if ( ! $self->{command} and ! $self->{file} ) {
@@ -260,7 +316,7 @@ sub define()
 	
 	croak("Impossible d'obtenir la source de donnée de $self->{name}") if ! $self->{file} and ! $self->{command};
 	
-	close DEFINE_FILE or croak "Error closing $def_file : $!";
+	close DEFINE_FILE or croak "Error closing ".$self->def_file()." : $!";
 }
 
 
