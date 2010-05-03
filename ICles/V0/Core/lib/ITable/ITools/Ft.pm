@@ -54,7 +54,7 @@ sub _open_table_file {
 			croak("fichier tab introuvable : ".$table_file);
 		}
 		
-		$logger->info("opening ITools table ".$self->table_name);
+		$logger->info("opening ITools table ".$self->table_name." ($table_file)");
 		
 		sysopen(my $table_fh, $table_file, $mode)
 		##remplace ouverture simple par idiome Perl de lock
@@ -167,23 +167,39 @@ sub fetch_row_array_pp {
 		$self->_open_table_file(O_RDONLY);
 	}
 	
-	my $select_output=readline( $self->{select_descriptor} );
+	my $select_output;
+	while ( defined (
+				$select_output=readline( $self->{select_descriptor} ))
+			)
+	{
+		
+		if ( $select_output =~ /^#/ or $select_output =~ /^\s*$/) {
+		
+			$logger->debug("DROP: $select_output");
+			
+			# get one more line and retry
+			next;
+		}
+		else {
+			
+			chomp $select_output;
+			
+			@temp_return=split($separator,$select_output,-1);
+			
+			## ITools BUG : don't return end separators if fields are NULL
+			my $field_num_diff=0;
+			$field_num_diff= $self->query_field() - @temp_return if @temp_return;
+			if ( $field_num_diff != 0 ) {
+				push  @temp_return, (undef) x $field_num_diff;
+			}
+			##
+			
+			# quit on valid line
+			last;
+		}
+	}
 	
 	$self->_close_table_file() if not defined $select_output;
-	
-	if (defined $select_output) {
-		chomp $select_output;
-		
-		@temp_return=split($separator,$select_output,-1);
-		
-		## ITools BUG : don't return end separators if fields are NULL
-		my $field_num_diff=0;
-		$field_num_diff= $self->query_field() - @temp_return if @temp_return;
-		if ( $field_num_diff != 0 ) {
-			push  @temp_return, (undef) x $field_num_diff;
-		}
-		##
-	}
 	
 	## TODO: QUERY FIELD
 	## TODO: CONDITION
