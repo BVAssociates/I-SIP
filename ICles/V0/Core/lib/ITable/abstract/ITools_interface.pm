@@ -132,6 +132,32 @@ sub get_header() {
 	return join("@@", @header);
 }
 
+# evalue les variables d'environnements contenu dans une chaine de caractere
+sub evaluate_variables {
+	my $self=shift;
+	
+    my $string=shift;
+
+       
+	# évite de traiter les chaines non dÃ©finies
+	next if not defined $string;
+
+	# extrait les variables reconnaissables
+	my @found_vars = grep {defined} ($string =~ /\$(\w+)|\${([^}]+)}|%([^%]+)%/g);
+
+	# enleve les candidats qui n'existent pas dans l'environnement.
+	# Note : cette methode permet de laisser les variables non connues tel quelles,
+	#        au lieu de les interpreter en chaine vide.
+	@found_vars = grep {defined $ENV{$_}} @found_vars;
+
+	# remplace les variables par leurs valeurs
+	foreach my $env_var (@found_vars) {
+		$string =~ s/\$$env_var|\${$env_var}|%$env_var%/$ENV{$env_var}/g;
+	}
+
+    return $string;
+}
+
 ##############################################
 ## Private methods         ##
 ##############################################
