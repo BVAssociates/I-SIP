@@ -142,19 +142,34 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 	
 	if ( $eval_condition ) {
 		
-		if ( $menu_item{Condition} =~ /^\{.*\}$/ ) {
-			use Safe;
+		if ( $menu_item{Condition} =~ /^perl -e \"(.*)\"$/ ) {
+			my $perl_condition = $1;
+			$perl_condition =~ s/exit(\s+\d+)?/return $1/g;
 			
+			use Safe;
+			local $SIG{__WARN__}=undef;
+			local $SIG{__DIE__}=undef;
+			my $sandbox = Safe->new();
+			my $result=$sandbox->reval($perl_condition);
+			if ($@) {
+				die("Problème pendant l'execution de la condition de $menu_item{Label} : $@");
+			}
+			$menu_item{Condition}=($result)?"false":"true";
 		}
 		else {
+			system($menu_item{Condition});
+			if ( $? == -1 ) {
+				die("Erreur au lancement de $menu_item{Condition}");
+			}
+			my $result=$? >> 8;
 			
+			$menu_item{Condition}=($result)?"false":"true";
 		}
 		
-		$menu_item{Condition}="true";
 	}
 	
 	# print resulting row
-	print join('~', @menu_item{$pci_table->field()})."\n";
+	print join( $pci_table->output_separator(), @menu_item{$pci_table->field()})."\n";
 }
 
 
