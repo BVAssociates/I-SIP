@@ -815,20 +815,12 @@ public class DisplayDefinitionsProcessor
 		});
         // Maintenant, on va créer le bouton Fermer
 		JButton empty_button =
-			new JButton(MessageManager.getMessage("Vider non utilisés"));
+			new JButton(MessageManager.getMessage("Rafraichir"));
 		// On ajoute le callback sur le bouton
 		empty_button.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent event)
 			{
-                // On va demander confirmation à l'utilisateur
-                MainWindowInterface window_interface = getMainWindowInterface();
-                int reply = window_interface.showPopup("YesNoQuestion",
-                        "Supprimer les définitions non utilisées\nEtes vous sûr?", null);
-                if (reply != JOptionPane.YES_OPTION) {
-                    // L'utilisateur n'a pas validé la sortie
-                    return;
-                }
 				// On appelle la méthode de nettoyage
 				remove_unused();
 			}
