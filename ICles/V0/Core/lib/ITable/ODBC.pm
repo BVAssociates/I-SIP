@@ -200,7 +200,7 @@ sub _set_columns_info() {
 	
 	my $table_info;
 	
-	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='$self->{database_name}' AND TABLE_NAME='".$self->{table_name}."'  ORDER BY ORDINAL_POSITION") };
+	eval { $table_info=$self->{database_handle}->prepare("SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='$self->{database_name}' AND TABLE_NAME='".uc($self->{table_name})."'  ORDER BY ORDINAL_POSITION") };
 	croak "Error in prepare : "."SELECT * from QSYS2.SYSCOLUMNS where SYSTEM_TABLE_SCHEMA='$self->{database_name}' AND TABLE_NAME='".$self->{table_name}."'" if $@;
 	
 	$self->_debug("Get column info for $self->{table_name}");
