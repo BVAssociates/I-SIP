@@ -82,22 +82,6 @@ my %screen_definition=(screen => {
 		#die_on_errors => 0,
 		});
 
-my %dbi_definition=(dbi => {
-				# database connection
-				#data_source     => 'dbi:SQLite:dbname='.$ENV{ISIP_LOG}.'/Isip.log.sqlite',
-				dbname     => $ENV{ISIP_LOG}.'/Isip.log.sqlite',
-				driver     => 'SQLite',
-				debug      => 0,
-				table      => 'messages',
-				columns    => [ qw/level cdate pid caller progname mtime message/ ],
-				values     => [ qw/%level %time %pid %caller %progname %mtime %message/ ],
-				persistent => 1,
-				maxlevel   => 'notice',
-				message_layout => '%m',
-				message_pattern => '%L %T %D %P %H %C %S %t %m',
-				timeformat      => '%Y/%m/%d %H:%M:%S',
-				alias    => 'sqlite-out',
-			});
 
 my %file_definition=(file => {
 				#fileopen => 0,
@@ -120,9 +104,6 @@ if ($@) {
 	$logger->add(%screen_definition) if print STDERR "";
 	
 	$logger->add(%file_definition) if exists $ENV{ISIP_LOG};
-
-	# commenté, car trop lent sans transaction
-	#$logger->add(%dbi_definition) if exists $ENV{ISIP_LOG};
 
 	#Log::WarnDie may be used, but it put everything from STDERR
 	#in $logger->error() on STDOUT. So we must be aware of bad effect on output...
