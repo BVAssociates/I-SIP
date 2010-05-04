@@ -2,10 +2,7 @@
 
 # Inclusions obligatoires
 use strict;
-use Pod::Usage;
 use Getopt::Std;
-
-use Isip::IsipLog '$logger';
 
 #  Documentation
 ###########################################################
@@ -59,25 +56,21 @@ Copyright (c) 2009 BV Associates. Tous droits réservés.
 #  Fonctions
 ###########################################################
 
-sub sortie ($) {
+sub sortie {
 	exit shift;
 }
 
-sub usage($) {
+sub usage {
 	my $verbosity=shift;
-	pod2usage(-verbose => $verbosity, -noperldoc => 1);
-	sortie(202); 
+	die("HAS_TABLE_GROUP.pl [-h][-v] environnement table_name");
 }
 
 sub log_erreur {
-	#print STDERR "ERREUR: ".join(" ",@_)."\n"; 
-	$logger->error(@_);
-	sortie(202);
+	die ("ERREUR: ".join(" ",@_));
 }
 
 sub log_info {
-	#print STDERR "INFO: ".join(" ",@_)."\n"; 
-	$logger->notice(@_);
+	print STDERR "INFO: ".join(" ",@_)."\n"; 
 }
 
 
@@ -85,7 +78,7 @@ sub log_info {
 ###########################################################
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hv', \%opts) or usage();
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -98,7 +91,6 @@ usage($debug_level+1) if $opts{h};
 if ( @ARGV < 2) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
-	sortie(202);
 }
 
 my $environnement=shift @ARGV;
@@ -106,7 +98,7 @@ my $tablename=shift @ARGV;
 
 #  Corps du script
 ###########################################################
-my $bv_severite=0;
+
 use Isip::Environnement;
 
 my $count;
@@ -130,8 +122,6 @@ else {
 	$table->custom_select_query("SELECT count(*) from ".$tablename."_CATEGORY");
 	($count)=$table->fetch_row_array();
 }
-
-log_info("$count groupes dans $tablename de $environnement");
 
 #return 0 if group > 0
 exit not $count;
