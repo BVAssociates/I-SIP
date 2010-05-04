@@ -135,7 +135,7 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 	}
 	
 	if ( $eval_vars ) {
-		foreach my $field ( "Group", "Label", "Condition", "PreProcessing", "Arguments", "PostProcessing", "Icon" ) {
+		foreach my $field ( "Group", "Label", "PreProcessing", "Arguments", "PostProcessing", "Icon" ) {
 			$menu_item{$field} = $pci_table->evaluate_variables($menu_item{$field});
 		}
 	}
@@ -152,7 +152,7 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			my $sandbox = Safe->new();
 			my $result=$sandbox->reval($perl_condition);
 			if ($@) {
-				die("Problème pendant l'execution de la condition de $menu_item{Label} : $@");
+				die("Problème pendant l'execution de la condition du menu <$menu_item{Label}> : $@");
 			}
 			$menu_item{Condition}=($result)?"false":"true";
 		}
