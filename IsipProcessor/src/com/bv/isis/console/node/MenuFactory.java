@@ -274,6 +274,7 @@ public abstract class MenuFactory
 		}
 		else
 		{
+                        /*
 			// On ajoute les éléments de menu relatifs à un noeud instance
 			if(addObjectNodeSpecificItems(selectedNode, isForTree, windowInterface,
 				contextual_menu) == false)
@@ -282,6 +283,8 @@ public abstract class MenuFactory
 				trace_methods.endOfMethod();
 				return null;
 			}
+                         * 
+                         */
 		}
 		windowInterface.setStatus("&Status_BuildingMenu", null, 2);
 		// Ensuite, il faut ajouter les éléments relatifs aux méthodes
