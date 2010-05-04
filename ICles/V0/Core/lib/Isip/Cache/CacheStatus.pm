@@ -65,10 +65,11 @@ sub check_before_cache() {
 	my $dirty=abs($self->{action});
 	$self->{current_table}=$table if $dirty;
 
+	#  moved into IsipTreeCache
 	#add table itself in cache
-	my @key=$self->{isip_env}->get_table_key($table);
-	my $key_string=join(',',@{$value_ref}{@key});
-	$self->add_row_cache($table,$key_string,$value_ref);
+	#my @key=$self->{isip_env}->get_table_key($table);
+	#my $key_string=join(',',@{$value_ref}{@key});
+	#$self->add_row_cache($table,$key_string,$value_ref);
 	
 	return $dirty;
 }
