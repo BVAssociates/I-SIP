@@ -241,7 +241,7 @@ sub get_pci_table_string {
 ';
 	
 	if ($display_table eq $table_name) {
-		$pci_template.='Item~Ligne~Explorer les champs~user~HAS_FIELD_MENU~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
+		$pci_template.='Item~~Afficher ce noeud~user~HAS_FIELD_MENU~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
 ';
 	}
 	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
