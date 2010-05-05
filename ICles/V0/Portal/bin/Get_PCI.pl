@@ -156,7 +156,7 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			}
 			$menu_item{Condition}=($result)?"false":"true";
 		}
-		else {
+		elsif ( $menu_item{Condition} ) {
 			system($menu_item{Condition});
 			if ( $? == -1 ) {
 				die("Erreur au lancement de $menu_item{Condition}");
@@ -164,6 +164,9 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			my $result=$? >> 8;
 			
 			$menu_item{Condition}=($result)?"false":"true";
+		}
+		else {
+			$menu_item{Condition}="true";
 		}
 		
 	}
