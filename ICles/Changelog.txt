@@ -1,3 +1,14 @@
+v1.2
+
+Type: enhancement
+Amélioration conséquente des performances de l'interface de la Console I-SIP
+
+Type: adaptation
+change l'intitulé du menu sur une ligne
+
+Type: defect
+Correction problème de filtre sur Projets
+____________________________________________________________________________
 v1.1
 
 Clarification des mesages d'erreurs
