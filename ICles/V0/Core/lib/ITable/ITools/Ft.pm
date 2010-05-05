@@ -234,28 +234,33 @@ sub insert_row_pp {
 	}
 	
 	# transforme texte en tableau de dictionnaire
-	my @table_lines_hash = map {
-			if (! /^(?:#|\s*$)/) {
-				# enleve les fin de ligne
-				chomp;
-				
-				# tranforme la ligne en tableau de valeur
-				my @fields = split ( $self->output_separator , $_ , -1);
-				
-				# transforme les undef en chaine vide (pas de NULL en I-TOOLS)
-				map {$_='' if not defined $_} @fields;
-				
-				# sauvegarde du hash sous forme d'une référence
-				$_ = { $self->array_to_hash( @fields )};
-			}
-			else {
-				# les commentaires et les lignes vides ne sont pas transformés
-				$_;
-			}
-		} @table_lines;
+	my @table_lines_hash;
+	my $last_line;
+	foreach my $line ( @table_lines ) {
+		
+		# sauvegarde de la dernière ligne
+		$last_line = $line;
+		
+		# les commentaires et les lignes vides ne sont pas transformés
+		if ( $line !~ /^#/ and $line !~ /^\s*$/ ) {
+			# enleve les fin de ligne
+			chomp $line;
+			
+			# tranforme la ligne en tableau de valeur
+			my @fields = split($self->output_separator(), $line, -1);
+			
+			# transforme les undef en chaine vide (pas de NULL en I-TOOLS)
+			map {$_='' if not defined $_} @fields;
+			
+			# sauvegarde du hash sous forme d'une référence
+			$line = { $self->array_to_hash( @fields )};
+		}
+		
+		# ajout de la ligne transformée (texte ou hash)
+		push @table_lines_hash, $line;
+	}
 	
 	my $update_key=0;  # >0 si clef trouvée (mode UPDATE)
-	my $touch_file=0;  # >0 si des valeurs ont été modifiées
 	# cherche si clef déjà présente
 	ROW:
 	foreach my $line_hash ( @table_lines_hash ) {
@@ -300,7 +305,6 @@ sub insert_row_pp {
 							$logger->debug("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
 							# 1 des 2 n'est pas défini ou les 2 sont differents
 							$line_hash->{$set_field} = $row{$set_field};
-							$touch_file++;
 						}
 					}
 				}
@@ -313,12 +317,16 @@ sub insert_row_pp {
 	
 	# Si pas de mise à jour, alors insertion simple
 	if (not $update_key) {
-		push @table_lines_hash, \%row;
-		$touch_file++;
+		
+		my $new_line=join( $self->output_separator , $self->hash_to_array(%row) );
+		if ( ! grep { /\n/ } $last_line ) {
+			$new_line = "\n".$new_line;
+		}
+		
+		$self->_write_table_file($new_line."\n");
 	}
-	
-	# le fichier doit être modifié
-	if ( $touch_file ) {
+	# le fichier doit être modifié en entier
+	else {
 	
 		# retransforme les dictionnaires en texte
 		@table_lines = map {
