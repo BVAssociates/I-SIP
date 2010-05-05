@@ -61,16 +61,16 @@ sub _open_table_file {
 		#open( my $table_fh, "+< $table_file")
 			or die "can't open $table_file: $!";
 		
-		# autoflush $table_fh (idiome Perl)
-		my $stdout = select($table_fh); # STDOUT->$table_fh
-		$| = 1;                         # autoflush STDOUT
-		select ($stdout);               # restore STDOUT
-		
 		# lock exclusif avec attente
 		flock($table_fh, $lock_mode)
 			or die "can't write-lock ".$self->table_name().": ".$!;
 		seek($table_fh, 0, 0)
 			or die "can't rewind ".$self->table_name().": ".$!;
+		
+		# autoflush $table_fh (idiome Perl)
+		#my $stdout = select($table_fh); # STDOUT->$table_fh
+		#$| = 1;                         # autoflush STDOUT
+		#select ($stdout);               # restore STDOUT
 		
 		$self->{select_descriptor}=$table_fh;
 	}
