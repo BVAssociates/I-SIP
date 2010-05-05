@@ -99,24 +99,19 @@ sub recurse_line() {
 	
 	my $checked=0;
 	foreach my $dispatcher (@{$self->{dispacher_list}}) {
-	
-		my $dispatch_checked = $dispatcher->check_before_cache($table_name,$line_hash_ref);
-		
-		if ( $dispatch_checked ) {
-			# get key string from current line
-			my %line_hash=%{$line_hash_ref};
-			my @table_key=$self->{isip_env}->get_table_key($table_name);
-			my $current_key_string=@line_hash{@table_key};
-			
-			# dispatch action for current line
-			$self->dispatch_action($table_name,$current_key_string,$line_hash_ref);
-		}
-		
-		$checked += $dispatch_checked;
+		$checked += $dispatcher->check_before_cache($table_name,$line_hash_ref);
 	}
 	
 	if ( $checked) {
-
+		
+		# get key string from current line
+		my %line_hash=%{$line_hash_ref};
+		my @table_key=$self->{isip_env}->get_table_key($table_name);
+		my $current_key_string=@line_hash{@table_key};
+		
+		# dispatch action for current line
+		$self->dispatch_action($table_name,$current_key_string,$line_hash_ref);
+		
 		# dispatch action for parents line
 		$self->_recurse_line_action($table_name,$line_hash_ref);
 	}

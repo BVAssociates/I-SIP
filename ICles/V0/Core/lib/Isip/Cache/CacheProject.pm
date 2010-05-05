@@ -75,15 +75,17 @@ sub add_row_cache() {
 	my $key_string=shift;
 	my $value_ref=shift or croak("usage: add_row_cache(table_name,key_string , {PROJECT => value})");
 	
-	$logger->info("add $key_string in CacheProject");
 	
 	my %current_project=%{$self->{current_project}};
+	
 	foreach my $proj (keys %current_project) {
 		my $old_value = $self->{memory_cache}->{$table_name}->{$key_string}->{$proj};
 		$old_value=0 if not defined $old_value;
 		
 		my $new_value= $old_value + $current_project{$proj};
 
+		$logger->info("add $key_string:$old_value->$new_value in CacheProject") if $new_value > 0;
+		
 		$self->{memory_cache}->{$table_name}->{$key_string}->{$proj} = $new_value;
 	}
 }
