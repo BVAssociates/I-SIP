@@ -495,10 +495,37 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 
 
 	##### BEGIN CLEANUP ##### 
+
+	my $labels=ITools->open("ICleLabels");
 	
 	if ($opts{a}) {
 		$logger->notice("Purge des labels");
-		system(qq{Delete from ICleLabels where NodeId ~ "IKOS_"});
+		system(qq{Delete from ICleLabels});
+		
+		# insère les icones fixes
+		
+		my @header = split(/\n/,
+'PortalAccess.Item;I_Home;Portail (%[Role])
+ETAT.Table;;Etats disponibles
+ETAT.Item;field_%[Name];%[Name]
+ENVIRON.Item;I_Group;%[Environnement] (%[Description])
+CONF_ENVIRON.Item;isip_environ_conf;%[Environnement] (%[Description])
+MODULE.Item;I_AgentICles;%[Module] (%[Description])
+CONF_MODULE.Item;isip_module_conf;%[Module] (%[Description])
+ROOT_TABLE.Item;isip_table_%[TYPE_SOURCE]_%[ICON];%[TABLE_NAME] (%[DESCRIPTION])
+TABLE_INFO.Item;isip_table_conf_%[ICON];%[TABLE_NAME] (%[DESCRIPTION])
+DATE_HISTO.Item;isip_date;%[DATE_EXPLORE] %[DESCRIPTION]
+DATE_HISTO_BASELINE.Item;isip_date;%[DATE_EXPLORE] (%[DESCRIPTION])
+FILTER.Item;I_Transitions;%[FILTER_DESC]
+FILTER_COMPARE.Item;I_Transitions;%[FILTER_DESC]
+CATEGORY.Item;isip_%[ICON];'
+			);
+		
+		foreach my $header_line ( @header ) {
+		
+			my %line=$labels->array_to_hash( split(/;/ , $header_line, -1) );
+			$labels->insert_row_pp(%line);
+		}
 	}
 
 	#find first def path
@@ -520,8 +547,6 @@ my $pci_field_filename="%s/IKOS_FIELD_%s.pci";
 	}
 	
 	
-	my $labels=ITools->open("ICleLabels");
-
 	##### BEGIN CREATE FILE #####
 
 
