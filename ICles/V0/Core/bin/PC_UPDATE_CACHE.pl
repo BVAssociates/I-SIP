@@ -17,7 +17,7 @@ PC_UPDATE_CACHE - Met à jour le cache
 
 =head1 SYNOPSIS
 
- PC_UPDATE_HISTO.pl [-h] [-v] [-m module] environnement
+ PC_UPDATE_CACHE.pl [-h] [-v] [-m module] environnement
  
 =head1 DESCRIPTION
 

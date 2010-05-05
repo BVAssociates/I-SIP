@@ -22,6 +22,9 @@ sub new() {
 	return $self;
 }
 
+sub check_before_cache() {
+	croak("cannot use CacheInterface");
+}
 
 sub add_row_cache() {
 	croak("cannot use CacheInterface");

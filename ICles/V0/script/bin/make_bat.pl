@@ -30,6 +30,10 @@ my %param_for_converter=(
 	);
 	
 my $converter=shift;
+
+# par defaut
+$converter='pl2bat';
+
 if ( ! grep { $_ eq $converter } keys %extension_for_converter)  {
 	die( "usage: ".basename($0)." (".join('|', keys %extension_for_converter).")" );
 }
