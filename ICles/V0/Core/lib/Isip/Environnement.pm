@@ -116,6 +116,8 @@ sub get_columns() {
 	my $table_name=shift or croak "usage : get_columns(tablename[,date])";
 	my $query_date=shift;
 	
+	$table_name=$self->get_display_table($table_name);
+	
 	if (not $query_date) {
 		# look in memory
 		my $temp_obj=$self->{info_table}->{$table_name}->{column};
@@ -270,6 +272,16 @@ sub get_links_menu() {
 	}
 	
 	return $link_clone;
+}
+
+# retourne le nom de la table reel (retire la notion de menu)
+sub get_display_table {
+	my $self=shift;
+	
+	my $table_name_full=shift;
+	
+	$table_name_full =~ s/^\w+__//;
+	return $table_name_full;
 }
 
 # check table tree
@@ -545,6 +557,8 @@ sub open_local_from_histo_table() {
 	
 	my $table_name=shift or croak "usage : open_histo_table( table_name [,date_explore] )";
 	my $date_explore=shift;
+	
+	$table_name = $self->get_display_table($table_name);
 	
 	# needed for backwards compatibility
 	if (ref $date_explore eq "HASH") {

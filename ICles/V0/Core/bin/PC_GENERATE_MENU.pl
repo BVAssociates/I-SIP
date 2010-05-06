@@ -115,14 +115,6 @@ sub find_file($$) {
 	return undef;
 }
 
-sub get_display_table($) {
-	my $current_table=shift;
-
-	$current_table =~ s/.+__(.+)$/$1/;
-	
-	return $current_table;
-}
-
 sub get_source_field ($$) {
 	my $env_obj=shift;
 	my $current_table=shift;
@@ -137,7 +129,7 @@ sub get_def_table_string($$) {
 	my $query_date=shift;
 	
 	my $environnement=$env_obj->{environnement};
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $columns_ref=$env_obj->get_columns($display_table,$query_date);
 	
@@ -194,7 +186,7 @@ SORT="[% sort %]"
 	$string .= $def_template;
 	
 	$string =~ s/\[% environnement %\]/$environnement/g;
-	$string =~ s/\[% table %\]/$display_table/g;
+	$string =~ s/\[% table %\]/$table_name/g;
 	$string =~ s/\[% separator %\]/$separator/g;
 	$string =~ s/\[% format %\]/$format/g;
 	$string =~ s/\[% size %\]/$size/g;
@@ -209,7 +201,7 @@ sub get_def_field_string($$) {
 	
 	my $env_obj=shift;
 	my $table_name=shift;
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $def_field_template = 'COMMAND="PC_LIST_FIELD_STATUS [% environnement %] [% table %] %DATE_EXPLORE%"
 SEP="@"
@@ -234,7 +226,7 @@ sub get_pci_table_string {
 	my $env_obj=shift;
 	my $link_obj=shift;
 	my $table_name=shift or croak("usage: get_pci_table_string(env_obj,table_name)");
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 		
 	# TEMPLATES
 	my $pci_template='Table~~Explore~user~~~Explore~~0~~Expand
@@ -289,7 +281,7 @@ sub get_pci_field_string($$) {
 
 	my $env_obj=shift;
 	my $table_name=shift;
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $pci_field_template='Table~~Champs~user~~~Explore~~0~~Expand
 Table~~Information ligne complète~user~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
@@ -315,7 +307,7 @@ sub get_label_table_hash($$) {
 
 	my $env_obj=shift;
 	my $table_name=shift;
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $environnement=$env_obj->{environnement};
 
@@ -342,7 +334,7 @@ sub get_label_table_item_hash {
 	my $env_obj=shift;
 	my $link_obj=shift;
 	my $table_name=shift or croak("usage: get_label_table_item_hash(env_obj,link_obj,table_name)");
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my @pkey_list=$env_obj->get_table_key($display_table);
 	my $environnement=$env_obj->{environnement};
@@ -392,7 +384,7 @@ sub get_label_field_hash($$) {
 
 	my $env_obj=shift;
 	my $table_name=shift;
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $environnement=$env_obj->{environnement};
 
@@ -415,7 +407,7 @@ sub get_label_field_item_hash($$) {
 	
 	my $table_name=shift;
 	my $environnement=$env_obj->{environnement};
-	my $display_table=get_display_table($table_name);
+	my $display_table=$env_obj->get_display_table($table_name);
 
 	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
@@ -594,7 +586,7 @@ CATEGORY.Item;isip_%[ICON];'
 		
 			# check if table is a menu table (virtual)
 			my $display_table=$current_table;
-			$current_table =get_display_table($display_table);
+			$current_table =$env->get_display_table($display_table);
 			
 			my %table_info=$env->get_table_info($current_table);
 			log_erreur("Impossible d'obtenir des informations sur $current_table") if not %table_info;

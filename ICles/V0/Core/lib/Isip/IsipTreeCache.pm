@@ -26,7 +26,7 @@ sub new() {
 	my $self = fields::new($class);
 
 	$self->{isip_env}=$environnement;
-	$self->{links}=$self->{isip_env}->get_links();
+	$self->{links}=$self->{isip_env}->get_links_menu();
 		
 	## remember :
 	#$self->{links}->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
