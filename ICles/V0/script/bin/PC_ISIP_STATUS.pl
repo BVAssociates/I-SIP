@@ -168,7 +168,17 @@ sub run {
 				$logger->info( "$environnement \t: OK" );
 			}
 			
+			# lance la vérification de connexion
 			my $tmp_error_count = $env->check_bad_table($check_remote);
+			
+			# tente de construire le menu
+			eval { $env->get_links_menu() };
+			if ( $@ ) {
+				$logger->error($@);
+				$logger->error( "$environnement \t: ERROR" );
+				$error_count++;
+				next;
+			}
 			
 			if ( $tmp_error_count ) {
 				$logger->error("tables de $environnement \t: KO");
