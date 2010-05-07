@@ -1,4 +1,4 @@
-#!/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use File::Spec::Functions qw/splitpath catpath canonpath/;
@@ -6,6 +6,21 @@ use File::Basename;
 use File::Find;
 use File::Copy;
 
+sub convert_unix {
+	my $filename=shift;
+
+	if ( ! $filename ) {
+		die ('usage:convert_unix(filename)');
+	}
+
+	my $new_filename = $filename;
+	$new_filename =~ s/\.pl$//;
+
+	copy($filename, $new_filename);
+	chmod 0755, $new_filename;
+
+	return;
+}
 
 ############
 # CHECKS
@@ -22,19 +37,20 @@ if (not exists $ENV{BV_HOME} or not exists $ENV{ISIP_HOME}) {
 my %extension_for_converter=(
 		perl2exe  => ".exe",
 		pl2bat  => ".bat",
+		unix  => "",
 	);
 
-my %param_for_converter=(
-		perl2exe  => "-I",
-		pl2bat  => "",
+my %converter_for_type=(
+		perl2exe  => "perl2exe -I",
+		pl2bat  => "pl2bat",
+		unix  => \&convert_unix,
 	);
 	
-my $converter=shift;
+my $converter_type=shift;
 
-# par defaut
-$converter='pl2bat';
+my $converter=$converter_for_type{$converter_type};
 
-if ( ! grep { $_ eq $converter } keys %extension_for_converter)  {
+if ( ! grep { $_ eq $converter_type } keys %extension_for_converter)  {
 	die( "usage: ".basename($0)." (".join('|', keys %extension_for_converter).")" );
 }
 
@@ -78,7 +94,13 @@ sub wanted {
 		}
 				
 		print $File::Find::name."\n";
-		system($converter,$File::Find::name);
+
+		if ( ref($converter) ) {
+			$converter->($File::Find::name);
+		}
+		else {
+			system($converter,$File::Find::name);
+		}
 		
 		move($bat_name, $bat_dest) or die "$bat_dest : $!";
 	}
