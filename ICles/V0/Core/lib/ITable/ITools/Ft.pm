@@ -261,12 +261,14 @@ sub insert_row_pp {
 	}
 	
 	my $update_key=0;  # >0 si clef trouvée (mode UPDATE)
+	my $touched=0;  # >0 si valeur modifiée (mode UPDATE)
 	# cherche si clef déjà présente
 	ROW:
 	foreach my $line_hash ( @table_lines_hash ) {
 		if (ref $line_hash) {
 		
 			my $key_match=0;
+			my @key_value;
 			
 			# sur chaque ligne, verifie toutes les clefs
 			foreach my $key_field ( $self->key() ) {
@@ -305,6 +307,9 @@ sub insert_row_pp {
 							$logger->debug("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
 							# 1 des 2 n'est pas défini ou les 2 sont differents
 							$line_hash->{$set_field} = $row{$set_field};
+							
+							# valeur modifiée
+							$touched++;
 						}
 					}
 				}
@@ -326,7 +331,7 @@ sub insert_row_pp {
 		$self->_write_table_file($new_line."\n");
 	}
 	# le fichier doit être modifié en entier
-	else {
+	elsif ( $touched ) {
 	
 		# retransforme les dictionnaires en texte
 		@table_lines = map {
@@ -356,6 +361,9 @@ sub insert_row_pp {
 		$self->_empty_table_file();
 		
 		$self->_write_table_file( @table_lines );
+	}
+	else {
+		#aucune valeur n'est modifiée
 	}
 
 	# fermeture du fichier
