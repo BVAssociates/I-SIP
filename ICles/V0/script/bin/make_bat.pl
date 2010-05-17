@@ -16,7 +16,17 @@ sub convert_unix {
 	my $new_filename = $filename;
 	$new_filename =~ s/\.pl$//;
 
-	copy($filename, $new_filename);
+	#copy($filename, $new_filename);
+	open my $file_fd, $filename or die $filename,$!;
+	open my $new_file_fd, '>', $new_filename or die $new_filename,$!;
+
+	while (my $line = <$file_fd> ) {
+		$line =~ s/\r$//;
+		print $new_file_fd $line or die $!;
+	}
+
+	close $file_fd;
+	close $new_file_fd;
 	chmod 0755, $new_filename;
 
 	return;
