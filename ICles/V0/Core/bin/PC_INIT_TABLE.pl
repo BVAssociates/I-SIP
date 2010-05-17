@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 package pc_init_table;
 
 # Inclusions obligatoires

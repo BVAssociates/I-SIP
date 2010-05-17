@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Inclusions obligatoires
 use strict;
@@ -71,7 +71,6 @@ sub log_erreur {
 sub log_info {
 	warn("INFO: ",@_);
 }
-
 
 #  Traitement des Options
 ###########################################################

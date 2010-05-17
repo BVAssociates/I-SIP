@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 package me_isip_version;
 
 # Inclusions obligatoires

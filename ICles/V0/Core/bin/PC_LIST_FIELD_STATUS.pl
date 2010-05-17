@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 package pc_list_field_status;
 
 # Inclusions obligatoires
