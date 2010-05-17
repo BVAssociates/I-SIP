@@ -6,7 +6,7 @@ require ITable::abstract::DATA_interface;
 use Carp qw(carp cluck confess croak );
 use strict;
 
-use Xml::Simple;
+use XML::Simple;
 $XML::Simple::PREFERRED_PARSER='XML::Parser';
 
 
