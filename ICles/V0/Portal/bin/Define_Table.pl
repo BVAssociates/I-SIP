@@ -110,27 +110,29 @@ my $table_itools=ITools->open($table);
 my $definition=$table_itools->define();
 
 my @output;
-push @output, "set DEFFILE=".$definition->def_file();
-push @output, "set OBJECT=".$definition->name();
-push @output, "set TABLE=".$definition->name();
-push @output, "set HEADER=".$definition->header();
-push @output, "set TYPE=".$definition->type();
-push @output, "set SEP=".$definition->separator();
-push @output, "set FILE=".$definition->file();
-push @output, "set COMMAND=".$definition->command();
-push @output, "set FORMAT=".join($definition->separator(),$definition->field());
+push @output, "DEFFILE=".$definition->def_file();
+push @output, "OBJECT=".$definition->name();
+push @output, "TABLE=".$definition->name();
+push @output, "HEADER=".$definition->header();
+push @output, "TYPE=".$definition->type();
+push @output, "SEP=".$definition->separator();
+push @output, "FILE=".$definition->file();
+push @output, "COMMAND=".$definition->command();
+push @output, "FORMAT=".join($definition->separator(),$definition->field());
 my %size=$definition->size();
-push @output, "set SIZE=".join($definition->separator(),@size{$definition->field()});
+push @output, "SIZE=".join($definition->separator(),@size{$definition->field()});
+my %not_null=$definition->not_null();
+push @output, "NOTNULL=".join($definition->separator(),@not_null{$definition->field()});
 my %row=$definition->row();
-push @output, "set ROW=".join($definition->separator(),@row{$definition->field()});
-push @output, "set KEY=".join($definition->separator(),$definition->key());
-push @output, "set SORT=".join($definition->separator(),$definition->sort());
+push @output, "ROW=".join($definition->separator(),@row{$definition->field()});
+push @output, "KEY=".join($definition->separator(),$definition->key());
+push @output, "SORT=".join($definition->separator(),$definition->sort());
 
 # cas spécial des FKEY0N
 my $fkey_count=0;
 foreach my $fkey ( $definition->fkey() ) {
 	$fkey_count++;
-	my $temp_output=sprintf("set FKEY%02d=%2s",$fkey_count, $fkey );
+	my $temp_output=sprintf("FKEY%02d=%2s",$fkey_count, $fkey );
 	push @output, $temp_output;
 }
 
@@ -157,15 +159,21 @@ if ($env_name and $table_real and $date_explore) {
 }
 
 foreach (@output) {
-	if ($new_format and /^(set )?FORMAT=/) {
+	if ($new_format and /^FORMAT=/) {
 		s/FORMAT=.+/FORMAT=$new_format/;
 	}
-	elsif ($new_row and /^(set )?ROW=/) {
+	elsif ($new_row and /^ROW=/) {
 		s/ROW=.+/ROW=$new_row/;
 	}
-	elsif ($new_size and /^(set )?SIZE=/) {
+	elsif ($new_size and /^()?SIZE=/) {
 		s/SIZE=.+/SIZE=$new_size/;
 	}
 	
-	print $_."\n";
+	if ( $^O eq 'MSWin32' ) {
+		printf("set %s\n",$_);
+	}
+	else {
+		my ($var,$value) = split(/=/);
+		printf("%s='%s' ; export %s\n",$var,$value,$var);
+	}
 }

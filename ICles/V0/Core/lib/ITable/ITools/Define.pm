@@ -37,6 +37,11 @@ sub new (){
 	$self->{not_null}= [];
 	$self->{sort}= [];
 	$self->{fkey}= [];
+
+	$self->{path_separator}=':';
+	if ( $^O eq 'MSWin32' ) {
+		$self->{path_separator}=';';
+	}
 	
 	# debug
 	$self->{debugging}=0;
@@ -184,8 +189,17 @@ sub _get_var_format {
 	my $self=shift;
 	my $var_name = shift or croak("usage: _get_var_format(VAR)");
 	
+	my $var_system;
+
 	#TODO system dependant format
-	return "%".$var_name."%";
+	if ( $^O eq 'MSWin32' ) {
+		$var_system = '%'.$var_name.'%';
+	}
+	else {
+		$var_system = '$'.$var_name;
+	}
+
+	return $var_system;
 }
 
 ##############################################
@@ -208,7 +222,7 @@ sub get_bv_file() {
 			".pci" => 'BV_PCIPATH',
 		);
 	
-	my @bv_path = split( /;/, $ENV{ $path_for_extension{$file_extension} });
+	my @bv_path = split( /\Q$self->{path_separator}\E/, $ENV{ $path_for_extension{$file_extension} });
 	
 	foreach my $dir ( @bv_path ) {
 	
