@@ -101,7 +101,7 @@ usage($debug_level+1) if $opts{h};
 ###########################################################
 
 use Encode;
-map {$_=encode("cp850",$_)} @ARGV;
+map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
 
 if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");

@@ -91,7 +91,7 @@ sub log_info {
 ###########################################################
 
 use Encode;
-map {$_=encode("cp850",$_)} @ARGV;
+map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
 
 my @argv_save=@ARGV;
 

@@ -317,10 +317,12 @@ sub run {
 		}
 		
 		if ($ENV{CATEGORY}) {
+
+			my $category=$ENV{CATEGORY};
 		
 			#quirk! bad encoding in ENV by I-SIS
 			use Encode;
-			my $category=encode("cp850",$ENV{CATEGORY});
+			$category=encode("cp850",$category) if $^O eq 'MSWin32';
 			
 			my %info=$env_sip->get_table_info($table_name);
 			if ($info{root_table} and $ENV{TABLE_NAME} and $ENV{TABLE_NAME} eq $table_name) {

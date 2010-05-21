@@ -73,7 +73,7 @@ sub _log_filter {
 		if (exists $ENV{$filter} and $ENV{$filter}) {
 		
 			# quirk : something wrong with encoding when using pl2bat
-			$ENV{$filter}=encode("cp850",$ENV{$filter});
+			$ENV{$filter}=encode("cp850",$ENV{$filter}) if $^O eq 'MSWin32';
 		
 			$logger->notice("Filtrage activé pour $filter=$ENV{$filter}");
 		}
