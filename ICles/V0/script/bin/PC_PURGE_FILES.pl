@@ -117,7 +117,7 @@ if ( @ARGV < 0) {
 use Isip::IsipConfig;
 use Isip::Environnement;
 
-use Isis::Jobstat;
+use Isis::JobStat;
 use Isip::IsipLog qw(delete_log);
 use Date::Calc qw(Now Today Add_Delta_Days);
 
