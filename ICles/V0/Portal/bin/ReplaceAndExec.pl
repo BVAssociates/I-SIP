@@ -95,7 +95,7 @@ my %execute_when;
 sub init_trigger {
 	my $table_name = shift or log_erreur("usage: init_trigger(table_name)");
 	
-	my @replace_actions=`get_pci -s for $table_name where Group=Replace`;
+	my @replace_actions=`Get_PCI -s for $table_name where Group=Replace`;
 	if ($? >> 8) {
 		log_info("Erreur lors de la recuperation du PCI");
 		sortie(0);
@@ -135,7 +135,7 @@ sub execute_trigger {
 #  Traitement des Options
 ###########################################################
 use Encode;
-map {$_=encode("cp850",$_)} @ARGV;
+map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
 
 my @argv_save=@ARGV;
 
