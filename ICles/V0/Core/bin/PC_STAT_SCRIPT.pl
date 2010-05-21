@@ -132,7 +132,7 @@ use File::Spec;
 use List::Util qw(sum);
 
 my $stat_tablename="SCRIPT_STAT";
-my ($sqlite_path)=grep {$_=File::Spec->catfile($_,$stat_tablename.".sqlite");-e $_} split(/;/,$ENV{BV_TABPATH});
+my ($sqlite_path)=grep {$_=File::Spec->catfile($_,$stat_tablename.".sqlite");-e $_} split(/[:;]/,$ENV{BV_TABPATH});
 my $stats=Sqlite->open($sqlite_path, $stat_tablename);
 
 my $dest=ITools->open("SCRIPT_STAT_AVERAGE");
