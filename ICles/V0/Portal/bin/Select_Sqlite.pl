@@ -124,7 +124,7 @@ my $table_name=shift;
 #  Corps du script
 ###########################################################
 
-use ITable::SQlite;
+use ITable::Sqlite;
 use File::Spec;
 
 
@@ -141,7 +141,7 @@ if (not $directory) {
 		log_erreur("BV_TABPATH n'est pas défini dans l'environnement");
 	}
 	else {
-		($sqlite_path)=grep {-e File::Spec->catfile($_,$sqlite_file)} split(/;/,$ENV{BV_TABPATH});
+		($sqlite_path)=grep {-e File::Spec->catfile($_,$sqlite_file)} split(/[:;]/,$ENV{BV_TABPATH});
 		if (not $sqlite_path) {
 			log_erreur("Impossible de trouver <$sqlite_file> dans BV_TABPATH");
 		}
@@ -161,7 +161,7 @@ if (not $definition) {
 
 	# modification directe de la requete
 	my $tmp_query=$itable->get_query();
-	$tmp_query .= " LIMIT $row_limit";
+	$tmp_query .= " LIMIT $row_limit" if $row_limit;
 	$itable->custom_select_query($tmp_query);
 	
 	$itable->display_table;
