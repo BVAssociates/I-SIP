@@ -142,13 +142,11 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 	
 	if ( $eval_condition ) {
 		
-		if ( $menu_item{Condition} =~ /^perl -e \"(.*)\"$/ ) {
-			my $perl_condition = $1;
+		if ( $menu_item{Condition} =~ /^perl -e ([\"\'])(.*)\1$/ ) {
+			my $perl_condition = $2;
 			$perl_condition =~ s/exit(\s+\d+)?/return $1/g;
-			
+
 			use Safe;
-			local $SIG{__WARN__}=undef;
-			local $SIG{__DIE__}=undef;
 			my $sandbox = Safe->new();
 			my $result=$sandbox->reval($perl_condition);
 			if ($@) {
