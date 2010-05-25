@@ -107,7 +107,7 @@ sub recurse_line() {
 		# get key string from current line
 		my %line_hash=%{$line_hash_ref};
 		my @table_key=$self->{isip_env}->get_table_key($table_name);
-		my $current_key_string=@line_hash{@table_key};
+		my $current_key_string=join(q{,}, @line_hash{@table_key} );
 		
 		# dispatch action for current line
 		$self->dispatch_action($table_name,$current_key_string,$line_hash_ref);
