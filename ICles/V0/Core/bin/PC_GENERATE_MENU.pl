@@ -548,6 +548,9 @@ CATEGORY.Item;isip_%[ICON];'
 		log_info("opening environnement",$environnement);
 		my $env = Environnement->new($environnement);
 		
+		# update links cache
+		$env->update_links_cache();
+		
 		log_info("Get tables informations");
 		# get table info
 		my $link_obj=$env->get_links_menu();

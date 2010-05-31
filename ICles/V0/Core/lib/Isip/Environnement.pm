@@ -207,20 +207,59 @@ sub get_links() {
 		
 	my $links=ILink->new();
 	
-	# get links for all table
-	foreach ($self->get_table_list) {
-		my $columns=eval { $self->get_columns($_) };
-		next if $@;
+	# get links from cache
+	my $table_cache = $self->open_cache_table("CACHE_COLUMN");
+	while( my %fkey = $table_cache->fetch_row() ) {
 		
-		my $link_add=$columns->get_links();
-		$links->add_link($link_add);
+		
+		$links->add_link(
+				$fkey{TABLE_NAME},
+				$fkey{FIELD_NAME},
+				$fkey{FOREIGN_TABLE},
+				$fkey{FOREIGN_KEY},
+			);
 	}
-
-
-	
 	
 	return $links;
 }
+
+sub update_links_cache() {
+	my $self=shift;
+	
+	my $links=ILink->new();
+	
+	my $table_cache = $self->open_cache_table("CACHE_COLUMN");
+	$table_cache->execute("DELETE from CACHE_COLUMN");
+	
+	# get links for all table
+	foreach my $table_name ($self->get_table_list) {
+	
+		my $columns=eval { $self->get_columns($table_name) };
+		next if $@;
+		
+		my $link_add=$columns->get_links();
+		
+		#RAPPEL: $link_add->{table_parent}->{$table_name}->{$table_foreign}->{$field_name} = $field_foreign;
+		my %ftable_for_field;
+		if ( exists $link_add->{table_parent}->{$table_name} ) {
+			%ftable_for_field = %{ $link_add->{table_parent}->{$table_name} };
+		}
+		
+		foreach my $foreign_table ( keys %ftable_for_field ) {
+		
+			my %fkey_for_field = %{ $ftable_for_field{$foreign_table} };
+			foreach my $field ( keys %fkey_for_field ) {
+				$table_cache->insert_row(
+						"TABLE_NAME"    => $table_name,
+						"FIELD_NAME"    => $field,
+						"FOREIGN_TABLE" => $foreign_table,
+						"FOREIGN_KEY"   => $fkey_for_field{$field},
+					);
+			}
+		}
+	}
+}
+
 
 # return new ILink object with new virtual ROOT tables (see #56)
 # ex, si TTARIFP est indiqué comme ROOT_TABLE :
@@ -744,7 +783,7 @@ sub open_source_table() {
 		
 		
 		if ($self->{info_table}->{$table_name}->{param_source}) {
-			use Isip::ITable::ODBC_Query;
+			require Isip::ITable::ODBC_Query;
 			$logger->info("Connexion à ODBC : $library");
 			$return_table=ODBC_Query->open($library, $table_name, $self->{info_table}->{$table_name}->{param_source}, $options);
 
@@ -754,7 +793,7 @@ sub open_source_table() {
 			}
 		}
 		else {
-			use ITable::ODBC;
+			require ITable::ODBC;
 			$logger->info("Connexion à ODBC : $library");
 			$return_table=ODBC->open($library, $table_name, $options);
 			
