@@ -13,7 +13,7 @@ use strict;
 use ITable::ITools;
 # commented lines, because modules loaded on demand
 use ITable::ODBC;
-#use ITable::Sqlite;
+use ITable::Sqlite;
 #use Isip::ITable::Histo;
 #use Isip::ITable::HistoField;
 #use Isip::IsipRules;
@@ -285,6 +285,17 @@ sub create_database_environnement() {
 		"PROJECT_CHILD" VARCHAR NOT NULL,
 		"NUM_CHILD" INTEGER,
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "PROJECT_CHILD")
+	)');
+	
+	#$logger->notice("Drop table CACHE_COLUMN");
+	#$master_table->execute('DROP TABLE "CACHE_COLUMN"');
+	$logger->notice("Create table CACHE_COLUMN");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_COLUMN" (
+		"TABLE_NAME" VARCHAR NOT NULL,
+		"FIELD_NAME" VARCHAR NOT NULL,
+		"FOREIGN_TABLE" VARCHAR NOT NULL,
+		"FOREIGN_KEY" VARCHAR NOT NULL,
+		PRIMARY KEY ("TABLE_NAME", "FIELD_NAME")
 	)');
 	
 	$logger->notice("Create table DATE_UPDATE");
