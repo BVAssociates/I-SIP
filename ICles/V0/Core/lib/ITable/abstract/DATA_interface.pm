@@ -401,14 +401,12 @@ sub array_to_hash() {
 	my $self = shift;
 	
 	my @row = @_;
-	croak "Wrong number of fields (has: ".@row.", expected: ".$self->query_field().")" if @row != $self->query_field() ;
+	my @query_field=@{ $self->{query_field} };
+	croak "Wrong number of fields (has: ".@row.", expected: ".@query_field.")" if @row != @query_field ;
 	
 	# convert array into hash
 	my %row_hash;
-	foreach my $field ($self->query_field()) {
-		$row_hash{$field} = shift @row ;
-	}
-	
+	@row_hash{ @query_field} = @row;
 	return %row_hash;
 }
 

@@ -235,18 +235,19 @@ sub insert_row_pp {
 	# transforme texte en tableau de dictionnaire
 	my @table_lines_hash;
 	my $last_line;
+	my $sep=$self->output_separator();
 	foreach my $line ( @table_lines ) {
 		
 		# sauvegarde de la dernière ligne
 		$last_line = $line;
 		
 		# les commentaires et les lignes vides ne sont pas transformés
-		if ( $line !~ /^#/ and $line !~ /^\s*$/ ) {
+		if ( $line !~ /^(?:#|\s*$)/ ) {
 			# enleve les fin de ligne
 			chomp $line;
 			
 			# tranforme la ligne en tableau de valeur
-			my @fields = split($self->output_separator(), $line, -1);
+			my @fields = split(/$sep/o, $line, -1);
 			
 			# transforme les undef en chaine vide (pas de NULL en I-TOOLS)
 			map {$_='' if not defined $_} @fields;
@@ -261,6 +262,7 @@ sub insert_row_pp {
 	
 	my $update_key=0;  # >0 si clef trouvée (mode UPDATE)
 	my $touched=0;  # >0 si valeur modifiée (mode UPDATE)
+	my @key = $self->key();
 	# cherche si clef déjà présente
 	ROW:
 	foreach my $line_hash ( @table_lines_hash ) {
@@ -270,14 +272,14 @@ sub insert_row_pp {
 			my @key_value;
 			
 			# sur chaque ligne, verifie toutes les clefs
-			foreach my $key_field ( $self->key() ) {
+			foreach my $key_field ( @key ) {
 				if ( $line_hash->{$key_field} eq $row{$key_field} ) {
 					$key_match++;
 				}
 			}
 			
 			# si on a trouvé toutes les clefs, on met à jour
-			if ( $key_match == $self->key() ) {
+			if ( $key_match == @key ) {
 				
 				# on est en mode mise à jour
 				$update_key++;
