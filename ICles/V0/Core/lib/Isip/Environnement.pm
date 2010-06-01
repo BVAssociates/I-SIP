@@ -944,6 +944,12 @@ sub create_database_histo() {
 	# opening master table
 	my $master_table=Sqlite->open($database_path, 'sqlite_master');
 	
+	# set default cache size
+	$master_table->execute("PRAGMA default_cache_size = 100000");
+	# make "like" case sensitive
+	$master_table->execute("PRAGMA case_sensitive_like=ON");
+
+
 	$logger->info("Create table $tablename\_HISTO");
 	$master_table->execute("CREATE TABLE IF NOT EXISTS $tablename\_HISTO (
 	ID INTEGER PRIMARY KEY,

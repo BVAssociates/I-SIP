@@ -101,6 +101,7 @@ if ( @ARGV < 0) {
 my $bv_severite=0;
 
 use Isip::IsipConfig;
+use Isip::Environnement;
 
 my $config=IsipConfig->new();
 
@@ -113,9 +114,15 @@ my @environnement_list=$config->get_environnement_list();
 #$current_user = "local" if not $current_user;
 
 foreach my $env_name (@environnement_list) {
-	# relance l'intialisation des tables pour ajouter les nouvelles tables
+	# relance l'intialisation des bases de config pour ajouter les nouvelles tables
 	$config->create_database_environnement($env_name);
 	
+	my $env = Environnement->new($env_name);
+	
+	# relance l'intialisation des bases de tables
+	foreach my $table_name ($env->get_table_list() ) {
+		$env->create_database_histo($table_name);
+	}
 	# regenere les menus
 	require 'PC_GENERATE_MENU.pl';
 	pc_generate_menu::run($env_name);
