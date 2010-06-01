@@ -146,10 +146,11 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			my $perl_condition = $2;
 			$perl_condition =~ s/exit(\s+\d+)?/return $1/g;
 
-			use Safe;
-			my $sandbox = Safe->new();
-			$sandbox->share("%ENV");
-			my $result=$sandbox->reval($perl_condition);
+			#use Safe;
+			#my $sandbox = Safe->new();
+			#$sandbox->share("%ENV");
+			#my $result=$sandbox->reval($perl_condition);
+			my $result=eval($perl_condition);
 			if ($@) {
 				die("Problème pendant l'execution de la condition du menu <$menu_item{Label}> : $@");
 			}

@@ -9,6 +9,7 @@ use fields qw(
 	column_info
 	label
 	type
+	type_reverse
 	table_name
 );
 
@@ -53,6 +54,7 @@ sub new() {
 	# constants identifiers enumeration
 	# TODO : import them from a configuration file
 	%{ $self->{type} } = $class->enum_type;
+	%{ $self->{type_reverse} } = reverse $class->enum_type;
 	%{ $self->{field_status} } = $class->enum_field_status;
 
 	$self->{line_icon} = { $class->enum_line_icon };
@@ -151,18 +153,17 @@ sub get_field_type() {
 	
 	my $col_name=shift or croak("usage get_field_type(col_name)");
 	
-	my %type_by_name= reverse %{$self->{type}};
 	my $type_txt=lc $self->get_field_type_txt($col_name);
 	
 	my $type;
-	if ($type_txt eq "") {
-		$type="";
+	if ($type_txt eq '') {
+		$type='';
 	}
-	elsif (not defined $type_by_name{$type_txt}) {
-		$type="ERROR";
+	elsif (not exists $self->{type_reverse}->{$type_txt}) {
+		$type='ERROR';
 		$logger->error($type_txt." n'est pas un type valide") 
 	} else {
-		$type=$type_by_name{$type_txt};
+		$type=$self->{type_reverse}->{$type_txt};
 	}
 	return $type;
 	
@@ -175,7 +176,7 @@ sub get_field_type_txt() {
 	my $col_name=shift or croak("usage get_field_type_txt(col_name)");
 	
 	my $type = $self->{column_info}->get_type($col_name);
-	$type="" if not defined $type;
+	$type='' if not defined $type;
 	return $type;
 }
 
