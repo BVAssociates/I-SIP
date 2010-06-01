@@ -133,8 +133,8 @@ sub get_query()
 		}
 	}
 	
-	#my @real_query_field=map {(/$self->{_dynamic_field_re}/)?"'' AS $_":$_ } $self->query_field();
-	my @real_query_field=grep {!/$self->{_dynamic_field_re}/} $self->query_field();
+	# retire les chamsp dynamiques de la requete
+	my @real_query_field=grep { ! exists $self->{dynamic_field}->{$_} } $self->query_field();
 		
 	# SQL join to get last inserted KEY/NAME/VALUE
 	## INNER or OUTER ??

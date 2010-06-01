@@ -130,9 +130,8 @@ sub fetch_row_pp()
 	
 	return () if not @row;
 	
-	my $regex=$self->{_dynamic_field_re};
 	foreach my $temp_field (@{ $self->{query_field} }) {
-		if ($temp_field =~ $regex) {
+		if (exists $self->{dynamic_field}->{$temp_field}) {
 			$row_object{$temp_field}="";
 		}
 		else {

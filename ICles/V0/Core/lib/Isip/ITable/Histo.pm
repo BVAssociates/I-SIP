@@ -64,7 +64,8 @@ sub open() {
 	$self->{query_field}  = [ $self->field() ];
 	
 	# fields that Histo is able to compute
-	$self->{dynamic_field}  = [ "ICON" , "PROJECT" ];
+	$self->dynamic_field( "ICON" , "PROJECT" );
+	
 	# add query option
 	$self->{query_date} = $options->{date};
 	$self->{query_key_value} =[];

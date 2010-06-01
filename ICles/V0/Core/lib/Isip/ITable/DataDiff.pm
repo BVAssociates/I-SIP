@@ -69,8 +69,9 @@ sub open() {
 	# default query
 	$self->{field}  = [ $self->{table_target}->field() ];
 	$self->{query_field}  = [ $self->{table_target}->query_field() ];
-	$self->{dynamic_field}  = [ "DIFF",$self->{table_target}->dynamic_field() ];
 	$self->{old_field}  = {};
+
+	$self->dynamic_field( "DIFF",$self->{table_target}->dynamic_field() );
 	
 	$self->_debug("initialisation");
 	
@@ -291,7 +292,7 @@ sub set_old_field_name() {
 	
 	$new_name="OLD_".$field if not $new_name;
 	
-	push @{$self->{dynamic_field}}, $new_name;
+	$self->dynamic_field( $self->dynamic_field(), $new_name );
 	$self->{old_field}->{$new_name}= $field;
 	
 	return 1;

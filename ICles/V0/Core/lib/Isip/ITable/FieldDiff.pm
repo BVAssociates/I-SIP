@@ -28,9 +28,9 @@ sub open() {
 	
 	my $self=bless( $class->SUPER::open(@_), $class);
 	
-	
-	$self->{dynamic_field} = [ $self->dynamic_field ,"OLD_FIELD_VALUE"];
 	$self->{old_field}->{"OLD_FIELD_VALUE"}= "FIELD_VALUE";
+	
+	$self->dynamic_field( $self->dynamic_field ,"OLD_FIELD_VALUE");
 	
 	$self->{comment_field} = ["COMMENT","STATUS","MEMO","PROJECT"];
 	

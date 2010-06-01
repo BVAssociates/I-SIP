@@ -37,8 +37,10 @@ sub open() {
 	$self->{field_desc}= {};
 	$self->{size}= {};
 	$self->{not_null}= [];
-	$self->{dynamic_field} = [];
-	$self->{_dynamic_field_re} = qr/^$/;
+	
+	# stocke un tableau indexé pour une recherche rapide
+	#ex: (field1=>undef, field2=>undef)
+	$self->{dynamic_field} = {};
 	
 	# user query
 	$self->{query_field}  = [];
@@ -96,11 +98,11 @@ sub field {
 sub dynamic_field {
     my $self = shift;
     if (@_) {
-		@{ $self->{dynamic_field} } = @_;
-		my $dyn_list=join('|',@_);
-		$self->{_dynamic_field_re} = qr/^($dyn_list)$/
-	};
-    return @{ $self->{dynamic_field} };
+		foreach my $field (@_) {
+			$self->{dynamic_field}->{$field} = undef;
+		}
+	}
+    return keys %{ $self->{dynamic_field} };
 }
 
 sub field_txt {
@@ -327,9 +329,8 @@ sub fetch_row()
 	
 	return () if not @row;
 	
-	my $regex=$self->{_dynamic_field_re};
 	foreach my $temp_field (@{ $self->{query_field} }) {
-		if ($temp_field =~ $regex) {
+		if (exists $self->{dynamic_field}->{$temp_field}) {
 			$row_object{$temp_field}="";
 		}
 		else {
