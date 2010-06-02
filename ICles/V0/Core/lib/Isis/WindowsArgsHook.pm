@@ -23,15 +23,7 @@ BV Associates, 2009
 
 =cut
 
-# stuff to make standard module
-my $start_date;
 BEGIN {
-    use Exporter   ();
-    our (@ISA, @EXPORT_OK);
-    @ISA         = qw(Exporter);
-    @EXPORT_OK   = qw();
-
-
     map { s/%(\w+)%/$ENV{$1}/g } @ARGV;
     @ARGV = grep { defined($_) && $_ ne '' } @ARGV;
 }
