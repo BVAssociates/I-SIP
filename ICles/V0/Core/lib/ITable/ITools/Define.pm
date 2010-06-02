@@ -211,7 +211,7 @@ sub get_bv_file() {
 	my $self = shift;
 
 	use File::Spec;
-	my $file_name = shift or croak("usage: search_def(file_name [,extension] )");
+	my $file_name = shift or croak("usage: get_bv_file(file_name [,extension] )");
 	my $file_extension = shift;
 	
 	$file_extension="" if not defined $file_extension;
@@ -320,7 +320,12 @@ sub define()
 	
 	# handle special table "pci"
 	if ( $self->{name} eq "pci" ) {
-		$self->{file}=$self->get_bv_file($ENV{TableName}, ".pci");
+		if ( $ENV{TableName} ) {
+			$self->{file}=$self->get_bv_file($ENV{TableName}, ".pci");
+		}
+		if ( ! $self->{file}) {
+			$self->{file}=q{`Search_File %TableName%.pci`};
+		}
 	}
 	
 	# default table when no COMMAND neither FILE

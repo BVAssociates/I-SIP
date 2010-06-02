@@ -114,15 +114,19 @@ usage($debug_level) if uc($for_keyword) ne 'FOR' ;
 
 use ITable::ITools;
 
+# test l'accès à la table
+# print header
+my $def_table = ITools->open($table_name);
+
 $ENV{TableName}=$table_name;
 my $pci_table = ITools->open("pci");
 
-# print header
 if ( ! $no_header ) {
 	print $pci_table->get_header()."\n";
 }
 
-while ( my %menu_item = $pci_table->fetch_row_pp() ) {
+# cherche les entrées de menu (erreur non bloquante)
+while ( my %menu_item = eval { $pci_table->fetch_row_pp() } ) {
 	
 	if ( ! $all_nodetype ) {
 		# detect if called from Table node or Item node
@@ -146,6 +150,7 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			my $perl_condition = $2;
 			$perl_condition =~ s/exit(\s+\d+)?/return $1/g;
 
+			# TODO utilisation de Safe pour éviter les problèmes de sécurité (+lent)
 			#use Safe;
 			#my $sandbox = Safe->new();
 			#$sandbox->share("%ENV");
@@ -157,6 +162,14 @@ while ( my %menu_item = $pci_table->fetch_row_pp() ) {
 			$menu_item{Condition}=($result)?"false":"true";
 		}
 		elsif ( $menu_item{Condition} ) {
+			
+			# recherche du chemin de Perl pour eviter l'appel au shell
+			my $path_sep = ($^O eq 'MSWin32')? ';' : ':';
+			my ($perl_path) = grep { -r "$_/perl.exe"} split ( /$path_sep/, $ENV{PATH} );
+			
+			# le module WindowsArgsHook interprete les variables à la place du Shell
+			$menu_item{Condition} =~ s{^perl\b}{$perl_path/perl.exe -MIsis::WindowsArgsHook};
+			
 			system($menu_item{Condition});
 			if ( $? == -1 ) {
 				die("Erreur au lancement de $menu_item{Condition}");
