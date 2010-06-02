@@ -7,7 +7,7 @@ use strict;
 use Carp qw(carp cluck confess croak );
 use Fcntl qw(:DEFAULT :flock);
 
-use Isip::IsipLog '$logger';
+#use Isip::IsipLog '$logger';
 
 
 ####################################################
@@ -54,7 +54,7 @@ sub _open_table_file {
 			croak("fichier tab introuvable : ".$table_file);
 		}
 		
-		$logger->info("opening ITools table ".$self->table_name." ($table_file)");
+		#$logger->info("opening ITools table ".$self->table_name." ($table_file)");
 		
 		sysopen(my $table_fh, $table_file, $mode)
 		##remplace ouverture simple par idiome Perl de lock
@@ -174,7 +174,7 @@ sub fetch_row_array_pp {
 		
 		if ( $select_output =~ /^#/ or $select_output =~ /^\s*$/) {
 		
-			$logger->debug("DROP: $select_output");
+			#$logger->debug("DROP: $select_output");
 			
 			# get one more line and retry
 			next;
@@ -288,7 +288,7 @@ sub insert_row_pp {
 				foreach my $set_field ( keys %row ) {
 				
 					if ( ! grep { /^$set_field$/ } $self->field() ) {
-						$logger->debug("$set_field est un champ inconnu");
+						#$logger->debug("$set_field est un champ inconnu");
 						next FIELD;
 					}
 					
@@ -305,7 +305,7 @@ sub insert_row_pp {
 						if ( $defined_vars != 2
 							or $line_hash->{$set_field} ne $row{$set_field} )
 						{
-							$logger->debug("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
+							#$logger->debug("update $set_field : $line_hash->{$set_field} = $row{$set_field} ");
 							# 1 des 2 n'est pas défini ou les 2 sont differents
 							$line_hash->{$set_field} = $row{$set_field};
 							

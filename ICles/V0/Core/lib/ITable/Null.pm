@@ -2,7 +2,7 @@ package Null;
 
 # code import
 use strict;
-use Carp qw(carp cluck confess croak );
+use Carp;
 use Scalar::Util qw(blessed);
 
 use ITable::abstract::DATA_interface;

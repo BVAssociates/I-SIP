@@ -3,7 +3,6 @@ package IColumns;
 use strict;
 
 use ITable::ILink;
-use Isip::IsipLog '$logger';
 
 use Carp qw(carp cluck confess croak );
 use Scalar::Util qw(blessed);

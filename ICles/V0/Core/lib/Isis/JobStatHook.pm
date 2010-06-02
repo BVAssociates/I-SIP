@@ -2,9 +2,8 @@ package Isis::JobStatHook;
 
 use strict;
 
-use POSIX 'strftime';
+#use POSIX 'strftime';
 
-use DBI;
 use File::Spec;
 
 
@@ -49,46 +48,55 @@ my $start;
 my $pid;
 
 BEGIN {
+	my @excluded_progname = ("Define_Table", "Get_PCI");
+	
 	$stat_base=$ENV{ISIP_DATA}.'/tab/SCRIPT_STAT.sqlite';
 	if (-r $stat_base) {
 
 		my $args=join(' ',@ARGV);
 		my (undef,undef,$progname)=File::Spec->splitpath( $0 );
-		$pid=abs($$);
 		
-		$start=time();
-		
-		$start_date=strftime "%Y%m%dT%H%M%S-$pid", localtime($start);
-		
-		my $user_name;
-		if (exists $ENV{IsisUser}) {
-			$user_name=$ENV{IsisUser};
-		}
-		else {
-			$user_name=$ENV{USERDOMAIN}."\\".$ENV{USERNAME};
-		}
+		# sauf pour les programmes exclus
+		if ( ! grep { $progname =~ /^$_/i } @excluded_progname ) {
+			
+			$pid=abs($$);
+			
+			$start=time();
+			
+			my ($sec,$min,$hour,$mday,$mon,$year)=localtime($start);
+			$start_date=sprintf("%04d%02d%02dT%02d%02d%02d-%d", $year+1900, ++$mon, $mday, $hour, $min, $sec, $pid );
+			
+			my $user_name;
+			if (exists $ENV{IsisUser}) {
+				$user_name=$ENV{IsisUser};
+			}
+			else {
+				$user_name=$ENV{USERDOMAIN}."\\".$ENV{USERNAME};
+			}
 
-		my $output_file;
-		if ($ENV{OUTPUT_FILE}) {
-			if (not -w $ENV{ISIP_DATA}.'/export') {
-				die("impossible d'ecrire dans le répertoire ".$ENV{ISIP_DATA}.'/export'," : ",$!);
+			my $output_file;
+			if ($ENV{OUTPUT_FILE}) {
+				if (not -w $ENV{ISIP_DATA}.'/export') {
+					die("impossible d'ecrire dans le répertoire ".$ENV{ISIP_DATA}.'/export'," : ",$!);
+				}
+				
+				my ($vol,$dir,undef)=File::Spec->splitpath($ENV{ISIP_DATA}.'/export',1);
+				$output_file=$start_date.'_'.$ENV{OUTPUT_FILE};
+				$output_file =~ s/[:-]//g;
+				
+				$output_file_path=File::Spec->catpath($vol,$dir,$output_file);
 			}
 			
-			my ($vol,$dir,undef)=File::Spec->splitpath($ENV{ISIP_DATA}.'/export',1);
-			$output_file=$start_date.'_'.$ENV{OUTPUT_FILE};
-			$output_file =~ s/[:-]//g;
-			
-			$output_file_path=File::Spec->catpath($vol,$dir,$output_file);
+			require DBI;
+			my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
+			my $req=$database->prepare('insert into SCRIPT_STAT (TIMESTAMP, USER, PROGRAM, PID, ARGV, OUTPUT_FILE)'
+								.' values (?,?,?,?,?,?)');
+			if ($req) {
+				$req->execute($start_date,$user_name,$progname,$pid,$args,$output_file);
+			}
+			$database->disconnect;
+			undef $database;
 		}
-		
-		my $database=DBI->connect("dbi:SQLite:dbname=$stat_base","","");
-		my $req=$database->prepare('insert into SCRIPT_STAT (TIMESTAMP, USER, PROGRAM, PID, ARGV, OUTPUT_FILE)'
-							.' values (?,?,?,?,?,?)');
-		if ($req) {
-			$req->execute($start_date,$user_name,$progname,$pid,$args,$output_file);
-		}
-		$database->disconnect;
-		undef $database;
 	}
 }
 

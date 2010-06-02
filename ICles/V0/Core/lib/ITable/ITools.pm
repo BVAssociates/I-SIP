@@ -1,7 +1,7 @@
 package ITools;
 
 use ITable::ITools::Define;
-use Carp qw(carp cluck confess croak );
+use Carp;
 
 use strict;
 

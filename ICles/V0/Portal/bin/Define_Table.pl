@@ -138,7 +138,6 @@ foreach my $fkey ( $definition->fkey() ) {
 
 
 # Modification de la définition à la volée dans le cas d'exploration temporelle
-use Isip::Environnement;
 
 my $new_format;
 my $new_size;
@@ -149,6 +148,8 @@ if ($env_name and $table_real and $date_explore) {
 	
 	require "PC_GENERATE_MENU.pl";
 	log_erreur("<Environnement> n'est pas défini") if not $env_name;
+	
+	require Isip::Environnement;
 	my $env=Environnement->new($env_name);
 	
 	my @definition=split(/\n/,pc_generate_menu::get_def_table_string($env,$table_real,$date_explore));
