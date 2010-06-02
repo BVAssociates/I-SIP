@@ -960,6 +960,19 @@ public class GenericTreeObjectNode
 		return service_session_id;
 	}
 
+        public String[] getUserResponsabilities()
+	{
+		String[] user_responsabilities = null;
+
+		// Récupération du noeud père
+		GenericTreeObjectNode parent_node = (GenericTreeObjectNode)getParent();
+		// Remontée des appels jusqu'au noeud racine (pas de père)
+		if(parent_node != null)
+		{
+			user_responsabilities = parent_node.getUserResponsabilities();
+		}
+		return user_responsabilities;
+	}
 	/*----------------------------------------------------------
 	* Nom: forwardEvent
 	* 

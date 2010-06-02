@@ -141,6 +141,7 @@ public class SessionTreeObjectNode
 		_agentName = agentName;
 		_serviceType = serviceType;
 		_iClesName = iClesName;
+		_userResponsabilities = null;
 		// Il faut copier le libellé
 		setLabel(originalTreeNode.getLabel());
 		// Il faut également déplacer les enfants
@@ -483,6 +484,16 @@ public class SessionTreeObjectNode
 		trace_methods.endOfMethod();
 		return _serviceSessionId;
 	}
+	
+	public String[] getUserResponsabilities() {
+		return _userResponsabilities;
+	}
+	
+	public void setUserResponsabilities(
+		String[] userResponsabilities
+		) {
+		_userResponsabilities = userResponsabilities;
+	}
 
 	/*----------------------------------------------------------
 	* Nom: forwardEvent
@@ -729,4 +740,6 @@ public class SessionTreeObjectNode
 	* service associée à ce noeud.
 	* ----------------------------------------------------------*/
 	private String _serviceSessionId;
+	
+	private String[] _userResponsabilities;
 }
