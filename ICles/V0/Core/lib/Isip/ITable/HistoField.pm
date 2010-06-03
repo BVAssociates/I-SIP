@@ -5,6 +5,7 @@ use ITable::Sqlite;
 
 use Carp qw(carp cluck confess croak );
 use strict;
+use POSIX qw(strftime);
 
 use Isip::IsipRules;
 use Scalar::Util qw(blessed);
@@ -187,6 +188,27 @@ sub fetch_row() {
 	}
 	
 	return %row;
+}
+
+# update a row on a primary key
+sub update_row() {
+	my $self = shift;
+	
+	my (%row) = @_;
+	
+	# change temporairement la clef pour la mise à jour
+	local $self->{key} = [ "ID" ];
+	
+	# mise à jour auto des dates
+	if ( exists $row{STATUS}
+		or exists $row{COMMENT}
+		or exists $row{PROJECT} )
+	{
+		$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
+		$row{USER_UPDATE} = $ENV{IsisUser};
+	}
+	
+	$self->SUPER::update_row(%row);
 }
  
 =head1 AUTHOR
