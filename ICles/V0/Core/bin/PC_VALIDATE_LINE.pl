@@ -4,12 +4,17 @@
 use strict;
 use Pod::Usage;
 use Getopt::Std;
+use Carp;
 
 use Isip::IsipLog '$logger';
 
 use ITable::ITools;
 use Isip::Environnement;
 use Isip::IsipRules;
+
+use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheProject;
 
 ###########################################################
 =head1 NAME
@@ -18,7 +23,7 @@ PC_VALIDATE_LINE
 
 =head1 SYNOPSIS
 
- PC_VALIDATE_LINE.pl [-t] [-r] environnement table_name commentaires a ajouter
+ PC_VALIDATE_LINE.pl [-t] [-r] [-p projet] environnement table_name commentaires a ajouter
  
 =head1 DESCRIPTION
 
@@ -44,6 +49,8 @@ Ajoute le commentaires obligatoire.
 =item -t : applique l'etat "Test" au lieu de "Valide"
 
 =item -r : recursif sur tous les lignes liées par clef étrangère
+
+=item -p : affecte un nom de projet
 
 =back
 
@@ -90,20 +97,32 @@ sub log_info {
 }
 
 
-# variables globales utilisées pour la recursion
+# variables communes utilisées pour la recursion
 my $global_links;
 my $global_env;
 
 my %connection_pool_table;
 my %connection_pool_field;
 
-my $global_status;
 my $global_comment;
+my $global_project;
 
 sub update_line {
 	my $current_table = shift;
-	my $key_value=shift;
+	my $set_testing   = shift;
+	my $key_value     = shift;
 	
+	if ( ! $current_table
+			or ! $key_value ) {
+		croak('usage: update_line($current_table,$set_testing,$key_value)');
+	}
+	
+	# recuperation des nom des etats
+	my %status_label=IsipRules::enum_field_status();
+
+	my $status_string = $status_label{OK};
+	$status_string = $status_label{TEST} if $set_testing;
+
 	my $table_field;
 	if ( exists $connection_pool_field{$current_table} ) {
 		# reutilise une connexion existante
@@ -128,7 +147,11 @@ sub update_line {
 	
 	my @field_refs;
 	while( my %field_to_update=$table_field->fetch_row() ) {
-		next if $field_to_update{STATUS} eq 'Valide';
+		if ($field_to_update{STATUS} eq 'Valide'
+			and $field_to_update{COMMENT} ) {
+			
+			next;
+		}
 	
 		push @field_refs, \%field_to_update;
 	}
@@ -137,13 +160,23 @@ sub update_line {
 		my %field_to_update = %{$field};
 		log_info("UPDATE FIELD $current_table:$key_value");
 		
-		$table_field->update_row( %{$field} );
+		$field_to_update{PROJECT} = $global_project if defined $global_project;
+		$field_to_update{COMMENT} = $global_comment;
+		$field_to_update{STATUS}  = $status_string;
+		
+		$table_field->update_row( %field_to_update );
 	}
 }
 
 sub recurse_into_table {
 	my $current_table = shift;
-	my %value_of_key=@_;
+	my $set_testing   = shift;
+	my %value_of_key  = @_;
+	
+	if ( ! $current_table 
+		or ! %value_of_key ) {
+		croak('usage: recurse_into_table($current_table,$set_testing,%value_of_key)');
+	}
 	
 	foreach my $child_table ( $global_links->get_child_tables($current_table) ) {
 		
@@ -172,7 +205,7 @@ sub recurse_into_table {
 		}
 		
 		$table->query_condition(@query_condition);
-		$table->query_field('ICON',$table->query_field());
+		$table->query_field('ICON','PROJECT',$table->query_field());
 		
 		my @key_field=$table->key();
 		
@@ -190,12 +223,12 @@ sub recurse_into_table {
 				$line_refs{$keys_child_string} = \%row;
 			}
 
-			recurse_into_table($child_table,%keys_child);
+			recurse_into_table($child_table,$set_testing,%keys_child);
 		}
 		
 		foreach my $line ( values %line_refs ) {
 			my %row = %{$line};
-			update_line($child_table, join(',', @row{@key_field}) );
+			update_line($child_table, $set_testing, join(',', @row{@key_field}) );
 		}
 		
 		# mise à jour du cache si l'icone à changé
@@ -205,13 +238,24 @@ sub recurse_into_table {
 			
 			next if not exists $line_refs{$keys_child_string};
 			
-			if( $row{ICON} ne $line_refs{$keys_child_string}->{ICON} ) {
-				log_info("UPDATE CACHE ($row{ICON}) $child_table:$keys_child_string" );
-				#TODO update cache
+			if( $row{ICON} ne $line_refs{$keys_child_string}->{ICON}
+				or $row{PROJECT} ne $line_refs{$keys_child_string}->{PROJECT} ) {
+				log_info("UPDATE CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
+				
+				#met à jour le cache
+				$row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
+				$row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
+				
+				my $cache=IsipTreeCache->new($global_env);
+				$cache->add_dispatcher(CacheStatus->new($global_env));
+				$cache->add_dispatcher(CacheProject->new($global_env));
+
+				$cache->recurse_line($child_table, \%row);
+				$cache->save_cache();
 			}
 
 			@value_of_key{@key_field} = @row{@key_field};
-			recurse_into_table($child_table,%value_of_key);
+			recurse_into_table($child_table,$set_testing,%value_of_key);
 		}
 	}
 
@@ -223,25 +267,22 @@ sub recurse_into_table {
 
 
 my %opts;
-getopts('Thvrt', \%opts);
+getopts('Thvrtp:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
 
 usage($debug_level+1) if $opts{h};
 
-# recuperation des nom des etats
-my %status_label=IsipRules::enum_field_status();
 
-$global_status = $status_label{OK};
-$global_status = $status_label{TEST} if $opts{t};
-
-my $recursive = $opts{r};
+my $set_testing = $opts{t};
+my $recursive   = $opts{r};
+$global_project = $opts{p};
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV != 2) {
+if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -251,6 +292,10 @@ my $global_environnement=shift;
 my $table_name=shift;
 
 $global_comment=join(' ', @ARGV);
+
+if ( ! $global_comment ) {
+	usage($debug_level);
+}
 
 
 #  Corps du script
@@ -276,10 +321,10 @@ if (not @table_key) {
 }
 
 # met à jour la ligne en cours
-update_line($table_name, $table_key_value);
+update_line($table_name, $set_testing, $table_key_value);
 
 # met à jour recursivement les tables filles
 if ( $recursive ) {
-	recurse_into_table($table_name, %ENV);
+	recurse_into_table($table_name, $set_testing, %ENV);
 }
 
