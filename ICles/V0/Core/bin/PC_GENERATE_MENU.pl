@@ -242,6 +242,8 @@ Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveau
 	my $pci_template_ignore='Item~Surveillance~Ne plus surveiller cette clef et ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~0~~Configure
 Item~Surveillance~Surveiller à nouveau cette clef et ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~0~~Configure
 ';
+	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~~{VALIDATE_PROJECT=getListValue("Projet associé",PROJECT_INFO)}{VALIDATE_COMMENT=getValue("Commentaire de validation")}~ExecuteProcedure~PC_VALIDATE_LINE -r -p "%VALIDATE_PROJECT%" [% environnement %] [% table %] %VALIDATE_COMMENT%~1~~Configure
+';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
 	my $pci_fkey_template='Item~~Explorer sous-tables~user~~~Explore~[% table_list %]~0~~Expand
 ';
@@ -255,6 +257,9 @@ Item~Surveillance~Surveiller à nouveau cette clef et ses sous-tables~expl~perl -
 	if ($env_obj->can_table_ignore($table_name)) {
 		$string .= $pci_template_ignore;
 	}
+	
+	$string .= $pci_template_validate;
+	
 	
 	# get all table having current table as F_KEY
 	my @child_table=$link_obj->get_child_tables($table_name);
