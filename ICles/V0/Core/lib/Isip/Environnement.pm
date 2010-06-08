@@ -18,7 +18,18 @@ use POSIX qw(strftime);
 #use ITable::ITools;
 use Carp qw(carp croak);
 use Isip::IsipLog '$logger';
+
+# modules ITools
 use ITable::ILink;
+use ITable::Sqlite;
+use ITable::XmlFile;
+
+# modules I-SIP
+use Isip::ITable::Histo;
+use Isip::ITable::HistoBaseline;
+use Isip::ITable::HistoField;
+use Isip::ITable::HistoFieldBaseline;
+use Isip::HistoColumns;
 
 sub new() {
     my $proto = shift;
@@ -111,7 +122,7 @@ sub new() {
 sub get_columns() {
 	my $self = shift;
 	
-	use Isip::HistoColumns;
+	
 	
 	my $table_name=shift or croak "usage : get_columns(tablename[,date])";
 	my $query_date=shift;
@@ -591,8 +602,7 @@ sub is_baseline_date() {
 sub open_local_from_histo_table() {
 	my $self = shift;
 	
-	use Isip::ITable::Histo;
-	use Isip::ITable::HistoBaseline;
+	
 	
 	my $table_name=shift or croak "usage : open_histo_table( table_name [,date_explore] )";
 	my $date_explore=shift;
@@ -646,8 +656,7 @@ sub open_local_from_histo_table() {
 sub open_histo_field_table() {
 	my $self = shift;
 	
-	use Isip::ITable::HistoField;
-	use Isip::ITable::HistoFieldBaseline;
+	
 	
 	my $table_name=shift or croak "usage : open_histo_field_table(tablename [,date_explore])";
 	my $date_explore=shift;
@@ -692,8 +701,6 @@ sub open_histo_field_table() {
 sub open_cache_table() {
 	my $self = shift;
 	
-	use ITable::Sqlite;
-	
 	my $table_name=shift or croak "open_cache_table() wait args : 'tablename'";
 	
 	my $tmp_return = eval {Sqlite->open($self->get_sqlite_path($table_name), $table_name, @_)};
@@ -705,8 +712,6 @@ sub open_cache_table() {
 # change this methods to configure Database Access
 sub exist_local_table() {
 	my $self = shift;
-	
-	use ITable::Sqlite;
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename[,environnement]'";
 	my $environnement=shift;
@@ -732,8 +737,6 @@ sub exist_local_table() {
 
 sub open_local_table() {
 	my $self = shift;
-	
-	use ITable::Sqlite;
 	
 	my $table_name=shift or croak "open_local_table() wait args : 'tablename'";
 	
@@ -826,8 +829,6 @@ sub open_source_table() {
 			$logger->error("fichier source manquant $table_name dans ".$self->{environnement});
 			return;
 		}
-		
-		use ITable::XmlFile;
 		
 		$logger->info("Connexion à XML : <$xml_path> dans ".$self->{environnement}."");
 		$return_table=XmlFile->open($xml_path, $table_name, $options);
