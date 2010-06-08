@@ -100,13 +100,16 @@ sub log_info {
 # variables communes utilisées pour la recursion
 my $global_links;
 my $global_env;
-
-my %connection_pool_table;
-my %connection_pool_field;
-
 my $global_comment;
 my $global_project;
 
+# pools de connexions reutilisables
+my $connection_cache_status;
+my %connection_pool_table;
+my %connection_pool_field;
+
+
+# Met à jour les commentaires d'une ligne (cad tous les champs)
 sub update_line {
 	my $current_table = shift;
 	my $set_testing   = shift;
@@ -120,6 +123,7 @@ sub update_line {
 	# recuperation des nom des etats
 	my %status_label=IsipRules::enum_field_status();
 
+	# decide du nouvel etat à attribuer
 	my $status_string = $status_label{OK};
 	$status_string = $status_label{TEST} if $set_testing;
 
@@ -127,14 +131,6 @@ sub update_line {
 	if ( exists $connection_pool_field{$current_table} ) {
 		# reutilise une connexion existante
 		$table_field = $connection_pool_field{$current_table};
-		$table_field->query_field(
-				"ID",
-				"STATUS",
-				"DATE_UPDATE",
-				"USER_UPDATE",
-				"PROJECT",
-				"COMMENT",
-			);
 		$table_field->finish();
 	}
 	else {
@@ -143,22 +139,44 @@ sub update_line {
 		# garde la connexion pour reutilisation
 		$connection_pool_field{$current_table} = $table_field;
 	}
-	$table_field->query_key_value($key_value);
 	
+	# valorise la clef à rechercher
+	$table_field->query_key_value($key_value);
+	$table_field->query_field(
+			"ID",
+			"STATUS",
+			"FIELD_NAME",
+			"DATE_UPDATE",
+			"USER_UPDATE",
+			"PROJECT",
+			"COMMENT",
+		);
+	
+	# tableau des champs à modifier
 	my @field_refs;
+	
+	# recupération des champs à modifier
 	while( my %field_to_update=$table_field->fetch_row() ) {
+		
+		# Si le champ est Valide et que le commentaire
+		# est présent, on passe
 		if ($field_to_update{STATUS} eq 'Valide'
 			and $field_to_update{COMMENT} ) {
 			
 			next;
 		}
-	
+		
+		# met le champ en mémoire
 		push @field_refs, \%field_to_update;
 	}
-	
+
+	# modification effective des champs
+	log_info("UPDATING FIELD $current_table:$key_value");
+	$table_field->begin_transaction();
 	foreach my $field ( @field_refs ) {
 		my %field_to_update = %{$field};
-		log_info("UPDATE FIELD $current_table:$key_value");
+		
+		#use Data::Dumper;warn Dumper($field);
 		
 		$field_to_update{PROJECT} = $global_project if defined $global_project;
 		$field_to_update{COMMENT} = $global_comment;
@@ -166,8 +184,10 @@ sub update_line {
 		
 		$table_field->update_row( %field_to_update );
 	}
+	$table_field->commit_transaction();
 }
 
+# fonction de recursion dans les lignes liées
 sub recurse_into_table {
 	my $current_table = shift;
 	my $set_testing   = shift;
@@ -178,54 +198,68 @@ sub recurse_into_table {
 		croak('usage: recurse_into_table($current_table,$set_testing,%value_of_key)');
 	}
 	
+	# descente dans les tables dependantes
 	foreach my $child_table ( $global_links->get_child_tables($current_table) ) {
 		
 		my %foreign_fields=$global_links->get_foreign_fields($child_table,$current_table);
 		
 		my $table;
 		if ( exists $connection_pool_table{$child_table} ) {
+			# reutilisation de la connexion
 			$table = $connection_pool_table{$child_table};
-			$table->finish();
+			#$table->finish();
 		}
 		else {
 			$table = $global_env->open_local_from_histo_table($child_table);
 			my $type_rules = IsipRules->new($child_table, $global_env);
 			$table->isip_rules($type_rules);
 			
+			# on garde la connexion
 			$connection_pool_table{$child_table} = $table;
+			
 		}
 		
+		# pour chaque champ on recupère la valeur de la clef étrangère
 		my @query_condition;
 		foreach my $foreign_field (keys %foreign_fields) {
+		
 			my $var=$foreign_fields{$foreign_field};
 			if ( $value_of_key{$var} ) {
+				# construction de la condition de selection sur la table liée
 				push @query_condition, "$foreign_field = ".$table->quote($value_of_key{$var});
-				$value_of_key{$foreign_field}=$value_of_key{$var};
+				
 			}
 		}
 		
+		# prepare la requete de selection sur la table fille
 		$table->query_condition(@query_condition);
 		$table->query_field('ICON','PROJECT',$table->query_field());
 		
 		my @key_field=$table->key();
 		
+		$connection_cache_status->load_cache($child_table);
+		
+		# parcours des lignes liées
 		my %line_refs;
 		while ( my %row = $table->fetch_row() ) {
 			
+			# construit la clef
 			my %keys_child;
 			@keys_child{@key_field} = @row{@key_field};
 			
 			my $keys_child_string = join(',', @keys_child{@key_field});
 			
-			if( $row{ICON} ne "valide" ) {
+			if( $row{ICON} ne "valide" or $connection_cache_status->is_dirty_key($child_table,$keys_child_string) ) {
 				#log_info("UPDATE ROW $child_table:".join(',',$row{ICON},@row{@key_field}) );
 				
+				# garde en mémoire pour modification après le parcours
+				# pour eviter le LOCK de la table
 				$line_refs{$keys_child_string} = \%row;
 			}
 
-			recurse_into_table($child_table,$set_testing,%keys_child);
 		}
 		
+		# mise à jour effective des lignes rencontrées
 		foreach my $line ( values %line_refs ) {
 			my %row = %{$line};
 			update_line($child_table, $set_testing, join(',', @row{@key_field}) );
@@ -238,24 +272,27 @@ sub recurse_into_table {
 			
 			next if not exists $line_refs{$keys_child_string};
 			
+			# si un élément est changé, il faut mettre le cache à jour
 			if( $row{ICON} ne $line_refs{$keys_child_string}->{ICON}
 				or $row{PROJECT} ne $line_refs{$keys_child_string}->{PROJECT} ) {
-				log_info("UPDATE CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
+				#log_info("UPDATING CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
 				
 				#met à jour le cache
 				$row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
 				$row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
 				
 				my $cache=IsipTreeCache->new($global_env);
-				$cache->add_dispatcher(CacheStatus->new($global_env));
+				$cache->add_dispatcher($connection_cache_status);
 				$cache->add_dispatcher(CacheProject->new($global_env));
-
+				
 				$cache->recurse_line($child_table, \%row);
+
 				$cache->save_cache();
 			}
 
-			@value_of_key{@key_field} = @row{@key_field};
-			recurse_into_table($child_table,$set_testing,%value_of_key);
+		
+			# appel recursif sur la clef 
+			recurse_into_table($child_table,$set_testing,%row);
 		}
 	}
 
@@ -282,6 +319,9 @@ $global_project = $opts{p};
 #  Traitement des arguments
 ###########################################################
 
+use Encode;
+map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
+
 if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
@@ -304,7 +344,7 @@ if ( ! $global_comment ) {
 my $bv_severite=0;
 
 ## DEBUG ONLY
-if (exists $opts{T}) { $ENV{FHCDTRAIT}='BDGCLT'; $bv_severite=202 };
+if (exists $opts{T}) { $ENV{FHCDTRAIT}='ACH750'; $bv_severite=202 };
 ## DEBUG ONLY
 
 # Initialise variables globales
@@ -325,6 +365,9 @@ update_line($table_name, $set_testing, $table_key_value);
 
 # met à jour recursivement les tables filles
 if ( $recursive ) {
+	
+	$connection_cache_status = CacheStatus->new($global_env);
+	
 	recurse_into_table($table_name, $set_testing, %ENV);
 }
 
