@@ -135,7 +135,21 @@ sub run {
 	use Isip::IsipConfig;
 	
 	$logger->notice("Debut de la verification");
-
+	
+	# verification des modules disponibles
+	eval { require Mail::Sender };
+	if ($@) {
+		$logger->warning("Module Perl absent : Mail::Sender");
+	}
+	eval { require Date::Calc };
+	if ($@) {
+		$logger->warning("Module Perl absent : Date::Calc");
+	}
+	eval { require DBD::ODBC };
+	if ($@) {
+		$logger->error("Module Perl absent : DBD::ODBC");
+	}
+	
 	if ( $winservice_name ) {
 		# test du portail
 		my $winservice_check=`net start |findstr $winservice_name`;
