@@ -121,6 +121,11 @@ sub recurse_into_table {
 	# parcours des champs
 	while ( my %row_to_check = $table_to_check->fetch_row() ) {
 		
+		# cas spécial ou la clef est nouvelle
+		if ( $row_to_check{ICON} eq 'nouveau') {
+			@field_to_return = ( \%row_to_check);
+			last;
+		}
 		if ( $row_to_check{ICON} !~ /^valide/ ) {
 			log_info("Dans la table $table_name, le champ $row_to_check{FIELD_NAME}  de la clef $table_key n'est pas validé");
 			
@@ -128,7 +133,7 @@ sub recurse_into_table {
 			push @field_to_return, \%row_to_check;
 		}
 	}
-		
+			
 	# construction des valeurs de clefs dans un hash
 	my %value_of_key;
 	@value_of_key{ $env->get_table_key($table_name) } = split( /,/, $table_key);
@@ -275,7 +280,7 @@ foreach my $environnement (@environnement_list) {
 		foreach my $row_hash_ref (@$rows_ref) {
 			my %row = %$row_hash_ref;
 			
-			foreach my $field ("TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+			foreach my $field ("ICON", "TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
 				
 				# max()
 				if ( not exists $max_length_of{$field} or (length $row{$field}) > $max_length_of{$field} ) {
@@ -287,6 +292,7 @@ foreach my $environnement (@environnement_list) {
 	
 	# entete
 	my %title_for=(
+		"ICON" => "Etat",
 		"TABLE_NAME" => "Table",
 		"TABLE_KEY" => "Clef",
 		"FIELD_NAME" => "Champ",
@@ -305,7 +311,7 @@ foreach my $environnement (@environnement_list) {
 			# entete pour chaque date de collecte
 			my $total_padding=0;
 			if ( not $message_for{ $row{DATE_HISTO} } ) {
-				foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+				foreach my $field ("ICON","TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
 					my $padding = $max_length_of{$field} - length $title_for{$field};
 					$message_for{ $row{DATE_HISTO} } .= $title_for{$field}. ' ' x ($padding+$space_between);
 					
@@ -317,7 +323,7 @@ foreach my $environnement (@environnement_list) {
 			}
 			
 			# valeur
-			foreach my $field ("TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE" ) {
+			foreach my $field ("ICON", "TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE" ) {
 				my $padding = $max_length_of{$field} - length $row{$field};
 				$message_for{ $row{DATE_HISTO} } .= $row{$field}. ' ' x ($padding+$space_between);
 			}
