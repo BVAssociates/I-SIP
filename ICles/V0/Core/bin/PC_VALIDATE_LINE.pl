@@ -252,7 +252,7 @@ sub recurse_into_table {
 			if( $row{ICON} ne "valide" or $connection_cache_status->is_dirty_key($child_table,$keys_child_string) ) {
 				#log_info("UPDATE ROW $child_table:".join(',',$row{ICON},@row{@key_field}) );
 				
-				# garde en mémoire pour modification après le parcours
+				# garde en mémoire les lignes à traiter+les lignes où descendre
 				# pour eviter le LOCK de la table
 				$line_refs{$keys_child_string} = \%row;
 			}
@@ -262,28 +262,35 @@ sub recurse_into_table {
 		# mise à jour effective des lignes rencontrées
 		foreach my $line ( values %line_refs ) {
 			my %row = %{$line};
-			update_line($child_table, $set_testing, join(',', @row{@key_field}) );
+			
+			# met à jour les lignes non-valides
+			if( $row{ICON} ne "valide" ) {
+				update_line($child_table, $set_testing, join(',', @row{@key_field}) );
+			}
 		}
 		
 		# mise à jour du cache si l'icone à changé
+		$table->query_key_value( keys %line_refs );
 		while ( my %row = $table->fetch_row() ) {
 			
 			my $keys_child_string = join(',', @row{@key_field});
 			
-			next if not exists $line_refs{$keys_child_string};
+			die("UNKNOWN ERROR") if not exists $line_refs{$keys_child_string};
+			
+			#met à jour le cache
+			$row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
+			$row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
 			
 			# si un élément est changé, il faut mettre le cache à jour
-			if( $row{ICON} ne $line_refs{$keys_child_string}->{ICON}
-				or $row{PROJECT} ne $line_refs{$keys_child_string}->{PROJECT} ) {
+			if( $row{ICON} ne $row{OLD_ICON}
+				or $row{PROJECT} ne $row{OLD_PROJECT} )
+			{
+				
 				#log_info("UPDATING CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
 				
-				#met à jour le cache
-				$row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
-				$row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
-				
 				my $cache=IsipTreeCache->new($global_env);
-				$cache->add_dispatcher($connection_cache_status);
-				$cache->add_dispatcher(CacheProject->new($global_env));
+				$cache->add_dispatcher($connection_cache_status) if $row{ICON} ne $row{OLD_ICON};
+				$cache->add_dispatcher(CacheProject->new($global_env)) if $row{PROJECT} ne $row{OLD_PROJECT};
 				
 				$cache->recurse_line($child_table, \%row);
 
@@ -319,9 +326,6 @@ $global_project = $opts{p};
 #  Traitement des arguments
 ###########################################################
 
-use Encode;
-map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
-
 if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
@@ -332,6 +336,9 @@ my $global_environnement=shift;
 my $table_name=shift;
 
 $global_comment=join(' ', @ARGV);
+
+use Encode;
+$global_comment=encode("cp850",$global_comment) if $^O eq 'MSWin32';
 
 if ( ! $global_comment ) {
 	usage($debug_level);
