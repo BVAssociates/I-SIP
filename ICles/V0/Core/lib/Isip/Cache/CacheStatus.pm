@@ -359,32 +359,35 @@ sub save_cache() {
 							"TABLE_SOURCE = ".$table->quote($table_source),
 						);
 				
-				my $num_child;
+				# recupération des valeurs en utilisant les caches mémoire
+				my $old_count_dirty;
 				while (my %row=$table->fetch_row()) {
-					$num_child=$row{NUM_CHILD};
+					$old_count_dirty=$row{NUM_CHILD};
 				}
 				
-				my $memory_num_child=0;
+				my $new_count_dirty=0;
 				if (exists $dirty_keys{$dirty_key}) {
-					$memory_num_child=$dirty_keys{$dirty_key};
+					$new_count_dirty=$dirty_keys{$dirty_key};
 				}
 				
-				if (not defined $num_child) {
-					if ($memory_num_child > 0) {
-						$logger->debug("insert $dirty_table,$dirty_key,memory_num_child");
-						$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $memory_num_child, TABLE_SOURCE => $table_source);
+				# ajout/suppression/modification effective du cache
+				if (not defined $old_count_dirty) {
+					if ($new_count_dirty > 0) {
+						$logger->debug("insert $dirty_table,$dirty_key,$new_count_dirty");
+						$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $new_count_dirty, TABLE_SOURCE => $table_source);
 					}
 				}
 				else {
-					my $sum_dirty=$num_child+$memory_num_child;
-					if ($sum_dirty > 0) {
-						$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
-						$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $sum_dirty, TABLE_SOURCE => $table_source);
+					if ( $new_count_dirty eq $old_count_dirty ) {
+						# rien à faire si la valeur n'a pas changée
+					}
+					elsif ($new_count_dirty > 0) {
+						$logger->debug("update $dirty_table,$dirty_key,$old_count_dirty+$new_count_dirty");
+						$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $new_count_dirty, TABLE_SOURCE => $table_source);
 					}
 					else {
 						$logger->debug("remove $dirty_table,$dirty_key");
 						$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, TABLE_SOURCE => $table_source);
-					
 					}
 				}
 			}
