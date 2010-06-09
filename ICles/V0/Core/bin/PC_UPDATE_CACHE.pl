@@ -178,7 +178,12 @@ sub run {
 		}
 	}
 
-	$cache->clear_cache(@list_table);
+	if ($module) {
+		$cache->clear_cache(@list_table);
+	}
+	else {
+		$cache->clear_cache();
+	}
 	$cache->save_cache;
 	
 	return 1;
