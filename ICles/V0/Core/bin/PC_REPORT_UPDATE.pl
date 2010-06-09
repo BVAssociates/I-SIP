@@ -5,10 +5,12 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
-use Date::Calc qw(:all);
+use Date::Calc;
 
 use Isip::IsipLog '$logger';
 use Mail::Sender;
+
+use Isip::Cache::CacheStatus;
 
 #  Documentation
 ###########################################################
@@ -66,11 +68,11 @@ Copyright (c) 2008 BV Associates. Tous droits réservés.
 #  Fonctions
 ###########################################################
 
-sub sortie ($) {
+sub sortie {
 	exit shift;
 }
 
-sub usage($) {
+sub usage {
 	my $verbosity=shift;
 	pod2usage(-verbose => $verbosity, -noperldoc => 1);
 	sortie(202); 
@@ -87,14 +89,107 @@ sub log_info {
 	$logger->notice(@_);
 }
 
-sub swrite {
-	log_error "usage: swrite PICTURE ARGS" unless @_;
-	my $format = shift;
-	$^A = "";
-	formline($format,@_);
-	return $^A;
-    }
+my $global_links;
 
+# fonction de recursion dans les champs liés
+# retourne un tableau de reference de hash vers les champs modifiés
+sub recurse_into_table {
+	my $table_name = shift;
+	my $table_key  = shift;
+	my $field_name = shift;
+	my $env        = shift;
+	
+	# variable des champs qui seront retournés
+	my @field_to_return;
+	
+	if ( ! $table_name or ! $table_key ) {
+		croak('usage: recurse_into_table($table_name,$table_key,$field_name,$env)');
+	}
+	
+	# recherche dans la table en cours
+	my $table_to_check = $env->open_histo_field_table($table_name);
+	$table_to_check->query_field("ICON", $table_to_check->query_field() );
+	$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
+	
+	# selection sur une clef
+	$table_to_check->query_key_value($table_key);
+	
+	if ( $field_name and $field_name ne '*' ) {
+		$table_to_check->query_condition("FIELD_NAME = ".$table_to_check->quote($field_name));
+	}
+	
+	# parcours des champs
+	while ( my %row_to_check = $table_to_check->fetch_row() ) {
+		
+		if ( $row_to_check{ICON} !~ /^valide/ ) {
+			log_info("Dans la table $table_name, le champ $row_to_check{FIELD_NAME}  de la clef $table_key n'est pas validé");
+			
+			# garde la ligne en mémoire
+			push @field_to_return, \%row_to_check;
+		}
+	}
+		
+	# construction des valeurs de clefs dans un hash
+	my %value_of_key;
+	@value_of_key{ $env->get_table_key($table_name) } = split( /,/, $table_key);
+	
+	# descente dans les tables dependantes
+	foreach my $child_table ( $global_links->get_child_tables($table_name) ) {
+		
+		my %foreign_fields=$global_links->get_foreign_fields($child_table,$table_name);
+		
+		# ouvre la table
+		my $table;
+		$table = $env->open_local_from_histo_table($child_table);
+		
+		# associe une regle pour les icones
+		my $type_rules = IsipRules->new($child_table, $env);
+		$table->isip_rules($type_rules);
+		
+		# pour chaque champ on recupère la valeur de la clef étrangère
+		my @query_condition;
+		foreach my $foreign_field (keys %foreign_fields) {
+		
+			my $var=$foreign_fields{$foreign_field};
+			if ( $value_of_key{$var} ) {
+				# construction de la condition de selection sur la table liée
+				push @query_condition, "$foreign_field = ".$table->quote($value_of_key{$var});
+				
+			}
+		}
+		
+		# prepare la requete de selection sur la table fille
+		$table->query_condition(@query_condition);
+		$table->query_field('ICON',$table->query_field());
+		
+		my @key_field=$table->key();
+		
+		my $connection_cache_status = CacheStatus->new($env);
+		$connection_cache_status->load_cache($child_table);
+		
+		# parcours des lignes liées
+		my %line_refs;
+		while ( my %row = $table->fetch_row() ) {
+			
+			# construit la clef
+			my %keys_child;
+			@keys_child{@key_field} = @row{@key_field};
+			
+			my $keys_child_string = join(',', @keys_child{@key_field});
+			
+			if( $row{ICON} !~ /^valide/ or $connection_cache_status->is_dirty_key($child_table,$keys_child_string) ) {
+				
+				# lance la recursion sur cette clef
+				push @field_to_return , recurse_into_table($child_table, $keys_child_string, '*', $env);
+			}
+		}
+	}
+	
+	#warn Dumper(\@field_to_return);
+	return @field_to_return,
+
+}
+	
 #  Traitement des Options
 ###########################################################
 
@@ -147,6 +242,8 @@ else {
 foreach my $environnement (@environnement_list) {
 
 	my $env = Environnement->new($environnement);
+	
+	$global_links = $env->get_links();
 
 	my %row_array_for;
 	
@@ -164,23 +261,11 @@ foreach my $environnement (@environnement_list) {
 		my $table_key  = $row{TABLE_KEY};
 		my $field_name = $row{FIELD_NAME};
 		
-		my $table_to_check = $env->open_histo_field_table($table_name);
-		$table_to_check->query_key_value($table_key);
-		$table_to_check->query_condition("FIELD_NAME = ".$table_to_check->quote($field_name));
-		$table_to_check->query_field("ICON", $table_to_check->query_field() );
-
-		$table_to_check->isip_rules( IsipRules->new($table_name, $env) );
-		
-		while ( my %row_to_check = $table_to_check->fetch_row() ) {
-			
-			if ( $row_to_check{ICON} !~ /^valide/ ) {
-				log_info("Dans la table $table_name, le champ $field_name  de la clef $table_key n'est pas validé");
-				
-				# garde la ligne en mémoire
-				push @{ $row_array_for{$group} } , \%row_to_check;
-			}
-		}
+		push @{ $row_array_for{$group} } , recurse_into_table($table_name, $table_key, $field_name, $env);
+		#use Data::Dumper; warn Dumper [ $group, recurse_into_table($table_name, $table_key, $field_name, $env) ];
 	}
+	
+	#use Data::Dumper; die Dumper(\%row_array_for);
 
 	# première passe pour recuperer la taille des colonnes du tableau
 	my %max_length_of;
