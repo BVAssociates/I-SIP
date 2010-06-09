@@ -12,8 +12,8 @@ use strict;
 
 use ITable::ITools;
 # commented lines, because modules loaded on demand
-use ITable::ODBC;
-use ITable::Sqlite;
+#use ITable::ODBC;
+#use ITable::Sqlite;
 #use Isip::ITable::Histo;
 #use Isip::ITable::HistoField;
 #use Isip::IsipRules;
@@ -85,6 +85,7 @@ sub get_odbc_database_name() {
 	
 	my $library_type=$self->{info_module}->{$module}->{library_type};
 	
+	require ITable::ODBC;
 	my $module_table=ODBC->open("IKGSENV","ENVBIBP", $self->get_odbc_option($environnement));
 	
 	$module_table->query_condition(
@@ -241,8 +242,15 @@ sub create_database_environnement() {
 	}
 	
 	# opening master table
+	require ITable::Sqlite;
 	my $master_table=Sqlite->open($database_path, 'sqlite_master');
 	
+	
+	# set default cache size
+	$master_table->execute("PRAGMA default_cache_size = 100000");
+	# make "like" case sensitive
+	$master_table->execute("PRAGMA case_sensitive_like=ON");
+
 	
 	$logger->notice("Create table TABLE_INFO");
 	$master_table->execute('CREATE TABLE IF NOT EXISTS TABLE_INFO (
