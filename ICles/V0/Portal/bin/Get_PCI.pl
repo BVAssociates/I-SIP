@@ -161,14 +161,27 @@ while ( my %menu_item = eval { $pci_table->fetch_row_pp() } ) {
 			}
 			$menu_item{Condition}=($result)?"false":"true";
 		}
-		elsif ( $menu_item{Condition} ) {
+		elsif ( $menu_item{Condition} =~ /^perl/ ) {
 			
 			# recherche du chemin de Perl pour eviter l'appel au shell
-			my $path_sep = ($^O eq 'MSWin32')? ';' : ':';
-			my ($perl_path) = grep { -r "$_/perl.exe"} split ( /$path_sep/, $ENV{PATH} );
+			my $path_sep;
+			my $perl_bin;
+			my $script_extension;
+			if ( $^O eq 'MSWin32') {
+				$path_sep         = ';';
+				$perl_bin         = 'perl.exe';
+				$script_extension = '.bat';
+			}
+			else {
+				$path_sep         = ':';
+				$perl_bin         = 'perl';
+				$script_extension = '';
+			}
+			my ($perl_path) = grep { -r "$_/$perl_bin"} split ( /$path_sep/, $ENV{PATH} );
 			
-			# le module WindowsArgsHook interprete les variables à la place du Shell
-			$menu_item{Condition} =~ s{^perl\b}{$perl_path/perl.exe -MIsis::WindowsArgsHook};
+			# le module WindowsArgsHook interprete les arguments à la place du Shell
+			$menu_item{Condition} =~ s{^perl\b}{$perl_path/$perl_bin -MIsis::WindowsArgsHook};
+			$menu_item{Condition} = $menu_item{Condition}.$script_extension;
 			
 			system($menu_item{Condition});
 			if ( $? == -1 ) {
@@ -178,6 +191,17 @@ while ( my %menu_item = eval { $pci_table->fetch_row_pp() } ) {
 			
 			$menu_item{Condition}=($result)?"false":"true";
 		}
+		elsif ( $menu_item{Condition} ) {
+			# execution directe du script dans le shell
+			
+			system($menu_item{Condition});
+			if ( $? == -1 ) {
+				die("Erreur au lancement de $menu_item{Condition}");
+			}
+			my $result=$? >> 8;
+			
+			$menu_item{Condition}=($result)?"false":"true";
+		}			
 		else {
 			$menu_item{Condition}="true";
 		}
