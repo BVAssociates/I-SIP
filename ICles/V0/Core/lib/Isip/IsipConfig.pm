@@ -41,7 +41,7 @@ sub new() {
 	
 	$self->{isip_config}={
 		smtp_host => $ENV{SMTP_HOST},
-		smtp_from => 'isip@groupeicf.fr',
+		smtp_from => $ENV{SMTP_FROM},
 	};
 	
 	$self->{export_dir}= $ENV{ISIP_DATA}.'/export';

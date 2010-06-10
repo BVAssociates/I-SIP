@@ -8,7 +8,8 @@ ISIP_HOME=${CLES_HOME}/${ICleName}
 ISIP_DATA=${CLES_HOME}/DATA
 ISIP_EXPORT=//isip/export_TEST
 ISIP_DOC=//isip/documentation
-SMTP_HOST=smtp.sicf.fr
+SMTP_HOST=smtp.domain.fr
+SMTP_FROM=isip@domain.fr
 PERL_PATH=${ISIP_HOME}/V0/Core/bin:${ISIP_HOME}/V0/Portal/bin
 
 # edit with care!
