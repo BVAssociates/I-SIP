@@ -127,3 +127,7 @@ foreach my $env_name (@environnement_list) {
 	require 'PC_GENERATE_MENU.pl';
 	pc_generate_menu::run($env_name);
 }
+
+warn '-' x 80 ."\n";
+warn "Action non-réalisée : Créer la variable SMTP_FROM dans le chargement du portail\n";
+warn "Action non-réalisée : Mise à jour de la console I-SIP\n";
