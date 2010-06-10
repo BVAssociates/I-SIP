@@ -55,14 +55,28 @@ my %converter_for_type=(
 		pl2bat  => "pl2bat",
 		unix  => \&convert_unix,
 	);
+
+my %default_converter_for_os=(
+		MSWin32  => 'pl2bat',
+		linux    => 'unix',
+		aix      => 'unix',
+	);
 	
 my $converter_type=shift;
 
-my $converter=$converter_for_type{$converter_type};
+if ( ! defined $converter_type ) {
+	$converter_type=$default_converter_for_os{$^O};
+	
+	if ( $converter_type ) {
+		print "Utilisation du convertisseur par default : $converter_type\n";
+	}
+}
 
 if ( ! grep { $_ eq $converter_type } keys %extension_for_converter)  {
 	die( "usage: ".basename($0)." (".join('|', keys %extension_for_converter).")" );
 }
+
+my $converter=$converter_for_type{$converter_type};
 
 my $bat_dir=canonpath ("$ENV{ISIP_HOME}/V0/bat/bin");
 
@@ -75,13 +89,13 @@ my @exclude=("/batch/", "/old/", "/.svn");
 ############
 
 
+my %already_done;
 sub wanted {
 	#$File::Find::dir = /some/path/
 	#$_ = foo.ext
 	#$File::Find::name = /some/path/foo.ext
 	
 	return if grep { $File::Find::name =~ /\Q$_\E/ } @exclude;
-	my %already_done;
 	if ( $File::Find::name =~ /^(.+)\.pl$/i ) {
 		
 		my $bat_name=$1.$extension_for_converter{$converter};
