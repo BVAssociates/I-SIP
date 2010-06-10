@@ -6,6 +6,7 @@ use Pod::Usage;
 use Getopt::Std;
 
 use Date::Calc;
+use Carp;
 
 use Isip::IsipLog '$logger';
 use Mail::Sender;
@@ -124,7 +125,7 @@ sub recurse_into_table {
 		# cas spécial ou la clef est nouvelle
 		if ( $row_to_check{ICON} eq 'nouveau') {
 			@field_to_return = ( \%row_to_check);
-			last;
+			return @field_to_return;
 		}
 		if ( $row_to_check{ICON} !~ /^valide/ ) {
 			log_info("Dans la table $table_name, le champ $row_to_check{FIELD_NAME}  de la clef $table_key n'est pas validé");
