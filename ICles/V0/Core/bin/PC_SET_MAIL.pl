@@ -15,7 +15,7 @@ PC_SET_MAIL - ajouter le champ dans la table FIELD_MAIL
 
 =head1 SYNOPSIS
 
- PC_SET_MAIL.pl [-h] [-v] (-d|-a) environnement tablename clef champ groupe
+ PC_SET_MAIL.pl [-h] [-v] (-d|-a) [-f champ] environnement tablename clef groupe
  
 =head1 DESCRIPTION
 
@@ -96,7 +96,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvda', \%opts);
+getopts('hvdaf:k:', \%opts);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -105,12 +105,17 @@ usage($debug_level+1) if $opts{h};
 
 usage($debug_level+1) if not ($opts{a} xor $opts{d} );
 
-my $add_group=$opts{a};
+my $add_group = $opts{a};
+
+my $field = $opts{f};
+$field = '*' if not $field;
+
+my $key = $opts{k};
 
 #  Traitement des arguments
 ###########################################################
 
-if ( @ARGV < 5) {
+if ( @ARGV < 3) {
 	log_info("Nombre d'argument incorrect (".@ARGV.")");
 	usage($debug_level);
 	sortie(202);
@@ -118,8 +123,6 @@ if ( @ARGV < 5) {
 
 my $environnement=shift;
 my $table_name=shift;
-my $key=shift;
-my $field=shift;
 my $group=shift;
 
 #  Corps du script
@@ -133,6 +136,21 @@ my $env=Environnement->new($environnement);
 
 my $alert_table=$env->open_local_table("FIELD_MAIL");
 
+if ( ! defined $key ) {
+	my @key_fields = $env->get_table_key($table_name);
+	
+	my @key_values;
+	foreach my $field ( @key_fields) {
+		if ( ! $ENV{$field} ) {
+			log_error("le champ de clef <$field> n'est pas definie dans l'environnement");
+		}
+		else {
+			push @key_values, $ENV{$field};
+		}
+	}
+	
+	$key = join ( ',', @key_values);
+}
 
 my %alert_table_line=(
 		MAIL_GROUP => $group,
@@ -141,11 +159,11 @@ my %alert_table_line=(
 		FIELD_NAME => $field,
 	);
 
-$alert_table->delete_row(%alert_table_line);
+
 
 if ( $add_group ) {
 
-	log_info("Ajout de la ligne au groupe : ".$group);
+	log_info("Ajout de la ligne <$key> au groupe : ".$group);
 	# add update info
 	use POSIX qw(strftime);
 	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
@@ -154,7 +172,16 @@ if ( $add_group ) {
 	$alert_table_line{DATE_UPDATE} = $timestamp;
 	$alert_table_line{USER_UPDATE} = $current_user;
 	
-	$alert_table->insert_row(%alert_table_line);
+	eval { $alert_table->insert_row(%alert_table_line) };
+	if ($@ =~ /not unique/) {
+		log_error("clef déjà surveillée");
+	}
+	elsif ($@) {
+		log_error($@);
+	}
+}
+else {
+	$alert_table->delete_row(%alert_table_line);
 }
 
 
