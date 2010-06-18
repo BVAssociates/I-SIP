@@ -149,6 +149,24 @@ sub run {
 	if ($@) {
 		$logger->error("Module Perl absent : DBD::ODBC");
 	}
+	eval { require IPC::ODBC };
+	if ($@) {
+		$logger->error("Module Perl absent : DBD::ODBC");
+	}
+	
+	# verification des variables
+	my @dir_vars = ("ISIP_HOME","ISIP_DATA","ISIP_EXPORT","ISIP_DOC");
+	my @conf_vars = ("SMTP_HOST", "SMTP_FROM");
+	foreach my $var ( @dir_vars, @conf_vars) {
+		if ( ! $var ) {
+			$logger->error("$var n'est pas definie dans l'environnement");
+		}
+	}
+	foreach my $var ( @dir_vars ) {
+		if ( ! -d $ENV{$var} ) {
+			$logger->error("$var ($ENV{$var}) n'est pas un répertoire valide");
+		}
+	}
 	
 	if ( $winservice_name ) {
 		# test du portail
@@ -179,7 +197,7 @@ sub run {
 				next;
 			}
 			else {
-				$logger->info( "$environnement \t: OK" );
+				$logger->notice( "$environnement \t: OK" );
 			}
 			
 			# lance la vérification de connexion
@@ -199,7 +217,7 @@ sub run {
 				$error_count += $tmp_error_count
 			}
 			else {
-				$logger->error("tables de $environnement \t: OK");
+				$logger->info("tables de $environnement \t: OK");
 			}
 		}
 	}
