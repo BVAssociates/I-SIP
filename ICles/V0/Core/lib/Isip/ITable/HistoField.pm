@@ -196,19 +196,29 @@ sub update_row() {
 	
 	my (%row) = @_;
 	
-	# change temporairement la clef pour la mise à jour
-	local $self->{key} = [ "ID" ];
 	
 	# mise à jour auto des dates
 	if ( exists $row{STATUS}
 		or exists $row{COMMENT}
 		or exists $row{PROJECT} )
 	{
-		$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
-		$row{USER_UPDATE} = $ENV{IsisUser};
+		if ( ! exists $row{DATE_UPDATE} ) {
+			$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
+		}
+		
+		if ( ! exists $row{USER_UPDATE} ) {
+			$row{USER_UPDATE} = $ENV{IsisUser};
+		}
 	}
 	
-	$self->SUPER::update_row(%row);
+	# change temporairement la clef pour la mise à jour
+	if ( exists $row{ID} ) {
+		local $self->{key} = [ "ID" ];
+		$self->SUPER::update_row(%row);
+	}
+	else {
+		$self->SUPER::update_row(%row);
+	}
 }
  
 =head1 AUTHOR
