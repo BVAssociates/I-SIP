@@ -105,7 +105,6 @@ my $global_project;
 
 # pools de connexions reutilisables
 my $connection_cache_status;
-my %connection_pool_table;
 my %connection_pool_field;
 
 
@@ -203,21 +202,9 @@ sub recurse_into_table {
 		
 		my %foreign_fields=$global_links->get_foreign_fields($child_table,$current_table);
 		
-		my $table;
-		if ( exists $connection_pool_table{$child_table} ) {
-			# reutilisation de la connexion
-			$table = $connection_pool_table{$child_table};
-			#$table->finish();
-		}
-		else {
-			$table = $global_env->open_local_from_histo_table($child_table);
-			my $type_rules = IsipRules->new($child_table, $global_env);
-			$table->isip_rules($type_rules);
-			
-			# on garde la connexion
-			$connection_pool_table{$child_table} = $table;
-			
-		}
+		my $table = $global_env->open_local_from_histo_table($child_table);
+		my $type_rules = IsipRules->new($child_table, $global_env);
+		$table->isip_rules($type_rules);
 		
 		# pour chaque champ on recupère la valeur de la clef étrangère
 		my @query_condition;
@@ -259,47 +246,52 @@ sub recurse_into_table {
 
 		}
 		
-		# mise à jour effective des lignes rencontrées
-		foreach my $line ( values %line_refs ) {
-			my %row = %{$line};
-			
-			# met à jour les lignes non-valides
-			if( $row{ICON} ne "valide" ) {
-				update_line($child_table, $set_testing, join(',', @row{@key_field}) );
+		# il existe des lignes à mettre à jour
+		if ( %line_refs ) {
+			# mise à jour effective des lignes rencontrées
+			foreach my $line ( values %line_refs ) {
+				my %row = %{$line};
+				
+				# met à jour les lignes non-valides
+				if( $row{ICON} ne "valide" ) {
+					update_line($child_table, $set_testing, join(',', @row{@key_field}) );
+				}
 			}
-		}
-		
-		# mise à jour du cache si l'icone à changé
-		$table->query_key_value( keys %line_refs );
-		while ( my %row = $table->fetch_row() ) {
 			
-			my $keys_child_string = join(',', @row{@key_field});
-			
-			die("UNKNOWN ERROR") if not exists $line_refs{$keys_child_string};
-			
-			#met à jour le cache
-			$row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
-			$row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
-			
-			# si un élément est changé, il faut mettre le cache à jour
-			if( $row{ICON} ne $row{OLD_ICON}
-				or $row{PROJECT} ne $row{OLD_PROJECT} )
-			{
+			# mise à jour du cache si l'icone à changé
+			$table->query_key_value( keys %line_refs );
+			while ( my %row = $table->fetch_row() ) {
 				
-				#log_info("UPDATING CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
+				# appel recursif sur la clef 
+				recurse_into_table($child_table,$set_testing,%row);
 				
-				my $cache=IsipTreeCache->new($global_env);
-				$cache->add_dispatcher($connection_cache_status) if $row{ICON} ne $row{OLD_ICON};
-				$cache->add_dispatcher(CacheProject->new($global_env)) if $row{PROJECT} ne $row{OLD_PROJECT};
+				my $keys_child_string = join(',', @row{@key_field});
 				
-				$cache->recurse_line($child_table, \%row);
+				die("La ligne <$keys_child_string> de la table $child_table n'existe plus après mise à jour") if not exists $line_refs{$keys_child_string};
+				
+				{
+					#met à jour le cache
+					local $row{OLD_ICON} = $line_refs{$keys_child_string}->{ICON};
+					local $row{OLD_PROJECT} = $line_refs{$keys_child_string}->{PROJECT};
+					
+					# si un élément est changé, il faut mettre le cache à jour
+					if( $row{ICON} ne $row{OLD_ICON}
+						or $row{PROJECT} ne $row{OLD_PROJECT} )
+					{
+						
+						#log_info("UPDATING CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
+						
+						my $cache=IsipTreeCache->new($global_env);
+						$cache->add_dispatcher($connection_cache_status) if $row{ICON} ne $row{OLD_ICON};
+						$cache->add_dispatcher(CacheProject->new($global_env)) if $row{PROJECT} ne $row{OLD_PROJECT};
+						
+						$cache->recurse_line($child_table, \%row);
 
-				$cache->save_cache();
+						$cache->save_cache();
+					}
+				}
+
 			}
-
-		
-			# appel recursif sur la clef 
-			recurse_into_table($child_table,$set_testing,%row);
 		}
 	}
 
