@@ -48,6 +48,11 @@ sub new() {
 	if (@_ < 0) {
 		croak ($usage);
 	}
+	
+	# verification de la plateforme
+	if ( $^O ne 'MSWin32' ) {
+		die("Classe non compatible avec le système d'exploitation");
+	}
 
 	$self->{current_process}={};
 	
@@ -90,10 +95,32 @@ sub exec_script {
 	
 	my $progname=shift or croak("usage: exec_script(progname,(args,...))");
 	my $args=join(' ',map {'"'.$_.'"'} @_);
-	
-	my $perl_interpreter='c:\Perl\bin\perl.exe';
-	
 
+	my @search_path = split(/;/ , $ENV{PATH});
+	my @search_extension = split(/;/ , $ENV{PATHEXT});
+	# ajoute l'extension vide à la recherche
+	unshift @search_extension, '';
+	
+	my $perl_interpreter;
+	PERL_SEARCH:
+	foreach my $path ( @search_path ) {
+		if ( -r $path.'\perl.exe' ) {
+			$perl_interpreter = $path.'\perl.exe';
+			last PERL_SEARCH;
+		}
+	}
+	
+	SCRIPT_SEARCH:
+	foreach my $path ( @search_path ) {
+		foreach my $extension ( @search_extension ) {
+			if ( -r $path.'/'.$progname.$extension ) {
+				$progname = $progname.$extension;
+				last SCRIPT_SEARCH;
+			}
+		}
+	}
+
+	
 	my $full_command='perl.exe -S -MIsis::JobStatHook=background "'.$progname.'" '.$args;
 	
 	use POSIX 'strftime';

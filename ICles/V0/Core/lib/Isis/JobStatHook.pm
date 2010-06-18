@@ -140,13 +140,26 @@ sub import() {
 		$database->disconnect;
 		undef $database;
 		
-		close STDIN;
-		close STDOUT;
-		
 		if ($output_file_path) {
-			open STDOUT, '>', $output_file_path or die ($output_file_path, ' ; ',$!);
+			# "touch" the file
+			print "touch $output_file_path";
+			open TOUCH, '>', $output_file_path or die ($output_file_path, ' ; ',$!);
+			close TOUCH;
+			
+			if ( -r $output_file_path ) {
+				close STDOUT;
+				open STDOUT, '>', $output_file_path or die ($output_file_path, ' ; ',$!);
+			}
+			else {
+				die ("Probleme lors de la création de $output_file_path");
+			}
+			
+		}
+		else {
+			close STDOUT;
 		}
 
+		close STDIN;
 		close STDERR;
 	}
 }
