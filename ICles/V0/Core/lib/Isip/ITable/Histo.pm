@@ -288,11 +288,15 @@ sub get_query()
 	push @select_conditions, "TABLE_KEY IN (".join(',', map {"'".$_."'"} $self->query_key_value).")" if $self->query_key_value;
 	
 	if (%query_key) {
+		my $cmp_operator = '=';
 		# put joker on unknown keys
 		foreach (@field_key) {
-			$query_key{$_}='%' if not $query_key{$_};
+			if ( not $query_key{$_} ) {
+				$query_key{$_} = '%' ;
+				$cmp_operator  = 'like';
+			}
 		}
-		push @select_conditions, "TABLE_KEY like '".join(',',@query_key{@field_key})."'" ;
+		push @select_conditions, "TABLE_KEY $cmp_operator '".join(',',@query_key{@field_key})."'" ;
 	}
 		
 	## TO DISCUSS: we must get all field to know the status of whole line!
