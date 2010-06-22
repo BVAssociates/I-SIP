@@ -6,7 +6,10 @@ use strict;
 use Pod::Usage;
 use Getopt::Std;
 
+use Encode;
+
 use Isip::IsipLog '$logger';
+use ITable::Null;
 
 
 #  Documentation
@@ -278,8 +281,9 @@ sub run {
 		my $env_sip_to = $env_sip;
 		
 		# open first table
-		my $table_from = $env_sip_from->open_histo_field_table($table_name, $date_compare,{debug => $debug_level});
-		my $table_to = $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level});
+		my $table_from = eval { $env_sip_from->open_histo_field_table($table_name, $date_compare,{debug => $debug_level}) };
+
+		my $table_to = eval { $env_sip_to->open_histo_field_table($table_name, $date_explore,{debug => $debug_level}) };
 		
 		# simulate empty table
 		#  (ie. if table is missing in an Env)
@@ -395,11 +399,17 @@ sub run {
 			next if $diff_rules->is_field_hidden(%row);
 			
 			if ($filter->is_display_line(%row)) {
+
+				my $line_to_print = join($separator,$table_status->hash_to_array(%row));
+				if ( $report_mode ) {
+					$line_to_print = encode('cp1250', $line_to_print);
+				}
 				if ($all_key) {
-					print join($separator,$table_status->hash_to_array(%row))."\n";
+					# corrige le codage des caractères pour Excel
+					print $line_to_print."\n";
 				}
 				else {
-					$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
+					$memory_row{$row{FIELD_NAME}}= $line_to_print."\n";
 				}
 			}
 		}
