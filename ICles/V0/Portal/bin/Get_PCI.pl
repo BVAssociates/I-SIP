@@ -134,7 +134,8 @@ while ( my %menu_item = eval { $pci_table->fetch_row_pp() } ) {
 			next if $menu_item{NodeType} eq 'Table';
 		}
 		else {
-			next if $menu_item{NodeType} eq 'Item';
+			#TODO probleme si Key est vide
+			#next if $menu_item{NodeType} eq 'Item';
 		}
 	}
 	
@@ -148,7 +149,7 @@ while ( my %menu_item = eval { $pci_table->fetch_row_pp() } ) {
 		
 		if ( $menu_item{Condition} =~ /^perl -e ([\"\'])(.*)\1$/ ) {
 			my $perl_condition = $2;
-			$perl_condition =~ s/exit(\s+\d+)?/return $1/g;
+			$perl_condition =~ s/\bexit\b/return/g;
 
 			# TODO utilisation de Safe pour éviter les problèmes de sécurité (+lent)
 			#use Safe;
