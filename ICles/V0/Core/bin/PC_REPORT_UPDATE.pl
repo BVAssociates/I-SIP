@@ -124,6 +124,9 @@ sub recurse_into_table {
 		
 		# cas spécial ou la clef est nouvelle
 		if ( $row_to_check{ICON} eq 'nouveau') {
+		
+			delete $row_to_check{FIELD_NAME};
+			delete $row_to_check{FIELD_VALUE};
 			@field_to_return = ( \%row_to_check);
 			return @field_to_return;
 		}
@@ -274,21 +277,39 @@ foreach my $environnement (@environnement_list) {
 	#use Data::Dumper; die Dumper(\%row_array_for);
 
 	# première passe pour recuperer la taille des colonnes du tableau
+	# et retirer les doublons
 	my %max_length_of;
 	while (my ($group, $rows_ref) = each %row_array_for) {
 		
-		my %message_for;
+		my %uniq_table_key;
+		my @new_rows_ref;
 		foreach my $row_hash_ref (@$rows_ref) {
 			my %row = %$row_hash_ref;
 			
+			# verification des doublons
+			my $table_key = $row{TABLE_NAME}.$row{TABLE_KEY};
+			if ( exists $uniq_table_key{$table_key}) {
+				log_info("Table $row{TABLE_NAME}, clef $row{TABLE_KEY}");
+				next;
+			}
+			else {
+				push @new_rows_ref, $row_hash_ref;
+				$uniq_table_key{$table_key}++;
+			}
+			
 			foreach my $field ("ICON", "TABLE_NAME", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE") {
+				my $value = $row{$field};
+				$value = '' if ! defined $value;
 				
 				# max()
-				if ( not exists $max_length_of{$field} or (length $row{$field}) > $max_length_of{$field} ) {
-					$max_length_of{$field} = length $row{$field};
+				if ( not exists $max_length_of{$field} or (length $value) > $max_length_of{$field} ) {
+					$max_length_of{$field} = length $value;
 				}
 			}
 		}
+		
+		# mise à jour avec la nouvelle liste sans doublons
+		$row_array_for{$group}=\@new_rows_ref;
 	}
 	
 	# entete
@@ -325,8 +346,11 @@ foreach my $environnement (@environnement_list) {
 			
 			# valeur
 			foreach my $field ("ICON", "TABLE_NAME" ,"TABLE_KEY", "FIELD_NAME", "FIELD_VALUE" ) {
-				my $padding = $max_length_of{$field} - length $row{$field};
-				$message_for{ $row{DATE_HISTO} } .= $row{$field}. ' ' x ($padding+$space_between);
+				my $value = $row{$field};
+				$value = '' if ! defined $value;
+			
+				my $padding = $max_length_of{$field} - length $value;
+				$message_for{ $row{DATE_HISTO} } .= $value. ' ' x ($padding+$space_between);
 			}
 			$message_for{ $row{DATE_HISTO} } .= "\n";
 			
