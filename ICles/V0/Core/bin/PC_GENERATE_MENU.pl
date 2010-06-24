@@ -234,11 +234,11 @@ sub get_pci_table_string {
 	
 	if ($display_table eq $table_name) {
 		$pci_template.='Item~~Détailler les champs~user~perl -S HAS_FIELD_MENU~~Explore~IKOS_FIELD_[% environnement %]_[% table %]~0~~Expand
+Item~Surveillance~Etre alerter par courriel~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire des courriels",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%GROUP_ALERT%"~0~~Configure
 ';
 	}
 	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
-Item~Surveillance~Etre alerter par courriel~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire des courriels",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%GROUP_ALERT%"~0~~Configure
 ';
 	my $pci_template_ignore='Item~Surveillance~Ignorer l\'état cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~1~~Configure
 Item~Surveillance~Ne plus ignorer l\état de cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~1~~Configure
