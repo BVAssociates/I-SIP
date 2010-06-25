@@ -337,16 +337,22 @@ sub run {
 			# pre-select list of keys based on condition (not ICON field)
 			if (my @pre_condition = grep { !/^ICON/ } $filter->get_query_condition) {
 				
-			
+				my @ori_condition = $table_to->query_condition();
 				$table_to->query_condition(@pre_condition);
+				
 				my %target_key_condition;
 				
 				while (my %row=$table_to->fetch_row) {
 					$target_key_condition{$row{TABLE_KEY}}++;
 				}
 				
-				# NOT SURE
-				$table_to->query_condition(undef);
+				# restore old condition
+				if ( @ori_condition ) {
+					$table_to->query_condition(@ori_condition);
+				}
+				else {
+					$table_to->query_condition(undef);
+				}
 				
 				if (%target_key_condition) {
 					$table_from->query_key_value(keys %target_key_condition);
@@ -376,7 +382,7 @@ sub run {
 		
 		# declare some additionnal blank fields
 		# (ICON field will be computed into DataDiff)
-		$table_status->dynamic_field("ICON",$table_status->dynamic_field);
+		$table_status->dynamic_field("DIFF","ICON",$table_status->dynamic_field);
 		#$table_status->query_field(@query_field,"OLD_FIELD_VALUE","DIFF");
 		$table_status->query_field(@query_field);
 		
@@ -402,10 +408,10 @@ sub run {
 
 				my $line_to_print = join($separator,$table_status->hash_to_array(%row));
 				if ( $report_mode ) {
+					# corrige le codage des caractères pour Excel
 					$line_to_print = encode('cp1250', $line_to_print);
 				}
 				if ($all_key) {
-					# corrige le codage des caractères pour Excel
 					print $line_to_print."\n";
 				}
 				else {
