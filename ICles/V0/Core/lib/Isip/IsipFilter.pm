@@ -148,7 +148,7 @@ sub get_query_condition() {
 				my $neg = $filter_value =~ s/^!//;
 				
 				#quirk to escape quote "à la" SQL
-				$filter_value =s/\'/\'\'/g;
+				$filter_value =~ s/\'/\'\'/g;
 
 				if (not exists $self->{filter_multi}->{$filter}) {
 					
