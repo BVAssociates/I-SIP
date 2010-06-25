@@ -98,14 +98,15 @@ sub fetch_row() {
 	my %query_field_row;
 	@query_field_row{$self->query_field} = @$current_row{$self->query_field};
 	
-	if (exists $query_field_row{OLD_FIELD_VALUE}) {
+	if (grep { $_ eq 'OLD_FIELD_VALUE' } $self->query_field() ) {
 		my %tmp=%$current_row;
 		my $key=join(',',@tmp{$self->key});
-		if ($query_field_row{DIFF} eq "UPDATE") {		
+		
+		if ($current_row->{DIFF} eq "UPDATE") {		
 			my %update=$self->{diff}->get_source_update($key);
 			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
 		}
-		elsif ($query_field_row{DIFF} eq "DELETE") {
+		elsif ($current_row->{DIFF} eq "DELETE") {
 			my %update=$self->{diff}->get_source_only($key);
 			$query_field_row{OLD_FIELD_VALUE}=$update{FIELD_VALUE};
 			$query_field_row{FIELD_VALUE}="";
