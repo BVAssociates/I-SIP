@@ -37,7 +37,7 @@ sub open() {
 	$self->{query_date}=$options->{date};
 	
 	# force primary key
-	$self->{key}=["FIELD_NAME","TABLE_KEY"];
+	$self->{key}=["TABLE_KEY","FIELD_NAME"];
 	
 	# get object handling columns
 	$self->{column_histo} = HistoColumns->new($self->{database_name}, $table_name, $options);
