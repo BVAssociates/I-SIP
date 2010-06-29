@@ -90,7 +90,7 @@ sub run {
 	
 	
 my %opts;
-getopts('hvfn:', \%opts);
+getopts('hvfn:', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

@@ -91,7 +91,7 @@ sub log_info {
 map {s/%\w+%//g} @ARGV;
 
 my %opts;
-getopts('hvs:f:', \%opts);
+getopts('hvs:f:', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

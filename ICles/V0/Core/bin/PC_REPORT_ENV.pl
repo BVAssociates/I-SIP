@@ -119,7 +119,7 @@ map {s/%\w+%//g} @ARGV;
 @ARGV=grep $_,@ARGV;
 
 my %opts;
-getopts('m:hvc:e', \%opts);
+getopts('m:hvc:e', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

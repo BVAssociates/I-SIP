@@ -92,7 +92,7 @@ my $date_compare=$ENV{DATE_COMPARE};
 my $date_explore=$ENV{DATE_EXPLORE};
 
 my %opts;
-getopts('hvs:', \%opts);
+getopts('hvs:', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

@@ -87,7 +87,7 @@ sub ErrorReport {
 
 
 my %opts;
-getopts('hvo:', \%opts);
+getopts('hvo:', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

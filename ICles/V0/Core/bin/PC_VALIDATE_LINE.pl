@@ -303,7 +303,7 @@ sub recurse_into_table {
 
 
 my %opts;
-getopts('Thvrtp:', \%opts);
+getopts('Thvrtp:', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

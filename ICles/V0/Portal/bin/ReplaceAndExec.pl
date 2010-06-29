@@ -140,7 +140,7 @@ map {$_=encode("cp850",$_)} @ARGV if $^O eq 'MSWin32';
 my @argv_save=@ARGV;
 
 my %opts;
-getopts('hv', \%opts);
+getopts('hv', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};

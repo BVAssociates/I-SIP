@@ -97,7 +97,7 @@ sub run {
 
 
 	my %opts;
-	getopts('hvdm:pa', \%opts);
+	getopts('hvdm:pa', \%opts) or usage(1);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};

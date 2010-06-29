@@ -88,7 +88,7 @@ sub run {
 	log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hvnm:', \%opts);
+	getopts('hvnm:', \%opts) or usage(1);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};

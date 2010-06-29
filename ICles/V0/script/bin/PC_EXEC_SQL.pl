@@ -103,7 +103,7 @@ sub run {
 	log_info("Debut du programme : ".$0." ".join(" ",@ARGV));
 
 	my %opts;
-	getopts('hve:t:', \%opts);
+	getopts('hve:t:', \%opts) or usage(1);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};

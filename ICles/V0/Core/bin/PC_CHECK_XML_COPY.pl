@@ -86,7 +86,7 @@ sub log_info {
 
 
 my %opts;
-getopts('hvs:m', \%opts);
+getopts('hvs:m', \%opts) or usage(1);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
