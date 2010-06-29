@@ -9,7 +9,12 @@ use Getopt::Std;
 use Encode;
 
 use Isip::IsipLog '$logger';
+use ITable::ITools;
 use ITable::Null;
+use Isip::Environnement;
+use Isip::ITable::FieldDiff;
+use Isip::IsipRulesDiff;
+use Isip::IsipFilter;
 
 
 #  Documentation
@@ -20,7 +25,7 @@ PC_LIST_FIELD_STATUS - Affiche les champs d'une ligne et y ajoute une colonne IC
 
 =head1 SYNOPSIS
 
- PC_LIST_FIELD_STATUS.pl [-r] [-s separateur] [-a|-k clef] [-c environnement_source@date_source] environnement_cible table_name date_cible
+ PC_LIST_FIELD_STATUS.pl [-r] [-s separateur] [-a [-x] |-k clef] [-c environnement_source@date_source] environnement_cible table_name date_cible
  
 =head1 DESCRIPTION
 
@@ -68,6 +73,8 @@ exemple : RDNPRCOD=VTS
 =item -k clef : affiche les champs de la ligne correspondant à la clef
 
 =item -a : affiche tous les champs de toutes les lignes
+
+=item -x : divise la clef primaire multi-colonnes en champs distincts
 
 =item -c environnement_source@date_source : force le mode COMPARE
 
@@ -151,7 +158,7 @@ sub run {
 	@ARGV=grep $_,@ARGV;
 
 	my %opts;
-	getopts('s:k:hvc:ar', \%opts);
+	getopts('s:k:hvc:arx', \%opts) or usage(1);
 
 	my $debug_level = 0;
 	$debug_level = 1 if $opts{v};
@@ -161,6 +168,11 @@ sub run {
 	my $table_key_value=$opts{k};
 	my $all_key=$opts{a};
 	my $report_mode=$opts{r};
+	my $explode_key=$opts{x};
+	
+	if ( $explode_key and ! $all_key ) {
+		usage($debug_level);
+	}
 	
 	my $separator=$opts{s} if $opts{s};
 
@@ -211,12 +223,6 @@ sub run {
 	###########################################################
 	my $bv_severite=0;
 
-	use Isip::Environnement;
-	use ITable::ITools;
-	use Isip::ITable::FieldDiff;
-	use Isip::IsipRulesDiff;
-	use Isip::IsipFilter;
-
 	# New SIP Object instance
 	my $env_sip = Environnement->new($environnement, {debug => $debug_level});
 
@@ -253,7 +259,6 @@ sub run {
 	}
 
 	# recupere à liste de champ à afficher
-	use ITable::ITools;
 	my $itools_table;
 	if ($report_mode) {
 		if ($explore_mode eq "compare") {
@@ -288,7 +293,6 @@ sub run {
 		# simulate empty table
 		#  (ie. if table is missing in an Env)
 		if (not $table_from and $table_to) {
-			use ITable::Null;
 			$table_from=Null->open($table_name);
 			$table_from->field($table_to->field);
 			$table_from->query_field($table_to->query_field);
@@ -296,7 +300,6 @@ sub run {
 			$table_from->dynamic_field($table_to->dynamic_field);
 		}
 		elsif ($table_from and not $table_to) {
-			use ITable::Null;
 			$table_to=Null->open($table_name);
 			$table_to->field($table_from->field);
 			$table_to->query_field($table_from->query_field);
@@ -405,17 +408,38 @@ sub run {
 			next if $diff_rules->is_field_hidden(%row);
 			
 			if ($filter->is_display_line(%row)) {
-
-				my $line_to_print = join($separator,$table_status->hash_to_array(%row));
-				if ( $report_mode ) {
-					# corrige le codage des caractères pour Excel
-					$line_to_print = encode('cp1250', $line_to_print);
-				}
-				if ($all_key) {
-					print $line_to_print."\n";
+				
+				# eclate la ligne si ligne de la clef
+				my @lines;
+				if ( $explode_key and $row{FIELD_NAME} ) {
+					
+					my @fields = split( /,/, $row{FIELD_NAME}  );
+					my @values = split( /,/, $row{FIELD_VALUE} );
+					
+					while ( @fields ) {
+						my %temp_row = %row;
+						$temp_row{FIELD_NAME} = shift @fields;
+						$temp_row{FIELD_VALUE} = shift @values;
+						
+						push @lines, join($separator, $table_status->hash_to_array(%temp_row));
+					}
 				}
 				else {
-					$memory_row{$row{FIELD_NAME}}= $line_to_print."\n";
+					push @lines, join($separator,$table_status->hash_to_array(%row));
+				}
+				
+				foreach my $line_to_print ( @lines ) {
+				
+					if ( $report_mode ) {
+						# corrige le codage des caractères pour Excel
+						$line_to_print = encode('cp1250', $line_to_print);
+					}
+					if ($all_key) {
+						print $line_to_print."\n";
+					}
+					else {
+						$memory_row{$row{FIELD_NAME}}= $line_to_print."\n";
+					}
 				}
 			}
 		}
@@ -447,13 +471,35 @@ sub run {
 				next if $rules->is_field_hidden(%row);
 			}
 			if ($filter->is_display_line(%row)) {
-				if ($all_key) {
-					if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
-						print join($separator,$table_status->hash_to_array(%row))."\n";
+			
+				# eclate la ligne si ligne de la clef
+				my @lines;
+				if ( $explode_key and $row{FIELD_NAME} eq $table_key) {
+					
+					my @fields = split( /,/, $row{FIELD_NAME}  );
+					my @values = split( /,/, $row{FIELD_VALUE} );
+					
+					while ( @fields ) {
+						my %temp_row = %row;
+						$temp_row{FIELD_NAME} = shift @fields;
+						$temp_row{FIELD_VALUE} = shift @values;
+						
+						push @lines, join($separator,$table_status->hash_to_array(%temp_row));
 					}
 				}
 				else {
-					$memory_row{$row{FIELD_NAME}}= join($separator,$table_status->hash_to_array(%row))."\n";
+					push @lines, join($separator,$table_status->hash_to_array(%row));
+				}
+				
+				foreach my $line_to_print ( @lines ) {
+					if ($all_key) {
+						if (grep {$_ eq $row{FIELD_NAME}} @histo_table_field) {
+							print $line_to_print."\n";
+						}
+					}
+					else {
+						$memory_row{$row{FIELD_NAME}} = $line_to_print."\n";
+					}
 				}
 			}
 		}
