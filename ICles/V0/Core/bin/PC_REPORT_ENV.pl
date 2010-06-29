@@ -12,11 +12,11 @@ use Isip::IsipLog '$logger';
 ###########################################################
 =head1 NAME
 
-PC_REPORT_COMPARE - Affiche une exploration sous forme CSV
+PC_REPORT_ENV - Affiche une exploration sous forme CSV
 
 =head1 SYNOPSIS
 
- PC_REPORT_COMPARE.pl -c environnement_source@date_source [-m module] environnement_cible date_cible
+ PC_REPORT_ENV.pl -c environnement_source@date_source [-m module] environnement_cible date_cible
  
 =head1 DESCRIPTION
 
@@ -144,6 +144,19 @@ if ( @ARGV < 1) {
 my $environnement=shift @ARGV;
 my $table_name_arg=shift @ARGV;
 
+my %description_for_field = (
+		ICON        => 'Différence',
+		TABLE_NAME  => 'Table',
+		TABLE_KEY   => 'Clef Primaire',
+		FIELD_NAME  => 'Colonne',
+		FIELD_VALUE => 'Nouvelle valeur',
+		OLD_FIELD_VALUE => 'Ancienne valeur',
+		STATUS      => 'Etat',
+		PROJECT     => 'Projet',
+		COMMENT     => 'Commentaire',
+		MEMO        => 'Mémo',
+	);
+
 #  Corps du script
 ###########################################################
 my $bv_severite=0;
@@ -170,7 +183,17 @@ if ($export) {
 	}
 	my @query_field=$itools_table->field;
 	
-	print(join(';',@query_field),"\n");
+	# change le nom des champs en leur description si disponible
+	my @description_field;
+	foreach my $field ( @query_field ) {
+		if ( $description_for_field{$field} ) {
+			push @description_field, $description_for_field{$field};
+		}
+		else {
+			push @description_field, $field;
+		}
+	}
+	print(join(';',@description_field),"\n");
 	
 	$add_option="s;";
 }
@@ -180,13 +203,13 @@ foreach my  $table_name (@table_list) {
 	log_info(int(100 * $counter / @table_list),'%');
 	$counter++;
 	if ($compare_option) {
-		pc_list_field_status::run("-r","-a$add_option","-c".$compare_option,$environnement,$table_name);
+		pc_list_field_status::run("-r","-xa$add_option","-c".$compare_option,$environnement,$table_name);
 	}
 	else {
-		pc_list_field_status::run("-r","-a$add_option",$environnement,$table_name);
+		pc_list_field_status::run("-r","-xa$add_option",$environnement,$table_name);
 	}
 }
 
-log_info(int(100 * $counter / @table_list),'%');
+log_info('100%');
 
 sortie($bv_severite);
