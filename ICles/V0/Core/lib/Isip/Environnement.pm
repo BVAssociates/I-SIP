@@ -13,7 +13,7 @@ use fields qw(
 
 use strict;
 use Scalar::Util qw(blessed);
-use POSIX qw(strftime);
+use POSIX qw(strftime mktime);
 
 #use ITable::ITools;
 use Carp qw(carp croak);
@@ -194,6 +194,48 @@ sub get_table_list() {
 	my $self = shift;
 
 	return keys %{$self->{info_table}};
+}
+
+sub get_last_date_histo {
+	my $self = shift;
+	
+	my $table_date_histo = $self->open_local_table('DATE_UPDATE');
+	$table_date_histo->custom_select_query('SELECT MAX(DATE_HISTO) from DATE_UPDATE');
+	my ($max_date) = $table_date_histo->fetch_row_array;
+	
+	return $max_date;
+}
+
+sub date_to_unix {
+	my $self = shift;
+	my $date = shift or croak("usage : date_to_unix('YYYY-MM-DDTHH:MM')");
+	
+	my ($year, $mon, $day, $hour, $min);
+	if ( $date =~ /(\d{4})-?(\d{2})-?(\d{2})T(\d{2}):?(\d{2})/  ) {
+		($year, $mon, $day, $hour, $min) = ($1,$2,$3,$4,$5);
+	}
+	else {
+		croak("Mauvais format de date <$date>");
+	}
+	
+	$year -= 1900;
+	$mon -= 1;
+	
+	return mktime(0, $min,$hour,$day,$mon,$year);
+}
+
+# converti un temps unix en 1977-04-22T06:00 (ISO 8601)
+sub unix_to_date {
+	my $self = shift;
+	my $unix_time = shift or croak("usage : unix_to_date(unix_time)");
+	
+	my (undef, $min,$hour,$day,$mon,$year) = localtime($unix_time);
+	
+	
+	$year += 1900;
+	$mon  += 1;
+	
+	return sprintf("%04d-%02d-%02dH%02d:%02d", $year, $mon, $day, $hour, $min);
 }
 
 sub get_table_list_module() {

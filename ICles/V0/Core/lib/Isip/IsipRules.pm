@@ -17,6 +17,7 @@ use fields qw(
 use Carp qw(carp croak );
 use strict;
 use Scalar::Util qw(blessed);
+use POSIX qw(mktime);
 
 use Isip::IsipLog '$logger';
 use ITable::Sqlite;
@@ -134,13 +135,31 @@ sub enum_field_status () {
 sub enum_field_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", IGNORE => "valide_label" ,TEST => "test", STAMP => "stamp", HIDDEN => "cache", ERROR => "inconnu");
+	return (
+			NEW     => "nouveau",
+			UPDATED => "modifie",
+			OK      => "valide",
+			TEMPO   => "valide_tempo",
+			IGNORE  => "valide_label",
+			TEST    => "test",
+			STAMP   => "stamp",
+			HIDDEN  => "cache",
+			ERROR   => "inconnu",
+		);
 }
 
 sub enum_line_icon () {
 	my $self=shift;
 	
-	return (NEW => "nouveau", UPDATED => "modifie",  OK => "valide", IGNORE => "valide_label", TEST => "test", ERROR => "erreur");
+	return (
+			NEW     => "nouveau",
+			UPDATED => "modifie",
+			OK      => "valide",
+			TEMPO   => "valide_tempo",
+			IGNORE  => "valide_label",
+			TEST    => "test",
+			ERROR   => "erreur",
+		);
 }
 
 ##################################################
@@ -189,6 +208,29 @@ sub get_field_description() {
 	
 	$desc="" if not defined $desc;
 	return $desc;
+}
+
+# retourne vrai si le champ est dans une période de temporisation
+sub is_field_tempo() {
+	my $self=shift;
+	my %line=@_;
+	
+	my $date_update=$line{DATE_UPDATE};
+	
+	return if ! $date_update;
+	
+	my $date_limit=$self->{environnement}->get_last_date_histo();
+	
+	my $unix_date_update = $self->{environnement}->date_to_unix($date_update);
+	my $unix_date_limit  = $self->{environnement}->date_to_unix($date_limit);
+	
+	if( ($unix_date_update - $unix_date_limit) > 0) {
+		warn $unix_date_update - $unix_date_limit;
+		return 1;
+	}
+	else {
+		return;
+	}
 }
 
 sub is_field_hidden() {
@@ -311,6 +353,10 @@ sub get_field_icon () {
 			}
 			else {
 				$return_status=$self->{field_icon}{OK};
+				
+				if ( $self->is_field_tempo(%line) ) {
+					$return_status .= '_tempo';
+				}
 			}
 		}
 		elsif ($status eq "UPDATED") {
@@ -338,43 +384,49 @@ sub get_line_icon () {
 	
 	my %icon_by_name= reverse %{$self->{field_icon}};
 	
-	my %counter=(NEW => 0, UPDATED => 0, TEST => 0, OK => 0, IGNORE => 0);
+	# initialise le compteur des etats
+	my %counter;
+	foreach my $count ( values %counter ) {
+		#$count = 0;
+	}
 	
-	
-	foreach (@icon_list) {
+	foreach my $field_icon (@icon_list) {
 	
 		# remove label information
 		
-		if ( defined and /_label$/ ) {
-			s/_label$//;
+		if ( defined $field_icon and $field_icon =~ /_label$/ ) {
+			$field_icon =~ s/_label$//;
 			$counter{IGNORE}++;
 		}
 	
-		my $icon;
-		if (not defined $_) {
+		my $line_icon;
+		if ( not defined $field_icon ) {
 			$logger->critical("Impossible de determiner l'icone de la ligne, car un champ n'a pas d'icone") ;
 			return $self->{line_icon}{ERROR};
 			last;
 		}
-		elsif (not defined $icon_by_name{$_}) {
+		elsif (not defined $icon_by_name{$field_icon}) {
 			
-			$logger->critical("Impossible de determiner l'icone de la ligne, car $_ n'est pas un icone valide") ;
+			$logger->critical("Impossible de determiner l'icone de la ligne, car $field_icon n'est pas un icone valide") ;
 			return $self->{line_icon}{ERROR};
 			last;
 		} else {
-			$icon=$icon_by_name{$_};
+			$line_icon=$icon_by_name{$field_icon};
 		}
 		
-		$counter{$icon}++;
+		$counter{$line_icon}++;
 		
 	}
 	
-	return $self->{line_icon}{IGNORE} if $counter{IGNORE} == @icon_list;
+	if ( (exists $counter{IGNORE}) && ($counter{IGNORE} == @icon_list)) {
+		return $self->{line_icon}{IGNORE};
+	}
 	
-	return $self->{line_icon}{NEW} if $counter{NEW} > 0;
-	return $self->{line_icon}{UPDATED} if $counter{UPDATED} > 0;
-	return $self->{line_icon}{TEST} if $counter{TEST} > 0;
-	return $self->{line_icon}{OK} if $counter{OK} > 0;
+	return $self->{line_icon}{NEW} if $counter{NEW};
+	return $self->{line_icon}{UPDATED} if $counter{UPDATED};
+	return $self->{line_icon}{TEST} if $counter{TEST};
+	return $self->{line_icon}{TEMPO} if $counter{TEMPO};
+	return $self->{line_icon}{OK} if $counter{OK};
 	return $self->{line_icon}{ERROR};
 
 }
