@@ -358,8 +358,10 @@ sub fetch_row() {
 	}
 
 	#TO BE OPTIMIZED (should be called only once)
-	$self->{table_histo}->query_field("ID","DATE_HISTO", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","PROJECT","COMMENT");
-	$self->{table_histo}->custom_select_query ($self->get_query()) if not $self->{table_histo}->{custom_select_query};
+	if ( ! $self->{table_histo}->{custom_select_query} ) {
+		$self->{table_histo}->query_field("ID","DATE_HISTO", "DATE_UPDATE", "TABLE_KEY", "FIELD_NAME", "FIELD_VALUE","STATUS","PROJECT","COMMENT");
+		$self->{table_histo}->custom_select_query ($self->get_query());
+	}
 
 	# store the higher field status
 	#my $line_has_new=0;
