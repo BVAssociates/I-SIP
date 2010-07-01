@@ -117,6 +117,7 @@ sub run {
 	use Isip::IsipTreeCache;
 	use Isip::Cache::CacheStatus;
 	use Isip::Cache::CacheProject;
+	use Isip::Cache::CacheTempo;
 
 	my $env_sip = Environnement->new($environnement);
 
@@ -149,6 +150,7 @@ sub run {
 	my $cache=IsipTreeCache->new($env_sip);
 	$cache->add_dispatcher(CacheStatus->new($env_sip));
 	$cache->add_dispatcher(CacheProject->new($env_sip));
+	$cache->add_dispatcher(CacheTempo->new($env_sip));
 
 	foreach my $current_table (@list_table) {
 		
