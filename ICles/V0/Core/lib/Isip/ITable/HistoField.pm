@@ -202,11 +202,11 @@ sub update_row() {
 		or exists $row{COMMENT}
 		or exists $row{PROJECT} )
 	{
-		if ( ! exists $row{DATE_UPDATE} ) {
+		if ( ! $row{DATE_UPDATE} ) {
 			$row{DATE_UPDATE} = strftime "%Y-%m-%dT%H:%M", localtime;
 		}
 		
-		if ( ! exists $row{USER_UPDATE} ) {
+		if ( ! $row{USER_UPDATE} ) {
 			$row{USER_UPDATE} = $ENV{IsisUser};
 		}
 	}
