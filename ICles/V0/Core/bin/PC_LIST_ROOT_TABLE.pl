@@ -123,10 +123,12 @@ my $bv_severite=0;
 use Isip::Environnement;
 use Isip::Cache::CacheStatus;
 use Isip::Cache::CacheProject;
+use Isip::Cache::CacheTempo;
 use Isip::IsipFilter;
 
 my $env=Environnement->new($environnement);
 my $cache=CacheStatus->new($env);
+my $cache_tempo=CacheTempo->new($env);
 my $filter=IsipFilter->new();
 
 my $cache_proj;
@@ -161,6 +163,7 @@ foreach my $table (sort keys %list_table_uniq) {
 	
 	# modify icon when exploring last data
 	if (not ($date_explore or $env_compare or $date_compare) ) {
+		$icon="tempo" if $real_table and $cache_tempo->is_dirty_table($real_table);
 		$icon="dirty" if $real_table and $cache->is_dirty_table($real_table);
 	}
 	

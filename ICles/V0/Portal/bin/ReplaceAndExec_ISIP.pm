@@ -3,10 +3,18 @@ package ReplaceAndExec_ISIP;
 use strict;
 use warnings;
 
+use Carp;
+
 # use applicatifs
 use Isip::Environnement;
 use Isip::IsipLog '$logger';
-use Carp;
+use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheProject;
+use Isip::Cache::CacheTempo;
+
+use ITable::ITools;
+
 
 our (@ISA, @EXPORT);
 BEGIN {
@@ -28,7 +36,6 @@ sub update_column_info($$) {
 	my $table_uptade=$ENV{TABLE_NAME}.'_COLUMN';
 
 
-	use ITable::ITools;
 	my $itools_table=ITools->open($table_name);
 	my $separator=$itools_table->output_separator;
 	my @field=$itools_table->field;
@@ -65,9 +72,6 @@ sub update_info($$) {
 	my $environnement=$ENV{Environnement};
 	die "Variable <Environnement> not set" if not $environnement;
 
-
-
-	use ITable::ITools;
 	my $itools_table=ITools->open($table_name);
 	my $separator=$itools_table->output_separator;
 	my @field=$itools_table->field;
@@ -105,8 +109,6 @@ sub insert_info($$) {
 	die "Variable <Environnement> not set" if not $environnement;
 
 
-
-	use ITable::ITools;
 	my $itools_table=ITools->open($table_name);
 	my $separator=$itools_table->output_separator;
 	my @field=$itools_table->field;
@@ -138,8 +140,6 @@ sub delete_info($$) {
 	die "Variable <Environnement> not set" if not $environnement;
 
 
-
-	use ITable::ITools;
 	my $itools_table=ITools->open($table_name);
 	my $separator=$itools_table->output_separator;
 	my @field=$itools_table->field;
@@ -166,10 +166,9 @@ sub update_field($$) {
 	}
 	my ($environnement,$table_ikos) = ($1,$2);
 
-	use Isip::Environnement;
+	
 	my $env_sip=Environnement->new($environnement);
 	
-	use ITable::ITools;
 	my $itools_table=ITools->open($table_name);
 	my $separator=$itools_table->output_separator;
 	my @field=$itools_table->field;
@@ -262,11 +261,6 @@ sub update_field_comment($$$$) {
 	$histo_table->finish;
 	$logger->notice("Nouveau status de la ligne : $new_line{ICON}|$new_line{PROJECT}");
 
-	
-	# update cache
-	use Isip::IsipTreeCache;
-	use Isip::Cache::CacheStatus;
-
 	# needed for CacheStatus
 	$new_line{OLD_ICON}=$old_line{ICON};
 	# needed for CacheProject
@@ -275,6 +269,7 @@ sub update_field_comment($$$$) {
 	my $cache=IsipTreeCache->new($env_sip);
 	$cache->add_dispatcher(CacheStatus->new($env_sip));
 	$cache->add_dispatcher(CacheProject->new($env_sip));
+	$cache->add_dispatcher(CacheTempo->new($env_sip));
 
 	$cache->recurse_line($table_ikos, \%new_line);
 	$cache->save_cache();

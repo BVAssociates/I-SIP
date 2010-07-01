@@ -116,12 +116,16 @@ my $bv_severite=0;
 
 use Isip::Environnement;
 use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheTempo;
 use Isip::IsipFilter;
 
 my $env=Environnement->new($environnement);
 
 my $cache = CacheStatus->new($env);
+my $cache_tempo = CacheTempo->new($env);
+
 $cache->load_cache($table_name);
+$cache_tempo->load_cache($table_name);
 
 my $filter=IsipFilter->new();
 
@@ -137,15 +141,22 @@ while (my %row=$table->fetch_row()) {
 	
 	# add category to the list
 	if ( not exists $dirty_for_category{ $row{CATEGORY} } ){
-		$dirty_for_category{ $row{CATEGORY} } = 0;
+		$dirty_for_category{ $row{CATEGORY} } = "";
 	}
 	
 	# look for dirtyness of key in table
 	if ( $cache->is_dirty_key($table_name, $row{TABLE_KEY})  #look for line's childs
 	   or $cache->is_dirty_key($table_name, $row{TABLE_KEY},$table_name) ) {  #look for line
 		
-		$dirty_for_category{ $row{CATEGORY} }++ ;
-	}	
+		$dirty_for_category{ $row{CATEGORY} } = "_dirty" ;
+	}
+	
+	# look for dirtyness of key in table
+	if ( $cache_tempo->is_dirty_key($table_name, $row{TABLE_KEY})  #look for line's childs
+	   or $cache_tempo->is_dirty_key($table_name, $row{TABLE_KEY},$table_name) ) {  #look for line
+		
+		$dirty_for_category{ $row{CATEGORY} } = "_tempo" ;
+	}
 }
 
 my $icon_root="category";
@@ -153,9 +164,7 @@ my $icon_root="category";
 foreach my $category ( sort keys %dirty_for_category ) {
 	
 	my $icon = $icon_root;
-	if ( $dirty_for_category{$category} ) {
-		$icon .= '_dirty';
-	}
+	$icon .= $dirty_for_category{$category};
 	
 	if ( $filter->is_display_line(ICON => $icon) ) {
 		print join($separator, $icon, $category)."\n";

@@ -186,6 +186,7 @@ sub run {
 	use Isip::ITable::DataDiff;
 	use Isip::Cache::CacheStatus;
 	use Isip::Cache::CacheProject;
+	use Isip::Cache::CacheTempo;
 	use Isip::IsipFilter;
 	
 	use Isip::IsipRulesDiff;
@@ -217,6 +218,7 @@ sub run {
 	# table qui sera affichée
 	my $table_explore;
 	my $dirty_cache;
+	my $tempo_cache;
 	
 	
 	# ouverture de la table en cours d'exploration
@@ -303,6 +305,10 @@ sub run {
 			$dirty_cache=CacheStatus->new($env_sip);
 			$dirty_cache->load_cache($table_name);
 			
+			# load Tempo Cache
+			$tempo_cache=CacheTempo->new($env_sip);
+			$tempo_cache->load_cache($table_name);
+			
 			# load Rules to know state of current lines
 			my $type_rules = IsipRules->new($table_name, $env_sip, {debug => $debug_level});
 			$table_explore->isip_rules($type_rules) if not $no_icon;
@@ -349,7 +355,12 @@ sub run {
 		}
 		
 		# append _dirty to get special icon
-		$row{ICON}=$row{ICON}."_dirty" if $dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source);
+		if ($dirty_cache and $dirty_cache->is_dirty_key($table_name, $string_key, $table_source)) {
+			$row{ICON}=$row{ICON}."_dirty";
+		}
+		elsif ($tempo_cache and $tempo_cache->is_dirty_key($table_name, $string_key, $table_source)) {
+			$row{ICON}=$row{ICON}."_tempo";
+		}
 		
 		if ($filter->is_display_line(%row)) {
 			print join($table_explore->output_separator,@row{@query_field})."\n"

@@ -15,6 +15,7 @@ use Isip::IsipRules;
 use Isip::IsipTreeCache;
 use Isip::Cache::CacheStatus;
 use Isip::Cache::CacheProject;
+use Isip::Cache::CacheTempo;
 
 ###########################################################
 =head1 NAME
@@ -105,6 +106,7 @@ my $global_project;
 
 # pools de connexions reutilisables
 my $connection_cache_status;
+my $connection_cache_tempo;
 my %connection_pool_field;
 
 
@@ -225,6 +227,7 @@ sub recurse_into_table {
 		my @key_field=$table->key();
 		
 		$connection_cache_status->load_cache($child_table);
+		$connection_cache_tempo->load_cache($child_table);
 		
 		# parcours des lignes liées
 		my %line_refs;
@@ -282,7 +285,11 @@ sub recurse_into_table {
 						#log_info("UPDATING CACHE ($row{ICON}:$row{PROJECT}) $child_table:$keys_child_string" );
 						
 						my $cache=IsipTreeCache->new($global_env);
-						$cache->add_dispatcher($connection_cache_status) if $row{ICON} ne $row{OLD_ICON};
+						
+						if ( $row{ICON} ne $row{OLD_ICON} ) {
+							$cache->add_dispatcher($connection_cache_status);
+							$cache->add_dispatcher($connection_cache_tempo);
+						}
 						$cache->add_dispatcher(CacheProject->new($global_env)) if $row{PROJECT} ne $row{OLD_PROJECT};
 						
 						$cache->recurse_line($child_table, \%row);
@@ -366,6 +373,7 @@ update_line($table_name, $set_testing, $table_key_value);
 if ( $recursive ) {
 	
 	$connection_cache_status = CacheStatus->new($global_env);
+	$connection_cache_tempo = CacheTempo->new($global_env);
 	
 	recurse_into_table($table_name, $set_testing, %ENV);
 }
