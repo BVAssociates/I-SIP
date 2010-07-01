@@ -359,7 +359,7 @@ sub run {
 			$row{ICON}=$row{ICON}."_dirty";
 		}
 		elsif ($tempo_cache and $tempo_cache->is_dirty_key($table_name, $string_key, $table_source)) {
-			$row{ICON}=$row{ICON}."_tempo";
+			$row{ICON}=$row{ICON}."_tempochild";
 		}
 		
 		if ($filter->is_display_line(%row)) {
