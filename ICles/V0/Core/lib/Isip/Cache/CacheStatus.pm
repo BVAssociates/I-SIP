@@ -53,12 +53,12 @@ sub check_before_cache() {
 		if (exists $value_ref->{OLD_ICON} and $value_ref->{OLD_ICON}) {
 			if ($value_ref->{ICON} ne $value_ref->{OLD_ICON} ) {
 				
-				$self->{action}=  1 if $value_ref->{OLD_ICON} =~ /^valide$/;
-				$self->{action}= -1 if $value_ref->{ICON}     =~ /^valide$/;
+				$self->{action}=  1 if $value_ref->{OLD_ICON} =~ /^valide/;
+				$self->{action}= -1 if $value_ref->{ICON}     =~ /^valide/;
 			}
 		}
 		else {
-			$self->{action}=1 if $value_ref->{ICON} !~ /^valide|exclus$/;
+			$self->{action}=1 if $value_ref->{ICON} !~ /^valide|exclus/;
 		}
 	}
 	
