@@ -109,6 +109,7 @@ my $filter=IsipFilter->new();
 
 #remove dirty information and re-check icon
 $icon =~ s/_dirty//;
+$icon =~ s/_tempochild//;
 
 my $display_field_menu=0;
 if ($filter->is_display_line(ICON => $icon)) {
