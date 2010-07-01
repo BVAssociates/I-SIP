@@ -225,7 +225,6 @@ sub is_field_tempo() {
 	my $unix_date_limit  = $self->{environnement}->date_to_unix($date_limit);
 	
 	if( ($unix_date_update - $unix_date_limit) > 0) {
-		warn $unix_date_update - $unix_date_limit;
 		return 1;
 	}
 	else {
