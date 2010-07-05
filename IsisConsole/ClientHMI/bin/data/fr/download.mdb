@@ -1,0 +1,18 @@
+#
+# Fichier des messages du processeur de téléchargement d'I-SIS
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Messages de la sous-fenêtre
+&DownloadProcessorDescription="Processeur de téléchargement"
+&Download_DownloadFileTo="Télécharger vers..."
+&Download_Success="Téléchargement effectué dans le fichier:\n%1"
+
+# Messages de la barre d'état
+&Download_PreparingDownload="Préparation du téléchargement..."
+&Download_Downloading="Téléchargement en cours... %1%"
+
+# Messages d'erreur
+&ERR_FileDownloadNotPossible="Impossible de télécharger le fichier !"

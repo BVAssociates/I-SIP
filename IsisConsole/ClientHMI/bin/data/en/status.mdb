@@ -1,0 +1,40 @@
+#
+# Messages file for detailled state processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&StatusProcessorDescription="Detailled state display processor"
+&StatusProcessor_Title="Detailled state for the I-SIS Agent "
+&StatusProcessor_Close="Close"
+&StatusProcessor_Data="Data"
+&StatusProcessor_Value="Value"
+&StatusProcessor_UserTime="User time"
+&StatusProcessor_ms=" ms"
+&StatusProcessor_SystemTime="System time"
+&StatusProcessor_ResidentSize="Maximum resident size in memory"
+&StatusProcessor_SharedMemory="Size of the shared memory"
+&StatusProcessor_PrivateMemory="Size of the non-shared memory"
+&StatusProcessor_StackSize="Size of the stack"
+&StatusProcessor_PageRequests="Number of page requests"
+&StatusProcessor_pageFaults="Number of page faults"
+&StatusProcessor_swaps="Number of swaps"
+&StatusProcessor_BlocksRead="Number of blocks read"
+&StatusProcessor_BlocksWritten="Number of blocks written"
+&StatusProcessor_MessagesSent="Number of messages sent"
+&StatusProcessor_MessagesReceived="Number of messages received"
+&StatusProcessor_SignalsReceived="Number of signals received"
+&StatusProcessor_WantedContextSwitches="Number of wanted context switches"
+&StatusProcessor_UnwantedContextSwitches="Number of unwanted context switches"
+&StatusProcessor_AgentLoad="Load (simultaneous operations)"
+&StatusProcessor_ActiveSessions="Number of active sessions"
+&StatusProcessor_ServicesEnvironments="Number of service environments in cache"
+
+# State messages
+&StatusProcessor_GettingAgentStatus="Retreiving the I-SIS Agent state"
+&StatusProcessor_BuildingFrame="Building the window"
+
+# Messages d'erreurs
+&ERR_CannotGetAgentStatus="Cannot get the I-SIS Agent state !"

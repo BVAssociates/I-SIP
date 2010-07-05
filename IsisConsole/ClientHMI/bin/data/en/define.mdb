@@ -1,0 +1,34 @@
+#
+# Message file for table definition processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&DefineProcessorDescription="Table definition processor"
+&Define_Title="Definition: "
+&Define_General="General"
+&Define_Columns="Columns"
+&Define_Links="Links"
+&Define_Labels="Labels"
+&Define_Close="Close"
+&Define_Name="Name"
+&Define_Value="Value"
+&Define_FilePath="Dictionary path"
+&Define_TableName="Table name"
+&Define_Separator="Separator"
+&Define_Source="Source"
+&Define_Header="Header"
+&Define_Type="Type"
+&Define_Owner="Owner"
+&Define_Size="Size"
+&Define_IsKey="Key ?"
+&Define_IsNotNull="Not null ?"
+&Define_SortOrder="Sort order"
+&Define_ForeignKeys="Foreign keys"
+&Define_NodeIdentity="Node identity"
+&Define_Label="Label"
+&Define_Icon="Icon"
+&Define_Space="<Space>"
+&Define_Tabulation="<Tab>"

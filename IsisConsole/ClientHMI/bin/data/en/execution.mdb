@@ -1,0 +1,48 @@
+#
+# Messages file for procedure execution processor
+#
+# $Revision: 1.2 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&ExecutionProcessorDescription="Procedure execution processor"
+&Execution_OutputArea="Procedure output"
+&Execution_InputArea="Procedure input"
+&Execution_Cancel="Cancel"
+&Execution_Close="Close"
+&Execution_Send="Send"
+&Execution_ProcedureHasTerminated="The procedure has terminated with return code: %1."
+
+# Configuration panel messages
+&Execution_PanelTitle="Execution"
+&Execution_BackgroundColor="Background color: "
+&Execution_OutputColor="Standard output color: "
+&Execution_ErrorColor="Standard error color: "
+&Execution_SelectionLabel="At the end of execution, display :"
+&Execution_ShowPopup="A dialog box"
+&Execution_ShowInZone="In the text area, with the color :"
+&Execution_ChooseColor="New color"
+
+# Log messages
+&LOG_ProcedureExecutionStarting="Procedure execution "
+&LOG_ProcedureExecutionResult="Procedure execution result"
+&LOG_ProcedureCommand="Command: "
+&LOG_SendingExtraInformation="Sending data to the procedure"
+&LOG_PartialOutput="Partial output: "
+&LOG_DataSent="Data sent: "
+&LOG_DataSendingFailed="Data sending failure"
+&LOG_CompleteOutput="Complete output: "
+&LOG_ExecutionSuccessful="Execution successful"
+&LOG_ExecutionFailed="Execution failed"
+&LOG_ReturnCode="Return code: "
+&LOG_ExecutionError="Execution error: "
+&LOG_ExecutionAbort="Execution cancelled"
+
+# Error messages
+&ERR_CannotExecuteProcedure="Cannot execute the procedure !"
+&ERR_ErrorWhileAborting="Cannot cancel the procedure !"
+&ERR_ErrorWhileSendingData="Cannot send data to the procedure !"
+&ERR_OutputSameColor="The standard output has the same color than the background !"
+&ERR_ErrorSameColor="The standard error has the same color than the background !"
+&ERR_TerminationSameColor="The end of execution has the same color than the background !"

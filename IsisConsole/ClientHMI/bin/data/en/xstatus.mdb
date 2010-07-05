@@ -1,0 +1,25 @@
+#
+# Messages file for extended state processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&XStatusProcessorDescription="Extended state processor"
+&XStatusProcessor_Title="Extended state of the I-SIS Agent "
+&XStatusProcessor_Close="Close"
+&XStatusProcessor_Operations="Operations"
+&XStatusProcessor_Load="Load (%)"
+&XStatusProcessor_OnGoing="On going"
+&XStatusProcessor_Remaining="Remaining"
+&XStatusProcessor_SessionsEnvironements="Sessions and environments"
+&XStatusProcessor_Sessions="Sessions"
+&XStatusProcessor_Environments="Environments"
+
+# State messages
+&XStatusProcessor_GettingAgentStatus="Retrieving the I-SIS Agent state"
+&XStatusProcessor_BuildingFrame="Building the window"
+
+# Error messages
+&ERR_CannotGetAgentXStatus="Cannot retrieve the I-SIS Agent state,\nthe window must be closed !"

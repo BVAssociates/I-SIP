@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='ISO-8859-1'  ?>
+<!DOCTYPE toc
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "file:../dtd/toc_1_0.dtd">
+<toc version="1.0">
+<tocitem text="I-SIS Explorer" target="top">
+   <tocitem text="Préambule" target="Préambule">
+      <tocitem text="Pré-requis à l'utilisation" target="Pré-requis"/>
+      <tocitem text="Objectifs du guide" target="Objectifs"/>
+   </tocitem>
+
+   <tocitem text="Présentation de I-SIS Explorer" target="chap_1">
+	<tocitem text="Aperçu de I-SIS Explorer" target="chap_1_1"/>
+	<tocitem text="Constitution de I-SIS Explorer" target="chap_1_2">
+	   <tocitem text="La barre de menu" target="chap_1_2_1"/>
+	   <tocitem text="L'arbre d'exploration" target="chap_1_2_2"/>
+	   <tocitem text="La zone d'affichage des sous-fenêtres" target="chap_1_2_3"/>
+	   <tocitem text="La barre d'état" target="chap_1_2_4"/>
+	</tocitem>
+   </tocitem>
+
+   <tocitem text="Démarrage de I-SIS Explorer" target="chap_2">
+	<tocitem text="Lancement de I-SIS Explorer" target="chap_2_1">
+	   <tocitem text="Lancer le I-SIS Explorer" target="chap_2_1_1">
+		<tocitem text="Sous Windows" target="chap_2_1_1_1"/>
+		<tocitem text="Sous Linux" target="chap_2_1_1_2"/>
+		<tocitem text="Suite du démarrage" target="chap_2_1_1_3"/>
+	   </tocitem>
+	   <tocitem text="Fermer la fenêtre d'identification" target="chap_2_1_2"/>
+	   <tocitem text="Fermer le I-SIS Explorer" target="chap_2_1_3"/>
+	</tocitem>
+	<tocitem text="Configuration de I-SIS Explorer" target="chap_2_2">
+	   <tocitem text="Préparer la première configuration" target="chap_2_2_1"/>
+	   <tocitem text="Préparer une reconfiguration" target="chap_2_2_2"/>
+	   <tocitem text="Configurer le I-SIS Explorer" target="chap_2_2_3"/>
+	</tocitem>
+	<tocitem text="Connexion de I-SIS Explorer au I-SIS Portail" target="chap_2_3">
+	   <tocitem text="Se connecter" target="chap_2_3_1"/>
+	   <tocitem text="Sélectionner son identifiant" target="chap_2_3_2"/>
+	   <tocitem text="Saisir son mot de passe" target="chap_2_3_3"/>
+	   <tocitem text="Valider" target="chap_2_3_4"/>
+	   <tocitem text="Se déconnecter" target="chap_2_3_5"/>
+	</tocitem>
+   </tocitem>
+
+   <tocitem text="Aide en ligne" target="chap_3">
+	<tocitem text="Ouvrir l'aide générale" target="chap_3_1"/>
+	<tocitem text="Ouvrir l'aide contextuelle" target="chap_3_2"/>
+	<tocitem text="Utilisation de l'aide en ligne" target="chap_3_3"/>
+   </tocitem>
+
+   <tocitem text="Astuces graphiques" target="chap_4">
+ 	<tocitem text="Rappels" target="chap_4_1"/>
+	<tocitem text="Fonctions d'édition" target="chap_4_2"/>
+	<tocitem text="Gestion des fenêtres" target="chap_4_3">
+	   <tocitem text="Gérer la fenêtre de I-SIS Explorer" target="chap_4_3_1"/>
+	   <tocitem text="Gérer les sous-fenêtre de I-SIS Explorer" target="chap_4_3_2"/>
+	</tocitem>
+   </tocitem>
+
+   <tocitem text="Exploration I-SIS" target="chap_5">
+	<tocitem text="Explorer un noeud" target="chap_5_1"/>
+	<tocitem text="Fermer un noeud" target="chap_5_2"/>
+	<tocitem text="Réduire et déployer un noeud" target="chap_5_3"/>
+	<tocitem text="Ouvrir une session" target="chap_5_4"/>
+   </tocitem>
+
+   <tocitem text="Consultation des tables" target="chap_6">
+	<tocitem text="Détailler un noeud ligne" target="chap_6_1"/>
+	<tocitem text="Visualiser le dictionnaire d'une table" target="chap_6_2"/>
+	<tocitem text="Ouvrir un noeud table" target="chap_6_3"/>
+	<tocitem text="Soumettre une requête sur une table" target="chap_6_4">
+	   <tocitem text="Ouvrir l'éditeur de requête" target="chap_6_4_1"/>
+	   <tocitem text="Sélectionner les colonnes à afficher" target="chap_6_4_2">
+		<tocitem text="Ajouter des colonnes à la sélection" target="chap_6_4_2_1"/>
+		<tocitem text="Retirer des colonnes sélectionnées" target="chap_6_4_2_2"/>
+		<tocitem text="Monter/Descendre une colonne dans la sélection" target="chap_6_4_2_3"/>
+	   </tocitem>
+	   <tocitem text="Définir les critères de condition" target="chap_6_4_3">
+		<tocitem text="Editer une première condition" target="chap_6_4_3_1"/>
+		<tocitem text="Editer une condition supplémentaire" target="chap_6_4_3_2"/>
+	   </tocitem>
+	   <tocitem text="Définir les critères de tri" target="chap_6_4_4"/>
+	   <tocitem text="Visualiser la requête en langage I-TOOLS" target="chap_6_4_5"/>
+	   <tocitem text="Exécuter la requête" target="chap_6_4_6"/>
+	</tocitem>
+	<tocitem text="Contexte complet d'un noeud" target="chap_6_5">
+	   <tocitem text="Sur un noeud table" target="chap_6_5_1"/>
+	   <tocitem text="Sur un noeud ligne" target="chap_6_5_2"/>
+	</tocitem>
+   </tocitem>
+
+   <tocitem text="Méthodes d'exploitation" target="chap_7">
+	<tocitem text="Groupes de méthodes" target="chap_7_1"/>
+	<tocitem text="Demande d'informations complémentaires" target="chap_7_2"/>
+	<tocitem text="Sous-fenêtre d'exécution de procédure" target="chap_7_3"/>
+	<tocitem text="Sous-fenêtre d'affichage de fichier" target="chap_7_4"/>
+   </tocitem>
+</tocitem>
+</toc>

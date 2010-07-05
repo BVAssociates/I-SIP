@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE map
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+         "file:../dtd/map_1_0.dtd">
+
+<map version="1.0">
+   <!-- Préambule -->
+   <mapID target="top" url="preambule.html"/>
+   <mapID target="Préambule" url="preambule.html#Préambule"/>
+   <mapID target="Pré-requis" url="preambule.html#Pré-requis à l'utilisation"/>
+   <mapID target="Objectifs" url="preambule.html#Objectifs du guide"/>
+
+   <!-- Présentation de la I-SIS Console -->
+   <mapID target="chap_1" url="chap_1.html#chap_1"/>
+   <mapID target="chap_1_1" url="chap_1.html#chap_1_1"/>
+   <mapID target="chap_1_2" url="chap_1_2.html#chap_1_2"/>
+   <mapID target="chap_1_2_1" url="chap_1_2.html#chap_1_2_1"/>
+   <mapID target="chap_1_2_2" url="chap_1_2_2.html#chap_1_2_2"/>
+   <mapID target="chap_1_2_3" url="chap_1_2_3.html#chap_1_2_3"/>
+   <mapID target="chap_1_2_4" url="chap_1_2_3.html#chap_1_2_4"/>
+
+   <!-- Démarrage de la I-SIS Console -->
+   <mapID target="chap_2" url="chap_2.html#chap_2"/>
+   <mapID target="chap_2_1" url="chap_2.html#chap_2_1"/>
+   <mapID target="chap_2_1_1" url="chap_2.html#chap_2_1_1"/>
+   <mapID target="chap_2_1_1_1" url="chap_2.html#chap_2_1_1_1"/>
+   <mapID target="chap_2_1_1_2" url="chap_2.html#chap_2_1_1_2"/>
+   <mapID target="chap_2_1_1_3" url="chap_2.html#chap_2_1_1_3"/>
+   <mapID target="chap_2_1_2" url="chap_2.html#chap_2_1_2"/>
+   <mapID target="chap_2_1_3" url="chap_2.html#chap_2_1_3"/>
+   <mapID target="chap_2_2" url="chap_2_2.html#chap_2_2"/>
+   <mapID target="chap_2_2_1" url="chap_2_2.html#chap_2_2_1"/>
+   <mapID target="chap_2_2_2" url="chap_2_2.html#chap_2_2_2"/>
+   <mapID target="chap_2_2_3" url="chap_2_2.html#chap_2_2_3"/>
+   <mapID target="chap_2_3" url="chap_2_3.html#chap_2_3"/>
+   <mapID target="chap_2_3_1" url="chap_2_3.html#chap_2_3_1"/>
+   <mapID target="chap_2_3_2" url="chap_2_3.html#chap_2_3_2"/>
+   <mapID target="chap_2_3_3" url="chap_2_3.html#chap_2_3_3"/>
+   <mapID target="chap_2_3_4" url="chap_2_3.html#chap_2_3_4"/>
+   <mapID target="chap_2_3_5" url="chap_2_3.html#chap_2_3_5"/>
+
+   <!-- Aide en ligne -->
+   <mapID target="chap_3" url="chap_3.html#chap_3"/>
+   <mapID target="chap_3_1" url="chap_3.html#chap_3_1"/>
+   <mapID target="chap_3_2" url="chap_3.html#chap_3_2"/>
+   <mapID target="chap_3_3" url="chap_3.html#chap_3_3"/>
+
+   <!-- Astuces graphiques -->
+   <mapID target="chap_4" url="chap_4.html#chap_4"/>
+   <mapID target="chap_4_1" url="chap_4.html#chap_4_1"/>
+   <mapID target="chap_4_2" url="chap_4_2.html#chap_4_2"/>
+   <mapID target="chap_4_3" url="chap_4_3.html#chap_4_3"/>
+   <mapID target="chap_4_3_1" url="chap_4_3.html#chap_4_3_1"/>
+   <mapID target="chap_4_3_2" url="chap_4_3.html#chap_4_3_2"/>
+
+   <!-- Exploration I-SIS -->
+   <mapID target="chap_5" url="chap_5.html#chap_5"/>
+   <mapID target="chap_5_1" url="chap_5.html#chap_5_1"/>
+   <mapID target="chap_5_2" url="chap_5_2.html#chap_5_2"/>
+   <mapID target="chap_5_3" url="chap_5_3.html#chap_5_3"/>
+   <mapID target="chap_5_4" url="chap_5_4.html#chap_5_4"/>
+
+   <!-- Consultation des tables -->
+   <mapID target="chap_6" url="chap_6.html#chap_6"/>
+   <mapID target="chap_6_1" url="chap_6.html#chap_6_1"/>
+   <mapID target="chap_6_2" url="chap_6_2.html#chap_6_2"/>
+   <mapID target="chap_6_3" url="chap_6_3.html#chap_6_3"/>
+   <mapID target="chap_6_4" url="chap_6_4.html#chap_6_4"/>
+   <mapID target="chap_6_4_1" url="chap_6_4.html#chap_6_4_1"/>
+   <mapID target="chap_6_4_2" url="chap_6_4_2.html#chap_6_4_2"/>
+   <mapID target="chap_6_4_2_1" url="chap_6_4_2.html#chap_6_4_2_1"/>
+   <mapID target="chap_6_4_2_2" url="chap_6_4_2.html#chap_6_4_2_2"/>
+   <mapID target="chap_6_4_2_3" url="chap_6_4_2.html#chap_6_4_2_3"/>
+   <mapID target="chap_6_4_3" url="chap_6_4_3.html#chap_6_4_3"/>
+   <mapID target="chap_6_4_3_1" url="chap_6_4_3.html#chap_6_4_3_1"/>
+   <mapID target="chap_6_4_3_2" url="chap_6_4_3.html#chap_6_4_3_2"/>
+   <mapID target="chap_6_4_4" url="chap_6_4_4.html#chap_6_4_4"/>
+   <mapID target="chap_6_4_5" url="chap_6_4_5.html#chap_6_4_5"/>
+   <mapID target="chap_6_4_6" url="chap_6_4_6.html#chap_6_4_6"/>
+   <mapID target="chap_6_5" url="chap_6_5.html#chap_6_5"/>
+   <mapID target="chap_6_5_1" url="chap_6_5.html#chap_6_5_1"/>
+   <mapID target="chap_6_5_2" url="chap_6_5.html#chap_6_5_2"/>
+
+   <!-- Méthodes d'exploitation -->
+   <mapID target="chap_7" url="chap_7.html#chap_7"/>
+   <mapID target="chap_7_1" url="chap_7.html#chap_7_1"/>
+   <mapID target="chap_7_2" url="chap_7_2.html#chap_7_2"/>
+   <mapID target="chap_7_3" url="chap_7_3.html#chap_7_3"/>
+   <mapID target="chap_7_4" url="chap_7_4.html#chap_7_4"/>
+
+   <!-- Zones de la fenêtre principale -->
+   <mapID target="MenuBar" url="chap_1_2.html#chap_1_2_1"/>
+   <mapID target="ExplorationTree" url="chap_1_2_2.html#chap_1_2_2"/>
+   <mapID target="DisplayArea" url="chap_1_2_3.html#chap_1_2_3"/>
+   <mapID target="StatusBar" url="chap_1_2_3.html#chap_1_2_4"/>
+
+   <!-- Processeurs -->
+   <mapID target="AdministrationProcessor" url="admin.html"/>
+   <mapID target="DebugProcessor" url="chap_6_5.html#chap_6_5"/>
+   <mapID target="DefineProcessor" url="chap_6_2.html#chap_6_2"/>
+   <mapID target="DetailProcessor" url="chap_6.html#chap_6_1"/>
+   <mapID target="DisplayProcessor" url="chap_6_3.html#chap_6_3"/>
+   <mapID target="ExecutionProcessor" url="chap_7_3.html#chap_7_3"/>
+   <mapID target="QueryProcessor" url="chap_6_4.html#chap_6_4"/>
+   <mapID target="FileProcessor" url="chap_7_4.html#chap_7_4"/>
+</map>

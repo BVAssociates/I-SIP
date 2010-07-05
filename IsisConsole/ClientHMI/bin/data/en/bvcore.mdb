@@ -1,0 +1,23 @@
+#
+# This is the message file for the BVCore/Java component
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# MessageManager messages
+&YesNoQuestion="Question"
+&OkCancelQuestion="Question"
+&YesNoError="Error"
+&OkCancelError="Error"
+&Error="Error"
+&Warning="Warning"
+&Information="Information"
+
+# HelpManager messages
+&HelpTopicNotFound="Cannot find the file corresponding to the topic: %1 !"
+&HelpCannotOpenUrl="Cannot open the browser on file: %1 !"
+&HelpBrowserError="Cannot open the help browser !"
+
+# Print messages
+&Page="Page"

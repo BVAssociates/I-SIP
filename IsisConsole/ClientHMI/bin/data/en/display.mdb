@@ -1,0 +1,38 @@
+#
+# Message file for table display processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&DisplayProcessorDescription="Table display processor"
+&Display_Title="Open: "
+&Display_Reload="Reload"
+&Display_Auto="Auto."
+&Display_Close="Close"
+&RequestExecutionResult="Request result"
+&DisplayReload_Title="Automatic reload"
+&DisplayReload_Activate="Enable automatic reload: "
+&DisplayReload_Period="Reload period in minutes: "
+
+# State messages
+&Status_BuildingTable="Building the table..."
+
+# Error messages
+&ERR_CannotBuildTable="Cannot build the table !"
+&ERR_RequestHasNoResult="The request has no result !"
+&ERR_InvalidParametersFormat="Processor parameters have an invalid format."
+&ERR_DateFormatError="Invalid format:"
+&ERR_NotAClassNode="The selected object is not a table node"
+&ERR_ColumnNotExistent="The column does not exist: "
+&ERR_NoDefinitionForTable="There is no definition for the table !"
+
+# Log messages
+&LOG_TableDataDisplay="Data display into table"
+&LOG_TableName="Table name: "
+&LOG_SelectedColumns="Selected columns: "
+&LOG_Condition="Condition: "
+&LOG_SortOrder="Sort order: "
+&LOG_Data="Data: "
+&LOG_ErrorWhileLoadingData="Error while loading data !"

@@ -1,0 +1,23 @@
+#
+# Messages file for file display processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+&FileProcessorDescription="File display processor"
+&FileDownloadInProgress="Downloading the file: %1%"
+&FileProcessorBuilding="Building the sub-window..."
+&FileSizeIsNull="The file is empty !"
+&FileTooLargeDownload="The file is too large to be displayed in the I-SIS Console !\nWould you like to download it on your workstation ?"
+
+# Log message
+&LOG_FileDisplay="File display"
+&LOG_MenuItem="Execution of method: "
+&LOG_FileName="File: "
+&LOG_FileDisplayResult="File display result"
+&LOG_DisplaySuccessful="Success"
+&LOG_DisplayFailed="Failure"
+
+# Error messages
+&ERR_FileDisplayNotPossible="Cannot display the file !"

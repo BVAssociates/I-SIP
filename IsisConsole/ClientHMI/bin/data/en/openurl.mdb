@@ -1,0 +1,31 @@
+#
+# Messages file for web page display processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Main window messages
+&OpenUrlProcessorDescription="Web page display processor"
+&OpenUrlProcessorItemLabel="OpenUrl"
+&MW_Menu_OpenUrl="Internet browser..."
+
+# State messages
+&OpenUrl_SM_PreparingExecution="Preparing execution..."
+&OpenUrl_SM_LoadingConfiguration="Loading the configuration..."
+&OpenUrl_SM_StartingExecution="Execution of the external browser..."
+
+# Dialog box messages
+&OpenUrl_CfgTitle="Internet"
+&OpenUrl_DB_Title="URL"
+&OpenUrl_DB_Prompt="<html>Please enter the command to execute to open<br>an internet browser on a defined URL.</html>"
+&OpenUrl_DB_Prompt2="Command:"
+&OpenUrl_Url_Prompt="URL to open with the browser:"
+&OpenUrl_DB_Browse="Browse..."
+
+# Error messages
+&ERR_CannotExecuteBrowser="Cannot execute the external internet browser !"
+&ERR_NoURLInCommand="The external internet browser entered\ndoes not contain the mandatory '%[url]' keyword !"
+&ERR_EmptyCommand="The extenal internet browser command is empty !"
+&ERR_CommandShouldContainBinary="The external internet browser command\nmust contain a binary and the '%[url]' keyword !"
+&ERR_BrowserNotConfigured="The external internet browser has not been configured !"

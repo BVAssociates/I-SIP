@@ -1,0 +1,37 @@
+#
+# Messages file for edition processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&EditionProcessorDescription="File edition processor"
+&ScriptEditionProcessorDescription="Script edition processor"
+&EditFile_Title="File editor: %1"
+&EditScript_Title="Script editor: %1"
+&Edit_Reload="Reload"
+&Edit_Save="Save"
+&Edit_Close="Close"
+&Edit_ManagingFileReference="Managing the file reference..."
+&Edit_BuildingEditorPane="Building the editor pane..."
+&Edit_LoadingFile="Loading the file..."
+&Edit_FileSaved="The file has been saved !"
+&Edit_NoFileCreate="The file does not exist. Would you like to create it ?"
+&Edit_ModifiedFileNotSaved="The file content has changed. Would you like to save it ?"
+
+# Log messages
+&LOG_FileEdition="File edition"
+&LOG_AgentName="Agent: "
+&LOG_UserName="User: "
+&LOG_ServiceSessionId="Session identifier: "
+&LOG_EditedFile="File: "
+&LOG_ReadingFile="Reading the file from the I-SIS Agent"
+&LOG_FileReadingFailed="Failed to read the file"
+&LOG_WritingFile="Writing the file to the I-SIS Agent"
+&LOG_FileWritingFailed="Failed to write the file"
+
+# Error message
+&ERR_NoFileReference="No file to edit is specified !"
+&ERR_CannotLoadFile="Error while loading the file."
+&ERR_CannotWriteFile="Error while saving the file."

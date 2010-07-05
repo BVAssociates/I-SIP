@@ -1,0 +1,26 @@
+[AUTO-EXPLORE]
+Enabled=true
+RemoveUnnecessaryNodes=true
+Tables="PortalAccess,AgentAccess,ICleAccess,ICleServices,PortalApplicationAccess,Environnements"
+PreloadMenus=true
+
+[OpenURL]
+Browser.Command="C:\Program Files\Internet Explorer\IEXPLORE.EXE %[url]"
+
+[Execution]
+Background=-1
+Output=-16777012
+Termination=-16711936
+Error=-26368
+ShowPopup=false
+
+[GUI]
+Frame.Height=414
+Frame.Y=218
+Divider.Location=278
+Frame.X=232
+Orientation=0
+Frame.Width=919
+LookAndFeel="Liquid"
+FS.DisplayAsList=true
+

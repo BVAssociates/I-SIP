@@ -1,0 +1,41 @@
+#
+# Fichier des messages du processeur de debug
+#
+# $Revision: 1.5 $
+#
+# Encoding : UTF-8
+
+# Messages de la sous-fenêtre
+&DebugProcessorDescription="Processeur de vue développeur"
+&Debug_GeneralTab="Général"
+&Debug_InstanceTab="Objet"
+&Debug_ClassTab="Table"
+&Debug_EnvironmentTab="Environnement"
+&Debug_MethodsTab="Méthodes"
+&Debug_Label="Libellé"
+&Debug_Icon="Icône"
+&Debug_Identity="Identité"
+&Debug_Type="Type"
+&Debug_AgentName="Agent"
+&Debug_DefinitionPath="Chemin du dictionnaire"
+&Debug_Responsabilities="Responsabilités"
+&Debug_TableName="Nom de la table"
+&Debug_Key="Clé"
+&Debug_Condition="Condition"
+&Debug_Close="Fermer"
+&Debug_Parameters="Paramètres"
+&Debug_Context="Contexte du noeud"
+&Debug_Environment="Environnement de service"
+&Debug_Name="Nom"
+&Debug_Value="Valeur"
+&Debug_NodeType="Type de noeud"
+&Debug_Group="Groupe"
+&Debug_Preprocessing="Pré-processing"
+&Debug_Processor="Processeur"
+&Debug_Arguments="Arguments"
+&Debug_Confirm="Confirmation"
+&Debug_PostProcessing="Post-processing"
+&Debug_Applicable="Applicable"
+
+# Messages d'erreurs
+&ERR_CannotOpenDebugProcessor="Erreur lors de l'ouverture du processeur de déboggage !"

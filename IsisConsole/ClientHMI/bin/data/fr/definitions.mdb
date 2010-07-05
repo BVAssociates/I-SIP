@@ -1,0 +1,28 @@
+#
+# Fichier des messages du processeur d'affichage du cache des définitions
+#
+# $Revision: 1.2 $
+#
+# Encoding : UTF-8
+
+# Messages de la sous-fenêtre
+&DefinitionsProcessorDescription="Processeur d'affichage du cache des définitions"
+&MW_Menu_Definitions="Cache des définitions..."
+&Definitions_Title="Cache des définitions"
+&Definitions_BuildingTable="Construction de la table"
+&Definitions_Close="Fermer"
+&Definitions_Table="Table"
+&Definitions_Agent="Agent"
+&Definitions_I-CLES="I-CLES"
+&Definitions_ServiceType="Type"
+&Definitions_FilePath="Chemin absolu"
+&Definitions_Uses="Utilisations"
+&Question_ConfirmRemoval="Supprimer la définition du cache.\nEtes-vous sûr ?"
+
+# Menu contextuel
+&DP_Menu_Define="Définition..."
+&DP_Menu_Remove="Supprimer"
+
+# Messages d'erreur
+&ERR_CannotRemoveDefinition="Impossible de supprimer la définition du cache !"
+&ERR_CannotDisplayDefinition="Impossible d'afficher la définition !"

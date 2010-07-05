@@ -1,0 +1,28 @@
+#
+# Message file for definitions cache display processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Sub-window messages
+&DefinitionsProcessorDescription="Definitions cache display processor"
+&MW_Menu_Definitions="Definitions cache..."
+&Definitions_Title="Definitions cache"
+&Definitions_BuildingTable="Building the table"
+&Definitions_Close="Close"
+&Definitions_Table="Table"
+&Definitions_Agent="Agent"
+&Definitions_I-CLES="I-CLES"
+&Definitions_ServiceType="Type"
+&Definitions_FilePath="Absolute path"
+&Definitions_Uses="Uses"
+&Question_ConfirmRemoval="Remove the definition from cache.\nAre you sure ?"
+
+# Contextual menu
+&DP_Menu_Define="Definition..."
+&DP_Menu_Remove="Remove"
+
+# Messages d'erreur
+&ERR_CannotRemoveDefinition="Cannot remove the definition from cache !"
+&ERR_CannotDisplayDefinition="Cannot display the definition !"

@@ -1,0 +1,22 @@
+#
+# Message file for command execution processor
+#
+# $Revision: 1.1 $
+#
+# Encoding : UTF-8
+
+# Main window messages
+&OpenExeProcessorDescription="Command execution processor"
+&OpenExeProcessorItemLabel="OpenExe"
+&MW_Menu_OpenExe="Execute..."
+
+# State messages
+&OpenExe_SM_PreparingExecution="Preparing the execution..."
+&OpenExe_SM_StartingExecution="Executing the command..."
+
+# Dialog box messages
+&OpenExe_DB_Title="Command"
+&OpenExe_Exe_Prompt="Command to execute:"
+
+# Error messages
+&ERR_CannotExecuteCommand="Cannot execute the command !"
