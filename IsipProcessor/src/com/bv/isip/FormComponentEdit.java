@@ -15,7 +15,7 @@ public class FormComponentEdit extends JPanel
     public FormComponentEdit()
     {
         super();
-        _component = new JTextField("###");
+        _component = new JTextField("");
         setLayout(new GridLayout(1, 1));
         add(_component);
     }

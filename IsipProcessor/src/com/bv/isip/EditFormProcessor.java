@@ -88,37 +88,39 @@ public class EditFormProcessor extends ProcessorFrame {
 	}
 	
     @Override
-	public void run (
-			MainWindowInterface windowInterface,
-			JMenuItem menuItem,
-			String parameters,
-			String preprocessing,
-			String postprocessing,
-			DefaultMutableTreeNode selectedNode
-			)
-			throws
-				InnerException
-	{
+    public void run(
+            MainWindowInterface windowInterface,
+            JMenuItem menuItem,
+            String parameters,
+            String preprocessing,
+            String postprocessing,
+            DefaultMutableTreeNode selectedNode)
+            throws
+            InnerException {
 
-    	super.run(windowInterface, menuItem, parameters, preprocessing, postprocessing, selectedNode);
+        super.run(windowInterface, menuItem, parameters, preprocessing, postprocessing, selectedNode);
 
         if (parameters.equals("")) {
             throw new InnerException("", "Ce processeur prend un parametre : Table", null);
         }
 
-        _FormConfiguration = new EditFormConfig((GenericTreeObjectNode)selectedNode,parameters);
+        // Prepare le traitement des arguments du processeur
+        String[] parameters_array = parameters.split("@");
 
-        initTable();
-        
-		setTitle(menuItem.getText());
-		makePanel();
+        _FormConfiguration = new EditFormConfig((GenericTreeObjectNode) selectedNode, parameters_array[0]);
+
+        // initialise la definition avec des parametres optionnels
+        initTable(parameters_array);
+
+        setTitle(menuItem.getText());
+        makePanel();
 
 
         populateFormPanel(true);
-        
+
         pack();
-		display();
-	}
+        display();
+    }
 
 
     /**
@@ -181,7 +183,7 @@ public class EditFormProcessor extends ProcessorFrame {
                 form_panel.add(form_entry, constraintLabel);
 
                 //on creer le panel de saisie pour le champ
-                form_value=(JComponent) component_factory.makeComponent(formType, formId);
+                form_value=(JComponent) component_factory.makeComponent(formType, formId, _tableDefinition);
 
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
@@ -419,30 +421,36 @@ public class EditFormProcessor extends ProcessorFrame {
 
     /**
      * Lit les données du formulaire et retourne un tableau de IsisParamter.
-     * Ne retourne que les valeurs des champs éditables et les clefs primaires.
+     * Rretourne toutes les valeurs des champs.
      *
      * @return un tableau de IsisParameter
      */
     public IsisParameter[] getFormPanelData()
     {
         IsisParameter[] data_from=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
+        
         ArrayList<IsisParameter> data=new ArrayList<IsisParameter>();
  
-        char sep=data_from[0].quoteCharacter;
+        //char sep=data_from[0].quoteCharacter;
 
-        int j=0;
-        for(int i=0; i < data_from.length; i++)
+        for(int i=0; i < _tableDefinition.columns.length; i++)
         {
-            JComponent textBox = _fieldObject.get(data_from[i].name);
+            String field_name = _tableDefinition.columns[i].name;
+            String field_value;
+            
+            JComponent textBox = _fieldObject.get(field_name);
             if (textBox instanceof FormComponentInterface) {
-                data.add(new IsisParameter(data_from[i].name,
-                        ((FormComponentInterface) textBox).getText() ,
-                        sep));
+                // recupere la valeur dans le widget
+                field_value = ((FormComponentInterface) textBox).getText();
             } else {
-                data.add(data_from[i]);
+                //sinon utilise la valeur dans le contexte
+                field_value = TreeNodeFactory.getValueOfParameter(data_from, field_name);
             }
+            
+            data.add(new IsisParameter(field_name, field_value ,'"'));
 
         }
+        
         return data.toArray(new IsisParameter[0]);
     }
 
@@ -570,7 +578,7 @@ public class EditFormProcessor extends ProcessorFrame {
      * Initialise le membre _tableDefinition avec la definition extraite
      * du node en cours d'exploration
      */
-    protected void initTable()
+    protected void initTable( String[] parameters_array )
             throws InnerException
     {
         // Ce processeur ne fonctionne pas sur les noeud Table
@@ -578,11 +586,33 @@ public class EditFormProcessor extends ProcessorFrame {
             throw new InnerException("", "", null);
         }
         
+        //traite les parametres (aucun pour l'instant)
+        //if ( parameters_array.lengh > 0 ) {
+        //}
+        
         // get the primary keys for current table
         TableDefinitionManager def_cache = TableDefinitionManager.getInstance();
         GenericTreeObjectNode node = (GenericTreeObjectNode)getSelectedNode();
-        _tableDefinition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
-        def_cache.releaseTableDefinitionLeasing(_tableDefinition);
+        IsisTableDefinition definition= def_cache.getTableDefinition(node.getAgentName(),node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
+        
+        // "clone" manuel de la definition
+        _tableDefinition = new IsisTableDefinition(
+                definition.tableName,
+                definition.definitionFilePath,
+                definition.source,
+                definition.separator,
+                definition.header,
+                definition.type,
+                definition.owner,
+                definition.key,
+                definition.sort,
+                definition.notNull,
+                definition.columns,
+                definition.foreignKeys,
+                definition.labels) ;
+                
+        def_cache.releaseTableDefinitionLeasing(definition);
+        
 
         // Construction de la condition du Select pour ne recuperer que
         // la ligne correspondante aux clefs

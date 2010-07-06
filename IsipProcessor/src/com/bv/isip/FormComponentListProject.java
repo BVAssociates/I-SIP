@@ -2,6 +2,7 @@ package com.bv.isip;
 
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.corbacom.IsisTableDefinition;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,10 +21,10 @@ public class FormComponentListProject extends FormComponentList
         implements FormComponentInterface {
 
 
-    public FormComponentListProject(GenericTreeObjectNode node, String field)
+    public FormComponentListProject(GenericTreeObjectNode node, String field,IsisTableDefinition definition)
             throws InnerException
     {
-        super(node,field);
+        super(node,field,definition);
         
 
         GridBagConstraints contraints_button = new GridBagConstraints();

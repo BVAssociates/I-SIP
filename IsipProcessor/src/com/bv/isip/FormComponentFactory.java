@@ -4,6 +4,7 @@ package com.bv.isip;
 
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
+import com.bv.isis.corbacom.IsisTableDefinition;
 
 public class FormComponentFactory  {
 
@@ -19,7 +20,8 @@ public class FormComponentFactory  {
     *
     * @return JPanel a inserer dans la JFrame
     */
-    protected FormComponentInterface makeComponent(String component_name, String field_name)
+    protected FormComponentInterface makeComponent(String component_name,
+            String field_name,IsisTableDefinition definition)
             throws InnerException
     {
         FormComponentInterface form_value;
@@ -29,9 +31,9 @@ public class FormComponentFactory  {
         } else if (component_name.equals("Edit")) {
             form_value = new FormComponentEdit();
         } else if (component_name.equals("List")) {
-            form_value = new FormComponentList(_selected_node, field_name);
+            form_value = new FormComponentList(_selected_node, field_name, definition);
         } else if (component_name.equals("ListProject")) {
-            form_value = new FormComponentListProject(_selected_node, field_name);
+            form_value = new FormComponentListProject(_selected_node, field_name, definition);
         } else if (component_name.equals("EditMulti")) {
             form_value = new FormComponentEditArea();
         } else if (component_name.equals("Bool")) {

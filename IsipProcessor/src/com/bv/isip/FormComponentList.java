@@ -13,6 +13,7 @@ import com.bv.isis.corbacom.IsisForeignKeyLink;
 import com.bv.isis.corbacom.IsisParameter;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.ComboBoxModel;
@@ -28,12 +29,13 @@ public class FormComponentList extends JPanel
         implements FormComponentInterface {
 
 
-    public FormComponentList(GenericTreeObjectNode node, String field)
+    public FormComponentList(GenericTreeObjectNode node, String field,IsisTableDefinition definition)
             throws InnerException
     {
         super();
         _component = new JComboBox();
         _selectedNode = node;
+        _tableDefinition = definition;
 
         GridBagConstraints contraints=new GridBagConstraints();
         contraints.fill=GridBagConstraints.BOTH;
@@ -52,11 +54,7 @@ public class FormComponentList extends JPanel
     public void init(GenericTreeObjectNode node,String field) throws InnerException
     {
 
-        TableDefinitionManager def_cache=TableDefinitionManager.getInstance();
-        IsisTableDefinition definition = def_cache.getTableDefinition(node.getAgentName(), node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
-        def_cache.releaseTableDefinitionLeasing(definition);
-
-        ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, definition,field));
+        ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, _tableDefinition,field));
         _component.setModel(datamodel);
     }
 
@@ -201,6 +199,11 @@ public class FormComponentList extends JPanel
      * stocke la reference vers la combobox
      */
     protected GenericTreeObjectNode _selectedNode;
+    
+    /**
+     * stocke la reference vers la definition de la table en cours
+     */
+    private IsisTableDefinition _tableDefinition;
 
     /**
      * stocke la table utilisée pour la liste
