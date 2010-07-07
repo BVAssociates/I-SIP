@@ -41,6 +41,9 @@ public class FormComponentBool extends JPanel
         }
     }
 
+    public double getWeighty() {
+        return 0.1;
+    }
 
     private JCheckBox _component;
 }

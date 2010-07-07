@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import com.bv.core.message.MessageManager;
@@ -21,9 +20,7 @@ import com.bv.isis.console.core.abs.gui.MainWindowInterface;
 import com.bv.isis.console.core.abs.processor.ProcessorInterface;
 import com.bv.isis.console.com.CommonFeatures;
 import com.bv.isis.console.com.LogServiceProxy;
-import com.bv.isis.console.com.ServiceSessionProxy;
 import com.bv.isis.console.com.TableDefinitionManager;
-import com.bv.isis.console.core.common.IndexedList;
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
 import com.bv.isis.console.node.GenericTreeClassNode;
@@ -31,9 +28,7 @@ import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.node.LabelFactory;
 import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.console.processor.ProcessorFrame;
-import com.bv.isis.corbacom.IsisForeignKeyLink;
 import com.bv.isis.corbacom.IsisTableDefinition;
-import com.bv.isis.corbacom.ServiceSessionInterface;
 import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -133,8 +128,7 @@ public class EditFormProcessor extends ProcessorFrame {
             throws InnerException
     {
         JPanel form_panel = new JPanel();
-        JComponent form_value;
-        
+       
         FormComponentFactory component_factory=new FormComponentFactory((GenericTreeObjectNode)getSelectedNode());
 
         form_panel.setLayout(new GridBagLayout());
@@ -151,7 +145,7 @@ public class EditFormProcessor extends ProcessorFrame {
             //construction du champ
             if (formType.equals("Invisible")) {
                 //On créé le composant, mais il ne sera pas ajouter au JPanel
-                form_value = new FormComponentLabel();
+                FormComponentLabel form_value = new FormComponentLabel();
                 //on stock le champ qui sera affiché puis modifié
                 _fieldObject.put(formId, form_value);
 
@@ -176,25 +170,28 @@ public class EditFormProcessor extends ProcessorFrame {
                 GridBagConstraints constraintLabel = new GridBagConstraints();
                 constraintLabel.gridx = 0;
                 constraintLabel.gridy = position;
-                constraintLabel.weightx = 0.9;
-                constraintLabel.anchor = java.awt.GridBagConstraints.WEST;
-                constraintLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                constraintLabel.weightx = 0.1;
+                constraintLabel.anchor = GridBagConstraints.WEST;
+                constraintLabel.fill = GridBagConstraints.BOTH;
                 constraintLabel.insets = new java.awt.Insets(5, 5, 5, 5);
                 form_panel.add(form_entry, constraintLabel);
 
                 //on creer le panel de saisie pour le champ
-                form_value=(JComponent) component_factory.makeComponent(formType, formId, _tableDefinition);
+                FormComponentInterface form_value= component_factory.makeComponent(formType, formId, _tableDefinition);
 
                 GridBagConstraints constraintValue = new GridBagConstraints();
                 constraintValue.gridx = 1;
                 constraintValue.gridy = position;
-                constraintValue.weightx = 1.0;
-                constraintValue.anchor = java.awt.GridBagConstraints.WEST;
-                constraintValue.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                constraintValue.weightx = 0.9;
+                constraintValue.weighty = form_value.getWeighty();
+                constraintValue.anchor = GridBagConstraints.EAST;
+                constraintValue.fill = GridBagConstraints.BOTH;
                 constraintValue.insets = new java.awt.Insets(5, 5, 5, 5);
-                form_panel.add(form_value, constraintValue);
+                                
+                form_panel.add( (JComponent) form_value, constraintValue);
+                
                 //on stock le champ qui sera affiché puis modifié
-                 _fieldObject.put(formId, form_value);
+                 _fieldObject.put( formId, (JComponent) form_value);
             }
         }
 
@@ -288,31 +285,26 @@ public class EditFormProcessor extends ProcessorFrame {
         return button_panel;
     }
 
-
     /**
-	* Cette méthode est appelée par le constructeur de la classe afin de
-	* construire la boîte de dialogue d'administration.
-    */
-	protected void makePanel() throws InnerException
-	{
-		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"EditFormProcessor", "makePanel");
-        
-        JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
+     * Cette méthode est appelée par le constructeur de la classe afin de
+     * construire la boîte de dialogue d'administration.
+     */
+    protected void makePanel() throws InnerException {
+        Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+                "EditFormProcessor", "makePanel");
 
         // Creation du panneau de saisie
         JPanel form_panel = makeFormPanel();
-        jScrollPane1.setViewportView(form_panel);
-        getContentPane().add(jScrollPane1, BorderLayout.CENTER);
+        getContentPane().add(form_panel, BorderLayout.CENTER);
 
         JPanel button_panel = makeButtonPanel();
-		// On place ce panneau dans la zone sud
-		getContentPane().add(button_panel, BorderLayout.SOUTH);
-		// On redimensionne la fenêtre
-		//setPreferredSize(new Dimension(400, 400));
+        // On place ce panneau dans la zone sud
+        getContentPane().add(button_panel, BorderLayout.SOUTH);
+        // On redimensionne la fenêtre
+        //setPreferredSize(new Dimension(400, 400));
 
-		trace_methods.endOfMethod();
-	}
+        trace_methods.endOfMethod();
+    }
 
     /**
      * Remplit les champs du formulaire. Si refresh est false, on utilise le
@@ -371,53 +363,7 @@ public class EditFormProcessor extends ProcessorFrame {
 
         return data;
     }
-    /**
-     * Fonction prévue pour contourner le problemes des accents dans le Administrate
-     * Problème depuis résolu
-     *
-     * @param phrase
-     * @return
-     */
-    @Deprecated
-    public String removeAccents(String phrase) {
-        String PLAIN_ASCII =
-      "AaEeIiOoUu"    // grave
-    + "AaEeIiOoUuYy"  // acute
-    + "AaEeIiOoUuYy"  // circumflex
-    + "AaOoNn"        // tilde
-    + "AaEeIiOoUuYy"  // umlaut
-    + "Aa"            // ring
-    + "Cc"            // cedilla
-    + "OoUu"          // double acute
-    ;
-
-    String UNICODE =
- "\u00C0\u00E0\u00C8\u00E8\u00CC\u00EC\u00D2\u00F2\u00D9\u00F9"
-+ "\u00C1\u00E1\u00C9\u00E9\u00CD\u00ED\u00D3\u00F3\u00DA\u00FA\u00DD\u00FD"
-+ "\u00C2\u00E2\u00CA\u00EA\u00CE\u00EE\u00D4\u00F4\u00DB\u00FB\u0176\u0177"
-+ "\u00C3\u00E3\u00D5\u00F5\u00D1\u00F1"
-+ "\u00C4\u00E4\u00CB\u00EB\u00CF\u00EF\u00D6\u00F6\u00DC\u00FC\u0178\u00FF"
-+ "\u00C5\u00E5"
-+ "\u00C7\u00E7"
-+ "\u0150\u0151\u0170\u0171"
-;
-       if (phrase == null) return null;
-       StringBuffer sb = new StringBuffer();
-       int n = phrase.length();
-       for (int i = 0; i < n; i++) {
-          char c = phrase.charAt(i);
-          int pos = UNICODE.indexOf(c);
-          if (pos > -1){
-              sb.append(PLAIN_ASCII.charAt(pos));
-          }
-          else {
-              sb.append(c);
-          }
-       }
-       return sb.toString();
-
-
-    }
+    
 
     /**
      * Lit les données du formulaire et retourne un tableau de IsisParamter.
@@ -708,54 +654,7 @@ public class EditFormProcessor extends ProcessorFrame {
 		trace_methods.endOfMethod();
 	}
 
-    /**
-     * Interroge la table liée par clef étrangère et recupère la liste des
-     * clefs
-     *
-     * @param le champ
-     * @return Liste de clefs
-     */
-    private String[] getFieldList(String field_name) throws InnerException
-    {
-        String foreign_table="";
-        String foreign_column="";
-
-        // recherche de la table+champ lié dans la definition
-        for (int i=0; i < _tableDefinition.foreignKeys.length; i++) {
-            IsisForeignKeyLink[] fkeys=_tableDefinition.foreignKeys[i].links;
-            for (int j=0; j< fkeys.length; j++) {
-                if (fkeys[i].localColumnName.equals(field_name)) {
-                    foreign_table=_tableDefinition.foreignKeys[i].foreignTableName;
-                    foreign_column=fkeys[i].foreignColumnName;
-
-                }
-            }
-        }
-
-        if (foreign_table.equals("") || foreign_column.equals("")) {
-            throw new InnerException("",
-                    "Le champ "+field_name+" n'a pas de table liée par clef étrangère",
-                    null);
-        }
-        
-        // On recupere l'objet ServiceSession
-        GenericTreeObjectNode selectedNode = (GenericTreeObjectNode) getSelectedNode();
-        ServiceSessionInterface service_session = selectedNode.getServiceSession();
-        IndexedList context = selectedNode.getContext(true);
-
-        // On recupere le Proxy associé
-        ServiceSessionProxy session_proxy = new ServiceSessionProxy(service_session);
-        // On va chercher les informations dans la table lié par clef etrangère
-        String[] result = session_proxy.getSelectResult(foreign_table, new String[] {foreign_column}, "", "", context);
-
-        //Quirk! suppression entete+ajout etat ""
-        result[0]="";
-        
-        return result;
-    }
-
-
-
+    
     /**
 	* Cet attribut maintient une référence paramétrée sur un objet
 	* JComponent correspondant à une zone de saisie pour une colonne. Le

@@ -18,7 +18,7 @@ public interface FormComponentInterface {
     public String getText();
 
     /**
-     * Tnitialise la valeur du composant.
+     * Initialise la valeur du composant.
      * Si ce composant n'est pas en mesure de définir cette valeur, une
      * exception est levée. (ex: liste déroulante)
      *
@@ -27,5 +27,12 @@ public interface FormComponentInterface {
      */
     public void setText(String value)
             throws InnerException;
+    
+    /**
+     * Renvoie le ratio en hauteur du widget pour un GridBagLayout
+     * 
+     * @return ratio
+     */
+    public double getWeighty();
     
 }

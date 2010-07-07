@@ -31,6 +31,9 @@ public class FormComponentEdit extends JPanel
         _component.setText(value);
     }
 
+    public double getWeighty() {
+        return 0.1;
+    }
    
     private JTextField _component;
 }

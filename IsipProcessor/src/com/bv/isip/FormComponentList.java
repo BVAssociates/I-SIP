@@ -4,7 +4,6 @@ import com.bv.core.message.MessageManager;
 import com.bv.isis.console.com.CommonFeatures;
 import com.bv.isis.console.com.LogServiceProxy;
 import com.bv.isis.console.com.ServiceSessionProxy;
-import com.bv.isis.console.com.TableDefinitionManager;
 import com.bv.isis.console.core.common.IndexedList;
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
@@ -13,12 +12,15 @@ import com.bv.isis.corbacom.IsisForeignKeyLink;
 import com.bv.isis.corbacom.IsisParameter;
 import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 
 /**
@@ -50,12 +52,15 @@ public class FormComponentList extends JPanel
 
     }
 
+    
+    public void init(GenericTreeObjectNode node, String field) throws InnerException {
 
-    public void init(GenericTreeObjectNode node,String field) throws InnerException
-    {
-
-        ComboBoxModel datamodel=new DefaultComboBoxModel(getOptionsForeign(node, _tableDefinition,field));
+        ComboBoxModel datamodel = new DefaultComboBoxModel(getOptionsForeign(node, _tableDefinition, field));
         _component.setModel(datamodel);
+
+        _component.setRenderer(new IsipListCellRenderer());
+
+
     }
 
     public String getText()
@@ -79,6 +84,9 @@ public class FormComponentList extends JPanel
         _component.setSelectedItem(value);
     }
 
+    public double getWeighty() {
+        return 0.1;
+    }
     
     /**
      * Interroge la table liée par clef étrangère et recupère la liste des
@@ -286,4 +294,43 @@ public class FormComponentList extends JPanel
         private IsisParameter[] _fields;
         private IsisTableDefinition _definition;
     }
+    
+    /**
+     * Créer un Renderer pour modifier l'affichage de la liste
+     */
+    class IsipListCellRenderer extends DefaultListCellRenderer
+    {
+         /**
+         * Surcharge la méthode d'affichage d'un item de liste pour lui
+         * ajouter un tooltip
+         * 
+         * @param list
+         * @param value
+         * @param index
+         * @param isSelected
+         * @param cellHasFocus
+         * @return
+         */
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
+
+            //appelle la méthode parente
+            JLabel comp = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
+                    cellHasFocus);
+            
+            if (value != null) {
+                // ajout du tooltip
+                comp.setToolTipText(String.valueOf(value));
+                
+                //si rien à affiche, affiche au moins un caractère vide
+                if ( comp.getText().length() == 0 ) {
+                    comp.setText(" ");
+                }
+            }
+            
+            return comp;
+        }
+    }
+
 }

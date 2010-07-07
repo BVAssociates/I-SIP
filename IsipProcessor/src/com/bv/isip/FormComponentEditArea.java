@@ -28,10 +28,14 @@ class FormComponentEditArea extends JPanel
         _component.setLineWrap(true);
         _component.setWrapStyleWord(true);
 
-        setLayout(new GridLayout(1, 1));
-        add(new JScrollPane(_component,
+       JScrollPane  areaScroll = new JScrollPane(_component,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+       
+       //rustine pour forcer le widget à se redimensionner
+       setLayout(new GridLayout(1, 1));
+       
+       add(areaScroll);
     }
 
     public String getText()
@@ -53,5 +57,10 @@ class FormComponentEditArea extends JPanel
         }
         _component.setText(new String(decoded));
     }
+    
+    public double getWeighty() {
+        return 3;
+    }
+    
     private JTextArea _component;
 }
