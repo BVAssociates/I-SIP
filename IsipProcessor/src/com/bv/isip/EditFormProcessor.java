@@ -21,6 +21,7 @@ import com.bv.isis.console.core.abs.processor.ProcessorInterface;
 import com.bv.isis.console.com.CommonFeatures;
 import com.bv.isis.console.com.LogServiceProxy;
 import com.bv.isis.console.com.TableDefinitionManager;
+import com.bv.isis.console.core.common.IndexedList;
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.impl.processor.admin.ExecutionSurveyor;
 import com.bv.isis.console.node.GenericTreeClassNode;
@@ -35,10 +36,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JComboBox;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
 public class EditFormProcessor extends ProcessorFrame {
@@ -111,7 +109,7 @@ public class EditFormProcessor extends ProcessorFrame {
         makePanel();
 
 
-        populateFormPanel(true);
+        populateFormPanel(false);
 
         pack();
         display();
@@ -316,7 +314,7 @@ public class EditFormProcessor extends ProcessorFrame {
      *
      * @throws com.bv.isis.console.common.InnerException
      */
-    protected IsisParameter[] populateFormPanel(boolean refresh)
+    protected void populateFormPanel(boolean refresh)
             throws InnerException
     {
         // Variable qui stockera les valeurs à afficher
@@ -334,7 +332,11 @@ public class EditFormProcessor extends ProcessorFrame {
             //recuperation des données dans le noeud courant
             GenericTreeObjectNode node =(GenericTreeObjectNode) getSelectedNode();
             if (node.getTableName().equals(_tableDefinition.tableName)) {
-                data = node.getObjectParameters();
+                //data = node.getObjectParameters();
+                
+                // Récupération du contexte
+		IndexedList context = node.getContext(true);
+                data =(IsisParameter[]) context.toArray(new IsisParameter[0]);
             }
             else {
                 throw new InnerException("","Impossible d'obtenir les informations du noeud", null);
@@ -345,23 +347,13 @@ public class EditFormProcessor extends ProcessorFrame {
 
             if (_fieldObject.containsKey(data[i].name)) {
                 JComponent textBox = _fieldObject.get(data[i].name);
-                if (textBox instanceof JTextField) {
-                    ((JTextField) textBox).setText(data[i].value);
-                } else if (textBox instanceof JTextArea) {
-                    String multiligne=data[i].value.replaceAll("#n","\n");
-                    ((JTextArea) textBox).setText(multiligne);
-                } else if (textBox instanceof JLabel) {
-                    ((JLabel) textBox).setText(data[i].value);
-                } else if (textBox instanceof JComboBox) {
-                    ((JComboBox) textBox).setSelectedItem(data[i].value);
-                    
-                } else if (textBox instanceof FormComponentInterface) {
+                
+                if (textBox instanceof FormComponentInterface) {
                     ((FormComponentInterface)textBox).setText(data[i].value);
                 }
             }
         }
 
-        return data;
     }
     
 
@@ -434,8 +426,6 @@ public class EditFormProcessor extends ProcessorFrame {
 
         try {
             execute(command.toString());
-            //on recupere à nouveau les données de la table à jour
-            data=populateFormPanel(true);
             
          } catch (InnerException ex) {
             // La popup a déjà été lancée par ExecutionSurveyor
@@ -466,7 +456,7 @@ public class EditFormProcessor extends ProcessorFrame {
         // get the primary keys for current table
         TableDefinitionManager def_cache = TableDefinitionManager.getInstance();
         IsisTableDefinition definition = def_cache.getTableDefinition(node.getAgentName(), node.getIClesName(), node.getServiceType(), node.getDefinitionFilePath());
-        def_cache.releaseTableDefinitionLeasing(definition);
+        
         StringBuilder select_condition = new StringBuilder();
         
         
@@ -487,6 +477,8 @@ public class EditFormProcessor extends ProcessorFrame {
             SimpleSelect HistoTable =
                     new SimpleSelect(getSelectedNode(), definition.tableName, new String[]{""}, select_condition.toString());
             data = HistoTable.getFirst();
+            
+            def_cache.releaseTableDefinitionLeasing(definition);
 
             if (data != null) {
                 IsisParameter[] data_node = node.getObjectParameters();

@@ -58,7 +58,7 @@ public class FormComponentList extends JPanel
         ComboBoxModel datamodel = new DefaultComboBoxModel(getOptionsForeign(node, _tableDefinition, field));
         _component.setModel(datamodel);
 
-        _component.setRenderer(new IsipListCellRenderer());
+        _component.setRenderer(new CustomListCellRenderer());
 
 
     }
@@ -79,7 +79,8 @@ public class FormComponentList extends JPanel
         }
 
         if (!found_value) {
-            _component.addItem(value);
+            //note: on choisis de le pas ajouter la valeur à la liste
+            //_component.addItem(value);
         }
         _component.setSelectedItem(value);
     }
@@ -298,7 +299,7 @@ public class FormComponentList extends JPanel
     /**
      * Créer un Renderer pour modifier l'affichage de la liste
      */
-    class IsipListCellRenderer extends DefaultListCellRenderer
+    class CustomListCellRenderer extends DefaultListCellRenderer
     {
          /**
          * Surcharge la méthode d'affichage d'un item de liste pour lui
