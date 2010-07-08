@@ -384,7 +384,7 @@ public class AdministrationProcessor
 		{
 			trace_errors.writeTrace("La table n'est pas de type FT ou DB !");
 			// On va lever une erreur
-			throw new InnerException("&ERR_InvalidTableType", null, null);
+			//throw new InnerException("&ERR_InvalidTableType", null, null);
 		}
 		// On libère l'utilisation du dictionnaire
 		manager.releaseTableDefinitionLeasing(definition);

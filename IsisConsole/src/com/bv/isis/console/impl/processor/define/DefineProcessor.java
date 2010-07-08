@@ -161,7 +161,7 @@ public class DefineProcessor
 	public DefineProcessor()
 	{
 		super(true);
-		
+
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
 			"DefineProcessor", "DefineProcessor");
 
@@ -175,7 +175,7 @@ public class DefineProcessor
 	* Description:
 	* Cette méthode redéfini celle de la classe ProcessorFrame. Elle est appelée
 	* par le ProcessManager afin d'initialiser et de d'exécuter le processeur.
-	* Le panneau est construit, via la méthode makePanel(), puis la sous-fenêtre 
+	* Le panneau est construit, via la méthode makePanel(), puis la sous-fenêtre
 	* est affichée.
 	*
 	* Si un problème est détecté durant la phase d'initialisation, l'exception
@@ -264,9 +264,9 @@ public class DefineProcessor
 
 	/*----------------------------------------------------------
 	* Nom: preLoad
-	* 
+	*
 	* Description:
-	* Cette méthode redéfinit celle de la super-classe ProcessorFrame. Elle 
+	* Cette méthode redéfinit celle de la super-classe ProcessorFrame. Elle
 	* est appelée pour effectuer un pré-chargement du processeur.
 	* Elle charge le fichier de messages du processeur.
 	* ----------------------------------------------------------*/
@@ -283,11 +283,11 @@ public class DefineProcessor
 
 	/*----------------------------------------------------------
 	* Nom: getDescription
-	* 
+	*
 	* Description:
-	* Cette méthode redéfinit celle de l'interface ProcessorInterface. Elle 
+	* Cette méthode redéfinit celle de l'interface ProcessorInterface. Elle
 	* est appelée pour récupérer la description du processeur.
-	* 
+	*
 	* Retourne: La description du processeur.
 	* ----------------------------------------------------------*/
 	public String getDescription()
@@ -302,11 +302,11 @@ public class DefineProcessor
 
 	/*----------------------------------------------------------
 	* Nom: duplicate
-	* 
+	*
 	* Description:
-	* Cette méthode redéfinit celle de l'interface ProcessorInterface. Elle 
+	* Cette méthode redéfinit celle de l'interface ProcessorInterface. Elle
 	* est appelée pour récupérer un double du processeur.
-	* 
+	*
 	* Retourne: Une nouvelle instance du processeur.
 	* ----------------------------------------------------------*/
 	public ProcessorInterface duplicate()
@@ -800,10 +800,16 @@ public class DefineProcessor
 		// si la colonne passée en argument en fait partie
 		for(int index = 0 ; index < tableDefinition.sort.length ; index ++)
 		{
+            String sort_column = tableDefinition.sort[index];
+
+            while (sort_column.charAt(0) == ' ') {
+                sort_column = sort_column.substring(1);
+            }
+
 			// On va découper l'ordre de tri sur " "
-			UtilStringTokenizer tokenizer = 
-				new UtilStringTokenizer(tableDefinition.sort[index], " ");
-			// Si la première sous-chaîne vaut la colonne, c'est bon 
+			UtilStringTokenizer tokenizer =
+				new UtilStringTokenizer(sort_column, " ");
+			// Si la première sous-chaîne vaut la colonne, c'est bon
 			if(tokenizer.getToken(0).equals(columnName) == false)
 			{
 				continue;
@@ -820,7 +826,7 @@ public class DefineProcessor
 			else
 			{
 				// Il s'agit d'un champ ascendant, on retourne la position
-				return_value = index + 1; 
+				return_value = index + 1;
 			}
 		}
 		trace_methods.endOfMethod();

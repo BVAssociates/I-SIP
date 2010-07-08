@@ -274,6 +274,7 @@ public abstract class MenuFactory
 		}
 		else
 		{
+                        /*
 			// On ajoute les éléments de menu relatifs à un noeud instance
 			if(addObjectNodeSpecificItems(selectedNode, isForTree, windowInterface,
 				contextual_menu) == false)
@@ -282,6 +283,8 @@ public abstract class MenuFactory
 				trace_methods.endOfMethod();
 				return null;
 			}
+                         * 
+                         */
 		}
 		windowInterface.setStatus("&Status_BuildingMenu", null, 2);
 		// Ensuite, il faut ajouter les éléments relatifs aux méthodes
@@ -293,13 +296,7 @@ public abstract class MenuFactory
 			trace_methods.endOfMethod();
 			return null;
 		}
-		// Enfin, on va ajouter une méthode de rafraîchissement des éléments
-		// du menu
-		IsisMethod refresh_method = new IsisMethod("", "", "", null, true,
-			"", "RefreshMenu", "" + isForTree, false, "", "");
-		contextual_menu.addSeparator();
-		contextual_menu.add(createMenuItem("&MW_Menu_Refresh", "Refresh",
-			refresh_method, windowInterface, selectedNode));
+		
 		windowInterface.setStatus("&Status_BuildingMenu", null, 3);
 		// On positionne le menu sur le noeud
 		selectedNode.setMenu(contextual_menu);
@@ -1287,6 +1284,13 @@ public abstract class MenuFactory
 			developper_menu.add(createMenuItem("&MW_Menu_EditNodeLabels",
 				"Configure", label_edit_method, windowInterface,
 				selectedNode));*/
+            // Enfin, on va ajouter une méthode de rafraîchissement des éléments
+            // du menu
+            IsisMethod refresh_method = new IsisMethod("", "", "", null, true,
+            	"", "RefreshMenu", "" + isForTree, false, "", "");
+            developper_menu.addSeparator();
+            developper_menu.add(createMenuItem("&MW_Menu_Refresh", "Refresh",
+            	refresh_method, windowInterface, selectedNode));
 			menu.add(developper_menu);
 		}
 		// On va parcourir toutes les méthodes d'exploitation pour voir

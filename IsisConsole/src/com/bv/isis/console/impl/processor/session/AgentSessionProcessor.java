@@ -997,6 +997,7 @@ public class AgentSessionProcessor
 		String type_parameter_name = "ServiceType";
 		String and_operator = "AND";
 		String agent_layer_mode = null;
+		String[] user_responsabilities = null;
 
 		trace_methods.beginningOfMethod();
 		trace_arguments.writeTrace("agentName=" + agentName);
@@ -1139,6 +1140,10 @@ public class AgentSessionProcessor
 			releaseAgentLeasingOnDestroy);
 		// On ajoute les paramètres de préprocessing
 		session_node.setPreprocessingData(preprocessingParameters);
+		// On stocke les responsabilités de l'utilisateur
+		ServiceSessionProxy proxy = new ServiceSessionProxy(serviceSession);
+		user_responsabilities = proxy.getUserResponsabilities();
+		session_node.setUserResponsabilities(user_responsabilities);
 		trace_methods.endOfMethod();
 	}
 

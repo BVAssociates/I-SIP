@@ -82,8 +82,13 @@ import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.core.common.DialogManager;
 import com.bv.isis.console.node.LabelFactory;
 import com.bv.isis.console.com.RemoteFileChooser;
+import com.bv.isis.console.com.ServiceSessionProxy;
+import com.bv.isis.console.node.TreeNodeFactory;
 import com.bv.isis.corbacom.IsisParameter;
+import com.bv.isis.corbacom.IsisTableDefinition;
 import com.bv.isis.corbacom.ServiceSessionInterface;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*----------------------------------------------------------
 * Nom: ProcessingHandler
@@ -330,6 +335,24 @@ public abstract class ProcessingHandler
 				context);
 			value = getValueFromUser(prompt, parent);
 		}
+         // Est-ce que la valeur nécessite le choix de l'utilisateur dans une liste?
+        else if(value.startsWith("getListValue(") == true)
+		{
+            // remove getListValue("...)
+			String params = getValue(value.substring(12), context);
+
+            int index=params.indexOf(',');
+            if (index <= 0) {
+                throw new InnerException("&ERR_IncorrectPreprocessingInstruction",
+				instruction, null);
+            }
+            // split with ,
+            // remove '"' and ')'
+            String message=params.substring(2, index-1).trim();
+            String table_name=params.substring(index+1,params.length()-1).trim();
+            
+			value = getListValueFromUser(message,table_name , parent,context,serviceSession);
+		}
 		// Est-ce que la valeur nécessite une saisie de mot de passe par
 		// l'utilisateur ?
 		if(value.startsWith("getPassword(") == true) {
@@ -495,6 +518,234 @@ public abstract class ProcessingHandler
 		trace_methods.endOfMethod();
 		return encoded_password;
 	}
+    /*----------------------------------------------------------
+	* Nom: getListValueFromUser
+	*
+	* Description:
+	* Cette méthode statique permet d'afficher une fenêtre à l'utilisateur lui
+	* permettant de choisir une valeur pour un paramètre de préprocessing. La
+    * liste de choix est la liste des clefs fournies par la table passée en 
+    * parametre. Le message à afficher comme invite à l'utilisateur est le
+    * contenu de l'argument prompt.
+	*
+	* Si un problème survient lors de la saisie du paramètre, ou si
+	* l'utilisateur annule la saisie, l'exception InnerException est levée.
+	*
+	* Arguments:
+	*  - message: Le message de la fenêtre de saisie,
+    *  - table_name: La table a interroger,
+	*  - parent: Une référence sur un objet Component.
+    *  - context: context d'execution
+    *  - serviceSession: Une référence sur une interface
+	*    ServiceSessionInterface,
+	*
+	* Retourne: La valeur choisie par l'utilisateur.
+	*
+	* Lève: InnerException.
+	* ----------------------------------------------------------*/
+	private static String getListValueFromUser(
+        String message,
+		String parameters,
+		Component parent,
+        IndexedList context,
+		ServiceSessionInterface serviceSession
+		)
+		throws
+			InnerException
+	{
+
+        /**
+         * Classe interne stockant une liste renvoyée par un Select
+         * Dans un JOptionPane, permet d'afficher les champs, puis permet de
+         * recuperer uniquement la clef de l'element selectionné
+         */
+        class IsisParameterOption
+        {
+
+            private String _key;
+            private IsisParameter[] _fields;
+            private IsisTableDefinition _definition;
+
+            /**
+             * Constructeur de IsisParameterOption
+             * 
+             * @param fields ligne renvoyée par un Select. Doit contenir les
+             * clefs primaire en premier. Ils seront supprimés de l'affichage
+             * @param definition la IsisTableDefinition corresondante à fields
+             */
+            IsisParameterOption(IsisParameter[] fields, IsisTableDefinition definition)
+            {
+                _fields = fields;
+                _definition = definition;
+                
+                StringBuilder temp_key=new StringBuilder();
+                String sep="";
+                for (int i=0; i < _definition.key.length; i++) {
+                    temp_key.append(sep);
+                    temp_key.append(fields[i].value);
+                    sep=_definition.separator;
+                }
+                _key=temp_key.toString();
+            }
+
+            /**
+             * methode utilisée dans le JOptionPane pour afficher le texte
+             */
+            @Override
+            public String toString()
+            {
+                StringBuilder return_string=new StringBuilder();
+                String sep="";
+
+                
+                
+                for (int i=_definition.key.length; i < _fields.length; i++) {
+                    return_string.append(sep);
+                    return_string.append(_fields[i].value);
+                    sep=_definition.separator;
+                }
+                return return_string.toString();
+            }
+
+            /**
+             * recupère la clef sous forme de texte
+             */
+            public String getKey()
+            {
+                return _key;
+            }
+        }
+
+        
+		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
+			"ProcessingHandler", "getListValueFromUser");
+		Trace trace_arguments = TraceAPI.declareTraceArguments("Console");
+		Trace trace_debug = TraceAPI.declareTraceDebug("Console");
+
+		trace_methods.beginningOfMethod();
+		trace_arguments.writeTrace("table=" + parameters);
+        trace_arguments.writeTrace("message=" + message);
+		trace_arguments.writeTrace("parent=" + parent);
+
+        String condition="";
+        String sort_order="";
+        String columns="";
+        String selected_column[];
+        String table_name;
+        IsisTableDefinition definition;
+
+        // On recupere le Proxy associé
+        ServiceSessionProxy session_proxy = new ServiceSessionProxy(serviceSession);
+
+        // traite le cas simple où parameters est une liste fixe
+        // Le format est: "item1" [, "item2" [, ...]]
+        Pattern custom_list_pattern = Pattern.compile("\"([^,]+)\"");
+        Matcher custom_list_matcher = custom_list_pattern.matcher(parameters);
+        Vector<String> text_options = new Vector();
+        while (custom_list_matcher.find()) {
+            for (int i = 1; i <= custom_list_matcher.groupCount(); i++) {
+                text_options.add(custom_list_matcher.group(i));
+            }
+        }
+        if ( ! text_options.isEmpty()) {
+            String text_choice = (String) JOptionPane.showInputDialog(parent, message,
+                    MessageManager.getMessage("&YesNoQuestion"),
+                    JOptionPane.QUESTION_MESSAGE, null, text_options.toArray(), text_options.firstElement());
+
+            if (text_choice == null) {
+                // L'utilisateur a annulé, on lève une exception
+                trace_methods.endOfMethod();
+                throw new InnerException("&ERR_InputCanceled", null, null);
+            }
+            trace_debug.writeTrace("L'utilisateur a saisi=" + text_choice);
+            trace_methods.endOfMethod();
+            return text_choice;
+        }
+        
+        // On continue avec le format suivant
+        
+        // condition des paramètres.
+        // Le format est: <table>[@<colonnes>[@<condition>[@<sort>[@<log?>]]]
+        UtilStringTokenizer tokenizer =
+                new UtilStringTokenizer(parameters, "@");
+        switch (tokenizer.getTokensCount()) {
+            case 4:
+                sort_order = tokenizer.getToken(3);
+            case 3:
+                condition = tokenizer.getToken(2);
+            case 2:
+                columns = tokenizer.getToken(1);
+            case 1:
+                table_name=(tokenizer.getToken(0));
+                break;
+            default:
+                throw new InnerException("&ERR_IncorrectPreprocessingInstruction",
+				parameters, null);
+        }
+
+        // On recupere la definition de la table en cours
+        definition=session_proxy.getTableDefinition(table_name, context);
+        String keys[]=definition.key;
+        
+        if (columns.equals("") == false) {
+            // On découpe la liste des colonnes
+            tokenizer = new UtilStringTokenizer(columns, ",");
+
+
+            selected_column = new String[tokenizer.getTokensCount()+keys.length];
+
+            // on ajoute systematiquement la liste des clefs
+            for (int index = 0; index < keys.length; index++) {
+                selected_column[index] = keys[index];
+            }
+            
+            for (int index = 0; index < tokenizer.getTokensCount(); index++) {
+                selected_column[keys.length+index] = tokenizer.getToken(index);
+            }
+        } else {
+            //Si aucune colonne n'est donnée, on ne met que les clefs
+            
+            selected_column = new String[keys.length*2];
+
+            // on ajoute systematiquement la liste des clefs
+            // puis on ajoute les clef a nouveau pour affichage
+            for (int index = 0; index < keys.length*2; index++) {
+                selected_column[index] = keys[index/2];
+            }
+        }
+
+        // On va chercher les informations dans la table
+        String[] result = session_proxy.getSelectResult(table_name, selected_column, condition,sort_order, context);
+        //String[] result = session_proxy.getWideSelectResult(selectedIsisNode.getAgentName(), tableName, columnsName, condition, "", context);
+        IsisTableDefinition table_definition = TreeNodeFactory.buildDefinitionFromSelectResult(result, table_name);
+
+        if (result.length <= 1) {
+            throw new InnerException("&LOG_ErrorWhileLoadingData", null, null);
+        }
+
+        // on ne recupere que les clefs
+        // on saute la premiere ligne qui contient l'entete du Select
+        IsisParameterOption[] options=new IsisParameterOption[result.length-1];
+        for (int i=1; i < result.length; i++) {
+            IsisParameter[] iparam = TreeNodeFactory.buildParametersFromSelectResult(result, i, table_definition);
+            options[i-1]=new IsisParameterOption(iparam, table_definition);
+        }
+
+		// On va afficher une boîte de dialogue de saisie
+		IsisParameterOption choice = (IsisParameterOption) JOptionPane.showInputDialog(parent, message,
+			MessageManager.getMessage("&YesNoQuestion"),
+			JOptionPane.QUESTION_MESSAGE,null, options, options[0]);
+		
+		if(choice == null)
+		{
+			// L'utilisateur a annulé, on lève une exception
+			trace_methods.endOfMethod();
+			throw new InnerException("&ERR_InputCanceled", null, null);
+		}
+        trace_debug.writeTrace("L'utilisateur a saisi=" + choice.getKey());
+		trace_methods.endOfMethod();
+		return choice.getKey();
+}
 
 	/*----------------------------------------------------------
 	* Nom: getValue

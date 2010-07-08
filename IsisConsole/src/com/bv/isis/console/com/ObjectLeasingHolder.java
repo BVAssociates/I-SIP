@@ -45,6 +45,7 @@ package com.bv.isis.console.com;
 //
 import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
+import com.bv.isis.corbacom.IsisTableDefinition;
 
 //
 // Imports du projet
@@ -90,6 +91,9 @@ public class ObjectLeasingHolder
 		_leasedObject = leasedObject;
 		// Le compteur passe à 1
 		_leasingsCounter = 1;
+        //met à jour la date de dernière utilisation
+        _lastUsed=System.currentTimeMillis();
+        
 		trace_methods.endOfMethod();
 	}
 
@@ -108,6 +112,7 @@ public class ObjectLeasingHolder
 			"ObjectLeasingHolder", "getLeasedObject");
 
 		trace_methods.beginningOfMethod();
+        
 		trace_methods.endOfMethod();
 		return _leasedObject;
 	}
@@ -127,6 +132,8 @@ public class ObjectLeasingHolder
 		trace_methods.beginningOfMethod();
 		// On incrémente le compteur
 		_leasingsCounter ++;
+        _lastUsed = System.currentTimeMillis();
+        
 		trace_methods.endOfMethod();
 	}
 
@@ -147,6 +154,7 @@ public class ObjectLeasingHolder
 		if(_leasingsCounter > 0)
 		{
 			_leasingsCounter --;
+            _lastUsed = System.currentTimeMillis();
 		}
 		trace_methods.endOfMethod();
 	}
@@ -164,11 +172,20 @@ public class ObjectLeasingHolder
 	public synchronized boolean isFreeOfLeasing()
 	{
 		Trace trace_methods = TraceAPI.declareTraceMethods("Console",
-			"ObjectLeasingHolder", "isFreeOfLeasing");
+			"ObjectLeasingHolder", "getNumberOfLeasings");
 
 		trace_methods.beginningOfMethod();
+
+        if (_leasingsCounter <= 0) {
+
+            // garde le leasing tant que le timeout n'est pas dépassé
+            if ( (System.currentTimeMillis() - _lastUsed) > (_leaseTimeout * 1000)) {
+                return true;
+            }
+        }
+
 		trace_methods.endOfMethod();
-		return (_leasingsCounter <= 0);
+		return false;
 	}
 
 	/*----------------------------------------------------------
@@ -222,6 +239,25 @@ public class ObjectLeasingHolder
 	* nombre de leasings en cours sur l'objet.
 	* ----------------------------------------------------------*/
 	private int _leasingsCounter;
+
+    /*----------------------------------------------------------
+	* Nom: _lastUsed
+	*
+	* Description:
+	* Cet attribut contient la date Epoch (ms) de la dernière utilisation
+    *
+	* ----------------------------------------------------------*/
+	private long _lastUsed;
+
+    /*----------------------------------------------------------
+	* Nom: _leaseTimeout
+	*
+	* Description:
+	* Cet attribut contient l'attente minimum en secondes à attendre avant
+    * la suppression du cache
+    *
+	* ----------------------------------------------------------*/
+	final private long _leaseTimeout=10;
 
 	/*----------------------------------------------------------
 	* Nom: _leasedObject
