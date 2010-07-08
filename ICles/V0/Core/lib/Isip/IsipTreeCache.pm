@@ -278,6 +278,8 @@ sub dispatch_action() {
 		croak("usage: add_row_cache(table_name,key_string,line_hash_ref)");
 	}
 
+	$self->load_cache($table_name);
+	
 	foreach my $dispatcher (@{$self->{dispacher_list}}) {
 		if (defined $dispatcher->can("add_row_cache")) {
 			$dispatcher->add_row_cache($table_name,$key_string,$line_ref);

@@ -129,8 +129,6 @@ sub add_row_cache() {
 		return;
 	}
 	
-	$logger->info("add $table_name:$key_string in CacheStatus");
-	
 	croak("check_before_cache must be called before add_row_cache") if not $self->{current_table};
 	my $table_fired=$self->{current_table};
 	
@@ -143,7 +141,7 @@ sub add_row_cache() {
 	my $new_value=$old_value + $self->{action};
 	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 	
-	$logger->info("$table_name.$key_string : $old_value -> $new_value");
+	$logger->info("add $table_name:$key_string in CacheStatus : $old_value->$new_value");
 }
 
 # recupère les clefs a commenter d'une table
@@ -316,6 +314,8 @@ sub load_cache() {
 	my $self=shift;
 	
 	my $table_name=shift or croak("usage : load_cache(table_name");
+	
+	return if exists $self->{loaded_table}->{$table_name};
 	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");

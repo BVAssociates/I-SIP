@@ -260,6 +260,8 @@ sub load_cache() {
 	
 	my $table_name=shift or croak("usage : load_cache(table_name");
 	
+	return if exists $self->{loaded_table}->{$table_name};
+	
 	# check on disk	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_TEMPO");
 	#$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
