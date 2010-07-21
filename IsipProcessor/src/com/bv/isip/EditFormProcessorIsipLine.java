@@ -6,6 +6,7 @@ import com.bv.core.trace.Trace;
 import com.bv.core.trace.TraceAPI;
 import com.bv.isis.console.core.abs.gui.MainWindowInterface;
 import com.bv.isis.console.core.abs.processor.ProcessorInterface;
+import com.bv.isis.console.core.common.IndexedList;
 import com.bv.isis.console.core.common.InnerException;
 import com.bv.isis.console.node.GenericTreeObjectNode;
 import com.bv.isis.console.node.TreeNodeFactory;
@@ -60,10 +61,12 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
             super.refreshLabel((GenericTreeObjectNode)node.getParent().getParent(),refresh);
 
             // rafraichi les noeuds "frères" si on met à jour une clef
-            if (TreeNodeFactory.getValueOfParameter(data, "TABLE_KEY").equals(
-                    TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE")))
+            String table_key_value = TreeNodeFactory.getValueOfParameter(data, "TABLE_KEY");
+            String field_value     = TreeNodeFactory.getValueOfParameter(data, "FIELD_VALUE");
+            
+            if ( table_key_value != null && field_value != null
+                    && table_key_value.equals(field_value))
             {
-                MainWindowInterface window=getMainWindowInterface();
                 int count=((GenericTreeObjectNode) node.getParent()).getChildCount();
                 Enumeration enum_node = ((GenericTreeObjectNode) node.getParent()).children();
                 getMainWindowInterface().setProgressMaximum(count);
@@ -91,7 +94,11 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
     
     /**
      * Initialise le membre _tableDefinition avec la definition extraite
-     * du node en cours d'exploration
+     * du node en cours d'exploration.
+     * 
+     * Permet l'ajout de champs qui seront renvoyés dans le résultat.
+     * 
+     * @param parameters_array : tableau de paramètres du processeur
      */
     @Override
     protected void initTable( String[] parameters_array )
@@ -106,9 +113,13 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
             
             ArrayList<IsisTableColumn> columns = new ArrayList<IsisTableColumn>(Arrays.asList(_tableDefinition.columns));
             ArrayList<IsisForeignKey> fkeys = new ArrayList<IsisForeignKey>(Arrays.asList(_tableDefinition.foreignKeys));
-                        
+            
+            // Récupération du contexte
+            GenericTreeObjectNode node = (GenericTreeObjectNode) getSelectedNode();
+            
             String[] query_fields = parameters_array[1].split(",");
             
+            //ajoute les champs supplémentaire à la definition
             for (int i=0; i < query_fields.length ; i++ ) {
                 
                 String field = query_fields[i];
@@ -130,6 +141,33 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
                     //TODO : parametrer au lieu de coder en "dur"
                     columns.add(new IsisTableColumn(field, 10, 's'));
                     
+                    // verification que le nouveau champ a une valeur dans le contexte
+                    if ( ! node.getContext(true).containsKey(field) ) {
+                        
+                        
+                        IsisParameter parameter = new IsisParameter(field, "", '"');
+                        
+                        
+                        // ajout de la valeur "virtuelle" au preprocessing du noeud
+                        IsisParameter[] preprocessing = node.getPreprocessingData();
+                        if ( preprocessing == null ) {
+                            IsisParameter[] preprocessing_new = { parameter };
+                            node.setPreprocessingData( preprocessing_new );
+                        }
+                        else {
+                            IsisParameter[] preprocessing_new= new IsisParameter[preprocessing.length+1];
+                            for (i=0; i < preprocessing.length; i++) {
+                                preprocessing_new[i]=preprocessing[i];
+                                node.setPreprocessingData( preprocessing_new );
+                            }
+                            
+                            // ajout de la nouvelle variable en dernier
+                            preprocessing_new[preprocessing_new.length-1] = parameter;
+                            node.setPreprocessingData( preprocessing_new );
+                        }
+                        
+                    }
+                    
                     // cas spécial du STATUS
                     //TODO : parametrer au lieu de coder en "dur"
                     if ( field.equals("STATUS") ) {
@@ -141,8 +179,8 @@ public class EditFormProcessorIsipLine extends EditFormProcessor {
             }
             
             // Mise à jour de la définition avec les colonnes modifiées
-            _tableDefinition.columns = columns.toArray(_tableDefinition.columns);
-            _tableDefinition.foreignKeys = fkeys.toArray(_tableDefinition.foreignKeys);
+            _tableDefinition.columns = columns.toArray(new IsisTableColumn[0]);
+            _tableDefinition.foreignKeys = fkeys.toArray(new IsisForeignKey[0]);
             
         }
         
