@@ -1,0 +1,11 @@
+# Common configuration Table for IsipSaisie
+#
+# FORM_FIELD,FORM_LABEL,FORM_TYPE
+
+TABLE_NAME,Table en cours,Label
+Key,Ligne en cours,Label
+SEP1,,Separator
+STATUS,Etat du commentaire,List
+PROJECT,Projet lié,ListProject
+COMMENT,Commentaire,Edit
+MEMO,Description du changement,EditMulti
