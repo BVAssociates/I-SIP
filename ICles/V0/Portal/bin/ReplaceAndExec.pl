@@ -209,6 +209,10 @@ elsif ($table_name =~ /^TABLE_INFO|XML_INFO|CACHE_.*|FIELD_.*$/i) {
 	update_info($table_name,$values);
 	execute_trigger('PostAction');
 }
+elsif ( $table_name =~ /^ISIP_TABLE|IKOS_TABLE/) {
+	$logger->info("use library ReplaceAndExec_ISIP::validate_line");
+	validate_line($table_name,$values);
+}
 else {
 	# otherwise,  we use the original script
 	$logger->info("use Legacy ReplaceAndExec");

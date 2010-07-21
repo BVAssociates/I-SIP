@@ -20,7 +20,16 @@ our (@ISA, @EXPORT);
 BEGIN {
  require Exporter;
  @ISA = qw(Exporter);
- @EXPORT = qw(update_column_info update_info insert_info delete_info update_field);  # symbols to export
+ 
+ # symbols to export
+ @EXPORT = qw(
+		update_column_info
+		update_info
+		insert_info
+		delete_info
+		update_field
+		validate_line
+	);
 }
 
 
@@ -273,4 +282,41 @@ sub update_field_comment($$$$) {
 
 	$cache->recurse_line($table_ikos, \%new_line);
 	$cache->save_cache();
+}
+
+# transforme l'insertion en un appel de script à PC_VALIDATE_LINE
+sub validate_line {
+	my $table_name=shift;
+	my $values=shift;
+	
+	if (not $table_name =~ /^IKOS_TABLE_([\w\d]+)_(\w+)$/) {
+		croak("Table $table_name non géré par $0");
+	}
+	my ($environnement,$table_ikos) = ($1,$2);
+
+	# champs "virtuels" ajouté par le Processeur IsipFormProcessorLine
+	my @special_fields = ("STATUS","COMMENT","MEMO");
+	
+	my $env_sip=Environnement->new($environnement);
+	
+	my $itools_table=ITools->open($table_name);
+	my $separator=$itools_table->output_separator;
+	my @field=$itools_table->field;
+	push @field, @special_fields;
+	$itools_table->dynamic_field("PROJECT","ICON",@special_fields);
+	$itools_table->query_field(@field);
+	
+	my %line_value=$itools_table->array_to_hash(split(/$separator/, $values, -1));
+	
+	my @script_args = ($environnement, $table_ikos, $line_value{COMMENT});
+	unshift @script_args, "-p".$line_value{PROJECT} if $line_value{PROJECT};
+	unshift @script_args, "-m".$line_value{MEMO} if $line_value{MEMO};
+	unshift @script_args, "-t".$line_value{STATUS} if $line_value{STATUS};
+	unshift @script_args, "-r"; # recursive
+	
+	# le reste des valeur n'est pas traité (déjà le contexte et non modifé)
+	require "PC_VALIDATE_LINE.pl";
+	pc_validate_line::run(@script_args);
+	#system( "PC_VALIDATE_LINE",@script_args );
+	
 }
