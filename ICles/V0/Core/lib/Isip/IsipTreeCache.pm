@@ -303,7 +303,7 @@ sub load_cache() {
 	
 	my $count;
 	foreach my $dispatcher (@{$self->{dispacher_list}}) {
-		$count += $dispatcher->load_cache($table_name);
+		$dispatcher->load_cache($table_name);
 	}
 	
 	return $count;

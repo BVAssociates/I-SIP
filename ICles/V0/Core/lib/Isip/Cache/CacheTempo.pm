@@ -49,7 +49,7 @@ sub check_before_cache() {
 			$new_tempo=1;
 		}
 		
-		if ( $value_ref->{OLD_ICON} =~ /_tempo$/ ) {
+		if ( defined $value_ref->{OLD_ICON} and $value_ref->{OLD_ICON} =~ /_tempo$/ ) {
 			$old_tempo=1;
 		}
 		
@@ -74,8 +74,6 @@ sub add_row_cache() {
 	my $value_ref=shift or croak("usage: add_row_cache(table_name,key_string , value)");
 	
 	
-	$logger->info("add $table_name:$key_string in CacheTempo");
-	
 	croak("check_before_cache must be called before add_row_cache") if not $self->{current_table};
 	my $table_fired=$self->{current_table};
 	
@@ -86,7 +84,7 @@ sub add_row_cache() {
 	my $new_value=$old_value + $self->{action};
 	$self->{memory_cache}->{$table_name}->{$table_fired}->{$key_string} = $new_value;
 	
-	$logger->info("$table_name.$key_string : $old_value -> $new_value");
+	$logger->info("add $table_name:$key_string in CacheTempo : $old_value->$new_value");
 }
 
 # recupère les clefs a commenter d'une table
