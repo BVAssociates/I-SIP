@@ -152,6 +152,8 @@ FORMAT="[% format %]"
 SIZE="[% size %]"
 KEY="[% keys %]"
 SORT="[% sort %]"
+
+FKEY="[PROJECT] on PROJECT_INFO[PROJECT_NAME]"
 ';
 	my $fkey_def_template='#FKEY="[[% fkeys %]] on [% foreign_table %][[% foreign_field %]]"
 ';
@@ -243,7 +245,7 @@ Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveau
 	my $pci_template_ignore='Item~Surveillance~Ignorer l\'état cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~1~~Configure
 Item~Surveillance~Ne plus ignorer l\état de cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~1~~Configure
 ';
-	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~~{VALIDATE_PROJECT=getListValue("Projet associé",PROJECT_INFO)}{VALIDATE_COMMENT=getValue("Commentaire de validation")}~ExecuteProcedure~PC_VALIDATE_LINE -r -p "%VALIDATE_PROJECT%" [% environnement %] [% table %] %VALIDATE_COMMENT%~1~~Configure
+	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~~~IsipProcessorLine~FORM_CONFIG_TREE@STATUS,PROJECT,COMMENT,MEMO~0~~Configure
 ';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
 	my $pci_fkey_template='Item~~Explorer sous-tables~user~~~Explore~[% table_list %]~0~~Expand
@@ -258,8 +260,9 @@ Item~Surveillance~Ne plus ignorer l\état de cette clef et de ses sous-tables~exp
 	if ($env_obj->can_table_ignore($table_name)) {
 		$string .= $pci_template_ignore;
 	}
-	
-	$string .= $pci_template_validate;
+	if ( $display_table eq $table_name ) {
+		$string .= $pci_template_validate;
+	}
 	
 	
 	# get all table having current table as F_KEY
