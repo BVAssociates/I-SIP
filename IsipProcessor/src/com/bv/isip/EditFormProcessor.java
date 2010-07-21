@@ -8,6 +8,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.util.Enumeration;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -217,10 +218,9 @@ public class EditFormProcessor extends ProcessorFrame {
                 } catch (InnerException execption) {
                     getMainWindowInterface().showPopupForException(
                             "Erreur lors de la mise à jour", execption);
-                } finally {
+                } 
                     getMainWindowInterface().setCurrentCursor(Cursor.DEFAULT_CURSOR, getContentPane());
                     close();
-                }
             }
 		});
 		// On crée un panneau avec un GridBagLayout
@@ -318,42 +318,56 @@ public class EditFormProcessor extends ProcessorFrame {
             throws InnerException
     {
         // Variable qui stockera les valeurs à afficher
-        IsisParameter[] data;
+        IsisParameter[] data_from_table = new IsisParameter[0];
+        IsisParameter[] data_from_node;
         
         if (refresh) {
             //recuperation des données depuis la table
             SimpleSelect HistoTable=
                     new SimpleSelect(getSelectedNode(), _tableDefinition.tableName,new String[] {""}, _select_condition);
-            data=HistoTable.getFirst();
-            if (data == null) {
+            data_from_table=HistoTable.getFirst();
+            if (data_from_table == null) {
                 throw new InnerException("Les informations ont changés pendant l'edition", "Veuiller fermer et recommencer ", null);
             }
-        } else {
-            //recuperation des données dans le noeud courant
-            GenericTreeObjectNode node =(GenericTreeObjectNode) getSelectedNode();
-            if (node.getTableName().equals(_tableDefinition.tableName)) {
-                //data = node.getObjectParameters();
-                
-                // Récupération du contexte
-		IndexedList context = node.getContext(true);
-                data =(IsisParameter[]) context.toArray(new IsisParameter[0]);
-            }
-            else {
-                throw new InnerException("","Impossible d'obtenir les informations du noeud", null);
-            }
+        }
+        
+        //recuperation des données dans le noeud courant
+        GenericTreeObjectNode node =(GenericTreeObjectNode) getSelectedNode();
+        if (node.getTableName().equals(_tableDefinition.tableName)) {
+
+            // Récupération du contexte
+            IndexedList context = node.getContext(true);
+            data_from_node =(IsisParameter[]) context.toArray(new IsisParameter[0]);
+        }
+        else {
+            throw new InnerException("","Impossible d'obtenir les informations du noeud", null);
         }
 
-        for (int i = 0; i < data.length; i++) {
 
-            if (_fieldObject.containsKey(data[i].name)) {
-                JComponent textBox = _fieldObject.get(data[i].name);
+        //parcours des elements à remplir
+        Enumeration<String> keys = _fieldObject.keys();
+        while ( keys.hasMoreElements() ) {
+            
+            String field = keys.nextElement();
+            JComponent textBox = _fieldObject.get(field);
+
+            if (textBox instanceof FormComponentInterface) {
                 
-                if (textBox instanceof FormComponentInterface) {
-                    ((FormComponentInterface)textBox).setText(data[i].value);
+                String value = TreeNodeFactory.getValueOfParameter(data_from_table, field);
+                
+                // si aucune valeur trouvée dans la table, on cherche depuis le contexte
+                if ( value == null ) {
+                    value = TreeNodeFactory.getValueOfParameter(data_from_node, field);
                 }
+                
+                // si aucune valeur, on emet une exception
+                if ( value == null ) {
+                    throw new InnerException("","Impossible de trouver la valeur de la variable "+field+" dans le contexte", null);
+                }
+                
+                ((FormComponentInterface)textBox).setText(value);
             }
         }
-
     }
     
 
@@ -365,7 +379,8 @@ public class EditFormProcessor extends ProcessorFrame {
      */
     public IsisParameter[] getFormPanelData()
     {
-        IsisParameter[] data_from=((GenericTreeObjectNode)getSelectedNode()).getObjectParameters();
+        IndexedList context = ((GenericTreeObjectNode)getSelectedNode()).getContext(true);
+        IsisParameter[] data_from = (IsisParameter[]) context.toArray(new IsisParameter[0]);
         
         ArrayList<IsisParameter> data=new ArrayList<IsisParameter>();
  
@@ -383,6 +398,10 @@ public class EditFormProcessor extends ProcessorFrame {
             } else {
                 //sinon utilise la valeur dans le contexte
                 field_value = TreeNodeFactory.getValueOfParameter(data_from, field_name);
+            }
+            
+            if ( field_value == null ) {
+                field_value = "";
             }
             
             data.add(new IsisParameter(field_name, field_value ,'"'));
@@ -478,8 +497,7 @@ public class EditFormProcessor extends ProcessorFrame {
                     new SimpleSelect(getSelectedNode(), definition.tableName, new String[]{""}, select_condition.toString());
             data = HistoTable.getFirst();
             
-            def_cache.releaseTableDefinitionLeasing(definition);
-
+            
             if (data != null) {
                 IsisParameter[] data_node = node.getObjectParameters();
                 //On met les nouvelles données dans le node
@@ -493,6 +511,7 @@ public class EditFormProcessor extends ProcessorFrame {
             }
         }
 
+        def_cache.releaseTableDefinitionLeasing(definition);
                
         try {
             
