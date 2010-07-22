@@ -318,6 +318,7 @@ sub load_cache() {
 	return if exists $self->{loaded_table}->{$table_name};
 	
 	# check on disk	
+	$logger->info("load table $table_name in ".__PACKAGE__);
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
 	#$table->query_condition("TABLE_NAME = '$table_name'","TABLE_SOURCE <> '$table_name'");
 	$table->query_condition("TABLE_NAME = ".$table->quote($table_name) );
@@ -359,35 +360,32 @@ sub save_cache() {
 							"TABLE_SOURCE = ".$table->quote($table_source),
 						);
 				
-				# recupération des valeurs en utilisant les caches mémoire
-				my $old_count_dirty;
+				my $num_child;
 				while (my %row=$table->fetch_row()) {
-					$old_count_dirty=$row{NUM_CHILD};
+					$num_child=$row{NUM_CHILD};
 				}
 				
-				my $new_count_dirty=0;
+				my $memory_num_child=0;
 				if (exists $dirty_keys{$dirty_key}) {
-					$new_count_dirty=$dirty_keys{$dirty_key};
+					$memory_num_child=$dirty_keys{$dirty_key};
 				}
 				
-				# ajout/suppression/modification effective du cache
-				if (not defined $old_count_dirty) {
-					if ($new_count_dirty > 0) {
-						$logger->debug("insert $dirty_table,$dirty_key,$new_count_dirty");
-						$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $new_count_dirty, TABLE_SOURCE => $table_source);
+				if (not defined $num_child) {
+					if ($memory_num_child > 0) {
+						$logger->debug("insert $dirty_table,$dirty_key,memory_num_child");
+						$table->insert_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $memory_num_child, TABLE_SOURCE => $table_source);
 					}
 				}
 				else {
-					if ( $new_count_dirty eq $old_count_dirty ) {
-						# rien à faire si la valeur n'a pas changée
-					}
-					elsif ($new_count_dirty > 0) {
-						$logger->debug("update $dirty_table,$dirty_key,$old_count_dirty+$new_count_dirty");
-						$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $new_count_dirty, TABLE_SOURCE => $table_source);
+					my $sum_dirty=$num_child+$memory_num_child;
+					if ($sum_dirty > 0) {
+						$logger->debug("insert $dirty_table,$dirty_key,$num_child+$dirty_keys{$dirty_key}");
+						$table->update_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, NUM_CHILD => $sum_dirty, TABLE_SOURCE => $table_source);
 					}
 					else {
 						$logger->debug("remove $dirty_table,$dirty_key");
 						$table->delete_row(TABLE_NAME => $dirty_table, TABLE_KEY => $dirty_key, TABLE_SOURCE => $table_source);
+					
 					}
 				}
 			}
@@ -410,6 +408,8 @@ sub clear_cache() {
 	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
 
 	my $table=$self->{isip_env}->open_cache_table("CACHE_ICON");
+	
+	$logger->info("DELETE from CACHE_ICON".$where_condition);
 	$table->execute("DELETE from CACHE_ICON".$where_condition);
 }
 

@@ -182,6 +182,7 @@ sub load_cache() {
 	return if exists $self->{loaded_table}->{$table_name};
 	
 	# check on disk	
+	$logger->info("load table $table_name in ".__PACKAGE__);
 	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
 	$table->query_condition("TABLE_NAME =".$table->quote($table_name));
 	
@@ -278,6 +279,8 @@ sub clear_cache() {
 	$where_condition=" WHERE ".join(" OR ",map {"TABLE_NAME = '$_'"} @tables) if @tables;
 	
 	my $table=$self->{isip_env}->open_cache_table("CACHE_PROJECT");
+	
+	$logger->info("DELETE from CACHE_PROJECT".$where_condition);
 	$table->execute("DELETE from CACHE_PROJECT".$where_condition);
 }
 
