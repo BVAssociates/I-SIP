@@ -284,6 +284,17 @@ sub create_database_environnement() {
 		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "TABLE_SOURCE")
 	)');
 	
+	#$logger->notice("Drop table CACHE_TEMPO");
+	#$master_table->execute('DROP TABLE "CACHE_TEMPO"');
+	$logger->notice("Create table CACHE_TEMPO");
+	$master_table->execute('CREATE TABLE IF NOT EXISTS "CACHE_TEMPO" (
+		"TABLE_NAME" VARCHAR NOT NULL,
+		"TABLE_SOURCE" VARCHAR NOT NULL,
+		"TABLE_KEY" VARCHAR NOT NULL,
+		"NUM_CHILD" INTEGER,
+		PRIMARY KEY ("TABLE_KEY", "TABLE_NAME", "TABLE_SOURCE")
+	)');
+	
 	#$logger->notice("Drop table CACHE_PROJECT");
 	#$master_table->execute('DROP TABLE IF EXISTS "CACHE_PROJECT"');
 	$logger->notice("Create table CACHE_PROJECT");
