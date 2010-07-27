@@ -166,8 +166,9 @@ if ( $field eq '*' ) {
 	AND TABLE_KEY='$key'");
 	undef $cache_table;
 	
-	require 'PC_UPDATE_CACHE.pl';
-	pc_update_cache::run("-m",$module,$environnement);
+	#TODO : calcul propre du cache à partir de cette ligne au lieu de tout recalculer.
+	#require 'PC_UPDATE_CACHE.pl';
+	#pc_update_cache::run("-m",$module,$environnement);
 	
 }
 else {
