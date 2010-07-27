@@ -1,3 +1,22 @@
+v1.4
+
+FS#761 Disparition des menus "ignorer ce noeud" et "surveiller ...
+FS#760 Garder les noeuds validés dans la liste des nouveaux ju ...
+FS#759 Formulaire de saisie pour valider les noeuds et sous-no ...
+FS#758 Trier Projet par ordre alphabétique
+FS#748 noeud fantôme si validation d'un noeud avec un filtre a ...
+FS#743 Rapport différentiel : modifer colonnes et entête
+
+v1.3.1
+
+Type: adaptation
+FS#752 Performances : cache des liens entre tables
+FS#742 Surveiller un noeud et tous les sous-noeuds associés
+FS#741 Valider noeud et tous les sous-noeuds associés
+
+Type: enhancement
+Optimisations des performances globales
+
 v1.2
 
 Type: enhancement
