@@ -141,7 +141,14 @@ if (not $directory) {
 		log_erreur("BV_TABPATH n'est pas défini dans l'environnement");
 	}
 	else {
-		($sqlite_path)=grep {-e File::Spec->catfile($_,$sqlite_file)} split(/[:;]/,$ENV{BV_TABPATH});
+		my $sep;
+		if ( $^O eq 'MSWin32' ) {
+			$sep=';'
+		}
+		else {
+			$sep=':'
+		}
+		($sqlite_path)=grep {-e File::Spec->catfile($_,$sqlite_file)} split(/[$sep]/,$ENV{BV_TABPATH});
 		if (not $sqlite_path) {
 			log_erreur("Impossible de trouver <$sqlite_file> dans BV_TABPATH");
 		}
