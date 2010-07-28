@@ -227,7 +227,7 @@ sub run {
 	my $env_sip = Environnement->new($environnement, {debug => $debug_level});
 
 	# IsipFilter instance
-	my $filter=IsipFilter->new();
+	my $filter=IsipFilter->new( {no_decode => 1} );
 	
 	# recuperation de la clef primaine de la table
 	my $table_key = $env_sip->get_table_key($table_name);
@@ -432,7 +432,7 @@ sub run {
 				
 					if ( $report_mode ) {
 						# corrige le codage des caractères pour Excel
-						$line_to_print = encode('cp1250', $line_to_print);
+						$line_to_print = decode('cp1250', $line_to_print);
 					}
 					if ($all_key) {
 						print $line_to_print."\n";

@@ -44,6 +44,8 @@ sub new() {
 		croak ("usage ; ".__PACKAGE__.'->new()');
 	}
 
+	my $options = shift;
+	
 	# ENV_VAR => corresponding field
 	$self->{filter_register} = { 
 		FILTER_PROJECT => "PROJECT",
@@ -55,7 +57,7 @@ sub new() {
 	$self->{filter_multi} = {FILTER_PROJECT => ','};
 	$self->{filter_sep} = ',';
 	
-	$self->_log_filter();
+	$self->_log_filter($options->{no_decode});
 	
     return $self;
 }
@@ -68,12 +70,14 @@ sub new() {
 
 sub _log_filter {
 	my $self=shift;
+	my $no_decode = shift;
 	
 	while ( my ($filter, $field) = each %{$self->{filter_register}}) {
 		if (exists $ENV{$filter} and $ENV{$filter}) {
 		
-			# quirk : something wrong with encoding when using pl2bat
-			$ENV{$filter}=encode("cp850",$ENV{$filter}) if $^O eq 'MSWin32';
+			if ( ! $no_decode and $^O eq 'MSWin32') {
+				$ENV{$filter}=encode("cp850",$ENV{$filter});
+			}
 		
 			$logger->notice("Filtrage activé pour $filter=$ENV{$filter}");
 		}
@@ -83,7 +87,6 @@ sub _log_filter {
 ##################################################
 ##  public methods  ##
 ##################################################
-
 
 sub is_display_line() {
 	my $self=shift;
