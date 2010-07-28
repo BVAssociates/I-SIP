@@ -337,10 +337,6 @@ my $table_name           = shift @ARGV;
 # tout le reste est le commentaire
 $comment_edit{"COMMENT"} = join(' ', @ARGV);
 
-# corrige encodage cmd.exe
-use Encode;
-$comment_edit{"COMMENT"}=encode("cp850",$comment_edit{"COMMENT"}) if $^O eq 'MSWin32';
-
 if ( ! $comment_edit{"COMMENT"} ) {
 	usage($debug_level);
 }
