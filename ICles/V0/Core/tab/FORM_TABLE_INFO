@@ -2,13 +2,11 @@
 #
 # FORM_FIELD,FORM_LABEL,FORM_TYPE
 
-ID,Identifiant unique,Invisible
-
 TABLE_NAME,Table en cours,Label
 TYPE_SOURCE,Source de donnée,Label
 #PARAM_SOURCE,Requête,Label
 SEP1,,Separator
 DESCRIPTION,Description de la table,Edit
 LABEL_FIELD,Champ décrivant une ligne,List
-ROOT_TABLE,Table racine?,Bool
+ROOT_TABLE,Table racine,Bool
 ALLOW_IGNORE, Autoriser l'exclusion de ligne,Bool
