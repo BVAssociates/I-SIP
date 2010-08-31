@@ -231,7 +231,7 @@ sub get_pci_table_string {
 	my $display_table=$env_obj->get_display_table($table_name);
 		
 	# TEMPLATES
-	my $pci_template='Table~~Explore~user~~~Explore~~0~~Expand
+	my $pci_template='Table~~Explorer~user~~~Explore~~0~~Expand
 ';
 	
 	if ($display_table eq $table_name) {
@@ -242,8 +242,7 @@ Item~Surveillance~Etre alerter par courriel~expl~perl -e "exit 1 if exists $ENV{
 	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 ';
-	my $pci_template_ignore='Item~Surveillance~Ignorer l\'état cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~1~~Configure
-Item~Surveillance~Ne plus ignorer l\état de cette clef et de ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %]~1~~Configure
+	my $pci_template_ignore='Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~1~~Configure
 ';
 	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~~~IsipProcessorLine~FORM_CONFIG_TREE@STATUS,PROJECT,COMMENT,MEMO~0~~Configure
 ';
@@ -298,9 +297,8 @@ Item~~Historique Complet~user~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DAT
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
 
-#Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%" OK~0~~Configure
-#Item~Surveillance~Surveiller à nouveau~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} ne "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%"~0~~Configure
-#Item~Surveillance~Etre alerter par Email~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a -f "%FIELD_NAME%" -k "%TABLE_KEY%" "[% environnement %]" "[% table %]" "%GROUP_ALERT%"~0~~Configure
+Item~Surveillance~Ne plus surveiller (ce champ uniquement)~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~PC_SET_LABEL -f "%FIELD_NAME%" "[% environnement %]" "[% table %]" "%TABLE_KEY%" OK~0~~Configure
+Item~Surveillance~Etre alerter par courriel (ce champ uniquement)~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a -f "%FIELD_NAME%" -k "%TABLE_KEY%" "[% environnement %]" "[% table %]" "%GROUP_ALERT%"~0~~Configure
 ';
 
 	my $environnement=$env_obj->{environnement};

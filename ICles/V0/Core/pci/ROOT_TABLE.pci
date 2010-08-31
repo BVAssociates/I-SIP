@@ -1,6 +1,6 @@
 # Commandes d'Exploitation : Droit expl
 
-Item~~Explore~user~~~Explore~IKOS_TABLE_%Environnement%_%DEF_NAME%~0~~Expand
+Item~~Explorer~user~~~Explore~IKOS_TABLE_%Environnement%_%DEF_NAME%~0~~Expand
 
 Item~~Explorer par groupe~expl~HAS_TABLE_GROUP %Environnement% %DEF_NAME%~~Explore~CATEGORY~0~~Expand
 Item~~Comparer XML avec la référence~expl~perl -e "exit 1 if $ENV{TYPE_SOURCE} ne "XML" or ($ENV{ENV_COMPARE} or $ENV{DATE_COMPARE})"~~DisplayTable~XML_DIFF~0~~Expand
