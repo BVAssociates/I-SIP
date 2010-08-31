@@ -58,7 +58,7 @@ sub recurse_key() {
 	}
 	
 
-	my @table_key_field=split(',',$self->{isip_env}->{info_table}->{$table_name}->{key});
+	my @table_key_field=split(',',$self->{isip_env}->get_table_key($table_name));
 	my @table_key_value=split(',',$key_string);
 	
 	if (@table_key_field != @table_key_value) {
