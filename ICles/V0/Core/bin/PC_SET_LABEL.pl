@@ -122,6 +122,10 @@ my $icon=shift;
 my $bv_severite=0;
 
 use Isip::Environnement;
+use Isip::IsipRules;
+use Isip::IsipTreeCache;
+use Isip::Cache::CacheStatus;
+use Isip::Cache::CacheStatusDismiss;
 
 my $env=Environnement->new($environnement);
 my $table=$env->open_local_table("FIELD_LABEL");
@@ -136,6 +140,8 @@ if ($icon) {
 	use POSIX qw(strftime);
 	my $timestamp=strftime "%Y-%m-%dT%H:%M", localtime;
 	my $current_user=$ENV{IsisUser};
+	
+	$current_user = "unknown" if ! $current_user;
 	
 	$table->insert_row(
 		DATE_UPDATE => $timestamp,
@@ -153,29 +159,24 @@ else {
 
 $table->commit_transaction;
 
+# update cache
 if ( $field eq '*' ) {
 
-	my $module=$ENV{Module};
-	log_info("Le cache des icônes doit être reconstruit pour le module $module");
-	
-	# Suppression immédiate de la ligne correspondante afin de ne pas perturber
-	# l'affichage
-	my $cache_table = $env->open_local_table("CACHE_ICON");
-	$cache_table->execute("DELETE FROM CACHE_ICON
-	WHERE TABLE_NAME ='$table_name'
-	AND TABLE_KEY='$key'");
-	undef $cache_table;
-	
-	#TODO : calcul propre du cache à partir de cette ligne au lieu de tout recalculer.
-	#require 'PC_UPDATE_CACHE.pl';
-	#pc_update_cache::run("-m",$module,$environnement);
-	
+	if ( $icon eq 'OK' ) {
+		log_info("Mise à jour du cache des icones pour prendre en compte les lignes ignorées");
+
+		# utilisation de la classe CacheStatusDismiss pour enlever les valeurs du cache recursivement
+		my $cache=IsipTreeCache->new($env);
+		$cache->add_dispatcher(CacheStatusDismiss->new($env));
+		
+		$cache->recurse_key($table_name, $key);
+		$cache->save_cache();
+	}
+	else {
+		$logger->warning("Le cache des icones sera mis à jour à la prochaine collecte.");
+	}
 }
 else {
-	# update cache
-	use Isip::IsipTreeCache;
-	use Isip::IsipRules;
-	use Isip::Cache::CacheStatus;
 
 	# reconstruct the line
 	my %new_line;
