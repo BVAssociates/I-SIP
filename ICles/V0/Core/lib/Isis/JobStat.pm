@@ -105,9 +105,21 @@ sub clean_dead_process {
 	
 	return if not %process_to_check;
 	
+	my $no_tasklist;
+	#my @process_list = `tasklist /FO CSV /NH /FI "IMAGENAME eq perl.exe"`;
+	my @process_list = `pslist -accepteula perl`;
+	if ($? == -1 || ($?>>8) ne 0) {
+		die("<pslist> n'est pas disponible. Accès aux processus impossible.");
+	}
+	
+	# nettoyage de la sortie
+	chomp(@process_list);
+	shift @process_list for (1..3);
+	
 	my %process_found;
-	foreach(`tasklist /FO CSV /NH /FI "IMAGENAME eq perl.exe"`) {
-		my ($pid)=/^\"perl.exe\",\"(\d+)\"/;
+	foreach my $process (@process_list) {
+		my (undef,$pid) = split(/\s+/ , $process);
+		
 		$process_found{$pid}++ if $pid;
 	}
 	
