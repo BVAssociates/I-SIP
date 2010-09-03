@@ -239,12 +239,12 @@ sub get_pci_table_string {
 Item~Surveillance~Etre alerter par courriel~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~{GROUP_ALERT=getListValue("Choisir un groupe de destinataire des courriels",MY_GROUPS)}~ExecuteProcedure~PC_SET_MAIL -a "[% environnement %]" "[% table %]" "%GROUP_ALERT%"~0~~Configure
 ';
 	}
-	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
-Item~Groupe~Déplacer dans un nouveau groupe~expl~~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
+	my $pci_template_root='Item~Groupe~Déplacer dans un groupe existant~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~NEW_CATEGORY=getListValue("modifier groupe",CATEGORY)~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
+Item~Groupe~Déplacer dans un nouveau groupe~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~NEW_CATEGORY=getValue("Nouveaux groupe")~ExecuteProcedure~PC_SET_CATEGORY [% environnement %] [% table %] [% key_var %] "%NEW_CATEGORY%"~0~~Configure
 ';
 	my $pci_template_ignore='Item~Surveillance~Ne plus surveiller~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "valide_label""~~ExecuteProcedure~ME_EXEC_JOB PC_SET_LABEL [% environnement %] [% table %] [% key_var %] OK~1~~Configure
 ';
-	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~~~IsipProcessorLine~FORM_CONFIG_TREE@STATUS,PROJECT,COMMENT,MEMO~0~~Configure
+	my $pci_template_validate='Item~Validation~Valider cette ligne et ses sous-tables~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE}"~~IsipProcessorLine~FORM_CONFIG_TREE@STATUS,PROJECT,COMMENT,MEMO~0~~Configure
 ';
 	#my $pci_fkey_template='Item~~[% child_table %]~expl~~~Explore~[% table_list %]~0~~Expand
 	my $pci_fkey_template='Item~~Explorer sous-tables~user~~~Explore~[% table_list %]~0~~Expand
@@ -292,7 +292,8 @@ sub get_pci_field_string($$) {
 	my $display_table=$env_obj->get_display_table($table_name);
 	
 	my $pci_field_template='Table~~Champs~user~~~Explore~~0~~Expand
-Table~~Information ligne complète~user~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~~0~~Display
+Table~~Information ligne complète~user~~{FILTER_ICON=}{FILTER_PROJECT=}~DisplayTable~%TableName%@FIELD_NAME,TEXT,FIELD_VALUE,STATUS,DATE_HISTO,DATE_UPDATE,USER_UPDATE@@~0~~Display
+Item~~Détail~user~~~Detail~~0~~DetailNode
 Item~~Historique Complet~user~~GSL_FILE=[% table %]~DisplayTable~FIELD_HISTO@DATE_HISTO,FIELD_VALUE,PROJECT,STATUS,COMMENT,BASELINE_TXT~0~~Display
 Item~~Editer Commentaire~expl~perl -e "exit 1 if exists $ENV{ENV_COMPARE} or exists $ENV{DATE_COMPARE} or exists $ENV{DATE_EXPLORE} or $ENV{ICON} eq "stamp""~~IsipProcessorLine~FORM_CONFIG~0~~Configure
 Item~~Afficher Difference~expl~perl -e "exit 1 if not exists $ENV{ENV_COMPARE} and not exists $ENV{DATE_COMPARE}"~~DisplayTable~FIELD_DIFF@ENVIRONNEMENT,DATE_HISTO,FIELD_NAME,FIELD_VALUE,TYPE,COMMENT,STATUS,TEXT~0~~Configure
@@ -418,7 +419,9 @@ sub get_label_field_item_hash($$) {
 
 	my $label_table_name='IKOS_FIELD_[% environnement %]_[% table %].Item';
 	my $label_table_icon='isip_%[ICON]';
-	my $label_table_desc='%[FIELD_NAME] (%[TEXT])';
+	
+	#my $label_table_desc='%[FIELD_NAME] (%[TEXT]) ';
+	my $label_table_desc='%[FIELD_NAME] (%[TEXT]) = %[FIELD_VALUE]';
 	
 	$label_table_name =~ s/\[% table %\]/$table_name/g;
 	$label_table_name =~ s/\[% environnement %\]/$environnement/g;
