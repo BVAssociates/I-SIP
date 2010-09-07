@@ -105,8 +105,9 @@ sub clean_dead_process {
 	
 	return if not %process_to_check;
 	
-	my $no_tasklist;
+	# utilisation possible de tasklist sur les systèmes qui en dispose
 	#my @process_list = `tasklist /FO CSV /NH /FI "IMAGENAME eq perl.exe"`;
+	
 	my @process_list = `pslist -accepteula perl -accepteula`;
 	if ($? == -1 || ($?>>8) ne 0) {
 		die("<pslist> n'est pas disponible. Accès aux processus impossible.");
