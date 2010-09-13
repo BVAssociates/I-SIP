@@ -1,3 +1,8 @@
+v1.5
+
+FS#767 - FS#765 : Corrections
+FS#745 : Uniformisation des intitulés de menu
+
 v1.4
 
 FS#761 Disparition des menus "ignorer ce noeud" et "surveiller ...
