@@ -214,7 +214,6 @@ sub fetch_row() {
 		
 			my %line_diff_icon=$self->{isip_rules}->enum_line_icon();
 			my $return_status="ERROR";
-			my $key=join(',',@$current_row{sort $self->key()});
 			
 			my @diff_list;
 			
@@ -346,8 +345,15 @@ sub compare_init() {
 	if (not @key_source or not @key_target) {
 		croak("No key defined");
 	}
-	if ( @key_source ne @key_target) {
-		croak("The 2 tables have not the same keys : ".@key_source." => ".@key_target);
+	elsif ( @key_source ne @key_target) {
+		croak("The 2 tables have not the same keys : ".join(',',@key_source)." => ".join(',',@key_target) );
+	}
+	else {
+		foreach my $iter ( 0..@key_source-1 ) {
+			if ( $key_source[$iter] ne $key_target[$iter] ) {
+				croak("The 2 tables have not the same keys : ".join(',',@key_source)." => ".join(',',@key_target) );
+			}
+		}
 	}
 	
 	if ( $table_to->table_name() ne $table_from->table_name() ) {
@@ -396,7 +402,7 @@ sub compare_next() {
 	
 	my $table_from=$self->{table_source};
 	
-	my @key=sort $table_from->key();
+	my @key=$table_from->key();
 	
 	# get a row 
 	my %row_source=$table_from->fetch_row() if not $self->{fetch_target_only_running};
@@ -676,7 +682,7 @@ sub update_compare_target() {
 	
 	
 	# update modified lines
-	my @table_key=sort $self->key();
+	my @table_key=$self->key();
 	my %key_update_hash=$diff_object->get_source_update();
 	foreach my $key_update (keys %key_update_hash ) {
 	
