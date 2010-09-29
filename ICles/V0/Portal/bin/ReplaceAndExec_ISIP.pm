@@ -308,6 +308,11 @@ sub validate_line {
 	
 	my %line_value=$itools_table->array_to_hash(split(/$separator/, $values, -1));
 	
+	# validation des champs obligatoires
+	if ( ! $line_value{COMMENT} ) {
+		croak("Un commentaire est obligatoire");
+	}
+	
 	my @script_args = ($environnement, $table_ikos, $line_value{COMMENT});
 	unshift @script_args, "-p".$line_value{PROJECT} if $line_value{PROJECT};
 	unshift @script_args, "-m".$line_value{MEMO} if $line_value{MEMO};
