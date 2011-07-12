@@ -7,8 +7,8 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{D523E93D-755A-4591-B164-A0EC7C23D6DC}
 AppName=I-SIP Console
-AppVersion=1.5
-;AppVerName=I-SIP Console 1.5
+AppVersion=2.0.6
+;AppVerName=I-SIP Console 2.0.6
 AppPublisher=BV Associates
 AppPublisherURL=http://www.bvassociates.fr
 AppSupportURL=http://www.bvassociates.fr
@@ -16,10 +16,12 @@ AppUpdatesURL=http://www.bvassociates.fr
 DefaultDirName={pf}\BV Associates\I-SIP Console
 DisableDirPage=no
 DefaultGroupName=I-SIP
-OutputBaseFilename=Setup I-SIP Console 1.5
+OutputBaseFilename=Setup I-SIP Console 2.0.6
 SetupIconFile=Console\I-SIS Console.ico
 Compression=lzma
 SolidCompression=yes
+UninstallDisplayIcon={app}\I-SIS Console.ico
+
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
@@ -35,9 +37,6 @@ Source: "Console\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs creat
 [Icons]
 Name: "{group}\I-SIP Console"; Filename: "{app}\I-SIS Console.exe" ; IconFilename: "{app}\I-SIS Console.ico" ;WorkingDir: "{app}"
 Name: "{commondesktop}\I-SIP Console"; Filename: "{app}\I-SIS Console.exe"; Tasks: desktopicon  ; IconFilename: "{app}\I-SIS Console.ico" ;WorkingDir: "{app}"
-
-[ini]
-; Filename: "{app}\I-SIS Console.lax" ;Section: ""; Key: "lax.dir2"; String: "{app}"
 
 
 [Run]
