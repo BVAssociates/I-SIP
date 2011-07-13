@@ -38,6 +38,14 @@ Source: "Console\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs creat
 Name: "{group}\I-SIP Console"; Filename: "{app}\I-SIS Console.exe" ; IconFilename: "{app}\I-SIS Console.ico" ;WorkingDir: "{app}"
 Name: "{commondesktop}\I-SIP Console"; Filename: "{app}\I-SIS Console.exe"; Tasks: desktopicon  ; IconFilename: "{app}\I-SIS Console.ico" ;WorkingDir: "{app}"
 
+[ini]
+Filename: "{app}\prefs\{username}.prefs"; Section: "AUTO-EXPLORE"; Key: "Enabled"; String: "true"; Flags: createkeyifdoesntexist
+Filename: "{app}\prefs\{username}.prefs"; Section: "AUTO-EXPLORE"; Key: "PreloadMenus"; String: "false"; Flags: createkeyifdoesntexist
+Filename: "{app}\prefs\{username}.prefs"; Section: "AUTO-EXPLORE"; Key: "RemoveUnnecessaryNodes"; String: "true"; Flags: createkeyifdoesntexist
+Filename: "{app}\prefs\{username}.prefs"; Section: "AUTO-EXPLORE"; Key: "Tables"; String: """PortalAccess,AgentAccess,ICleAccess,ICleServices,PortalApplicationAccess"""; Flags: createkeyifdoesntexist
+
+Filename: "{app}\prefs\{username}.prefs"; Section: "OpenURL"; Key: "Browser.Command"; String: """cmd /c start /B """" ""%[url]"""""; Flags: createkeyifdoesntexist
+
 
 [Run]
 Filename: "{app}\I-SIS Console.exe"; Description: "{cm:LaunchProgram,I-SIP Console}"; Flags: nowait postinstall skipifsilent
