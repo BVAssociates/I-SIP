@@ -113,6 +113,10 @@ sub clean_dead_process {
 		die("<pslist> n'est pas disponible. Accès aux processus impossible.");
 	}
 	
+	if ( grep {/Failed to take process snapshot/} @process_list ) {
+		die @process_list;
+	}
+	
 	# nettoyage de la sortie
 	chomp(@process_list);
 	shift @process_list for (1..3);
