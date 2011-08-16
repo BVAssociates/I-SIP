@@ -1,3 +1,12 @@
+v1.6
+
+FS#782 : Installeur graphique complet
+FS#776 : Problème d'exploration sur une nouvelle table
+FS#770 : Erreur calcul de l'etat des Jobs
+
+Corrections bug affichage
+
+
 v1.5
 
 FS#767 - FS#765 : Corrections
