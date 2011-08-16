@@ -448,15 +448,11 @@ sub fetch_row() {
 		return () ;
 	}
 	
-	my $missing_key;
 	foreach ($self->key() ) {
 		if (not exists $return_line{$_}) {
-			$self->_error("field $_ cannot be null (should be one of : $current_key");
-			$missing_key=1;
+			$self->_warning("field $_ is a null key in : $current_key");
 		}
 	}
-	#@return_line{$self->key()}=split(',',$current_key) if $missing_key;
-	croak("unable to get primary key") if $missing_key;
 	
 	foreach ($self->not_null() ) {
 		if (not exists $return_line{$_}) {
