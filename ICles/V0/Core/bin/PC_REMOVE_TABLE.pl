@@ -16,7 +16,7 @@ PC_REMOVE_TABLE - supprime la table de données d'historique d'une table
 
 =head1 SYNOPSIS
 
- PC_REMOVE_TABLE.pl [-h] [-v ] [-f] environnement tablename
+ PC_REMOVE_TABLE.pl [-h] [-v ] [-f] [-n] [-r] environnement tablename
  
 =head1 DESCRIPTION
 
@@ -43,6 +43,10 @@ Si l'option -i est utilisée, une première collecte sera effecutée
 =item -v : Mode verbeux
 
 =item -f : supprime également les fichiers de données (recupération impossible)
+
+=item -r : supprime même si des dépendances existent
+
+=item -n : ne regenere pas le menu
 
 =back
 
@@ -97,7 +101,7 @@ local @ARGV=@_;
 log_info("Debut du programme : ".__PACKAGE__." ".join(" ",@ARGV));
 
 my %opts;
-getopts('hvfn', \%opts) or usage(0);
+getopts('hvfnr', \%opts) or usage(0);
 
 my $debug_level = 0;
 $debug_level = 1 if $opts{v};
@@ -106,6 +110,7 @@ usage($debug_level+1) if $opts{h};
 
 my $force=$opts{f};
 my $no_menu=$opts{n};
+my $no_deps=$opts{r};
 
 #  Traitement des arguments
 ###########################################################
@@ -132,10 +137,12 @@ my %table_info_save=$env_sip->get_table_info($table_name);
 
 log_erreur("$table_name est inconnue dans $environnement") if not %table_info_save;
 
-my @dependant_table = $env_sip->get_links()->get_child_tables($table_name);
+if ( ! $no_deps ) {
+	my @dependant_table = $env_sip->get_links()->get_child_tables($table_name);
 
-if ( @dependant_table ) {
-	log_erreur("Impossible de supprimer $table_name car les tables suivantes ont une clef étrangère sur cette table : <".join(', ', @dependant_table).">. Retirez ces dependances et réessayez.");
+	if ( @dependant_table ) {
+		log_erreur("Impossible de supprimer $table_name car les tables suivantes ont une clef étrangère sur cette table : <".join(', ', @dependant_table).">. Retirez ces dependances et réessayez.");
+	}
 }
 
 

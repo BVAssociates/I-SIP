@@ -134,10 +134,10 @@ require "pc_remove_table.pl";
 	log_info("suppression définition de la table $table de l'$environnement");
 	my $return;
 	if ($force) {
-		$return=pc_remove_table::run("-fn",$environnement,$table);
+		$return=pc_remove_table::run("-rfn",$environnement,$table);
 	}
 	else {
-		$return=pc_remove_table::run("-n",$environnement,$table);
+		$return=pc_remove_table::run("-rn",$environnement,$table);
 	}
 	if (not $return) {
 		log_erreur("Erreur lors de la suppression de la table $table dans $environnement");
