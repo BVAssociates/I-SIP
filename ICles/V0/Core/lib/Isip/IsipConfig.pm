@@ -430,7 +430,13 @@ sub send_mail {
 	}
 
 	$logger->info("Connexion SMTP : $smtp_host");
-	my $sender = Mail::Sender->new(  {smtp => $smtp_host, from => $smtp_from});
+	my $sender = Mail::Sender->new(  {
+					smtp => $smtp_host,
+					from => $smtp_from,
+					charset => 'iso-8859-1',
+					encoding => 'quoted-printable',
+				});
+	
 	if (not ref $sender) {
 		$logger->error("Probleme de connexion à $smtp_host");
 	}
