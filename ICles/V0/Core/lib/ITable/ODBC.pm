@@ -188,7 +188,9 @@ sub key {
 sub _init_driver() {
 	my $self = shift;
 
-	# nothing to do 
+	# right truncated error (SQL-01004) fix
+	$self->{database_handle}->{'LongTruncOk'} = 1;
+	$self->{database_handle}->{'LongReadLen'} = 500; 
 }
 
 # Get information from database
@@ -226,7 +228,7 @@ sub _set_columns_info() {
 	}
 	
 	if (not $self->field() or $self->field() == 1) {
-		croak("Problemes lors de la recuperation des informations ODBC de $self->{table_name}");
+		croak("Problemes lors de la recuperation des informations ODBC de $self->{table_name} dans $self->{database_name} ($self->{odbc_name})");
 	}
 }
 
