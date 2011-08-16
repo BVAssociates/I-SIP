@@ -132,9 +132,9 @@ sub run {
 	my $source_environ=ITools->open("SOURCE_ENVIRON");
 	$source_environ->query_condition("ENVIRON = '$environnement'");
 
-	my %env_row=$source_environ->fetch_row_pp();
+	my %env_row=$source_environ->fetch_row();
 	undef $source_environ;
-
+	
 	if (not %env_row) {
 		croak("l'environnement $environnement est inconnu dans $odbc_name");
 	}
