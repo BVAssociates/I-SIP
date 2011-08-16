@@ -148,10 +148,23 @@ sub run {
 	eval { require DBD::ODBC };
 	if ($@) {
 		$logger->error("Module Perl absent : DBD::ODBC");
+		$error_count++;
 	}
-	eval { require IPC::ODBC };
+	eval { require Win32::Process };
 	if ($@) {
-		$logger->error("Module Perl absent : DBD::ODBC");
+		$logger->error("Module Perl absent : Win32::Process");
+		$error_count++;
+	}
+	
+	my @process_list = `pslist -accepteula perl -accepteula >nul`;
+	if ($? == -1 || ($?>>8) > 1) {
+		$logger->error("<pslist> n'est pas disponible. Accès aux processus impossible.");
+		$error_count++;
+	}
+	
+	if ( grep {/^Failed to take process snapshot/} @process_list ) {
+		$logger->error("Le user $ENV{USERDOMAIN}\\$ENV{USERNAME} ne peux pas executer <pslist>");
+		$error_count++;
 	}
 	
 	# verification des variables
@@ -181,7 +194,7 @@ sub run {
 		}
 	}
 	
-
+	
 	if ( $check_local ) {
 		my $config_sip = IsipConfig->new();
 		my @environnement_list = $config_sip->get_environnement_list();
